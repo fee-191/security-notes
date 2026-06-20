@@ -1,5 +1,58 @@
 # Chương 6 — DevSecOps: Quét bảo mật & Semgrep
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách "gắn việc kiểm tra bảo mật" vào ngay trong quy trình làm phần mềm, thay vì để tới cuối mới đi tìm lỗ hổng. Nói cách khác: thay vì xây xong cả ngôi nhà rồi mới thuê người đi soi xem có chỗ nào dột, chúng ta đặt sẵn người soi ở từng công đoạn — đổ móng, dựng tường, lợp mái — để bắt lỗi ngay khi nó vừa xuất hiện. Điều này quan trọng vì lỗ hổng càng phát hiện muộn thì sửa càng đắt và càng nguy hiểm (có khi đã bị hacker khai thác rồi mới biết). Dưới đây là các "nhân vật chính" của chương, mình giải thích thật đời thường trước khi phần kỹ thuật đi vào chi tiết.
+
+### DevSecOps & shift-left — nói đơn giản
+
+**DevSecOps** là cách làm việc trong đó bảo mật (Sec) được trộn thẳng vào quy trình lập trình (Dev) và vận hành (Ops), thay vì là một khâu tách rời ở cuối. Hãy hình dung một dây chuyền làm bánh: ngày xưa người ta nướng xong cả mẻ bánh mới kiểm tra vệ sinh; bây giờ ta đặt người kiểm tra ở mọi khâu. **"Shift-left"** chỉ có nghĩa là "dịch việc kiểm tra về phía trái" — tức là về sớm hơn trên dòng thời gian. Cần nó vì sửa một lỗi lúc lập trình viên còn đang gõ code thì rẻ và nhanh, còn sửa lúc đã lên production thì tốn kém gấp hàng chục lần và rủi ro lớn.
+
+### CI/CD & pipeline — nói đơn giản
+
+**CI/CD** là cụm từ chỉ việc tự động hóa quá trình từ "viết code xong" tới "chạy được trên máy chủ". CI (Continuous Integration) là mỗi khi ai đó nộp code, hệ thống tự động gom lại, build và chạy kiểm thử. CD (Continuous Deployment/Delivery) là tự động đưa code đã qua kiểm thử ra môi trường thật. **Pipeline** là "dây chuyền" gồm các bước nối tiếp đó. Cần nó vì làm tay thì chậm, dễ quên, dễ sai; còn dây chuyền tự động thì mỗi lần nộp code đều được kiểm tra y hệt nhau. Trong chương này, pipeline chính là nơi ta nhét các công cụ quét bảo mật vào để chúng tự chạy.
+
+### Các loại quét: SAST, DAST, SCA, secret scanning... — nói đơn giản
+
+Mỗi loại công cụ nhìn phần mềm từ một góc khác nhau, giống như nhiều bác sĩ khám một bệnh nhân bằng các thiết bị khác nhau:
+- **SAST** (quét tĩnh) đọc *mã nguồn* mà không cần chạy chương trình — như đọc bản vẽ thiết kế để tìm chỗ vẽ sai. Bắt tốt các lỗi kiểu "lấy dữ liệu người dùng nhét thẳng vào câu lệnh nguy hiểm".
+- **DAST** (quét động) thì *chạy thật* ứng dụng rồi thử tấn công nó qua trình duyệt/HTTP — như thử mở từng cánh cửa xem có khóa chắc không, mà không cần biết bên trong xây thế nào.
+- **SCA** kiểm tra các *thư viện bên thứ ba* mà dự án dùng lại — như kiểm tra xem nguyên liệu mua ngoài có bị thu hồi (CVE) hay không. Quan trọng vì phần lớn code hiện đại là vay mượn từ người khác.
+- **Secret scanning** đi tìm *mật khẩu, khóa API, token* bị lỡ tay viết thẳng vào code — như rà soát xem có ai dán chìa khóa nhà lên cửa không.
+- **IaC scanning** kiểm tra *file cấu hình hạ tầng* (máy chủ, mạng) xem có chỗ nào để hớ hênh, ví dụ mở toang cho cả thế giới truy cập.
+
+Cần nhiều loại vì mỗi loại có "vùng mù" riêng; chồng chúng lên nhau để bù cho nhau.
+
+### Semgrep — nói đơn giản
+
+**Semgrep** (đọc là "sem-grép", nghĩa là "grep ngữ nghĩa") là một công cụ SAST mã nguồn mở. Bạn cứ hình dung lệnh tìm kiếm văn bản quen thuộc, nhưng thông minh hơn: thay vì tìm theo từng chữ cái, nó *hiểu cấu trúc của code*. Ta viết một "khuôn mẫu" trông gần giống đoạn code muốn bắt, rồi Semgrep tự tìm mọi chỗ khớp với khuôn đó — kể cả khi cách viết có xê dịch khoảng trắng, xuống dòng, đặt tên khác. Cần nó vì tìm lỗi bằng tìm-chữ-thuần (regex) hay báo nhầm và bỏ sót, còn Semgrep cân bằng được giữa nhanh và chính xác. Trong chương, đây là công cụ trung tâm: ta sẽ học cách viết **rule** (luật) bằng file YAML, dùng **metavariable** (biến đại diện như `$X`), và **taint mode** — chế độ theo dõi "dữ liệu bẩn" chảy từ nơi nhận vào (source) tới nơi nguy hiểm (sink).
+
+### Gitleaks — nói đơn giản
+
+**Gitleaks** là công cụ chuyên đi soi *bí mật bị lộ* trong code và trong cả lịch sử git (mọi lần commit trước đây). Nó bắt theo hai cách: tìm theo mẫu nhận dạng (ví dụ khóa AWS luôn bắt đầu bằng `AKIA`) và đo "độ ngẫu nhiên" của chuỗi (mật khẩu thật thường lộn xộn hơn chữ tiếng Anh bình thường). Cần nó vì một khi mật khẩu đã bị đẩy lên kho code chung thì coi như đã lộ, phải đổi ngay.
+
+### Trivy — nói đơn giản
+
+**Trivy** là một scanner đa năng: nó soi *container image* (gói phần mềm đóng sẵn để chạy ở mọi nơi), soi thư mục mã nguồn, soi cấu hình hạ tầng, và lập danh sách thành phần. Hãy coi nó như máy soi hành lý ở sân bay — đưa cái gì vào nó cũng quét được và chỉ ra món nào có "CVE" (lỗ hổng đã được công bố). Cần nó vì image bạn dùng thường chứa cả một hệ điều hành thu nhỏ với hàng trăm gói phần mềm, mỗi gói đều có thể dính lỗ hổng.
+
+### Cổng pipeline (gate) & exit code — nói đơn giản
+
+**Gate** (cổng) là điểm trong dây chuyền tự động quyết định "cho đi tiếp hay chặn lại". Cách máy móc giao tiếp với nhau là qua **exit code**: một con số mà chương trình trả về khi chạy xong — quy ước `0` nghĩa là "ổn, qua", khác `0` nghĩa là "có vấn đề, dừng". Cần thiết kế cổng thành **nhiều tầng**: lỗi nghiêm trọng thì chặn hẳn, lỗi nhẹ thì chỉ cảnh báo. Nếu chặn mọi thứ, lập trình viên bị làm phiền quá mức rồi tìm cách lách; nếu không chặn gì, lỗ hổng nặng lọt ra ngoài.
+
+### An ninh chuỗi cung ứng, SBOM, ký artifact — nói đơn giản
+
+**Chuỗi cung ứng phần mềm** là toàn bộ "đường đi của nguyên liệu" để làm ra sản phẩm: thư viện vay mượn, công cụ build, máy chủ đóng gói. Kẻ xấu có thể đầu độc một mắt xích trong đó. **SBOM** (Software Bill of Materials) giống như "bảng thành phần in trên vỏ hộp thực phẩm" — liệt kê mọi thứ có trong phần mềm, để khi nghe tin một thành phần dính lỗ hổng (như vụ Log4Shell) thì tra ngay được "sản phẩm nào của mình có dùng nó". **Ký artifact** (với cosign/sigstore) là dán một con dấu chống giả lên gói phần mềm, để bên nhận kiểm tra được "đúng là của ta làm ra và chưa bị sửa đổi".
+
+### Quản lý secret & Vault — nói đơn giản
+
+Thay vì viết mật khẩu thẳng vào code (rất dễ lộ), ta dùng một "két sắt tập trung" như **HashiCorp Vault**. Hay hơn nữa là **dynamic secret**: mỗi khi ứng dụng cần truy cập cơ sở dữ liệu, Vault cấp một tài khoản tạm sống vài giờ rồi tự thu hồi — giống chìa khóa khách sạn chỉ dùng được trong thời gian bạn thuê phòng. **OIDC/workload identity** giải bài toán "con gà và quả trứng": làm sao xác thực với két sắt mà không cần một mật khẩu ban đầu? Câu trả lời là dùng danh tính có sẵn và đã được ký của chính môi trường chạy (ví dụ GitHub Actions).
+
+### pre-commit hook — nói đơn giản
+
+**pre-commit hook** là một đoạn script tự động chạy *ngay trước khi* bạn lưu (commit) code vào kho. Nếu nó phát hiện vấn đề, nó chặn luôn không cho commit. Đây là điểm "shift-left" xa nhất — bắt lỗi ngay trên máy lập trình viên, trước cả khi code rời khỏi máy. Cần nó để bí mật và lỗi rõ ràng không bao giờ kịp lọt vào lịch sử git. Lưu ý: vì lập trình viên có thể cố tình bỏ qua, nên các kiểm tra này phải được lặp lại ở phía máy chủ (CI).
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Chương này là tài liệu tham chiếu để học và tra cứu. Mỗi công cụ đều có ví dụ chạy được, mỗi định dạng dữ liệu đều mô tả tới mức trường/byte, và mỗi cơ chế đều giải thích "vì sao thiết kế như vậy".
 
 ---

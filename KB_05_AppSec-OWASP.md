@@ -1,5 +1,88 @@
 # Chương 5 — An ninh ứng dụng Web & OWASP Top 10
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách giữ cho một ứng dụng web (website, API, app trên trình duyệt) không bị kẻ xấu lợi dụng. Web là nơi mã từ hàng nghìn nguồn khác nhau cùng chạy trong một trình duyệt, và server của bạn thì mở cửa cho cả thế giới gửi dữ liệu vào — nên chỉ cần một khe hở nhỏ là kẻ tấn công có thể đọc trộm dữ liệu, mạo danh người dùng, hoặc chiếm quyền cả máy chủ. Vì gần như mọi hệ thống ngày nay đều có mặt web, đây là phần "xương sống" của an toàn thông tin ứng dụng. Dưới đây mình đi qua từng ý lớn của chương bằng ngôn ngữ đời thường trước, rồi phần sau mới mổ xẻ chi tiết kỹ thuật.
+
+### Mô hình bảo mật của Web (Origin, SOP, CORS) — nói đơn giản
+
+Hãy tưởng tượng mỗi website là một căn hộ riêng trong chung cư. **Origin** (nguồn gốc) giống như "địa chỉ căn hộ" — gồm giao thức (http/https), tên miền và cổng. Hai trang chỉ "cùng nhà" khi cả ba thứ này trùng khớp.
+
+- **Same-Origin Policy (SOP)** là quy tắc "nhà ai nấy ở": mã của trang A không được tự ý đọc dữ liệu của trang B. Vì sao cần? Nếu không có nó, một quảng cáo độc hại nhúng trên trang báo có thể đọc cookie ngân hàng của bạn. Điểm tinh tế: SOP chặn việc *đọc* kết quả chứ không chặn việc *gửi* yêu cầu — đây là kẽ hở mà CSRF khai thác.
+- **CORS (Cross-Origin Resource Sharing)** là cơ chế để chủ nhà chủ động "mở cửa cho khách quen". Khi một dịch vụ muốn cho phép trang khác đọc dữ liệu của mình, nó dán thêm vài tấm biển (header `Access-Control-*`) báo trình duyệt biết ai được phép. Vì sao cần? Vì thực tế nhiều ứng dụng cần frontend ở tên miền này gọi API ở tên miền kia — CORS cho phép điều đó một cách *có kiểm soát*, thay vì mở toang.
+
+### OWASP Top 10 — nói đơn giản
+
+**OWASP Top 10** là "danh sách 10 lỗi bảo mật web nguy hiểm và hay gặp nhất", do một cộng đồng bảo mật uy tín tổng hợp từ dữ liệu thực tế. Cứ xem nó như tấm "biển cảnh báo 10 cái bẫy thường gặp nhất trên đường" — không phải tất cả mọi nguy hiểm, nhưng là những thứ bạn chắc chắn phải biết trước tiên. Vì sao cần? Vì nó cho người mới một lộ trình rõ ràng: học theo thứ tự này là che được phần lớn rủi ro phổ biến.
+
+### Các kiểu tấn công "tiêm" (Injection: SQLi, XSS, Command, SSTI) — nói đơn giản
+
+Nhóm này có chung một gốc rễ: **lẫn lộn giữa "dữ liệu" và "lệnh"**. Giống như bạn đọc cho thư ký ghi một câu, nhưng giữa câu bạn lại đọc luôn cả một mệnh lệnh và thư ký răm rắp làm theo.
+
+- **SQL Injection (SQLi)** — kẻ tấn công nhét đoạn lệnh cơ sở dữ liệu vào ô nhập (ví dụ ô tìm kiếm), khiến database làm điều ngoài ý muốn như trả về toàn bộ mật khẩu. Vì sao quan trọng? Vì database thường chứa thứ giá trị nhất.
+- **Cross-Site Scripting (XSS)** — kẻ tấn công nhét đoạn JavaScript vào trang, và nó chạy ngay trong trình duyệt của nạn nhân, đánh cắp phiên đăng nhập hoặc hành động thay họ. Giống như ai đó lén dán một mẩu giấy ghi chú có "lệnh" lên màn hình mà bạn tưởng là nội dung thật.
+- **Command Injection** — tương tự nhưng nhắm vào hệ điều hành của máy chủ: input độc hại biến thành lệnh chạy thẳng trên server.
+- **Server-Side Template Injection (SSTI)** — kẻ tấn công lợi dụng "khuôn mẫu" sinh trang động để chèn biểu thức được máy chủ thực thi, thường dẫn tới chiếm máy.
+
+Cách phòng chung mà chương sẽ giải thích: luôn tách bạch dữ liệu khỏi lệnh (tham số hóa truy vấn, mã hóa đầu ra theo đúng ngữ cảnh, không gọi shell).
+
+### CSRF — nói đơn giản
+
+**Cross-Site Request Forgery (CSRF)** lợi dụng việc trình duyệt *tự động đính kèm cookie đăng nhập* vào mọi yêu cầu gửi tới một site. Hình dung: bạn đang đăng nhập ngân hàng, rồi vô tình mở một trang độc; trang đó âm thầm gửi lệnh "chuyển tiền" tới ngân hàng, và vì trình duyệt tự gắn cookie của bạn vào, ngân hàng tưởng chính bạn ra lệnh. Vì sao cần phòng? Vì kẻ tấn công không cần biết mật khẩu của bạn, chỉ cần "mượn tay" trình duyệt của bạn.
+
+### SSRF — nói đơn giản
+
+**Server-Side Request Forgery (SSRF)** là ép *máy chủ* đi gửi yêu cầu tới một địa chỉ do kẻ tấn công chọn. Server thường được tin cậy trong mạng nội bộ, nên biến nó thành "tay sai" để chạm tới những nơi mà kẻ ngoài không vào được — như dịch vụ nội bộ hay kho thông tin nhạy cảm của máy chủ đám mây. Ví dụ kinh điển: lừa server tự gọi địa chỉ metadata của cloud để moi ra khóa truy cập.
+
+### Broken Access Control & IDOR — nói đơn giản
+
+**Broken Access Control** nghĩa là ứng dụng không kiểm tra kỹ "ai được làm gì". **IDOR** là một dạng cụ thể: bạn xem hóa đơn số 1001 của mình, đổi URL thành 1002 và... thấy luôn hóa đơn của người khác, vì server quên kiểm tra quyền sở hữu. Giống như khách sạn đưa nhầm chìa khóa phòng bên cạnh chỉ vì bạn đọc đúng số phòng. Vì sao quan trọng? Vì đây là nhóm lỗi đứng đầu OWASP — rất phổ biến và dễ bị bỏ sót.
+
+### Insecure Deserialization & XXE — nói đơn giản
+
+- **Insecure Deserialization** — "deserialize" là biến một chuỗi byte trở lại thành object trong chương trình. Nếu nhận chuỗi byte từ nguồn không tin cậy rồi dựng lại một cách tùy tiện, kẻ tấn công có thể "gói sẵn" một object độc khiến server chạy mã của chúng khi mở gói. Như nhận một bưu kiện lạ rồi mở ra mà không kiểm tra.
+- **XML External Entity (XXE)** — một số trình đọc file XML cho phép định nghĩa "biến" trỏ tới file hoặc địa chỉ bên ngoài. Kẻ tấn công lợi dụng để bắt server đọc trộm file nội bộ (như `/etc/passwd`) hoặc gây SSRF.
+
+### Upload file an toàn — nói đơn giản
+
+Cho phép người dùng tải file lên là tiện, nhưng nếu kẻ xấu tải lên một file mã độc rồi lừa server chạy nó (web shell) thì coi như mất máy. Phần này dạy các lớp kiểm tra: chỉ cho phép đúng loại file, kiểm "chữ ký" thật của file chứ không tin phần đuôi tên, đổi tên file ngẫu nhiên, và lưu ở nơi không thể thực thi.
+
+### Input Validation vs Output Encoding — nói đơn giản
+
+Đây là hai việc khác nhau, hay bị nhầm. **Input Validation** là kiểm dữ liệu *lúc nhận vào* ("email này có đúng định dạng không?"). **Output Encoding** là vô hiệu hóa ký tự nguy hiểm *lúc đưa dữ liệu ra* (ví dụ ra HTML hay SQL). Vì sao cần cả hai? Vì một dữ liệu hợp lệ về nghiệp vụ vẫn có thể phá hỏng một "ngôn ngữ" khác — chúng bổ sung cho nhau chứ không thay thế.
+
+### Authentication (Session, JWT, OAuth2/OIDC, SAML, MFA) — nói đơn giản
+
+Đây là phần "chứng minh bạn là ai".
+
+- **Session cookie**: sau khi đăng nhập, server phát cho bạn một "vé giữ chỗ" (cookie) để các yêu cầu sau khỏi nhập lại mật khẩu.
+- **JWT (JSON Web Token)**: một "tấm vé" tự chứa thông tin và có chữ ký chống sửa, gửi kèm mỗi yêu cầu. Tiện vì server không cần lưu trạng thái, nhưng dùng sai (như chấp nhận token "không chữ ký") thì rất nguy hiểm.
+- **OAuth2 / OIDC**: cơ chế "đăng nhập bằng Google/Facebook" — cho phép một ứng dụng truy cập thay bạn *mà không cần đưa mật khẩu* cho nó. OIDC là lớp danh tính dựng trên OAuth2 để biết "bạn là ai".
+- **SAML**: kiểu đăng nhập một lần (SSO) phổ biến trong doanh nghiệp, dùng XML.
+- **MFA / TOTP**: xác thực nhiều lớp — ngoài mật khẩu còn cần mã 6 số đổi mỗi 30 giây trên điện thoại. Vì sao cần? Vì mật khẩu rất dễ bị lộ; thêm một lớp nữa khiến kẻ trộm mật khẩu vẫn không vào được.
+
+### Authorization: RBAC vs ABAC — nói đơn giản
+
+Sau khi biết "bạn là ai" (authentication), cần quyết định "bạn được làm gì" (authorization). **RBAC** gán quyền theo *vai trò* ("biên tập viên được sửa bài") — đơn giản, dễ kiểm. **ABAC** quyết định theo *thuộc tính và ngữ cảnh* ("chỉ được xem tài liệu cùng phòng ban, trong giờ làm việc") — linh hoạt hơn nhưng phức tạp hơn.
+
+### Security Headers — nói đơn giản
+
+Đây là những "tấm biển chỉ dẫn" server gắn vào phản hồi để dặn trình duyệt cư xử an toàn hơn: ép luôn dùng HTTPS (HSTS), cấm trang bị nhúng vào iframe lạ (chống clickjacking), cấm đoán kiểu file lung tung, v.v. Vì sao cần? Vì chỉ thêm vài dòng cấu hình mà chặn được cả lớp tấn công phổ biến.
+
+### Threat Modeling (STRIDE) — nói đơn giản
+
+**Threat Modeling** là ngồi lại *trước khi bị tấn công* để hỏi "hệ thống này có thể bị đánh ở đâu?". **STRIDE** là bảng gợi nhớ 6 kiểu đe dọa (giả mạo, sửa dữ liệu, chối bỏ, lộ thông tin, làm sập, leo thang quyền). Vẽ sơ đồ luồng dữ liệu, đánh dấu các "ranh giới tin cậy" (nơi dữ liệu đi từ vùng kém tin sang vùng tin cậy), rồi soi từng chỗ. Vì sao cần? Vì phòng từ khâu thiết kế rẻ và hiệu quả hơn vá lỗi sau này.
+
+### Zero Trust — nói đơn giản
+
+**Zero Trust** là triết lý "không tin ai chỉ vì họ đang ở trong mạng nội bộ". Khẩu hiệu: *never trust, always verify* — mỗi lần truy cập đều phải xác thực và xét quyền lại theo ngữ cảnh, thay vì "vào được trong tường rào là an toàn". Vì sao cần? Vì kẻ tấn công một khi lọt vào trong mạng kiểu cũ là tha hồ tung hoành; Zero Trust bịt điều đó.
+
+### Logging & Monitoring — nói đơn giản
+
+Cuối cùng, **ghi log và giám sát** là "camera an ninh" của hệ thống: ghi lại ai làm gì, khi nào, và báo động khi có dấu hiệu lạ. Vì sao quan trọng? Vì nếu bị tấn công mà không có log thì bạn không biết chuyện gì đã xảy ra, không phát hiện kịp, cũng không điều tra được sau đó.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Tài liệu tham chiếu chuyên sâu dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ *LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT*. Các con số kỹ thuật bám theo RFC/spec; nơi nào cần kiểm chứng phiên bản cụ thể đều được ghi chú rõ.
 
 ---

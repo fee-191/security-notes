@@ -1,5 +1,52 @@
 # Chương 7 — CI/CD & GitOps: GitLab CI, GitHub Actions, Jenkins, Argo CD
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về **cách phần mềm tự động đi từ lúc lập trình viên gõ code cho tới lúc nó chạy thật trên máy chủ phục vụ người dùng** — và làm sao để cái "đường ống tự động" đó không trở thành lỗ hổng để kẻ xấu lợi dụng. Với người làm an toàn thông tin, đây là chỗ cực kỳ quan trọng: vì đường ống này thường giữ chìa khóa (mật khẩu, token, quyền truy cập máy chủ) và có quyền rất cao, nên nếu ai chiếm được nó thì coi như chiếm luôn cả hệ thống. Dưới đây mình đi qua từng khái niệm lớn của chương bằng lời lẽ thật dễ hiểu trước, rồi phần sau mới đào sâu kỹ thuật.
+
+### CI/CD — nói đơn giản
+
+- **CI/CD là gì?** Hãy tưởng tượng một **dây chuyền lắp ráp trong nhà máy**: nguyên liệu (code) đi vào một đầu, lần lượt qua các trạm (kiểm tra, đóng gói, dán nhãn), rồi ra thành phẩm đem giao. CI/CD chính là dây chuyền đó cho phần mềm. **CI (Continuous Integration)** là phần "cứ ai bỏ nguyên liệu vào là máy tự động ghép lại và kiểm tra ngay xem có hỏng không". **CD** là phần "tự động đem thành phẩm đi giao" — nếu cần người gật đầu trước khi giao thì gọi là *Continuous Delivery*, còn nếu giao thẳng không cần hỏi ai thì gọi là *Continuous Deployment*.
+- **Vì sao cần?** Ngày xưa người ta build và mang phần mềm lên máy chủ bằng tay — chậm, hay quên bước, và mỗi người làm một kiểu nên rất dễ sai. CI/CD biến việc đó thành tự động, lặp lại y hệt mỗi lần, và phát hiện lỗi sớm ngay khi vừa viết code. Về bảo mật, vì mọi thứ tự động và ghi lại được nên ta kiểm soát và truy vết được "ai đổi gì, lúc nào".
+
+### Pipeline as Code — nói đơn giản
+
+- **Là gì?** Thay vì cấu hình dây chuyền bằng cách bấm chuột lung tung trên giao diện web (dễ quên, không ai biết ai đã chỉnh gì), người ta viết toàn bộ cách dây chuyền hoạt động vào một **file văn bản nằm chung với code** (thường là file YAML). "Pipeline as Code" nghĩa là "định nghĩa đường ống dưới dạng mã nguồn".
+- **Vì sao cần?** Vì file đó nằm trong kho code nên mọi thay đổi đều được lưu lịch sử, có thể xem ai sửa gì, và bắt buộc đi qua bước duyệt như mọi đoạn code khác. Điều này biến cấu hình dây chuyền — vốn rất nhạy cảm — thành thứ kiểm soát được thay vì một mớ thiết lập ẩn mà không ai nhớ.
+
+### GitLab CI — nói đơn giản
+
+- **Là gì?** Đây là "dây chuyền tự động" được tích hợp sẵn trong GitLab (một nền tảng lưu trữ code). Bạn đặt một file tên `.gitlab-ci.yml` vào kho code, GitLab đọc file đó và tự chạy các công việc (gọi là *job*) trên những máy thợ gọi là **runner**.
+- **Vì sao cần / giải quyết gì?** Nó cho team dùng GitLab có ngay một bộ CI/CD mà không phải lắp thêm công cụ ngoài. Phần đáng chú ý về bảo mật là chỗ cất "chìa khóa" (biến bí mật, token) và chỗ chọn máy thợ chạy job — nếu cấu hình sai, một yêu cầu gộp code (merge request) độc hại có thể đọc trộm bí mật hoặc chạy lệnh trên máy chủ.
+
+### GitHub Actions — nói đơn giản
+
+- **Là gì?** Tương tự GitLab CI nhưng dành cho GitHub. Bạn đặt file cấu hình trong thư mục `.github/workflows/`, định nghĩa các *workflow* gồm nhiều *job*, mỗi job gồm nhiều *step* (bước). Một điểm hay là bạn có thể **dùng lại các khối việc làm sẵn của người khác** (gọi là *action*) như lắp ghép lego.
+- **Vì sao cần / cẩn thận gì?** Nó giúp tự động hóa rất nhanh nhờ chợ action có sẵn. Nhưng "dùng đồ của người khác" cũng là rủi ro: nếu action đó bị chèn mã độc, nó chạy ngay trong dây chuyền của bạn. Ngoài ra GitHub có hai kiểu trigger gần giống nhau (`pull_request` và `pull_request_target`) mà dùng nhầm là lộ hết bí mật — đây là lỗi kinh điển ta sẽ học kỹ.
+
+### Jenkins — nói đơn giản
+
+- **Là gì?** Jenkins là một "máy chủ tự động hóa" lâu đời, cài riêng trên máy của bạn (không gắn chặt vào GitHub hay GitLab). Nó có một bộ não trung tâm gọi là **controller** và nhiều máy thợ gọi là **agent**; cách làm việc được viết trong file `Jenkinsfile`.
+- **Vì sao cần / điểm yếu?** Jenkins cực kỳ linh hoạt và chạy được ở nơi không có Internet (on-prem), nên nhiều công ty lớn vẫn dùng. Đổi lại, nó sống nhờ hàng nghìn **plugin** (tiện ích cắm thêm), mà mỗi plugin là một cánh cửa có thể có lỗ hổng — nên giữ Jenkins an toàn đòi hỏi cập nhật và cấu hình kỹ.
+
+### Argo CD & GitOps — nói đơn giản
+
+- **GitOps là gì?** Ý tưởng đơn giản: **coi kho Git là "bản thiết kế chuẩn duy nhất" của hệ thống**. Bạn muốn hệ thống trông như thế nào thì ghi vào Git; sau đó có một "người gác cổng" tự động luôn so sánh "thực tế đang chạy" với "bản thiết kế trong Git" và tự sửa cho khớp. Giống như có một quản gia luôn nhìn vào danh sách công việc dán trên tường và tự sắp xếp nhà cửa cho đúng danh sách đó.
+- **Argo CD là gì?** Chính là "người quản gia" đó cho Kubernetes (nền tảng chạy các ứng dụng đóng gói trong container). Nó sống *bên trong* cụm máy chủ, liên tục kéo bản thiết kế từ Git về và đồng bộ.
+- **Vì sao cần?** Cách cũ là dây chuyền CI tự cầm chìa khóa rồi "đẩy" lên máy chủ — tức chìa khóa cụm máy chủ phải mang ra ngoài, rủi ro lớn. Với GitOps, chìa khóa không bao giờ rời khỏi cụm; mọi thay đổi đều là một commit trong Git nên truy vết và quay lui (rollback) dễ dàng. Thêm nữa, nếu kẻ xấu lén sửa thẳng trên máy chủ, Argo phát hiện "lệch so với Git" và tự khôi phục — một lớp phòng thủ rất hay.
+
+### Git Submodule — nói đơn giản
+
+- **Là gì?** Submodule cho phép bạn **nhúng một kho Git này vào trong một kho Git khác**, và ghim chính xác ở một phiên bản nhất định. Hình dung như đặt một quyển sách (kho con) vào trong tủ sách của bạn (kho cha), nhưng tủ chỉ ghi lại "đang dùng đúng ấn bản số mấy" chứ không sao chép cả nội dung sách.
+- **Vì sao cần?** Khi nhiều dự án muốn dùng chung một bộ khuôn mẫu (ví dụ cùng một bộ cấu hình CI/CD hay script bảo mật), ta để bộ khuôn đó vào một kho con rồi cho mọi dự án nhúng vào. Mỗi dự án ghim đúng phiên bản đã được duyệt nên không bị "khuôn mẫu tự đổi làm hỏng build". Nhược điểm là hơi rối khi dùng (dễ quên cập nhật đúng cách), và nếu kho con bị chiếm thì cũng là một rủi ro chuỗi cung ứng.
+
+### So sánh và chọn công cụ — nói đơn giản
+
+- **Là gì?** Phần cuối chương xếp ba "dây chuyền" (GitLab CI, GitHub Actions, Jenkins) cạnh nhau và so cách triển khai "đẩy" (CI tự lên máy chủ) với "kéo" (GitOps/Argo CD), để bạn biết tình huống nào nên chọn cái nào.
+- **Vì sao cần?** Vì không có công cụ nào "tốt nhất cho mọi việc". Hiểu điểm mạnh, điểm yếu và rủi ro bảo mật của từng loại giúp bạn chọn đúng — và mô hình hiện đại thường *kết hợp*: CI lo build và kiểm tra, còn Argo CD lo việc đưa lên cụm, mỗi bên giữ ít quyền nhất có thể.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Tài liệu tham chiếu kỹ thuật dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo cấu trúc: **LÀ GÌ → CƠ CHẾ BÊN TRONG → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT**. Các con số phiên bản và hành vi cụ thể của công cụ thay đổi theo version; những chỗ cần kiểm chứng đều được ghi rõ.
 
 ---

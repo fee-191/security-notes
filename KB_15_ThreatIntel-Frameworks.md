@@ -1,5 +1,66 @@
 # Chương 15 — Threat Intelligence & Frameworks tấn công (MITRE ATT&CK)
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách những người làm bảo mật **mô tả, phát hiện và đo lường** hành vi của kẻ tấn công bằng một "ngôn ngữ chung". Hãy tưởng tượng cảnh sát điều tra: muốn phá án hiệu quả thì cả lực lượng phải gọi tên thủ đoạn của tội phạm giống nhau ("phá khóa", "giả danh nhân viên"), chứ mỗi đồn một kiểu thì không ai phối hợp được. Trong an toàn thông tin cũng vậy — nếu mỗi đội mô tả tấn công theo cách riêng thì không thể trao đổi, không thể biết mình đang phòng thủ tốt đến đâu. Các "framework" và công cụ trong chương chính là bộ từ điển và sổ tay chung đó. Dưới đây ta đi nhanh qua từng món lớn, bằng lời lẽ thật đời thường.
+
+### Threat Intelligence (CTI) — nói đơn giản
+
+- **Threat Intelligence là gì?** Là thông tin về kẻ xấu đã được **xử lý và thêm bối cảnh** để giúp ta ra quyết định, chứ không phải dữ liệu thô. Ví dụ: "có một địa chỉ IP lạ trong log" mới chỉ là dữ liệu; còn "IP này là máy chủ điều khiển của một nhóm tội phạm đang nhắm vào ngân hàng, nên chặn ngay" mới là intelligence. Giống như khác biệt giữa "trời có mây" và "bản tin dự báo bão khuyên bạn nên ở nhà".
+- **Vì sao cần?** Vì mỗi ngày có hàng triệu cảnh báo. Nếu không biến chúng thành thông tin **hành động được**, đội bảo mật sẽ chết chìm trong nhiễu. CTI giúp lọc ra "cái gì đáng lo, vì sao, và làm gì tiếp theo".
+
+### Cyber Kill Chain — nói đơn giản
+
+- **Là gì?** Là cách chia một cuộc tấn công có chủ đích thành **7 bước nối tiếp**, từ lúc kẻ địch dò la cho đến lúc chúng đánh cắp được dữ liệu. Hãy hình dung như các bước của một vụ trộm nhà: rình rập trước cửa → chuẩn bị đồ nghề → lẻn vào → mở két → ôm tài sản chạy.
+- **Vì sao cần?** Vì nó cho ta một câu chuyện dễ kể và một bài học quý: chỉ cần **chặn được một mắt xích** bất kỳ là cả chuỗi tấn công đứt gãy. Nó giúp lãnh đạo hình dung bức tranh tổng thể.
+
+### Diamond Model — nói đơn giản
+
+- **Là gì?** Là cách nhìn mỗi sự cố qua **4 góc của một viên kim cương**: kẻ tấn công, năng lực (công cụ/mã độc), hạ tầng (máy chủ, tên miền chúng dùng) và nạn nhân. Như bảng điều tra với 4 tấm ảnh được nối bằng dây.
+- **Vì sao cần?** Vì khi nắm được **một góc**, ta có thể lần ra các góc còn lại (gọi là "pivoting" — bắc cầu điều tra). Biết một tên miền độc hại có thể lần ra địa chỉ IP, rồi ra các tên miền khác của cùng băng nhóm.
+
+### IOC và IOA — nói đơn giản
+
+- **IOC (dấu hiệu đã bị xâm nhập) là gì?** Là **bằng chứng tĩnh** cho biết "đã có chuyện xảy ra" — ví dụ mã băm (hash) của một file độc, một địa chỉ IP xấu. Giống dấu vân tay để lại tại hiện trường.
+- **IOA (dấu hiệu đang bị tấn công) là gì?** Là **một chuỗi hành vi đáng ngờ đang diễn ra** — ví dụ "Word tự mở PowerShell rồi tải file từ Internet". Giống việc thấy ai đó đang cạy cửa sổ ngay lúc này.
+- **Vì sao cần phân biệt?** Vì IOC dễ bị kẻ địch thay đổi (đổi 1 byte là có hash mới), còn hành vi (IOA) thì khó đổi hơn nhiều. Tập trung vào IOA giúp bắt được cả những biến thể chưa từng thấy.
+
+### Pyramid of Pain — nói đơn giản
+
+- **Là gì?** Là một cái tháp xếp hạng: chặn loại dấu hiệu nào thì **gây "đau" (tốn kém) nhất** cho kẻ tấn công. Đáy tháp (mã băm, IP) thì chúng đổi trong vài phút; đỉnh tháp (cách hành động — TTP) thì chúng phải thay đổi cả lối đánh, rất khó.
+- **Vì sao cần?** Để ta đầu tư công sức cho đúng chỗ: chặn IP thì rẻ nhưng mau lỗi thời; phát hiện theo hành vi thì khó làm hơn nhưng bền hơn nhiều.
+
+### MITRE ATT&CK — nói đơn giản
+
+- **Là gì?** Là một **cuốn bách khoa toàn thư** liệt kê những việc kẻ tấn công **thực sự làm** trong đời thực, sắp thành ma trận. Nó dùng cây phân cấp: *Tactic* (mục tiêu — "vì sao"), *Technique* (cách làm — "làm gì"), *Sub-technique* (biến thể — "làm như thế nào"), *Procedure* (ai cụ thể làm ra sao). Mỗi mục có một mã định danh như `T1059.001`. Hãy coi nó như danh mục chiêu thức võ thuật, mỗi chiêu có tên riêng.
+- **Vì sao cần?** Vì nhờ ai cũng gọi cùng một chiêu bằng cùng một mã, ta có thể **đo được** mình phát hiện được bao nhiêu chiêu, còn sót chiêu nào, và viết quy tắc phát hiện theo từng chiêu.
+
+### ATT&CK Navigator — nói đơn giản
+
+- **Là gì?** Là một công cụ web **tô màu** lên ma trận ATT&CK để nhìn bằng mắt: ô xanh là chiêu ta đã phát hiện được, ô đỏ là "lỗ hổng" chưa phát hiện được. Dữ liệu lưu trong một file JSON gọi là "layer".
+- **Vì sao cần?** Vì một bảng màu trực quan giúp sếp và cả đội thấy ngay "ta đang yếu ở đâu" thay vì phải đọc danh sách dài.
+
+### Detection Engineering: Sigma, YARA, Suricata — nói đơn giản
+
+- **Sigma là gì?** Là cách viết **một quy tắc phát hiện trên log** theo định dạng trung lập, rồi dịch tự động sang nhiều hệ thống SIEM khác nhau (Splunk, Elastic...). Giống viết công thức một lần rồi dịch ra nhiều thứ tiếng.
+- **YARA là gì?** Là cách viết quy tắc để **tìm chuỗi/byte đặc trưng trong file hay bộ nhớ**, dùng để nhận diện mã độc. Như mô tả đặc điểm nhận dạng của một tên tội phạm để máy quét tìm ra.
+- **Suricata là gì?** Là "lính gác mạng" (IDS/IPS) soi **lưu lượng đi qua dây mạng** để bắt kênh điều khiển của mã độc hay dữ liệu bị tuồn ra.
+- **Vì sao cần cả ba?** Vì kẻ tấn công để lại dấu vết ở ba nơi khác nhau — trong log, trong file, và trên đường mạng — nên cần ba loại "kính lúp" tương ứng. Cả ba đều gắn được mã ATT&CK để biết mình đang phủ chiêu nào.
+
+### Chia sẻ tình báo: STIX, TAXII, MISP — nói đơn giản
+
+- **STIX là gì?** Là một **định dạng chuẩn (JSON)** để viết thông tin về mối đe dọa sao cho máy nào cũng đọc hiểu. Như một mẫu biểu thống nhất để khai báo.
+- **TAXII là gì?** Là **giao thức để gửi/nhận** các tờ khai STIX đó qua mạng một cách tự động. Như dịch vụ bưu điện chuyên chuyển những tờ khai ấy.
+- **MISP là gì?** Là một **nền tảng phần mềm thực dụng** để các tổ chức cùng nhau lưu trữ và chia sẻ IOC, có gắn cả nhãn TLP (đèn giao thông quy định ai được xem) và ATT&CK.
+- **Vì sao cần?** Vì kẻ tấn công thường dùng lại thủ đoạn cho nhiều nạn nhân; nếu các tổ chức chia sẻ kịp thời thì người sau được cảnh báo trước.
+
+### Phân loại và phân tích Malware — nói đơn giản
+
+- **Là gì?** Phần cuối chương phân biệt các loại mã độc (virus, worm, trojan, ransomware...) theo cách chúng lây lan và tự nhân bản, rồi giới thiệu cách **mổ xẻ một mẫu mã độc** (phân tích tĩnh: nhìn file mà không chạy; phân tích động: cho chạy trong môi trường cách ly để quan sát).
+- **Vì sao cần?** Vì gọi đúng tên loại mã độc và hiểu cách nó hoạt động giúp ta chọn đúng cách phòng chống và phản ứng.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Mục tiêu chương: trang bị cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) một mô hình tư duy thống nhất để **mô tả**, **phát hiện**, **đo lường** và **phản ứng** với hành vi của kẻ tấn công. Chương đi từ lý thuyết tình báo (CTI) xuống tới cấu trúc dữ liệu cụ thể (STIX object, MISP attribute, định dạng IOC, header PE), tới lệnh và file cấu hình chạy được (Sigma, YARA, Suricata, ATT&CK Navigator JSON, MISP REST API).
 
 ---

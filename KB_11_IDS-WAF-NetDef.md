@@ -1,5 +1,63 @@
 # Chương 11 — IDS/IPS, WAF & Phòng thủ mạng (Snort, ModSecurity, pfSense, VPN)
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách chúng ta **bảo vệ một mạng máy tính** khỏi kẻ tấn công: làm sao phát hiện được có người đang dò quét hay tấn công, làm sao chặn lại, và làm sao tạo ra những "đường đi an toàn" trên Internet. Nó quan trọng vì ngày nay mọi thứ đều nối mạng — một website, một hệ thống nội bộ, một sàn giao dịch — và kẻ xấu thì luôn rình mò ngoài cửa. Hãy tưởng tượng mạng của bạn như một **toà nhà**: chương này dạy bạn cách lắp **camera an ninh**, **bảo vệ ở cửa**, **nhân viên kiểm tra giấy tờ khách**, và **hành lang bí mật có khoá** để đi lại an toàn. Dưới đây là từng "món đồ" trong bộ công cụ phòng thủ đó, giải thích thật đơn giản.
+
+### Phòng thủ theo chiều sâu (defense-in-depth) — nói đơn giản
+
+- **Phòng thủ theo chiều sâu là gì?** Là ý tưởng "đừng đặt hết trứng vào một giỏ". Thay vì tin tưởng một lớp bảo vệ duy nhất, ta dựng **nhiều lớp** xếp chồng nhau: tường rào, rồi cửa khoá, rồi két sắt. Kẻ tấn công vượt được lớp này vẫn còn vướng lớp sau.
+- **Vì sao cần?** Vì không lớp nào hoàn hảo cả. Một lớp sơ hở thì lớp khác vẫn đỡ được. Trong mạng, mỗi thiết bị "nhìn thấy" được những phần dữ liệu khác nhau (có cái chỉ thấy địa chỉ, có cái đọc được nội dung), nên ta cần phối hợp nhiều thiết bị để bao quát đủ.
+
+### IDS và IPS — nói đơn giản
+
+- **IDS (hệ thống phát hiện xâm nhập) là gì?** Giống một **camera an ninh có còi báo động**: nó quan sát mọi thứ đi qua mạng, thấy điều khả nghi thì **hú còi báo** cho bạn biết — nhưng bản thân nó không lao ra chặn kẻ trộm.
+- **IPS (hệ thống ngăn chặn xâm nhập) là gì?** Giống một **bảo vệ đứng chắn ngay lối đi**: không chỉ phát hiện mà còn **chặn đứng** kẻ khả nghi tại chỗ. Vì nó đứng giữa đường, nếu nó "bắt nhầm" người tốt thì dịch vụ có thể bị gián đoạn.
+- **Vì sao cần cả hai khái niệm?** Vì chúng đánh đổi khác nhau: IDS an toàn cho hệ thống (không làm tắc đường) nhưng chỉ cảnh báo; IPS mạnh tay hơn nhưng rủi ro chặn nhầm. Thực tế người ta thường bật chế độ "chỉ báo động" (IDS) một thời gian để tinh chỉnh cho ít báo nhầm, rồi mới chuyển sang "chặn thật" (IPS).
+
+### NIDS và HIDS — nói đơn giản
+
+- **NIDS là gì?** Camera đặt ở **hành lang chung** của toà nhà — nó nhìn được mọi người đi qua đi lại giữa các phòng (tức là toàn bộ lưu lượng mạng).
+- **HIDS là gì?** Camera đặt **bên trong từng phòng** (từng máy chủ) — nó thấy chi tiết những gì xảy ra ngay trong phòng đó, nhưng không thấy phòng khác.
+- **Vì sao cần?** Hai góc nhìn bổ sung cho nhau: camera hành lang bắt được kẻ lẻn từ phòng này sang phòng kia, camera trong phòng bắt được kẻ đang lục lọi đồ đạc. Gộp cả hai mới thấy được toàn cảnh.
+
+### Snort và Suricata — nói đơn giản
+
+- **Snort/Suricata là gì?** Là những **phần mềm IDS/IPS phổ biến** dựa trên "chữ ký". Hãy hình dung nó như một anh bảo vệ cầm **cuốn sổ mô tả nhận dạng tội phạm**: ai đi qua mà khớp với mô tả trong sổ thì bị tóm. "Chữ ký" ở đây là các mẫu dữ liệu đặc trưng của một kiểu tấn công đã biết.
+- **Vì sao cần?** Vì nhiều cuộc tấn công có dấu hiệu lặp lại, đã được cộng đồng ghi nhận. Có sẵn "cuốn sổ nhận dạng" giúp phát hiện nhanh và chính xác những đòn quen thuộc. (Điểm yếu: kẻ tấn công kiểu mới chưa có trong sổ thì khó bắt — nên cần thêm công cụ khác.)
+
+### WAF, ModSecurity và OWASP CRS — nói đơn giản
+
+- **WAF (tường lửa ứng dụng web) là gì?** Giống **nhân viên kiểm tra nội dung** đứng trước cửa website: tường lửa thường chỉ xem "ai đến từ đâu", còn WAF mở từng "lá đơn" khách gửi vào để đọc xem **có chứa thứ độc hại** không (ví dụ một câu lệnh lén lút để moi dữ liệu).
+- **ModSecurity là gì?** Là một **WAF cụ thể** rất nổi tiếng — phần "động cơ" làm công việc kiểm tra đó.
+- **OWASP CRS là gì?** Là **bộ quy tắc kiểm tra soạn sẵn** (Core Rule Set) để nạp vào động cơ ModSecurity, giống như "cẩm nang dấu hiệu hàng cấm" do các chuyên gia bảo mật biên soạn để bạn khỏi phải tự viết từ đầu.
+- **Vì sao cần?** Vì tường lửa thường (xem mục dưới) không hiểu nội dung website, nên không phân biệt được một yêu cầu bình thường với một yêu cầu tấn công ẩn bên trong. WAF lấp đúng chỗ trống đó: nó đọc được nội dung web và chặn các đòn nhắm vào ứng dụng.
+
+### pfSense và firewall (tường lửa) — nói đơn giản
+
+- **Firewall là gì?** Là **anh gác cổng** của mạng: nó quyết định gói dữ liệu nào được vào/ra dựa trên các quy tắc đơn giản như "địa chỉ này, cánh cửa (cổng) kia thì cho qua, còn lại chặn".
+- **pfSense là gì?** Là một **phần mềm firewall/router miễn phí** mạnh mẽ, biến một máy tính thường thành thiết bị gác cổng cho cả mạng. "Stateful" nghĩa là nó **ghi nhớ** các cuộc trò chuyện đang diễn ra, nên khi câu trả lời quay về nó biết đó là phản hồi hợp lệ và cho qua.
+- **Vì sao cần?** Vì đây là **lớp chặn rẻ và nhanh nhất**, đặt ngay ngoài cùng. Chặn được những thứ rõ ràng không nên vào (ví dụ truy cập từ Internet vào cổng quản trị) ngay từ cổng, đỡ tốn công cho các lớp sâu hơn. pfSense cũng làm thêm việc chia mạng thành các khu (VLAN) và làm điểm kết nối VPN.
+
+### VPN — IPsec, OpenVPN, WireGuard — nói đơn giản
+
+- **VPN là gì?** Là một **đường hầm bí mật** chạy xuyên qua Internet công cộng. Dữ liệu của bạn được **bọc kín và khoá lại** trước khi gửi đi, nên người ngoài có chặn được cũng không đọc hay sửa được. Giống như gửi thư trong một chiếc xe bọc thép thay vì bưu thiếp ai cũng đọc được.
+- **IPsec / OpenVPN / WireGuard là gì?** Là **ba cách làm đường hầm** đó. Cứ hiểu nôm na: IPsec là chuẩn lâu đời, nhiều tuỳ chọn nhưng phức tạp; OpenVPN linh hoạt, dễ chui qua tường lửa; WireGuard là loại mới, gọn nhẹ, nhanh và dễ kiểm tra độ an toàn. Cả ba đều đạt mục tiêu giống nhau, chỉ khác về cách trao "chìa khoá" và độ phức tạp.
+- **Vì sao cần?** Vì nhân viên làm việc từ xa, hay hai văn phòng ở hai thành phố, cần nối với nhau **một cách an toàn** qua Internet. VPN cho phép họ "ở chung một mạng riêng" dù thực tế đang cách xa và đi qua đường truyền công cộng.
+
+### Proxy và reverse proxy — nói đơn giản
+
+- **Forward proxy là gì?** Là **người đại diện đi mua hàng hộ bạn**: bạn nhờ nó ra ngoài lấy thông tin, nên bên ngoài chỉ thấy mặt nó chứ không thấy bạn. Dùng để ẩn danh, lọc nội dung, kiểm soát truy cập ra Internet.
+- **Reverse proxy là gì?** Ngược lại: là **lễ tân đứng trước văn phòng**, tiếp tất cả khách rồi mới chuyển vào đúng người bên trong. Khách không bao giờ thấy "phòng làm việc thật" (máy chủ thật) nằm ở đâu.
+- **Vì sao cần?** Reverse proxy là **chỗ lý tưởng để gắn WAF**, để cân bằng tải, và để giấu máy chủ thật khỏi con mắt kẻ tấn công — giảm bớt thứ mà chúng có thể nhắm vào.
+
+### Zeek — nói đơn giản
+
+- **Zeek là gì?** Là một **người ghi nhật ký mạng cực kỳ tỉ mỉ**. Khác với Snort/Suricata chỉ hô "có khớp dấu hiệu xấu không", Zeek lặng lẽ ghi lại **"chuyện gì đã xảy ra trên mạng"**: ai nói chuyện với ai, lúc nào, bằng giao thức gì, kéo dài bao lâu.
+- **Vì sao cần?** Vì khi điều tra một sự cố, bạn cần **cuốn nhật ký chi tiết** để lần lại dấu vết, kể cả với những kiểu tấn công mới chưa có "chữ ký". Snort/Suricata báo động nhanh, còn Zeek cho bạn câu chuyện đầy đủ để truy vết.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Chương này là tài liệu tham chiếu kỹ thuật cho kỹ sư Blue Team / AppSec / DevSecOps. Mục tiêu: đào tới mức field/byte/bước, kèm ví dụ thực tế chạy được cho từng công cụ. Các số liệu cấu trúc giao thức bám theo RFC tương ứng (IPv4 RFC 791, TCP RFC 9293, IPsec/ESP RFC 4303, IKEv2 RFC 7296, WireGuard whitepaper, OpenVPN protocol). Khi một con số phụ thuộc phiên bản/triển khai cụ thể, chương sẽ ghi rõ "cần kiểm chứng theo phiên bản".
 
 ---

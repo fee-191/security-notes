@@ -1,5 +1,56 @@
 # Chương 2 — Hệ điều hành Linux
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách hệ điều hành Linux hoạt động bên trong: ai được làm gì, tiến trình ra đời và bị giết ra sao, file để ở đâu, log ghi thế nào, và làm sao khóa máy lại cho an toàn. Vì hầu hết máy chủ trên thế giới (web server, database, container, cloud) đều chạy Linux, nên với một kỹ sư an toàn thông tin, hiểu rõ Linux gần như là điều kiện sống còn: kẻ tấn công và người phòng thủ đều "đánh nhau" ngay trên những cơ chế này. Phần dưới đây giải thích từng khái niệm lớn của chương bằng ngôn ngữ đời thường trước, để khi đọc phần kỹ thuật sâu bạn đã có sẵn bức tranh tổng thể.
+
+### User space và kernel space — nói đơn giản
+Hãy tưởng tượng kernel (nhân Linux) là **ban quản lý tòa nhà** giữ mọi chìa khóa và điều khiển thang máy, điện nước. Các chương trình bình thường của bạn (trình duyệt, web server) sống ở "user space" — như khách thuê, không được tự ý chạm vào hệ thống điện. Mỗi khi cần gì (đọc file, mở mạng), khách phải gọi xuống lễ tân bằng một **system call (syscall)**, và ban quản lý sẽ kiểm tra xem bạn có quyền không. **Vì sao cần?** Tách biệt như vậy để một chương trình lỗi hoặc độc hại không thể trực tiếp phá phần cứng hay đọc trộm bộ nhớ chương trình khác — đây là hàng rào bảo mật gốc của cả hệ thống.
+
+### Cây thư mục FHS — nói đơn giản
+FHS là **quy ước "cái gì để ở đâu"** trên Linux: file cấu hình nằm trong `/etc`, log nằm trong `/var/log`, chương trình hệ thống nằm trong `/usr/bin`, v.v. **Nó giải quyết vấn đề gì?** Nếu mỗi máy để file một kiểu thì không ai viết được công cụ giám sát chung. Nhờ chuẩn này, ta biết chắc "muốn canh kẻ xấu sửa cấu hình thì theo dõi `/etc`".
+
+### Mô hình quyền (permissions) — nói đơn giản
+Mỗi file có một bộ "ai được đọc / ghi / chạy" chia cho ba nhóm: **chủ sở hữu, nhóm, và mọi người khác**. Giống như một căn phòng có ba loại chìa: chìa của chủ, chìa của đồng nghiệp cùng phòng, và chìa để ngoài hành lang. Có thêm vài "bit đặc biệt" như **SUID** (cho phép chạy chương trình với quyền của chủ file, kể cả quyền root). **Vì sao quan trọng với bảo mật?** Cấu hình quyền sai là một trong những cách leo thang đặc quyền phổ biến nhất — một file SUID viết ẩu có thể biến người dùng thường thành root.
+
+### `/etc/passwd`, `/etc/shadow` và hash mật khẩu — nói đơn giản
+`/etc/passwd` là **danh bạ tài khoản** (ai tên gì, dùng shell nào), ai cũng đọc được. Mật khẩu thật thì không để ở đó — chúng được băm (hash) và cất riêng trong `/etc/shadow` mà chỉ root mới mở được. **Hash** giống như xay một quả táo: từ mật khẩu ra một chuỗi rối, nhưng không thể "xay ngược" lại thành mật khẩu. **Vì sao tách hai file?** Để danh bạ vẫn công khai cho hệ thống dùng, nhưng phần nhạy cảm (mật khẩu) thì giấu kỹ, tránh bị lấy về bẻ khóa.
+
+### `sudo`, PAM — nói đơn giản
+- **sudo** là cách để người dùng thường "mượn quyền" làm một việc cụ thể với tư cách root mà không cần biết mật khẩu root, và mọi lần mượn đều bị ghi sổ. Giống như mượn thẻ ra vào kho có người ký nhận. **Vì sao cần?** An toàn và truy vết được hơn nhiều so với chia sẻ mật khẩu admin cho cả đội.
+- **PAM** là **bộ phận kiểm tra giấy tờ dùng chung**: thay vì mỗi ứng dụng (ssh, login, sudo) tự viết code kiểm tra mật khẩu, tất cả gọi chung PAM. **Lợi ích?** Muốn thêm quy tắc (khóa tài khoản sau 5 lần sai, ép mật khẩu mạnh) thì chỉ chỉnh một chỗ là cả hệ thống áp dụng.
+
+### Tiến trình (process) — nói đơn giản
+Một **tiến trình** là một chương trình đang chạy, giống như một "công nhân" đang làm việc, có số hiệu (PID) và một danh tính (chạy dưới quyền ai). Tiến trình mới sinh ra bằng cách "nhân bản" cha rồi "thay ruột" thành chương trình khác (`fork` rồi `execve`). Hệ thống còn có **tín hiệu (signal)** để ra lệnh cho tiến trình, ví dụ "dừng lại" hay "tự kết thúc". **Vì sao quan trọng?** Khi điều tra sự cố, ta cần biết tiến trình nào đang chạy, con của ai, dưới quyền gì — một web server bỗng đẻ ra một shell là dấu hiệu kinh điển của bị tấn công.
+
+### `/proc`, namespaces, cgroups — nói đơn giản
+- **`/proc`** là một "thư mục ảo" — cửa sổ nhìn vào ruột của kernel và từng tiến trình (đang chạy file nào, mở kết nối mạng nào). Rất quý khi điều tra.
+- **Namespaces** là cách kernel **dựng vách ngăn ảo** để một nhóm tiến trình tưởng mình có máy riêng (mạng riêng, danh sách tiến trình riêng). Đây chính là nền tảng của **container** (Docker). Giống như chia một văn phòng lớn thành nhiều phòng kín bằng vách ngăn.
+- **cgroups** là **đồng hồ đo và van khóa tài nguyên**: giới hạn một dịch vụ chỉ được dùng tối đa bao nhiêu CPU/RAM. **Vì sao cần?** Để một dịch vụ bị lạm dụng không ngốn hết tài nguyên kéo sập cả máy.
+
+### systemd — nói đơn giản
+**systemd** là **người quản lý dịch vụ** của máy: nó khởi động các dịch vụ khi bật máy, tự bật lại khi chúng chết, và cho ta khóa chặt từng dịch vụ. Giống như quản lý ca làm việc trong nhà máy. **Vì sao thay cái cũ?** Nó chạy dịch vụ song song (boot nhanh hơn), giám sát chặt hơn, và cho phép "hardening" (siết an toàn) từng dịch vụ chỉ bằng vài dòng cấu hình.
+
+### Logging (rsyslog, journald, logrotate) — nói đơn giản
+**Log** là **camera an ninh của hệ thống** — ghi lại ai đăng nhập, lệnh gì đã chạy, lỗi gì xảy ra. `rsyslog` và `journald` là hai cách thu thập log; `logrotate` lo việc dọn log cũ để không lấp đầy ổ đĩa. **Vì sao tối quan trọng?** Khi có sự cố, log là bằng chứng. Vì vậy ta thường đẩy log sang một máy tập trung (SIEM) ngay lập tức — để kẻ tấn công có xóa log trên máy nạn nhân cũng không xóa được bản đã gửi đi.
+
+### Quản lý gói (apt, dnf) — nói đơn giản
+Đây là **"cửa hàng ứng dụng" có kiểm định** của Linux: cài, gỡ, cập nhật phần mềm bằng một lệnh, và quan trọng là kiểm tra **chữ ký số** để chắc chắn gói không bị tráo trên đường tải về. **Vì sao quan trọng?** Cập nhật vá lỗi kịp thời và đảm bảo nguồn gốc phần mềm là nền tảng của một hệ thống an toàn.
+
+### cron — nói đơn giản
+**cron** là **đồng hồ hẹn giờ** chạy lệnh tự động theo lịch (mỗi phút, mỗi đêm 2h...). **Vì sao cần quan tâm?** Nó tiện cho việc tự động hóa, nhưng cũng là chỗ ưa thích để kẻ xấu cài "cửa hậu" chạy ngầm định kỳ — nên đây là nơi cần soi khi điều tra.
+
+### Bash: file descriptor, redirection, pipe — nói đơn giản
+Khi chạy lệnh, mỗi tiến trình có ba "đường ống" mặc định: **đầu vào** (stdin), **đầu ra** (stdout) và **đầu ra lỗi** (stderr). **Redirection** là bẻ những đường ống này đi nơi khác (ví dụ ghi kết quả ra file), còn **pipe** (`|`) là nối đầu ra của lệnh này vào đầu vào của lệnh kia như nối ống nước. **Vì sao cần?** Đây là cách ghép các lệnh nhỏ thành công cụ xử lý mạnh — xương sống của mọi script tự động hóa và phân tích log.
+
+### Công cụ xử lý text (grep, awk, sed...) — nói đơn giản
+Đây là **bộ đồ nghề lọc và bóc tách văn bản**: `grep` tìm dòng chứa từ khóa, `awk` cắt theo cột, `sed` thay thế, `sort`/`uniq` sắp xếp và đếm. **Giải quyết vấn đề gì?** Log thường dài hàng triệu dòng; những công cụ này giúp lọc ra "10 địa chỉ IP đăng nhập sai nhiều nhất" chỉ trong một dòng lệnh — kỹ năng điều tra hằng ngày.
+
+### Hardening (sshd, fail2ban, firewall, SELinux/AppArmor) — nói đơn giản
+**Hardening** là **khóa cửa, lắp song sắt** cho máy: cấu hình SSH an toàn, dùng `fail2ban` tự chặn IP dò mật khẩu, dùng firewall (netfilter) chỉ mở đúng cổng cần thiết, và dùng SELinux/AppArmor để giới hạn cả khi một dịch vụ bị chiếm thì nó cũng không làm gì quá phạm vi cho phép. **Vì sao cần?** Mặc định một hệ thống thường mở khá rộng; hardening thu hẹp "bề mặt tấn công" để kẻ xấu có ít cửa hơn.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mọi cấu trúc dữ liệu được mô tả tới mức trường/byte; mọi công cụ đều có ví dụ thực tế chạy được. Lệnh và output mẫu lấy trên môi trường Linux phổ biến (Debian/Ubuntu, RHEL/Rocky); một vài con số phụ thuộc phiên bản kernel/distro sẽ được ghi chú rõ.
 
 ---

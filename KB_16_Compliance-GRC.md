@@ -1,5 +1,50 @@
 # Chương 16 — Tuân thủ & Quản trị (NIST, ISO 27001, Pháp lý VN)
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về **GRC** — cách một tổ chức *tự quản lý mình* trong an toàn thông tin: ai chịu trách nhiệm, rủi ro nào đáng lo, và phải làm gì để chứng minh "chúng tôi có làm bảo mật tử tế" với cơ quan/khách hàng/đối tác. Nó quan trọng vì bảo mật không chỉ là chuyện kỹ thuật (firewall, mã hóa) mà còn là chuyện *giấy tờ và trách nhiệm*: nếu xảy ra sự cố mà bạn không có bằng chứng đã làm đúng quy trình, bạn có thể bị phạt tiền, mất chứng chỉ, hoặc chịu trách nhiệm pháp lý. Hãy hình dung kỹ thuật là "xây nhà cho chắc", còn GRC là "có giấy phép xây dựng, có sổ bảo trì, và biết ai chịu trách nhiệm khi nhà sập". Dưới đây là các ý lớn của chương, nói thật đơn giản trước khi phần sau đi vào chi tiết.
+
+### GRC (Governance, Risk, Compliance) — nói đơn giản
+
+- **GRC là gì?** Là ba lớp lồng nhau như ba hộp xếp vào nhau. **Governance (quản trị)** là lớp ngoài cùng — ban lãnh đạo đặt luật chơi: ai quyết, được chấp nhận rủi ro tới đâu. **Risk (rủi ro)** là lớp giữa — đánh giá xem cái gì có thể hỏng và hỏng thì thiệt hại bao nhiêu. **Compliance (tuân thủ)** là lớp trong cùng — chứng minh mình làm đúng theo các bộ tiêu chuẩn và luật.
+- **Vì sao cần?** Vì nếu không có ai "cầm trịch", mỗi đội tự làm một kiểu, không ai biết rủi ro nào còn treo lơ lửng, và đến khi bị kiểm tra (audit) thì không có gì để trưng ra. GRC biến bảo mật từ "làm theo cảm tính" thành "có hệ thống, có bằng chứng".
+
+### Quản lý rủi ro (Risk Management) — nói đơn giản
+
+- **Rủi ro là gì?** Hãy nghĩ như mua bảo hiểm xe. Bạn có **tài sản** (chiếc xe), có **mối đe dọa** (kẻ trộm), có **điểm yếu** (khóa xe cũ), và **hậu quả** nếu mất xe (tốn bao nhiêu tiền). Rủi ro = *khả năng xảy ra* nhân với *mức thiệt hại*. Trong bảo mật cũng y hệt: tài sản là dữ liệu/hệ thống, mối đe dọa là hacker, điểm yếu là lỗ hổng.
+- **Đo rủi ro thế nào?** Có hai cách. **Định lượng** là gán tiền cụ thể ("nếu bị tấn công, một năm mất trung bình 300.000 USD") để so sánh và biện minh chi phí. **Định tính** là chấm điểm thang 1–5 ("khả năng cao, thiệt hại lớn → đỏ") khi không có số liệu tiền chắc chắn.
+- **Xử lý rủi ro là gì?** Sau khi biết rủi ro, có 4 lựa chọn dễ nhớ: **giảm thiểu** (thêm khóa tốt hơn), **chuyển giao** (mua bảo hiểm), **né tránh** (không đỗ xe ở chỗ nguy hiểm), hoặc **chấp nhận** (rủi ro nhỏ, kệ nó — nhưng phải có người ký tên chịu trách nhiệm).
+- **Risk Register là gì?** Là cuốn sổ ghi danh sách mọi rủi ro, mỗi dòng một rủi ro, kèm ai chịu trách nhiệm và bao giờ xử lý xong. Giống danh sách "việc cần làm" nhưng cho rủi ro. Cần nó để không quên và để chứng minh mình đã biết.
+
+### NIST Cybersecurity Framework (CSF) — nói đơn giản
+
+- **CSF là gì?** Là một bộ "ngôn ngữ chung" do viện NIST (Mỹ) đưa ra để mô tả tình trạng an ninh, chia thành 6 nhóm việc lớn: **Govern** (quản trị), **Identify** (biết mình có gì), **Protect** (bảo vệ), **Detect** (phát hiện), **Respond** (ứng phó), **Recover** (phục hồi). Giống một bảng kiểm sức khỏe tổng quát chia theo từng cơ quan trong cơ thể.
+- **Vì sao cần?** Vì nó giúp mọi người — kỹ sư, sếp, đối tác — nói chung một thứ tiếng khi bàn về bảo mật, và dễ chỉ ra "chỗ nào mình đang yếu". Lưu ý: CSF chỉ nói *cần làm gì*, không nói *làm bằng công nghệ nào cụ thể*.
+
+### NIST Special Publications (800-53, 800-61, 800-207) — nói đơn giản
+
+- **SP 800-53 là gì?** Là một cuốn "danh mục biện pháp bảo vệ" cực kỳ chi tiết — như catalog đồ nội thất, liệt kê hàng trăm "control" (biện pháp) để bạn chọn lắp vào. Nó trả lời cho câu CSF còn để ngỏ: "vậy cụ thể phải làm những gì".
+- **SP 800-61 là gì?** Là cẩm nang **xử lý sự cố** (khi đã bị hack thì làm gì): chuẩn bị → phát hiện và phân tích → khoanh vùng/diệt/phục hồi → rút kinh nghiệm. Giống quy trình chữa cháy: không ai đợi cháy mới đi tìm bình cứu hỏa.
+- **SP 800-207 (Zero Trust) là gì?** "Zero Trust" nghĩa là **không tin tưởng mặc định ai cả**, kể cả người đã ở "trong nhà". Mỗi lần truy cập đều phải chứng minh lại danh tính và độ an toàn. Trái với kiểu cũ "vào được cổng công ty là tin tưởng hết". Cần nó vì ngày nay hacker chui được vào trong mạng thì kiểu cũ thành vô dụng.
+
+### ISO/IEC 27001 & 27002 — nói đơn giản
+
+- **ISO 27001 là gì?** Là tiêu chuẩn quốc tế cho một "hệ thống quản lý an toàn thông tin" (ISMS), và quan trọng là **có chứng chỉ**: một bên thứ ba độc lập đến kiểm tra rồi cấp giấy chứng nhận. Giống chứng chỉ ISO cho nhà máy thực phẩm — khách hàng nhìn vào tin tưởng hơn.
+- **ISO 27002 là gì?** Là cuốn "sách hướng dẫn cách làm" đi kèm: 27001 nói *cần control nào*, còn 27002 giải thích *control đó nghĩa là gì và triển khai ra sao*.
+- **Vì sao cần?** Vì có chứng chỉ 27001 là cách nhanh nhất để chứng minh với đối tác/khách hàng rằng tổ chức quản lý bảo mật bài bản. Một tài liệu trung tâm tên **SoA (Statement of Applicability)** liệt kê mọi control và lý do áp dụng hay không — đây là thứ auditor soi đầu tiên.
+
+### PCI DSS — nói đơn giản
+
+- **PCI DSS là gì?** Là bộ quy định bắt buộc (theo hợp đồng, không phải luật) cho bất kỳ ai **lưu, xử lý hoặc truyền dữ liệu thẻ thanh toán**. Có 12 yêu cầu, xoay quanh việc bảo vệ số thẻ của khách. Một quy tắc vàng dễ nhớ: mã bảo mật mặt sau thẻ (CVV) và dữ liệu dải từ thì **tuyệt đối không được lưu** sau khi giao dịch xong.
+- **Vì sao cần?** Vì nếu để lộ dữ liệu thẻ, ngân hàng/tổ chức thẻ có thể phạt nặng hoặc cấm bạn nhận thanh toán. Mẹo phổ biến để đỡ vất vả là **tokenization** — thay số thẻ thật bằng một mã vô nghĩa, để số thẻ thật cho bên xử lý thanh toán giữ.
+
+### Pháp lý Việt Nam — nói đơn giản
+
+- **Có những gì?** Bốn văn bản chính cần biết: **Luật An toàn thông tin mạng 2015** (khung kỹ thuật nền), **Luật An ninh mạng 2018** (thiên về an ninh quốc gia, có yêu cầu lưu dữ liệu trong nước), **Nghị định 85/2016** (phân loại hệ thống thành 5 cấp độ theo mức nghiêm trọng), và **Nghị định 13/2023** (bảo vệ dữ liệu cá nhân, gần giống GDPR của châu Âu).
+- **Vì sao cần?** Vì đây là *luật* — không tuân thủ thì bị xử phạt, không phải chuyện "nên làm". Đặc biệt với hệ thống tài chính, việc xác định "cấp độ" và việc xin sự đồng ý (consent) khi thu thập dữ liệu cá nhân quyết định luôn cách bạn thiết kế hệ thống và lưu dữ liệu ở đâu.
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Chương này dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) cần tra cứu và vận hành thực tế. Mỗi khái niệm đi theo trình tự: **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức trường/bước/tham số) → VÍ DỤ THỰC TẾ CHẠY ĐƯỢC → LƯU Ý BẢO MẬT**. Các điều khoản pháp lý Việt Nam được trình bày ở mức **ý nghĩa vận hành**; chỗ nào số hiệu/điều khoản cần kiểm chứng sẽ được ghi rõ `[CẦN KIỂM CHỨNG]` thay vì bịa.
 
 ---

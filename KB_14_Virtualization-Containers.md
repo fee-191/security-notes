@@ -1,5 +1,48 @@
 # Chương 14 — Ảo hóa & Container (Docker, Kubernetes, Proxmox, VMware)
 
+## Nhập môn — hiểu nôm na trước khi đi sâu
+
+Chương này nói về cách chúng ta "nhét nhiều máy tính (hoặc nhiều ứng dụng) vào trong một máy tính vật lý" mà chúng không giẫm chân lên nhau — đó chính là **ảo hóa** và **container**. Vì sao dân an toàn thông tin phải quan tâm? Bởi vì ranh giới ngăn cách giữa các "máy ảo" hay "container" này chính là bức tường bảo vệ: nếu kẻ tấn công chiếm được một cái và "thoát" ra ngoài (gọi là *escape*), nó có thể chiếm luôn cả máy chủ và mọi thứ chạy trên đó. Hiểu các bức tường này được dựng lên bằng gì, và chúng có thể vỡ ở đâu, là kiến thức nền tảng để phòng thủ. Dưới đây là phần "giải nghĩa bình dân" cho từng khái niệm lớn của chương.
+
+### Ảo hóa (Virtualization) & Hypervisor — nói đơn giản
+
+- **Ảo hóa** là việc giả lập ra một "máy tính trong máy tính". Hãy tưởng tượng một tòa chung cư: tòa nhà là máy chủ vật lý, mỗi căn hộ là một **máy ảo (VM)** có tường riêng, cửa khóa riêng, người ở không biết hàng xóm là ai. Mỗi VM tưởng mình đang sở hữu một máy tính thật với hệ điều hành riêng.
+- **Hypervisor** là "ban quản lý tòa nhà" — phần mềm đứng giữa chia phần cứng thật (CPU, RAM, đĩa) cho các căn hộ và đảm bảo không ai lấn sang phòng người khác. Nó giải quyết vấn đề: làm sao chạy nhiều hệ điều hành độc lập trên một dàn phần cứng mà vẫn cô lập an toàn, tiết kiệm chi phí máy móc.
+
+### Proxmox & VMware (ESXi/vSphere) — nói đơn giản
+
+- **Proxmox VE** và **VMware ESXi/vSphere** đều là những "ban quản lý tòa nhà" (hypervisor) chuyên nghiệp dùng trong trung tâm dữ liệu. Proxmox là phần mềm mã nguồn mở (miễn phí, dựa trên Linux), còn VMware là sản phẩm thương mại phổ biến trong doanh nghiệp.
+- Vì sao cần: thay vì mua 20 máy chủ vật lý cho 20 ứng dụng, ta mua vài máy mạnh rồi dùng Proxmox/VMware chia thành 20 máy ảo. Chúng còn cho phép sao lưu (*backup*), chụp ảnh trạng thái (*snapshot*) để quay lui khi sự cố, và di chuyển máy ảo đang chạy từ máy chủ này sang máy chủ khác mà không tắt máy (*vMotion*). Đây là xương sống vận hành của hầu hết hệ thống hiện đại.
+
+### Container & Docker — nói đơn giản
+
+- **Container** giống như một "hộp cơm phần" đóng gói sẵn: ứng dụng cùng tất cả thư viện nó cần được gói chung vào một gói gọn nhẹ, mang đi đâu chạy cũng giống y nhau. Khác với máy ảo (mỗi căn hộ có hệ điều hành riêng nặng nề), container chia sẻ chung "bếp" — tức là *kernel* (lõi hệ điều hành) của máy chủ — nên khởi động cực nhanh (mili giây) và tốn ít tài nguyên.
+- **Docker** là công cụ phổ biến nhất để tạo, đóng gói và chạy container. Vì sao cần: nó chấm dứt câu nói kinh điển "máy tôi chạy được mà" — vì gói cơm phần giống hệt nhau dù chạy trên laptop lập trình viên hay máy chủ thật. Đổi lại, do dùng chung "bếp", bức tường cô lập của container *mỏng hơn* máy ảo, nên về mặt bảo mật cần cẩn thận hơn.
+- **Namespaces & cgroups** là hai cơ chế của Linux dựng nên bức tường đó: **namespaces** làm cho container chỉ "nhìn thấy" phần thế giới của riêng nó (tiến trình, mạng, thư mục riêng — như đeo kính chỉ thấy phòng mình); còn **cgroups** giới hạn *lượng* tài nguyên nó được dùng (tối đa bao nhiêu RAM, bao nhiêu CPU — như định mức điện nước mỗi phòng), tránh một container ngốn hết máy.
+- **Image, layer & registry**: một *image* là "bản thiết kế hộp cơm" được xếp thành nhiều *layer* (lớp) chồng lên nhau để tái sử dụng và tiết kiệm. *Registry* là "siêu thị" lưu trữ các image để tải về (ví dụ Docker Hub). *Dockerfile* là "công thức nấu ăn" mô tả từng bước dựng nên image.
+
+### Trivy (quét lỗ hổng) — nói đơn giản
+
+- **Trivy** là công cụ "soi" image container để tìm lỗ hổng: thư viện cũ dính lỗi bảo mật đã công bố (CVE), cấu hình sai, hay lỡ tay nhét mật khẩu vào trong gói. Hãy hình dung nó như máy soi hành lý ở sân bay, rà trước khi cho lên máy bay.
+- Vì sao cần: phần lớn image dựa trên hàng trăm thư viện của người khác; chỉ cần một thư viện dính lỗi là cả ứng dụng có nguy cơ. Quét tự động trong quy trình **CI/CD** (dây chuyền tự động build và triển khai phần mềm) giúp chặn gói "bẩn" ngay từ cửa, trước khi nó lên môi trường thật.
+
+### Container escape — nói đơn giản
+
+- **Container escape** là kịch bản đáng sợ nhất: kẻ tấn công đang ở trong một container tìm cách "phá tường" để thoát ra máy chủ thật, từ đó kiểm soát luôn các container khác. Giống như tên trộm vào được một căn phòng rồi đục tường sang phòng kế hoặc xuống tận hầm tòa nhà.
+- Vì sao quan trọng: vì container dùng chung kernel với máy chủ, một cấu hình lỏng lẻo (chạy chế độ `--privileged` cấp toàn quyền, gắn nhầm "ổ khóa" `docker.sock`, hay cấp dư quyền hệ thống) có thể mở toang cánh cửa thoát đó. Hiểu các con đường escape giúp ta bịt chúng lại trước.
+
+### Kubernetes (K8s) — nói đơn giản
+
+- **Kubernetes** là "nhạc trưởng" điều phối hàng trăm, hàng nghìn container chạy trên nhiều máy chủ: tự quyết định container nào chạy ở đâu, tự khởi động lại cái chết, tự nhân bản khi tải tăng, tự cập nhật phiên bản mới mà không gián đoạn. Nếu Docker là "nấu một hộp cơm", thì Kubernetes là "điều hành cả chuỗi nhà ăn công nghiệp".
+- Vì sao cần: khi hệ thống lớn lên, không ai đủ sức bật/tắt thủ công từng container trên từng máy. Kubernetes tự động hóa việc đó. Đi kèm nó là vài khái niệm an ninh quan trọng: **RBAC** (phân quyền ai được làm gì — như thẻ ra vào theo cấp bậc), **NetworkPolicy** (tường lửa quy định pod nào được nói chuyện với pod nào), **Secret** (nơi cất mật khẩu/khóa — nhưng lưu ý mặc định nó chỉ *mã hóa giả* bằng base64, ai cũng đọc được nếu không bật mã hóa thật), và **Pod Security Standards** (bộ quy tắc bắt buộc container phải chạy an toàn, ví dụ không được chạy quyền root).
+
+### Falco — nói đơn giản
+
+- **Falco** là "camera an ninh thời gian thực" cho container và Kubernetes: nó quan sát mọi hành động mà ứng dụng yêu cầu hệ điều hành làm (*syscall*) và báo động ngay khi thấy điều bất thường — ví dụ ai đó bất ngờ mở shell chui vào container, hay đọc trộm file mật khẩu `/etc/shadow`.
+- Vì sao cần: các biện pháp như phân quyền hay tường lửa là "khóa cửa phòng ngừa", nhưng nếu kẻ xấu vẫn lọt qua, ta cần thứ *phát hiện* hành vi xấu đang diễn ra để kịp phản ứng. Falco chính là lớp phát hiện đó, thường gửi cảnh báo về hệ thống giám sát tập trung (SIEM).
+
+Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+
 > Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo trình tự: LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT.
 
 ---

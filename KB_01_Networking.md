@@ -1,62 +1,48 @@
 # Chương 1 — Mạng máy tính (TCP/IP, OSI)
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về **cách các máy tính nói chuyện với nhau** qua mạng: từ lúc một byte dữ liệu rời khỏi trình duyệt của bạn cho tới khi nó tới được máy chủ ở đầu kia thế giới. Với người làm an toàn thông tin, đây là kiến thức nền tảng số một: gần như mọi cuộc tấn công (nghe lén, giả mạo, chặn bắt, làm tê liệt dịch vụ) đều xảy ra ở một "tầng" nào đó của mạng. Hiểu mạng vận hành thế nào thì mới biết kẻ tấn công len lỏi vào đâu và mình bịt lỗ hổng ở chỗ nào. Phần dưới đây giải thích từng khái niệm lớn của chương bằng ngôn ngữ đời thường trước, để khi đọc phần kỹ thuật chi tiết bạn không bị "ngợp".
+Chương này trình bày cơ chế truyền dữ liệu giữa các máy tính qua mạng, từ khi một byte rời tiến trình ứng dụng cho tới khi tới đích. Đây là nền tảng bắt buộc cho công việc an toàn thông tin: phần lớn kỹ thuật tấn công (nghe lén, giả mạo, chặn bắt, từ chối dịch vụ) diễn ra tại một tầng cụ thể của ngăn xếp mạng. Nắm cơ chế vận hành từng tầng là điều kiện để xác định bề mặt tấn công và điểm cần phòng thủ.
 
-### Mô hình phân tầng (OSI & TCP/IP) — nói đơn giản
+**Mô hình phân tầng (OSI & TCP/IP).** Mạng được tổ chức thành các **tầng** xếp chồng: mỗi tầng cung cấp dịch vụ cho tầng trên và sử dụng dịch vụ của tầng dưới qua một interface cố định. Phân tầng giải quyết vấn đề độ phức tạp và khả năng thay thế: có thể đổi công nghệ một tầng (cáp đồng sang cáp quang, Wi-Fi sang Ethernet) mà không phá vỡ các tầng khác. **OSI** là mô hình lý thuyết 7 tầng dùng để chuẩn hóa thuật ngữ; **TCP/IP** là mô hình 4 tầng vận hành thực tế trên Internet. Cả hai cần thông thạo vì công cụ và tài liệu bảo mật trộn lẫn cách gọi ("tấn công L2", "tường lửa L7").
 
-**Là gì?** Hãy tưởng tượng việc gửi một lá thư quốc tế. Bạn viết nội dung (việc của bạn), rồi bỏ vào phong bì ghi địa chỉ (việc của bưu điện), rồi thư được chất lên xe tải, lên máy bay (việc của hãng vận chuyển). Mỗi bên chỉ lo đúng phần việc của mình và không cần biết chi tiết của bên kia. Mạng máy tính cũng chia công việc thành nhiều **tầng** xếp chồng như vậy: tầng lo nội dung ứng dụng, tầng lo độ tin cậy, tầng lo địa chỉ, tầng lo đường dây vật lý.
+**Đóng gói / mở gói (Encapsulation).** Dữ liệu được bọc tuần tự qua các tầng, mỗi tầng thêm một header (đôi khi trailer) chứa thông tin định danh rồi truyền xuống dưới; bên nhận bóc ngược từng lớp. Giá trị với bảo mật: mỗi header chứa thông tin mà công cụ phân tích và kẻ tấn công đều đọc được — địa chỉ nguồn/đích, cổng, giao thức. Đọc gói tin chính là đọc các lớp header này theo đúng thứ tự bọc/mở.
 
-**Vì sao cần?** Vì mạng quá phức tạp để gộp làm một khối. Chia tầng giúp thay đổi một phần (ví dụ đổi từ cáp đồng sang cáp quang, hay từ Wi-Fi sang dây mạng) mà không phải đập đi xây lại toàn bộ. OSI là bản "lý thuyết" 7 tầng dùng để học và gọi tên cho thống nhất; TCP/IP là bản "thực chiến" 4 tầng đang chạy thật trên Internet. Dân bảo mật cần thuộc cả hai vì tài liệu và công cụ hay nói kiểu "tấn công tầng 2", "tường lửa tầng 7".
+**Tầng 2 — Ethernet, MAC, VLAN, ARP, switch.**
 
-### Đóng gói / mở gói (Encapsulation) — nói đơn giản
+- **MAC & Ethernet**: mỗi NIC có một **địa chỉ MAC** 48 bit định danh phần cứng. Trong cùng một LAN, các host trao đổi frame dựa trên MAC.
+- **Switch**: thiết bị chuyển mạch L2, học vị trí (MAC → port) để forward frame đúng đích thay vì flood.
+- **VLAN**: phân tách logic nhiều mạng trên cùng hạ tầng vật lý, dùng để cô lập các nhóm host và giảm bề mặt tấn công.
+- **ARP**: ánh xạ IP sang MAC trong cùng broadcast domain. **Lưu ý bảo mật:** ARP không xác thực nguồn trả lời, cho phép ARP spoofing để thực hiện man-in-the-middle.
 
-**Là gì?** Giống như búp bê Nga (matryoshka): dữ liệu của bạn được bọc lần lượt nhiều lớp vỏ, mỗi tầng thêm một lớp "nhãn dán" (header) ghi thông tin cần thiết rồi truyền xuống tầng dưới. Bên nhận làm ngược lại: bóc từng lớp vỏ ra cho tới khi lấy được dữ liệu gốc.
+**Tầng 3 — IP, ICMP, định tuyến, NAT.**
 
-**Vì sao quan trọng?** Vì mỗi lớp nhãn đó chứa thông tin mà công cụ phân tích (và cả kẻ tấn công) sẽ đọc: địa chỉ nguồn/đích, cổng, giao thức. Khi bạn dùng công cụ bắt gói tin, bạn đang nhìn chính các lớp vỏ này. Hiểu thứ tự bọc/mở giúp bạn đọc được "ai gửi cho ai, bằng giao thức gì".
+- **Địa chỉ IP**: định danh logic của host, dùng để định tuyến qua nhiều mạng tới đích.
+- **Định tuyến (routing)**: các **router** quyết định next-hop cho mỗi packet. Trường TTL giới hạn số hop, chống định tuyến lặp vô hạn.
+- **ICMP**: giao thức điều khiển/báo lỗi của tầng mạng; nền tảng của `ping` và `traceroute`.
+- **NAT**: dịch địa chỉ riêng sang địa chỉ công khai tại router biên, cho phép nhiều host private chia sẻ một public IP. **Lưu ý:** NAT che địa chỉ nội bộ nhưng không phải là tường lửa.
 
-### Tầng 2 — Ethernet, MAC, VLAN, ARP, switch — nói đơn giản
+**Tầng 4 — TCP và UDP.** Tầng giao vận xác định cách vận chuyển dữ liệu và dùng **cổng (port)** để phân hướng dữ liệu tới đúng ứng dụng.
 
-- **MAC & Ethernet**: Mỗi card mạng có một số định danh riêng gọi là **địa chỉ MAC**, ví như số khung xe in cứng trên mỗi chiếc xe. Trong cùng một mạng nội bộ (LAN), các máy gửi cho nhau bằng địa chỉ MAC này.
-- **Switch**: Là thiết bị trung tâm nối các máy trong LAN. Nó học xem máy nào cắm ở cổng nào để chuyển dữ liệu đúng nơi, thay vì hét toang cho cả phòng nghe.
-- **VLAN**: Cách chia một switch vật lý thành nhiều "phòng ban ảo" tách biệt nhau, dù chung một dây. Giúp cô lập các nhóm máy để an toàn hơn (kế toán không thấy mạng của khách).
-- **ARP**: Khi máy A biết địa chỉ IP của máy B nhưng chưa biết MAC, nó "hỏi to" cả mạng: "Ai đang giữ IP này, cho tôi xin số khung xe?". **Vấn đề bảo mật:** ARP cả tin, không kiểm tra ai trả lời, nên kẻ xấu có thể trả lời giả để chen vào giữa và nghe lén (man-in-the-middle).
+- **TCP**: hướng kết nối, thiết lập qua bắt tay 3 bước, đảm bảo độ tin cậy và đúng thứ tự, có truyền lại và kiểm soát luồng. Dùng cho web, email.
+- **UDP**: phi kết nối, không đảm bảo độ tin cậy hay thứ tự, độ trễ thấp. Dùng cho VoIP, game, DNS.
 
-### Tầng 3 — IP, ICMP, định tuyến, NAT — nói đơn giản
+Ý nghĩa bảo mật: cơ chế bắt tay và đóng kết nối của TCP là cơ sở cho kỹ thuật quét cổng và cũng là điểm phát sinh tấn công từ chối dịch vụ (SYN flood).
 
-- **Địa chỉ IP**: Giống địa chỉ nhà của mỗi máy trên toàn Internet, để dữ liệu tìm đúng nơi cần đến qua nhiều chặng đường.
-- **Định tuyến (routing)**: Là việc các **router** (như các bưu cục trung chuyển) quyết định gói tin nên đi tiếp theo hướng nào để tới đích. Mỗi gói có một giới hạn số chặng (TTL) để không lang thang vô tận.
-- **ICMP**: Giao thức "báo hiệu" của mạng — chính là thứ đứng sau lệnh `ping` (kiểm tra máy kia còn sống không) và `traceroute` (xem đường đi qua những chặng nào).
-- **NAT**: Cả nhà bạn có nhiều thiết bị nhưng nhà mạng chỉ cấp một địa chỉ công khai. NAT là "cô lễ tân" ở router, đổi địa chỉ riêng bên trong sang địa chỉ chung khi ra ngoài và nhớ ai đang chờ gói nào để trả về đúng người. **Lưu ý:** NAT che địa chỉ nội bộ nhưng *không* phải là tường lửa — nhiều người hay nhầm.
+**Cổng (port) phổ biến.** Một host có một IP nhưng chạy nhiều dịch vụ; **port** phân biệt từng dịch vụ (HTTP 80/443, SSH 22, DNS 53). Danh sách cổng mở phản ánh các dịch vụ đang chạy và là bề mặt tấn công; thuộc các cổng phổ biến giúp đọc kết quả quét và đánh giá rủi ro nhanh.
 
-### Tầng 4 — TCP và UDP — nói đơn giản
+**Tầng 7 — DNS, DHCP, HTTP, TLS.**
 
-**Là gì?** Đây là tầng quyết định cách dữ liệu được vận chuyển, và dùng **cổng (port)** để biết dữ liệu thuộc về ứng dụng nào (web, mail, DNS...). Có hai phong cách:
+- **DNS**: phân giải tên miền sang địa chỉ IP. **Bảo mật:** cache poisoning chèn bản ghi giả để chuyển hướng nạn nhân.
+- **DHCP**: cấp phát IP, gateway và DNS động qua bốn bước DORA. **Bảo mật:** rogue DHCP server cấp cấu hình giả để thực hiện MITM.
+- **HTTP**: giao thức tầng ứng dụng cho web, dạng văn bản gồm request và response.
+- **TLS**: lớp mã hóa và xác thực bọc quanh HTTP (tạo `https`), bảo vệ tính bí mật/toàn vẹn và dùng **chứng chỉ số** để xác thực danh tính máy chủ.
 
-- **TCP** giống gọi điện thoại: phải "bắt tay" thiết lập kết nối trước (3 bước), đảm bảo nói đến đâu nghe rõ đến đó, mất gói thì gửi lại. Chậm hơn nhưng tin cậy — dùng cho web, email.
-- **UDP** giống gửi bưu thiếp: bắn đi luôn, không cần bắt tay, không đảm bảo tới nơi hay đúng thứ tự. Nhanh, nhẹ — dùng cho video call, game, DNS.
+**Tường lửa, DMZ và công cụ phân tích gói.**
 
-**Vì sao quan trọng với bảo mật?** Vì cách TCP bắt tay và đóng kết nối chính là nền tảng để công cụ quét cổng dò xem máy mục tiêu mở dịch vụ gì, và cũng là nơi xảy ra các đòn làm nghẽn dịch vụ (như SYN flood).
-
-### Cổng (port) phổ biến — nói đơn giản
-
-**Là gì?** Một máy chủ có một địa chỉ IP nhưng chạy nhiều dịch vụ cùng lúc. **Port** giống số phòng trong một tòa nhà chung một địa chỉ: web ở "phòng" 80/443, SSH ở 22, DNS ở 53. **Vì sao cần biết?** Vì nhìn danh sách cổng đang mở là biết máy đó đang chạy gì — và mỗi cổng mở là một cánh cửa kẻ tấn công có thể gõ. Thuộc các cổng phổ biến giúp bạn đọc kết quả quét và đánh giá rủi ro nhanh.
-
-### Tầng 7 — DNS, DHCP, HTTP, TLS — nói đơn giản
-
-- **DNS**: Là "danh bạ điện thoại" của Internet, dịch tên dễ nhớ (`example.com`) sang địa chỉ IP mà máy hiểu. **Bảo mật:** kẻ xấu có thể nhét địa chỉ giả vào danh bạ (cache poisoning) để lừa bạn vào trang giả mạo.
-- **DHCP**: Khi bạn cắm máy vào mạng, DHCP là "lễ tân" tự động phát cho bạn một địa chỉ IP và chỉ đường ra Internet, qua bốn bước hỏi-đáp. **Bảo mật:** một "lễ tân giả" có thể chỉ bạn đi sai đường để nghe lén.
-- **HTTP**: Ngôn ngữ web — cách trình duyệt yêu cầu trang và máy chủ trả về nội dung, dưới dạng các dòng chữ đơn giản kiểu "cho tôi xin trang này".
-- **TLS**: Lớp **khóa và niêm phong** bọc quanh HTTP (biến `http` thành `https`). Nó mã hóa nội dung để người ngoài không đọc/sửa được, và dùng **chứng chỉ số** để chứng minh "tôi đúng là ngân hàng của bạn, không phải kẻ giả mạo".
-
-### Tường lửa, DMZ và công cụ phân tích gói — nói đơn giản
-
-- **Tường lửa (firewall)**: Như chốt bảo vệ ở cổng, kiểm tra từng gói tin và quyết định cho qua hay chặn. Loại "stateful" thông minh hơn vì nó *nhớ* các cuộc trò chuyện đang diễn ra, nên tự biết gói trả lời nào là hợp lệ.
-- **DMZ**: Vùng "sân trước" cho các máy chủ cần tiếp khách từ Internet (web, mail), tách khỏi mạng nội bộ phía trong. Nếu sân trước bị chiếm, kẻ tấn công vẫn khó vào được nhà trong.
-- **tcpdump / Wireshark**: Hai công cụ "camera giám sát" mạng. Chúng bắt lại các gói tin đang chạy để bạn mở ra xem từng lớp vỏ, phục vụ điều tra sự cố và săn tìm dấu hiệu tấn công. tcpdump chạy bằng dòng lệnh (tiện cho máy chủ không màn hình), Wireshark có giao diện đồ họa dễ nhìn.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+- **Tường lửa (firewall)**: lọc gói theo chính sách. Loại **stateful** theo dõi trạng thái kết nối nên tự chấp nhận gói trả về hợp lệ.
+- **DMZ**: vùng mạng đệm chứa server tiếp xúc Internet, tách khỏi LAN nội bộ để hạn chế khả năng pivot khi server bị chiếm.
+- **tcpdump / Wireshark**: công cụ bắt và phân tích gói. tcpdump chạy dòng lệnh (phù hợp server không GUI), Wireshark cung cấp giao diện đồ họa.
 
 > Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ *LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT*. Mọi cấu trúc dữ liệu được mô tả tới từng trường (field), kích thước chính xác và offset. Mọi công cụ đều có lệnh/cấu hình/output mẫu chạy được.
 

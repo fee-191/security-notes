@@ -1,56 +1,32 @@
 # Chương 3 — Windows & Active Directory
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách hệ điều hành Windows hoạt động "bên trong" và cách hàng nghìn máy Windows trong một công ty được quản lý tập trung bằng một hệ thống tên là Active Directory. Vì sao quan trọng với an toàn thông tin? Vì gần như mọi doanh nghiệp đều chạy Windows, nên kẻ tấn công và người phòng thủ đều "đánh nhau" trên sân này: hiểu Windows + AD chính là hiểu nơi kẻ xấu sẽ luồn vào, ẩn náu, và leo lên quyền cao nhất. Dưới đây mình đi qua từng "nhân vật chính" của chương bằng lời lẽ đời thường nhất có thể, trước khi phần kỹ thuật phía dưới mổ xẻ tới từng byte.
+Chương này trình bày cơ chế hoạt động nội tại của hệ điều hành Windows và cơ chế quản trị tập trung hàng nghìn máy qua **Active Directory (AD)**. Đây là nền tảng cốt lõi cho công tác an toàn thông tin doanh nghiệp: phần lớn môi trường doanh nghiệp chạy Windows, nên Windows + AD vừa là bề mặt tấn công chính, vừa là địa hình phòng thủ chính. Nắm vững các thành phần dưới đây là điều kiện tiên quyết để phát hiện xâm nhập, điều tra sự cố và ngăn leo thang đặc quyền tới quyền quản trị toàn miền.
 
-### Kernel Mode và User Mode — nói đơn giản
+Các khái niệm chính của chương và vấn đề mỗi khái niệm giải quyết:
 
-Hãy tưởng tượng Windows như một tòa nhà có hai tầng được canh gác nghiêm ngặt. **Tầng trên cùng (kernel mode)** là phòng điều khiển trung tâm — ai vào đây thì sờ được vào điện, nước, phần cứng, toàn bộ bộ nhớ. **Tầng dưới (user mode)** là nơi nhân viên (các ứng dụng như trình duyệt, Word) làm việc, mỗi người một phòng riêng cách âm, không nhìn thấy phòng người khác. Vì sao cần tách hai tầng? Để một ứng dụng lỗi hay bị hack không thể phá sập cả tòa nhà, và để code thường không tự tiện sờ vào phần cứng. Đây là viên gạch nền của mọi cơ chế cô lập bảo mật.
+- **Kernel Mode và User Mode**: hai vòng đặc quyền CPU. **Kernel mode (Ring 0)** chạy nhân, driver, có toàn quyền phần cứng và RAM; **user mode (Ring 3)** chạy ứng dụng trong không gian địa chỉ cô lập. Việc tách hai vòng là nền tảng cô lập bảo mật, ngăn ứng dụng lỗi hoặc bị chiếm quyền phá hoại toàn hệ thống hay truy cập trực tiếp phần cứng.
 
-### Registry và Hive — nói đơn giản
+- **Registry và Hive**: **Registry** là cơ sở dữ liệu phân cấp lưu cấu hình HĐH và phần mềm (chương trình tự khởi động, trạng thái dịch vụ, cấu hình ứng dụng); **Hive** là các file nhị phân trên đĩa lưu nội dung Registry. Giải quyết bài toán cấu hình tập trung; đồng thời là điểm bám trụ (persistence) ưa thích của mã độc qua các khóa autostart.
 
-**Registry** là một cuốn sổ tay khổng lồ ghi mọi thiết lập của Windows và phần mềm: cái gì tự chạy khi bật máy, dịch vụ nào bật/tắt, cấu hình của từng app. **Hive** chỉ là các "quyển" file thật trên ổ đĩa lưu nội dung cuốn sổ đó. Vì sao dân bảo mật quan tâm? Vì kẻ xấu rất hay ghi một dòng vào "trang tự khởi động" của cuốn sổ này để cứ bật máy là mã độc tự chạy lại (gọi là persistence — bám trụ). Biết Registry nằm ở đâu là biết chỗ phải canh chừng.
+- **Process, Thread và Access Token**: **Process** là container tài nguyên (không gian địa chỉ, bảng handle, token); **Thread** là đơn vị được lập lịch thực thi. **Access Token** mô tả ngữ cảnh bảo mật của process (danh tính, nhóm, đặc quyền); **SID** là định danh nhị phân duy nhất của mỗi principal. Đây là cơ chế kiểm soát truy cập của Windows và là mục tiêu của các kỹ thuật đánh cắp/mạo danh token để leo quyền.
 
-### Process, Thread và Access Token — nói đơn giản
+- **Services và Scheduled Tasks**: **Service** là tiến trình chạy nền do **SCM** quản lý, thường tự khởi động cùng hệ thống; **Scheduled Task** chạy chương trình theo lịch hoặc theo sự kiện (ví dụ khi đăng nhập). Phục vụ tự động hóa vận hành; đồng thời là hai cơ chế persistence và lateral movement phổ biến cần giám sát.
 
-- **Process** là một chương trình đang chạy — ví dụ một cửa hàng đang mở. **Thread** là từng nhân viên bên trong cửa hàng đó thực sự làm việc tay chân. Một cửa hàng có thể có nhiều nhân viên chạy song song.
-- **Access Token** là tấm thẻ nhân viên đeo trên ngực mỗi process: nó ghi "tôi là ai, thuộc nhóm nào, được phép làm gì". Hệ thống nhìn tấm thẻ này để quyết định cho phép hay từ chối mỗi hành động.
-- **SID** là mã số nhân viên duy nhất (như số CMND) thay cho tên, để máy không bị nhầm hai người trùng tên. Vì sao quan trọng? Vì rất nhiều đòn tấn công thực chất là "đánh cắp hoặc giả mạo tấm thẻ" để mạo danh người có quyền cao hơn.
+- **Windows Event Log**: nhật ký sự kiện hệ thống, mỗi loại sự kiện mang một **Event ID** (ví dụ 4624 đăng nhập thành công, 4625 đăng nhập thất bại). Là nguồn bằng chứng chính để tái dựng chuỗi hành vi "ai làm gì, khi nào" trong điều tra sự cố.
 
-### Services và Scheduled Tasks — nói đơn giản
+- **Sysmon**: công cụ Sysinternals bổ sung telemetry chi tiết vượt audit native (hash file, ProcessGUID nối chuỗi sự kiện, ánh xạ network→process, truy cập vùng nhớ nhạy cảm). Lấp khoảng trống quan sát để phát hiện hành vi tấn công tinh vi.
 
-**Service** là những chương trình chạy ngầm lặng lẽ phía sau, không có cửa sổ, thường tự bật lúc khởi động (ví dụ dịch vụ in ấn, dịch vụ mạng). **Scheduled Task** là "đặt lịch hẹn giờ" để một chương trình tự chạy vào lúc nào đó hoặc khi có sự kiện nào đó (mỗi lần đăng nhập chẳng hạn). Vì sao cần để mắt? Vì cả hai đều là chỗ lý tưởng để kẻ xấu cài cắm mã độc chạy ngầm và tự sống lại sau mỗi lần khởi động máy.
+- **Active Directory**: dịch vụ thư mục quản trị tập trung user, máy tính, nhóm và chính sách. Cấu trúc gồm **Domain** (ranh giới quản trị), **Forest** (ranh giới bảo mật cao nhất), **OU** (container áp chính sách và ủy quyền), **GPO** (cơ chế đẩy cấu hình tự động). Giải quyết bài toán quản lý danh tính và chính sách ở quy mô lớn; chiếm được AD đồng nghĩa kiểm soát gần như toàn bộ tổ chức.
 
-### Windows Event Log — nói đơn giản
+- **LDAP**: giao thức truy vấn dữ liệu thư mục AD. Phục vụ tra cứu và quản trị; đồng thời là công cụ trinh sát (recon) của kẻ tấn công, nên truy vấn LDAP bất thường là chỉ báo sớm.
 
-**Event Log** là cuốn nhật ký camera an ninh của Windows: mọi việc đáng chú ý (ai đăng nhập, đăng nhập trượt, tạo tài khoản mới, xóa log) đều được ghi lại kèm thời gian. Mỗi loại sự việc có một con số gọi là **Event ID** — ví dụ 4624 là "có người đăng nhập thành công", 4625 là "đăng nhập thất bại". Vì sao quan trọng? Vì khi điều tra một vụ xâm nhập, cuốn nhật ký này thường là bằng chứng đầu tiên giúp dựng lại "ai đã làm gì, lúc nào".
+- **Kerberos**: giao thức xác thực mặc định của AD dựa trên vé. Client lấy **TGT** một lần từ KDC rồi đổi lấy **service ticket** cho từng dịch vụ, tránh truyền mật khẩu lặp lại. Cơ chế vé này là nền tảng cho các kỹ thuật tấn công Kerberoasting, Golden/Silver Ticket.
 
-### Sysmon — nói đơn giản
+- **NTLM**: giao thức xác thực challenge/response tiền nhiệm của Kerberos, vẫn tồn tại cho các trường hợp legacy (truy cập theo IP, máy ngoài domain). Điểm yếu thiết kế dẫn tới **pass-the-hash** và **NTLM relay**.
 
-Camera an ninh sẵn có của Windows (Event Log) đôi khi quay thiếu nét. **Sysmon** là một camera gắn thêm do Microsoft cung cấp, quay chi tiết hơn nhiều: chương trình nào sinh ra chương trình nào, nó kết nối ra Internet tới đâu, có đụng vào vùng nhớ chứa mật khẩu không. Vì sao cần thêm? Vì nhiều hành vi tấn công tinh vi chỉ lộ ra khi ta có telemetry (dữ liệu giám sát) đủ chi tiết — Sysmon lấp đúng khoảng trống đó cho đội phòng thủ.
-
-### Active Directory — nói đơn giản
-
-**Active Directory (AD)** là "phòng nhân sự + bộ phận cấp thẻ ra vào" trung tâm cho cả công ty: nó giữ danh sách mọi nhân viên (user), mọi máy tính, mọi nhóm, và quyết định ai được vào đâu. Thay vì cài tài khoản riêng trên từng máy, công ty quản lý tất cả ở một chỗ. Các từ như **Domain** (một khối quản lý), **Forest** (tập hợp các khối, là ranh giới bảo mật lớn nhất), **OU** (ngăn tủ để phân nhóm và áp chính sách), và **GPO** (bộ quy định tự động đẩy xuống các máy) chỉ là các cách tổ chức cái phòng nhân sự khổng lồ này. Vì sao đây là "vương miện"? Vì chiếm được AD gần như là chiếm được toàn bộ công ty.
-
-### LDAP — nói đơn giản
-
-Nếu AD là cuốn danh bạ nhân sự, thì **LDAP** là cái cách ta tra cứu cuốn danh bạ đó — giống như gõ câu hỏi vào ô tìm kiếm: "cho tôi danh sách mọi tài khoản dịch vụ". Vì sao đáng chú ý? Vì kẻ tấn công sau khi lọt vào thường dùng LDAP để "do thám" (recon) — vẽ bản đồ ai là admin, máy nào quan trọng — nên những truy vấn LDAP bất thường là dấu hiệu sớm của một cuộc tấn công.
-
-### Kerberos — nói đơn giản
-
-**Kerberos** là hệ thống "vé vào cổng" để xác thực trong AD. Hình dung như công viên giải trí: bạn đưa mật khẩu một lần ở quầy vé để lấy một **vé tổng (TGT)**, rồi mỗi khi muốn chơi một trò (dùng một dịch vụ như file server), bạn đổi vé tổng lấy một **vé lượt** cho đúng trò đó — không phải khai lại mật khẩu mỗi lần. Vì sao cần? Vì nó tiện và an toàn hơn việc gửi mật khẩu đi khắp nơi. Nhưng chính cơ chế vé này lại sinh ra những đòn tấn công kinh điển như Kerberoasting hay Golden Ticket (làm vé giả), nên hiểu rõ từng bước rất đáng giá.
-
-### NTLM — nói đơn giản
-
-**NTLM** là người tiền nhiệm già cỗi của Kerberos, vẫn còn sống vì nhiều trường hợp cũ chưa bỏ được (truy cập bằng địa chỉ IP, máy không thuộc domain). Nó dùng kiểu "đố - đáp" (challenge/response): server ra một câu đố ngẫu nhiên, client phải trả lời bằng kết quả tính từ mật khẩu của mình, mà không gửi mật khẩu thật đi. Vì sao quan trọng với bảo mật? Vì điểm yếu của nó đẻ ra hai đòn rất nổi tiếng là **pass-the-hash** (dùng lại dấu vân tay mật khẩu mà chẳng cần biết mật khẩu) và **NTLM relay**.
-
-### Tấn công Active Directory — nói đơn giản
-
-Mục cuối gom lại các "chiêu thức" thực tế mà kẻ tấn công dùng trên sân Windows/AD — như đánh cắp thẻ, làm vé giả, dò mật khẩu tài khoản dịch vụ — và quan trọng hơn: **mỗi chiêu để lại dấu vết gì trong nhật ký** để đội phòng thủ phát hiện. Đây là chỗ mọi khái niệm phía trên ráp lại thành câu chuyện công - thủ hoàn chỉnh.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+- **Tấn công Active Directory**: tổng hợp các kỹ thuật thực chiến trên môi trường Windows/AD kèm dấu vết Event ID tương ứng, liên kết toàn bộ khái niệm trên thành chuỗi công–thủ hoàn chỉnh.
 
 > Tài liệu tham chiếu kỹ thuật dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT**. Các con số được lấy từ tài liệu Microsoft Docs, MS-* Open Specifications, RFC 4120/4178, và mã nguồn Sysinternals/Sysmon công khai; những chỗ cần kiểm chứng được ghi chú rõ.
 
@@ -587,6 +563,26 @@ Một Event ID 1 mẫu (rút gọn):
 | **Forest** | Ranh giới bảo mật cao nhất. Chia sẻ schema chung + Global Catalog + Enterprise Admins. **Forest là ranh giới tin cậy thật sự** |
 | **OU (Organizational Unit)** | Container để áp GPO và ủy quyền quản trị (delegation) |
 | **Site** | Cấu trúc vật lý theo subnet IP — điều khiển replication và chọn DC gần nhất |
+
+Cây phân cấp luận lý của AD: **Forest** bao toàn bộ và là ranh giới bảo mật cao nhất; bên trong là một hoặc nhiều **Tree** (cùng namespace liên tục), mỗi Tree chứa các **Domain**; trong Domain phân nhánh thành **OU** để áp GPO và ủy quyền, chứa các object lá (user/computer/group).
+
+```
+FOREST  (ranh giới bảo mật cao nhất — schema + Global Catalog + Enterprise Admins)
+└── TREE: example.com
+    ├── DOMAIN (root): corp.example.com          [NTDS.dit, các DC]
+    │   ├── OU=Servers
+    │   │   └── (computer objects)
+    │   ├── OU=Workstations
+    │   ├── OU=Users
+    │   │   ├── CN=jdoe        (user)
+    │   │   └── CN=svc_sql     (service account, có SPN)
+    │   └── OU=Groups
+    │       └── CN=Domain Admins
+    └── DOMAIN (child): sales.corp.example.com    [parent-child trust, 2 chiều, transitive]
+        └── OU=...
+```
+
+Lưu ý ranh giới tin cậy: OU **không** phải ranh giới bảo mật (chỉ là đơn vị áp chính sách/ủy quyền); Domain là ranh giới quản trị nhưng **Forest mới là ranh giới bảo mật thật sự** — chiếm một domain trong forest có thể bắc cầu sang domain khác qua trust nếu không bật SID filtering.
 
 ### 3.7.2. NTDS.dit và phân vùng
 

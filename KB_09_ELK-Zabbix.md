@@ -1,48 +1,25 @@
-# Chương 9 — ELK Stack & Zabbix
+# Chương 9 — Observability & Giám sát hạ tầng
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về hai "bộ công cụ" mà gần như mọi đội vận hành hệ thống đều dùng: **ELK Stack** (gom và tìm kiếm log) và **Zabbix** (theo dõi sức khỏe máy móc). Nghe thì khô khan, nhưng hãy hình dung thế này: một hệ thống chạy 24/7 (website, server, ứng dụng) lúc nào cũng "nói chuyện" — nó ghi lại đủ thứ (ai vào, lỗi gì, CPU bao nhiêu) và cũng thỉnh thoảng "ốm" (đầy ổ cứng, treo dịch vụ). Vấn đề là dữ liệu đó nhiều khủng khiếp và rải rác khắp nơi. Hai bộ công cụ trong chương này chính là "tai mắt" giúp ta nghe được hệ thống đang nói gì và biết khi nào nó sắp gục — cực kỳ quan trọng trong an toàn thông tin, vì kẻ tấn công luôn để lại dấu vết trong log, và một sự cố thường bắt đầu từ một con số bất thường.
+Chương trình bày hai họ công cụ nền tảng của **observability** và **giám sát hạ tầng**: **ELK/Elastic Stack** (thu thập, lưu trữ và truy vấn log) và **Zabbix** (giám sát trạng thái và hiệu năng hạ tầng theo mô hình metric/threshold). Hai họ này trả lời hai câu hỏi vận hành khác nhau và bổ sung cho nhau:
 
-Trước khi lao vào chi tiết kỹ thuật, hãy đi qua từng "nhân vật chính" của chương một cách thật bình dân.
+- **ELK** trả lời "chuyện gì đã xảy ra, ai làm gì, lúc nào" — dựa trên log/event.
+- **Zabbix** trả lời "hệ thống có khỏe không, chỉ số nào vượt ngưỡng" — dựa trên metric theo thời gian.
 
-### Log là gì — nói đơn giản
+Cả hai đều thiết yếu với an toàn thông tin: dấu vết tấn công nằm trong log, còn sự cố hạ tầng thường khởi đầu từ một chỉ số bất thường.
 
-**Log** giống như cuốn nhật ký của một hệ thống: mỗi khi có chuyện gì xảy ra (một người truy cập website, một lần đăng nhập sai, một lỗi phần mềm), hệ thống ghi lại một dòng. Hàng triệu dòng như vậy mỗi ngày chính là log. Vì sao cần quan tâm? Vì khi có sự cố bảo mật, log là "camera an ninh" duy nhất cho biết ai đã làm gì, lúc nào — nhưng chỉ hữu ích nếu ta gom được chúng về một chỗ và tìm kiếm được.
+**Các khái niệm cốt lõi và vấn đề mà chúng giải quyết:**
 
-### ELK Stack — nói đơn giản
-
-**ELK** là tên ghép của ba phần mềm chạy chung: **E**lasticsearch + **L**ogstash + **K**ibana (thường thêm cả Beats nữa). Hãy tưởng tượng một thư viện khổng lồ chứa nhật ký của mọi máy trong công ty: ELK là cái thư viện đó cộng với một thủ thư siêu nhanh. Bạn hỏi "cho tôi xem mọi lần đăng nhập thất bại tối qua", trong vài giây nó lục ra ngay từ hàng tỷ dòng log. Vì sao cần? Vì nếu log nằm rải rác trên từng máy thì không ai đọc nổi; ELK gom tất cả về một nơi và cho phép tìm kiếm, vẽ biểu đồ để điều tra.
-
-### Elasticsearch — nói đơn giản
-
-**Elasticsearch** là "bộ não lưu trữ và tìm kiếm" của ELK — phần "thủ thư siêu nhanh" nói trên. Nó không phải kho chứa thông thường mà là một **search engine** (cỗ máy tìm kiếm), giống Google nhưng dành riêng cho log của bạn. Bí quyết tốc độ của nó là một cuốn "mục lục ngược" (inverted index): thay vì đọc từng trang để tìm một từ, nó có sẵn danh sách "từ này nằm ở những trang nào". Vì sao cần? Vì tìm kiếm trên hàng tỷ bản ghi mà vẫn nhanh như chớp là điều mà cơ sở dữ liệu thông thường không làm nổi.
-
-### Logstash — nói đơn giản
-
-**Logstash** là "nhà máy chế biến" đặt giữa nguồn log và Elasticsearch. Log thô thường lộn xộn, mỗi dịch vụ ghi một kiểu; Logstash nhận vào, cắt gọt, làm sạch và sắp xếp thành dạng gọn gàng rồi mới đưa vào kho. Ví dụ nó tách một dòng log nginh dài thành các ô riêng: địa chỉ IP, thời gian, đường dẫn, mã lỗi. Vì sao cần? Vì dữ liệu sạch và có cấu trúc thì mới tìm kiếm và thống kê chính xác được — "rác vào thì rác ra".
-
-### Kibana — nói đơn giản
-
-**Kibana** là "màn hình" để con người nhìn vào dữ liệu trong Elasticsearch. Bản thân Elasticsearch chỉ trả lời bằng dữ liệu khô khan; Kibana biến nó thành biểu đồ, bảng, bản đồ đẹp mắt và cho phép bạn gõ câu hỏi đơn giản để lọc log. Hãy coi nó là bảng điều khiển (dashboard) của một trung tâm giám sát. Vì sao cần? Vì con người nhìn biểu đồ dễ phát hiện bất thường hơn nhiều so với đọc hàng nghìn dòng chữ.
-
-### Beats — nói đơn giản
-
-**Beats** là những "phóng viên tí hon" cài trên từng máy nguồn. Mỗi loại chuyên một việc: Filebeat đọc file log, Metricbeat đo CPU/RAM, Winlogbeat lấy nhật ký Windows. Chúng nhẹ nhàng thu thập dữ liệu tại chỗ rồi gửi về cho Logstash hoặc Elasticsearch. Vì sao cần? Vì bạn cần một người "đứng tại hiện trường" trên mỗi máy để gom dữ liệu và chuyển về trung tâm, thay vì hệ thống trung tâm phải tự bò đi từng nơi lấy.
-
-### Zabbix — nói đơn giản
-
-**Zabbix** chuyển sang một câu hỏi khác: không phải "ai đã làm gì" mà là "hệ thống có khỏe không". Nó là một **monitoring system** (hệ giám sát) liên tục đo các chỉ số như CPU, bộ nhớ, ổ cứng, dịch vụ còn sống hay không — giống bác sĩ liên tục đo nhịp tim, huyết áp của bệnh nhân. Khi một chỉ số vượt ngưỡng nguy hiểm (ví dụ ổ cứng đầy 95%), Zabbix tự động báo động cho người trực. Vì sao cần? Vì biết trước máy sắp "sốt" để chữa kịp luôn tốt hơn là đợi nó sập rồi mới chạy chữa.
-
-### Metric và Trigger — nói đơn giản
-
-Trong Zabbix có hai từ hay gặp. **Metric** là một con số đo được tại một thời điểm (ví dụ "CPU 87%"); ghép nhiều con số theo thời gian lại thì thấy được xu hướng. **Trigger** là một luật kiểu "nếu... thì báo động" — ví dụ "nếu CPU trung bình 5 phút vượt 90% thì kêu lên". Vì sao cần? Vì không ai ngồi nhìn màn hình 24/7; trigger là người gác cổng tự động, chỉ đánh thức bạn khi thật sự có chuyện.
-
-### SIEM và sự khác biệt với Zabbix — nói đơn giản
-
-Chương có nhắc tới **SIEM** (như Wazuh, Splunk) để phân biệt cho rõ. SIEM là hệ chuyên "phát hiện tấn công" — nó đọc log, ghép các sự kiện lại và nhận ra mẫu hành vi đáng ngờ (ví dụ "1000 lần đăng nhập sai rồi 1 lần thành công"). Điểm mấu chốt cần nhớ: **Zabbix lo sức khỏe hạ tầng, còn SIEM lo an ninh** — chúng bổ sung cho nhau chứ không thay thế. Một bên hỏi "máy có ốm không", bên kia hỏi "có kẻ trộm không".
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+- **Log**: bản ghi tuần tự các sự kiện do hệ thống sinh ra (truy cập, đăng nhập thất bại, lỗi phần mềm). Là nguồn bằng chứng chính khi điều tra sự cố bảo mật, nhưng chỉ hữu dụng khi được tập trung và cho phép tìm kiếm.
+- **ELK Stack**: bộ ba **E**lasticsearch + **L**ogstash + **K**ibana (thường kèm Beats). Giải quyết bài toán log phân tán trên nhiều máy: gom về một nơi, đánh chỉ mục để tìm kiếm full-text và trực quan hóa phục vụ điều tra.
+- **Elasticsearch**: **search engine** dựa trên Lucene, dùng **inverted index** để tra cứu full-text ở quy mô tỷ bản ghi với độ trễ mili-giây — điều CSDL quan hệ không đáp ứng được.
+- **Logstash**: pipeline xử lý đặt giữa nguồn log và Elasticsearch; nhận log thô, parse, làm sạch và chuẩn hóa thành dữ liệu có cấu trúc. Dữ liệu sạch là điều kiện để tìm kiếm và thống kê chính xác.
+- **Kibana**: lớp trực quan hóa và truy vấn trên Elasticsearch; biến dữ liệu thô thành biểu đồ, bảng và dashboard, giúp phát hiện bất thường nhanh hơn đọc log thô.
+- **Beats**: họ agent nhẹ trên host nguồn — Filebeat (log file), Metricbeat (CPU/RAM), Winlogbeat (Windows Event Log). Thu thập dữ liệu tại chỗ và đẩy về Logstash/Elasticsearch.
+- **Zabbix**: **monitoring system** đo liên tục các chỉ số hạ tầng (CPU, RAM, đĩa, tình trạng dịch vụ) và tự động cảnh báo khi vượt ngưỡng, giúp xử lý sự cố trước khi hệ thống sập.
+- **Metric** và **Trigger**: **Metric** là giá trị đo tại một thời điểm (ví dụ CPU 87%); chuỗi metric theo thời gian cho thấy xu hướng. **Trigger** là biểu thức điều kiện ("nếu CPU trung bình 5 phút vượt 90% thì cảnh báo") — cơ chế giám sát tự động thay cho việc trực màn hình thủ công.
+- **SIEM** (Wazuh, Splunk): hệ phát hiện tấn công, đọc log và tương quan sự kiện để nhận diện mẫu hành vi đáng ngờ. Phân định cốt lõi: **Zabbix giám sát sức khỏe hạ tầng, SIEM phát hiện an ninh** — hai hệ bổ sung, không thay thế nhau.
 
 ## 9.0 Tổng quan và định vị công cụ
 

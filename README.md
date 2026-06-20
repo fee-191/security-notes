@@ -8,15 +8,15 @@ Cách mình viết: cố gắng nói **"cái này là gì, sinh ra để giải 
 
 **Đọc bản web cho dễ nhìn:** https://fee-191.github.io/security-notes/
 
-> Nói thật là mình mới đi làm security chưa lâu, kiến thức còn đang bồi đắp mỗi ngày, nên chắc chắn sẽ có chỗ chưa chuẩn hoặc còn thiếu. Bạn nào đọc thấy sai sót thì cứ mở Issue chỉ giúp mình với, mình cảm ơn nhiều.
+> Thấy chỗ nào chưa chuẩn hoặc còn thiếu thì bạn cứ mở Issue cho mình biết nhé, cảm ơn nhiều.
 
 ## Có gì trong này
 
 17 chương, đi từ nền tảng rồi tới từng mảng:
 
-Mạng (TCP/IP, OSI) · Linux · Windows & Active Directory · Mật mã · AppSec (OWASP Top 10) · DevSecOps & Semgrep · CI/CD & GitOps · SIEM & Wazuh · ELK & Zabbix · SOC & Ứng phó sự cố · IDS/IPS, WAF · Kiểm thử (Burp, Nmap) · Cloud (AWS/GCP) · Container & Kubernetes · Threat Intel & MITRE ATT&CK · Tuân thủ/GRC · Python cho bảo mật.
+Mạng (TCP/IP, OSI) · Linux · Windows & Active Directory · Mật mã · AppSec (OWASP) · DevSecOps & Quét mã nguồn · CI/CD & GitOps · SIEM & Quản lý log · Observability & Giám sát hạ tầng · SOC & Ứng phó sự cố · Phòng thủ mạng (IDS/IPS, WAF, Firewall, VPN) · Kiểm thử & Đánh giá lỗ hổng · Bảo mật Đám mây · Ảo hóa & Container · Threat Intel & Khung tấn công · Tuân thủ/GRC · Lập trình & Tự động hóa cho bảo mật.
 
-Còn mấy mảng mình chưa làm qua nên chưa dám viết (forensics, red team, bảo mật Web3, AI/LLM...) — khi nào học tới nơi mình sẽ bổ sung thêm.
+Còn mấy mảng mình chưa làm qua (forensics, red team, bảo mật Web3, AI/LLM...) — khi nào tìm hiểu kỹ mình sẽ bổ sung thêm.
 
 ## Cấu trúc
 

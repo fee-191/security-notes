@@ -1,82 +1,93 @@
-# Chương 10 — Vận hành SOC & Ứng phó sự cố (IR)
+# Chương 10 — Vận hành SOC & Ứng phó sự cố
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách một tổ chức **theo dõi, phát hiện và xử lý các vụ tấn công mạng** — giống như một đội bảo vệ canh gác toà nhà và biết phải làm gì khi có trộm. Trong an toàn thông tin, đây là phần "thực chiến": không chỉ dựng tường rào (firewall, mật khẩu) mà còn phải có người ngồi xem camera, nghe chuông báo động, và chạy ra xử lý khi có chuyện. Hiểu phần này giúp bạn thấy được bức tranh tổng thể: log sinh ra từ đâu, ai đọc nó, và khi có sự cố thì các bước cứu chữa diễn ra thế nào. Trước khi lao vào các bảng mã hex và cú pháp rule ở phía dưới, hãy đi qua các "nhân vật chính" của chương bằng ngôn ngữ đời thường.
+Chương này trình bày cách một tổ chức **giám sát, phát hiện và ứng phó sự cố an toàn thông tin** — phần vận hành "thực chiến" bổ sung cho lớp phòng thủ tĩnh (firewall, kiểm soát truy cập, mật khẩu). Mục tiêu của chương: nắm được luồng dữ liệu (log sinh ra từ đâu, được chuẩn hoá và phân tích thế nào), vai trò con người (ai đọc, ai xử lý), và trình tự thao tác khi sự cố xảy ra. Các thuật ngữ nền tảng được định nghĩa dưới đây trước khi đi vào chi tiết kỹ thuật ở các mục sau.
 
-### SOC (Security Operations Center) — nói đơn giản
+### SOC (Security Operations Center)
 
-**SOC là gì?** Hãy tưởng tượng một **phòng trực camera an ninh của cả toà nhà**, hoạt động 24/7, gồm con người + quy trình + phần mềm. Nhiệm vụ của họ là nhìn vào hàng triệu "sự kiện" xảy ra mỗi ngày trên hệ thống máy tính và tìm ra cái nào là dấu hiệu kẻ trộm thật.
+**Định nghĩa.** SOC là đơn vị gồm **con người + quy trình + công nghệ**, vận hành liên tục (thường 24/7), chịu trách nhiệm giám sát, phát hiện, phân tích và ứng phó với sự kiện an ninh trên toàn hạ tầng.
 
-**Vì sao cần?** Mỗi ngày hệ thống sinh ra hàng tỷ dòng ghi chép (log), nhưng chỉ một phần cực nhỏ là tấn công thật. SOC tồn tại để **lọc tín hiệu thật ra khỏi nhiễu** một cách có tổ chức, lặp lại được, thay vì để mọi thứ trôi qua không ai để ý.
+**Vấn đề giải quyết.** Hệ thống sinh ra hàng tỷ event log mỗi ngày nhưng chỉ một phần cực nhỏ là tấn công thật. SOC là cơ chế tổ chức để **lọc tín hiệu (signal) ra khỏi nhiễu (noise)** một cách hệ thống, lặp lại được và đo lường được.
 
-### Log và định dạng log — nói đơn giản
+### Log và định dạng log
 
-**Log là gì?** Log là **nhật ký** mà mỗi máy tính, thiết bị mạng tự ghi lại: "lúc 8h21 có người tên admin đăng nhập thất bại từ địa chỉ X". Giống như sổ ghi ra-vào của bảo vệ toà nhà.
+**Định nghĩa.** Log là **bản ghi sự kiện** mà mỗi máy chủ, thiết bị mạng, ứng dụng tự sinh ra (ví dụ: thời điểm, chủ thể, hành động, kết quả của một lần đăng nhập). Định dạng log là quy ước cấu trúc của bản ghi đó.
 
-**Định dạng log (Syslog, Windows Event, CEF) là gì và vì sao cần?** Mỗi loại thiết bị viết nhật ký theo "kiểu chữ" riêng — Linux dùng Syslog, Windows dùng Event Log, thiết bị bảo mật hay dùng CEF. Nếu không thống nhất cách đọc thì giống như nhận thư viết bằng nhiều thứ tiếng mà không ai dịch. Phải hiểu từng ô (field) trong log thì mới biết chuyện gì thực sự xảy ra — đây là kỹ năng nền tảng nhất của người làm SOC.
+**Vấn đề giải quyết.** Mỗi nền tảng dùng một định dạng riêng — Linux dùng **Syslog**, Windows dùng **Event Log**, thiết bị bảo mật thường dùng **CEF**. Để phân tích nhất quán, log phải được chuẩn hoá về một schema chung. Đọc đúng từng trường (field) là kỹ năng nền tảng của vận hành SOC.
 
-### Phân tầng SOC (Tier 1/2/3) — nói đơn giản
+### Phân tầng SOC (Tier 1/2/3)
 
-**Là gì?** SOC chia người làm thành 3 cấp theo độ khó của việc, không phải theo chức vụ. **Tier 1** là tuyến đầu nhận chuông báo và lọc nhanh thật/giả; **Tier 2** điều tra sâu khi việc khó; **Tier 3** là chuyên gia săn lùng kẻ tấn công tinh vi và mổ xẻ mã độc.
+**Định nghĩa.** SOC phân công theo độ sâu điều tra, không theo chức vụ:
+- **Tier 1** — tuyến đầu nhận alert, triage nhanh true positive/false positive.
+- **Tier 2** — điều tra sâu, containment, dựng timeline, tinh chỉnh rule.
+- **Tier 3** — threat hunting chủ động, forensic chuyên sâu, phân tích mã độc, xử lý sự cố lớn/APT.
 
-**Vì sao cần?** Báo động đến rất nhiều nhưng đa số đơn giản hoặc báo nhầm. Để chuyên gia giỏi (và đắt tiền) đi xử lý việc vặt là lãng phí và gây kiệt sức. Chia tầng giúp việc dễ xử lý nhanh-rẻ, việc khó dồn cho người đủ trình.
+**Vấn đề giải quyết.** Alert đến với khối lượng lớn nhưng phần lớn đơn giản hoặc là FP. Để chuyên gia chi phí cao xử lý việc đơn giản gây lãng phí và burnout. Phân tầng đảm bảo việc dễ được xử lý nhanh-rẻ, việc khó dồn cho người đủ năng lực.
 
-### Triage alert — nói đơn giản
+### Triage alert
 
-**Là gì?** "Triage" mượn từ y khoa — khi phòng cấp cứu đông bệnh nhân, y tá phải **phân loại ai nguy kịch trước**. Trong SOC, triage là quy trình xem một cảnh báo: nó thật hay giả, thuộc loại gì, nguy hiểm mức nào, tự xử được hay phải chuyển lên trên.
+**Định nghĩa.** Triage là quy trình đánh giá một cảnh báo: thật hay giả (TP/FP), thuộc loại nào, mức nghiêm trọng ra sao, xử lý tại chỗ hay escalate. Thuật ngữ mượn từ y khoa, chỉ việc **phân loại ưu tiên xử lý**.
 
-**Vì sao cần?** Không thể đối xử mọi cảnh báo như nhau. Triage tốt giúp việc quan trọng được xử lý trước và không bỏ sót thứ nguy hiểm núp dưới vẻ "bình thường".
+**Vấn đề giải quyết.** Không thể đối xử mọi cảnh báo như nhau. Triage chuẩn đảm bảo việc quan trọng được xử lý trước và không bỏ sót mối đe doạ nguỵ trang dưới vẻ bình thường.
 
-### Vòng đời ứng phó sự cố (NIST & SANS PICERL) — nói đơn giản
+### Vòng đời ứng phó sự cố (NIST & SANS PICERL)
 
-**Là gì?** Đây là **kịch bản chữa cháy chuẩn** cho khi có sự cố an ninh. Hai bộ khung nổi tiếng: NIST chia 4 pha (Chuẩn bị → Phát hiện & Phân tích → Cô lập, Loại bỏ & Phục hồi → Rút kinh nghiệm), còn SANS chia 6 bước dễ nhớ qua chữ **PICERL**. Về bản chất hai cái như nhau.
+**Định nghĩa.** Hai khung quy trình ứng phó sự cố chuẩn:
+- **NIST SP 800-61** — 4 pha: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-Incident Activity.
+- **SANS PICERL** — 6 bước: Preparation, Identification, Containment, Eradication, Recovery, Lessons Learned.
 
-**Vì sao cần?** Khi sự cố xảy ra, người ta dễ hoảng và làm lung tung (ví dụ tắt máy ngay, vô tình xoá luôn bằng chứng). Có quy trình chuẩn giúp đội xử lý làm đúng thứ tự: chặn lan trước, giữ bằng chứng, rồi mới dọn sạch và khôi phục.
+Hai mô hình tương đương về bản chất; SANS tách Containment/Eradication/Recovery thành các bước riêng.
 
-### Playbook / Runbook — nói đơn giản
+**Vấn đề giải quyết.** Trong sự cố, thao tác tuỳ tiện (ví dụ tắt máy ngay) có thể phá huỷ bằng chứng và làm sự cố lan rộng. Quy trình chuẩn áp đặt trình tự đúng: cô lập trước, bảo toàn bằng chứng, rồi mới loại bỏ và khôi phục.
 
-**Là gì?** **Playbook** là kịch bản tổng quát cho một loại sự cố (ai làm gì, quyết định ra sao), còn **Runbook** là các bước thao tác chi tiết (gõ lệnh nào, chạy truy vấn gì). Giống như "quy trình thoát hiểm khi cháy" dán trên tường, có sẵn từng bước.
+### Playbook / Runbook
 
-**Vì sao cần?** Lúc khẩn cấp không phải lúc để ngồi nghĩ. Có sẵn kịch bản giúp xử lý nhanh, nhất quán, không bỏ sót bước, kể cả khi người trực còn non kinh nghiệm.
+**Định nghĩa.**
+- **Playbook** — quy trình cấp cao cho một loại sự cố (các giai đoạn, vai trò, điểm ra quyết định).
+- **Runbook** — các bước thao tác chi tiết (lệnh, truy vấn) thực thi một phần playbook.
 
-### MTTD và MTTR — nói đơn giản
+**Vấn đề giải quyết.** Tình huống khẩn cấp không phải lúc để ứng biến. Kịch bản định sẵn đảm bảo xử lý nhanh, nhất quán, không bỏ sót bước, kể cả với analyst ít kinh nghiệm.
 
-**Là gì?** Đây là hai cây thước đo. **MTTD** (Mean Time To Detect) = trung bình mất bao lâu để *phát hiện* ra sự cố kể từ lúc nó bắt đầu. **MTTR** (Mean Time To Respond/Recover) = trung bình mất bao lâu để *xử lý xong* kể từ lúc phát hiện.
+### MTTD và MTTR
 
-**Vì sao cần?** "Cái gì đo được thì cải thiện được." Hai con số này cho biết đội phòng thủ nhanh hay chậm, và nỗ lực cải tiến có hiệu quả không. Kẻ tấn công ở trong mạng càng lâu thì thiệt hại càng lớn, nên rút ngắn hai con số này rất quan trọng.
+**Định nghĩa.**
+- **MTTD** (Mean Time To Detect) — thời gian trung bình từ khi sự cố bắt đầu đến khi được phát hiện.
+- **MTTR** (Mean Time To Respond/Recover) — thời gian trung bình từ khi phát hiện đến khi xử lý/khôi phục xong.
 
-### Các công cụ thực hành (Sigma, Suricata, YARA, Splunk, osquery, SOAR) — nói đơn giản
+**Vấn đề giải quyết.** Hai chỉ số định lượng tốc độ phòng thủ và hiệu quả cải tiến. Thời gian kẻ tấn công tồn tại trong mạng (dwell time) càng dài, thiệt hại càng lớn; rút ngắn MTTD/MTTR trực tiếp giảm thiệt hại.
 
-- **Sigma**: cách viết một "luật phát hiện" bằng văn bản chung, rồi dịch tự động sang ngôn ngữ truy vấn của từng phần mềm SIEM. Giống viết một công thức một lần, dùng được cho nhiều bếp khác nhau.
-- **SIEM**: phần mềm gom toàn bộ log về một chỗ, đánh chỉ mục để tìm kiếm nhanh và tự bật chuông báo theo luật. Là "đầu não" nơi analyst ngồi làm việc.
-- **Suricata**: lính gác đứng ngay đường mạng, soi từng gói tin đi qua và báo động (hoặc chặn) khi thấy dấu hiệu xấu — gọi là IDS/IPS.
-- **YARA**: công cụ nhận diện mã độc bằng cách dò "vân tay" (các chuỗi ký tự, mẫu byte đặc trưng) trong file.
-- **Splunk (SPL)**: một SIEM phổ biến; SPL là ngôn ngữ để hỏi dữ liệu log, kiểu như "cho tôi xem mọi lần đăng nhập thất bại từ IP này".
-- **osquery / Velociraptor**: cho phép hỏi trạng thái một máy tính bằng câu lệnh giống SQL ("máy này đang mở những cổng nào?"), phục vụ săn lùng dấu vết.
-- **TheHive / SOAR**: nền tảng quản lý hồ sơ sự cố và **tự động hoá** các bước xử lý lặp đi lặp lại (tra cứu, chặn, gửi thông báo), để con người tập trung vào phần khó.
+### Công cụ thực hành (Sigma, Suricata, YARA, Splunk, osquery, SOAR)
 
-**Vì sao cần?** Một mình con người không thể đọc hết hàng tỷ log hay soi từng gói tin. Các công cụ này là "giác quan" và "cánh tay" giúp phát hiện và phản ứng ở quy mô lớn.
+- **Sigma** — định dạng mô tả detection rule generic (YAML), dịch tự động sang query của từng SIEM. Viết một lần, dùng cho nhiều nền tảng.
+- **SIEM** — nền tảng gom log tập trung, đánh chỉ mục để truy vấn nhanh và sinh alert theo rule. Là nơi analyst làm việc.
+- **Suricata** — engine IDS/IPS phân tích gói tin theo signature, cảnh báo hoặc chặn lưu lượng độc hại.
+- **YARA** — công cụ nhận diện mã độc theo pattern (chuỗi, byte, regex) trong file.
+- **Splunk (SPL)** — một SIEM phổ biến; SPL là ngôn ngữ truy vấn log.
+- **osquery / Velociraptor** — truy vấn trạng thái endpoint bằng cú pháp giống SQL, phục vụ threat hunting.
+- **TheHive / SOAR** — quản lý case IR và **tự động hoá** các bước lặp lại (tra cứu, chặn, thông báo), để con người tập trung vào phần phức tạp.
 
-### Threat Hunting & MITRE ATT&CK — nói đơn giản
+**Vấn đề giải quyết.** Con người không thể xử lý thủ công hàng tỷ log hay từng gói tin. Các công cụ này mở rộng năng lực phát hiện và phản ứng ở quy mô lớn.
 
-**Là gì?** **Threat hunting** là chủ động đi *săn* kẻ tấn công còn lẩn trốn mà chuông báo tự động chưa kêu — thay vì ngồi chờ báo động. Người săn đặt ra một **giả thuyết** ("biết đâu kẻ địch đang di chuyển ngang trong mạng") rồi đi tìm bằng chứng. **MITRE ATT&CK** là một bộ "từ điển" liệt kê có hệ thống các chiêu trò (kỹ thuật) mà kẻ tấn công hay dùng, mỗi chiêu có một mã Txxxx.
+### Threat Hunting & MITRE ATT&CK
 
-**Vì sao cần?** Kẻ tấn công giỏi biết cách né các luật phát hiện sẵn có. Săn chủ động dựa trên hiểu biết về chiêu trò của chúng giúp tìm ra thứ mà hệ thống tự động bỏ sót.
+**Định nghĩa.** **Threat hunting** là hoạt động chủ động tìm dấu vết kẻ tấn công mà detection tự động chưa bắt được, bắt đầu từ một **giả thuyết** (ví dụ: kẻ tấn công đang lateral movement). **MITRE ATT&CK** là cơ sở tri thức phân loại có hệ thống các kỹ thuật tấn công (Tactics × Techniques), mỗi technique có mã Txxxx.
 
-### Chain of Custody & Forensic — nói đơn giản
+**Vấn đề giải quyết.** Kẻ tấn công tinh vi biết né các rule có sẵn. Săn chủ động dựa trên hiểu biết về TTP giúp phát hiện thứ mà hệ thống tự động bỏ sót.
 
-**Là gì?** **Forensic** (điều tra số) là thu thập và phân tích bằng chứng số sau sự cố. **Chain of custody** (chuỗi lưu giữ bằng chứng) là cuốn sổ ghi rõ *ai* giữ bằng chứng, *khi nào*, *làm gì* với nó — y như niêm phong vật chứng trong phim hình sự.
+### Chain of Custody & Forensic
 
-**Vì sao cần?** Nếu bằng chứng có thể bị sửa hay không rõ nguồn gốc thì vô giá trị trước toà. Ngoài ra có nguyên tắc quan trọng: RAM (bộ nhớ tạm) mất hết khi tắt máy, nên phải thu thập thứ dễ bay hơi trước — đây là lý do nhiều kịch bản dặn "đừng tắt máy, chỉ ngắt mạng".
+**Định nghĩa.** **Forensic** (điều tra số) là quá trình thu thập và phân tích bằng chứng số. **Chain of custody** (chuỗi lưu giữ bằng chứng) là hồ sơ ghi rõ ai giữ bằng chứng, khi nào, thao tác gì — đảm bảo tính nguyên vẹn và truy vết.
 
-### Log Retention — nói đơn giản
+**Vấn đề giải quyết.** Bằng chứng bị sửa đổi hoặc không rõ nguồn gốc thì mất giá trị pháp lý. Một nguyên tắc cốt lõi: dữ liệu dễ bay hơi (RAM) mất khi tắt máy, nên phải thu thập theo **order of volatility** — lý do nhiều playbook yêu cầu cô lập mạng nhưng giữ máy chạy thay vì tắt nguồn.
 
-**Là gì?** Là chính sách **giữ log trong bao lâu** và lưu thế nào. Thường chia tầng nóng/ấm/lạnh: log mới giữ ở nơi truy cập nhanh nhưng đắt, log cũ nén lại lưu nơi rẻ.
+### Log Retention
 
-**Vì sao cần?** Kẻ tấn công có thể đã ẩn trong mạng hàng tháng trước khi bị lộ. Nếu chỉ giữ log 30 ngày thì lúc điều tra sẽ không còn dấu vết ngày chúng đột nhập. Ngoài ra nhiều quy định pháp lý bắt buộc phải lưu log một thời gian tối thiểu.
+**Định nghĩa.** Chính sách quy định **thời gian lưu giữ log** và phương thức lưu. Thường phân tầng hot/warm/cold: log mới lưu ở tầng truy cập nhanh (chi phí cao), log cũ nén và lưu ở tầng chi phí thấp.
 
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+**Vấn đề giải quyết.** Kẻ tấn công có thể ẩn trong mạng nhiều tháng trước khi bị phát hiện; lưu log quá ngắn khiến điều tra mất dấu thời điểm xâm nhập. Ngoài ra, nhiều quy định pháp lý bắt buộc thời gian lưu tối thiểu.
+
+Các mục tiếp theo đi sâu vào chi tiết kỹ thuật của từng khái niệm trên.
 
 > Chương này là tài liệu tham chiếu để tự học và tra cứu. Mỗi khái niệm trình bày theo trục: **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ (lệnh, cấu hình, rule, output) → LƯU Ý BẢO MẬT**. Các con số được ghi rõ nguồn; chỗ nào cần kiểm chứng sẽ ghi "[cần kiểm chứng]".
 
@@ -279,6 +290,23 @@ Các khoá Extension chuẩn: `src` (source IP), `dst` (dest IP), `spt` (source 
 ## 10.3. Cấu trúc SOC theo tier — nhiệm vụ chính xác từng cấp
 
 SOC tổ chức theo mô hình **tiered** để phân bổ độ phức tạp công việc và chi phí nhân sự hợp lý. Đây không phải phân cấp địa vị mà là phân công theo độ sâu điều tra.
+
+```
+                       ┌──────────────────────────────────────────────┐
+                       │           Phản hồi ngược (feedback)           │
+                       │   Detection rule mới, IOC/TTP, tuning FP      │
+                       ▼                                               │
+  SIEM ──alert──> ┌─────────┐  escalate   ┌─────────┐  escalate  ┌─────────┐
+                  │ Tier 1  │ ───(case)──> │ Tier 2  │ ──(major)─>│ Tier 3  │
+                  │ Triage  │             │ Investig.│           │ Hunt/RE  │
+                  └────┬────┘             └────┬────┘            └────┬────┘
+                       │ đa số FP/đơn giản      │ điều tra,            │ hunting chủ động,
+                       │ -> đóng tại chỗ        │ containment          │ forensic sâu, APT
+                       ▼                        ▼                      ▼
+                  Ticket TP/FP            Báo cáo + IOC          Detection + RCA
+```
+
+Chú thích: alert đi lên (escalate) khi vượt năng lực/độ phức tạp của tầng hiện tại; tri thức (detection rule, IOC, tuning) chảy ngược xuống để tự động hoá việc đã điều tra thủ công, giảm tải cho tầng dưới.
 
 ### 10.3.1. Tier 1 — Triage Analyst (Alert Handler)
 

@@ -1,47 +1,27 @@
-# Chương 14 — Ảo hóa & Container (Docker, Kubernetes, Proxmox, VMware)
+# Chương 14 — Ảo hóa & Container
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách chúng ta "nhét nhiều máy tính (hoặc nhiều ứng dụng) vào trong một máy tính vật lý" mà chúng không giẫm chân lên nhau — đó chính là **ảo hóa** và **container**. Vì sao dân an toàn thông tin phải quan tâm? Bởi vì ranh giới ngăn cách giữa các "máy ảo" hay "container" này chính là bức tường bảo vệ: nếu kẻ tấn công chiếm được một cái và "thoát" ra ngoài (gọi là *escape*), nó có thể chiếm luôn cả máy chủ và mọi thứ chạy trên đó. Hiểu các bức tường này được dựng lên bằng gì, và chúng có thể vỡ ở đâu, là kiến thức nền tảng để phòng thủ. Dưới đây là phần "giải nghĩa bình dân" cho từng khái niệm lớn của chương.
+Chương này trình bày hai mô hình cô lập workload trên một máy chủ vật lý: **ảo hóa (virtualization)** và **container**. Ranh giới cô lập giữa các VM hoặc container chính là biên giới bảo mật: khi kẻ tấn công chiếm một workload và **escape** (thoát ra ngoài), toàn bộ host và các workload khác trên đó bị đe dọa. Kỹ sư bảo mật cần nắm các biên giới này được dựng bằng cơ chế nào và có thể vỡ ở đâu.
 
-### Ảo hóa (Virtualization) & Hypervisor — nói đơn giản
+**Ảo hóa & Hypervisor.** Ảo hóa là kỹ thuật giả lập một máy tính hoàn chỉnh bên trong một máy tính. Mỗi **máy ảo (VM)** chạy hệ điều hành riêng với kernel độc lập. **Hypervisor** là lớp phần mềm phân chia phần cứng thật (CPU, RAM, đĩa) cho các VM và cưỡng chế cô lập giữa chúng. Bài toán giải quyết: chạy nhiều hệ điều hành độc lập trên một dàn phần cứng, vừa cô lập an toàn vừa tối ưu chi phí.
 
-- **Ảo hóa** là việc giả lập ra một "máy tính trong máy tính". Hãy tưởng tượng một tòa chung cư: tòa nhà là máy chủ vật lý, mỗi căn hộ là một **máy ảo (VM)** có tường riêng, cửa khóa riêng, người ở không biết hàng xóm là ai. Mỗi VM tưởng mình đang sở hữu một máy tính thật với hệ điều hành riêng.
-- **Hypervisor** là "ban quản lý tòa nhà" — phần mềm đứng giữa chia phần cứng thật (CPU, RAM, đĩa) cho các căn hộ và đảm bảo không ai lấn sang phòng người khác. Nó giải quyết vấn đề: làm sao chạy nhiều hệ điều hành độc lập trên một dàn phần cứng mà vẫn cô lập an toàn, tiết kiệm chi phí máy móc.
+**Proxmox & VMware.** **Proxmox VE** (mã nguồn mở, nền Linux/KVM) và **VMware ESXi/vSphere** (thương mại) là các hypervisor cấp trung tâm dữ liệu. Chúng cung cấp **backup**, **snapshot** (chụp trạng thái để rollback), và **live migration** (vMotion — di chuyển VM đang chạy giữa các host). Đây là nền tảng vận hành của phần lớn hạ tầng hiện đại.
 
-### Proxmox & VMware (ESXi/vSphere) — nói đơn giản
+**Container & Docker.** Container đóng gói ứng dụng cùng toàn bộ thư viện phụ thuộc thành một đơn vị bất biến, chạy đồng nhất ở mọi môi trường. Khác VM, container **chia sẻ chung kernel host** nên khởi động trong mili giây và tiêu tốn rất ít tài nguyên. **Docker** là công cụ phổ biến nhất để tạo, đóng gói và chạy container. Hệ quả bảo mật: do dùng chung kernel, biên giới cô lập của container mỏng hơn VM.
 
-- **Proxmox VE** và **VMware ESXi/vSphere** đều là những "ban quản lý tòa nhà" (hypervisor) chuyên nghiệp dùng trong trung tâm dữ liệu. Proxmox là phần mềm mã nguồn mở (miễn phí, dựa trên Linux), còn VMware là sản phẩm thương mại phổ biến trong doanh nghiệp.
-- Vì sao cần: thay vì mua 20 máy chủ vật lý cho 20 ứng dụng, ta mua vài máy mạnh rồi dùng Proxmox/VMware chia thành 20 máy ảo. Chúng còn cho phép sao lưu (*backup*), chụp ảnh trạng thái (*snapshot*) để quay lui khi sự cố, và di chuyển máy ảo đang chạy từ máy chủ này sang máy chủ khác mà không tắt máy (*vMotion*). Đây là xương sống vận hành của hầu hết hệ thống hiện đại.
+Các cơ chế kernel nền tảng:
+- **Namespaces**: cô lập *view* tài nguyên (PID, mạng, mount, hostname...) — container chỉ thấy phần thế giới của riêng nó.
+- **cgroups**: giới hạn *lượng* tài nguyên (RAM, CPU, số PID) mỗi container được dùng, chống một container vét cạn tài nguyên host.
+- **Image / layer / registry**: *image* là bản đóng gói bất biến gồm nhiều *layer* xếp chồng (tái sử dụng, dedup); *registry* (ví dụ Docker Hub) là kho lưu trữ image; *Dockerfile* mô tả các bước dựng image.
 
-### Container & Docker — nói đơn giản
+**Trivy.** Công cụ quét image để phát hiện thư viện dính CVE, cấu hình sai (misconfig) và secret hardcode. Tích hợp trong pipeline **CI/CD** để gate (chặn) image không đạt trước khi triển khai.
 
-- **Container** giống như một "hộp cơm phần" đóng gói sẵn: ứng dụng cùng tất cả thư viện nó cần được gói chung vào một gói gọn nhẹ, mang đi đâu chạy cũng giống y nhau. Khác với máy ảo (mỗi căn hộ có hệ điều hành riêng nặng nề), container chia sẻ chung "bếp" — tức là *kernel* (lõi hệ điều hành) của máy chủ — nên khởi động cực nhanh (mili giây) và tốn ít tài nguyên.
-- **Docker** là công cụ phổ biến nhất để tạo, đóng gói và chạy container. Vì sao cần: nó chấm dứt câu nói kinh điển "máy tôi chạy được mà" — vì gói cơm phần giống hệt nhau dù chạy trên laptop lập trình viên hay máy chủ thật. Đổi lại, do dùng chung "bếp", bức tường cô lập của container *mỏng hơn* máy ảo, nên về mặt bảo mật cần cẩn thận hơn.
-- **Namespaces & cgroups** là hai cơ chế của Linux dựng nên bức tường đó: **namespaces** làm cho container chỉ "nhìn thấy" phần thế giới của riêng nó (tiến trình, mạng, thư mục riêng — như đeo kính chỉ thấy phòng mình); còn **cgroups** giới hạn *lượng* tài nguyên nó được dùng (tối đa bao nhiêu RAM, bao nhiêu CPU — như định mức điện nước mỗi phòng), tránh một container ngốn hết máy.
-- **Image, layer & registry**: một *image* là "bản thiết kế hộp cơm" được xếp thành nhiều *layer* (lớp) chồng lên nhau để tái sử dụng và tiết kiệm. *Registry* là "siêu thị" lưu trữ các image để tải về (ví dụ Docker Hub). *Dockerfile* là "công thức nấu ăn" mô tả từng bước dựng nên image.
+**Container escape.** Kịch bản kẻ tấn công vượt khỏi cô lập namespace/cgroup để truy cập host và các container khác. Do container dùng chung kernel host, cấu hình lỏng lẻo (chế độ `--privileged`, mount nhầm `docker.sock`, cấp dư capability) mở đường escape. Nắm các con đường escape là điều kiện để bịt chúng.
 
-### Trivy (quét lỗ hổng) — nói đơn giản
+**Kubernetes (K8s).** Hệ điều phối container quy mô lớn trên nhiều node: lập lịch, tự phục hồi, scale theo tải, rolling update không gián đoạn. Các khái niệm bảo mật trọng yếu: **RBAC** (phân quyền theo subject/verb/resource), **NetworkPolicy** (firewall L3/L4 giữa các Pod), **Secret** (lưu khóa/mật khẩu — mặc định chỉ mã hóa base64, không phải mã hóa thật, cần bật encryption-at-rest), và **Pod Security Standards** (ràng buộc container chạy an toàn, ví dụ cấm chạy root).
 
-- **Trivy** là công cụ "soi" image container để tìm lỗ hổng: thư viện cũ dính lỗi bảo mật đã công bố (CVE), cấu hình sai, hay lỡ tay nhét mật khẩu vào trong gói. Hãy hình dung nó như máy soi hành lý ở sân bay, rà trước khi cho lên máy bay.
-- Vì sao cần: phần lớn image dựa trên hàng trăm thư viện của người khác; chỉ cần một thư viện dính lỗi là cả ứng dụng có nguy cơ. Quét tự động trong quy trình **CI/CD** (dây chuyền tự động build và triển khai phần mềm) giúp chặn gói "bẩn" ngay từ cửa, trước khi nó lên môi trường thật.
-
-### Container escape — nói đơn giản
-
-- **Container escape** là kịch bản đáng sợ nhất: kẻ tấn công đang ở trong một container tìm cách "phá tường" để thoát ra máy chủ thật, từ đó kiểm soát luôn các container khác. Giống như tên trộm vào được một căn phòng rồi đục tường sang phòng kế hoặc xuống tận hầm tòa nhà.
-- Vì sao quan trọng: vì container dùng chung kernel với máy chủ, một cấu hình lỏng lẻo (chạy chế độ `--privileged` cấp toàn quyền, gắn nhầm "ổ khóa" `docker.sock`, hay cấp dư quyền hệ thống) có thể mở toang cánh cửa thoát đó. Hiểu các con đường escape giúp ta bịt chúng lại trước.
-
-### Kubernetes (K8s) — nói đơn giản
-
-- **Kubernetes** là "nhạc trưởng" điều phối hàng trăm, hàng nghìn container chạy trên nhiều máy chủ: tự quyết định container nào chạy ở đâu, tự khởi động lại cái chết, tự nhân bản khi tải tăng, tự cập nhật phiên bản mới mà không gián đoạn. Nếu Docker là "nấu một hộp cơm", thì Kubernetes là "điều hành cả chuỗi nhà ăn công nghiệp".
-- Vì sao cần: khi hệ thống lớn lên, không ai đủ sức bật/tắt thủ công từng container trên từng máy. Kubernetes tự động hóa việc đó. Đi kèm nó là vài khái niệm an ninh quan trọng: **RBAC** (phân quyền ai được làm gì — như thẻ ra vào theo cấp bậc), **NetworkPolicy** (tường lửa quy định pod nào được nói chuyện với pod nào), **Secret** (nơi cất mật khẩu/khóa — nhưng lưu ý mặc định nó chỉ *mã hóa giả* bằng base64, ai cũng đọc được nếu không bật mã hóa thật), và **Pod Security Standards** (bộ quy tắc bắt buộc container phải chạy an toàn, ví dụ không được chạy quyền root).
-
-### Falco — nói đơn giản
-
-- **Falco** là "camera an ninh thời gian thực" cho container và Kubernetes: nó quan sát mọi hành động mà ứng dụng yêu cầu hệ điều hành làm (*syscall*) và báo động ngay khi thấy điều bất thường — ví dụ ai đó bất ngờ mở shell chui vào container, hay đọc trộm file mật khẩu `/etc/shadow`.
-- Vì sao cần: các biện pháp như phân quyền hay tường lửa là "khóa cửa phòng ngừa", nhưng nếu kẻ xấu vẫn lọt qua, ta cần thứ *phát hiện* hành vi xấu đang diễn ra để kịp phản ứng. Falco chính là lớp phát hiện đó, thường gửi cảnh báo về hệ thống giám sát tập trung (SIEM).
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+**Falco.** Bộ phát hiện thời gian thực (runtime detection) cho container và Kubernetes: giám sát **syscall** và cảnh báo hành vi bất thường (mở shell trong container, đọc `/etc/shadow`...). Đây là lớp phát hiện bổ sung cho các biện pháp phòng ngừa (RBAC, firewall), thường chuyển cảnh báo về SIEM.
 
 > Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo trình tự: LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT.
 
@@ -241,6 +221,28 @@ VMFS là filesystem cụm có khóa phân tán (SCSI reservations / ATS - Atomic
 ---
 
 ## 14.4. VM vs Container — so sánh tới gốc
+
+Sơ đồ stack hai mô hình cho thấy khác biệt cốt lõi: VM nhân bản cả kernel + OS cho mỗi workload (cô lập bằng hypervisor/phần cứng), còn container chia sẻ một kernel host (cô lập bằng namespaces/cgroups của chính kernel đó).
+
+```
+        VIRTUAL MACHINES                          CONTAINERS
+  +------+ +------+ +------+              +------+ +------+ +------+
+  | App  | | App  | | App  |              | App  | | App  | | App  |
+  | Libs | | Libs | | Libs |              | Libs | | Libs | | Libs |
+  +------+ +------+ +------+              +------+ +------+ +------+
+  |Guest | |Guest | |Guest |  <- kernel   |  Container Runtime    |
+  |  OS  | |  OS  | |  OS  |     riêng     |  (containerd/CRI-O)   |
+  +------+-+------+-+------+    mỗi VM     +-----------------------+
+  |      Hypervisor       |               |   Kernel host (CHUNG)  | <- 1 kernel
+  +-----------------------+               +-----------------------+   cho tất cả
+  |  Host OS (Type 2) /   |               |       Host OS         |
+  |  none (Type 1)        |               +-----------------------+
+  +-----------------------+               |     Phần cứng vật lý   |
+  |   Phần cứng vật lý     |               +-----------------------+
+  +-----------------------+
+```
+
+Biên giới cô lập của VM nằm ở hypervisor + VT-x/EPT (mỗi VM một kernel độc lập); biên giới của container là namespaces + cgroups + capabilities trên một kernel dùng chung — mỏng hơn, bề mặt escape là toàn bộ syscall của kernel host.
 
 | Tiêu chí | Virtual Machine | Container |
 |----------|-----------------|-----------|

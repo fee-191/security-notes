@@ -1,65 +1,38 @@
-# Chương 15 — Threat Intelligence & Frameworks tấn công (MITRE ATT&CK)
+# Chương 15 — Threat Intelligence & Khung tấn công
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách những người làm bảo mật **mô tả, phát hiện và đo lường** hành vi của kẻ tấn công bằng một "ngôn ngữ chung". Hãy tưởng tượng cảnh sát điều tra: muốn phá án hiệu quả thì cả lực lượng phải gọi tên thủ đoạn của tội phạm giống nhau ("phá khóa", "giả danh nhân viên"), chứ mỗi đồn một kiểu thì không ai phối hợp được. Trong an toàn thông tin cũng vậy — nếu mỗi đội mô tả tấn công theo cách riêng thì không thể trao đổi, không thể biết mình đang phòng thủ tốt đến đâu. Các "framework" và công cụ trong chương chính là bộ từ điển và sổ tay chung đó. Dưới đây ta đi nhanh qua từng món lớn, bằng lời lẽ thật đời thường.
+Chương này trình bày cách kỹ sư bảo mật **mô tả, phát hiện, đo lường và phản ứng** với hành vi của kẻ tấn công thông qua một hệ "ngôn ngữ chung" gồm các framework và công cụ chuẩn hóa. Khi mỗi đội mô tả tấn công theo cách riêng, tổ chức mất khả năng trao đổi tình báo, đo độ phủ phòng thủ và ưu tiên đầu tư. Các framework dưới đây giải quyết chính xác bài toán đó: chúng là bộ định danh và mô hình tham chiếu thống nhất để biến cảnh báo rời rạc thành tri thức hành động được.
 
-### Threat Intelligence (CTI) — nói đơn giản
+**Threat Intelligence (CTI).** Là dữ liệu về mối đe dọa đã qua xử lý và bổ sung bối cảnh để hỗ trợ ra quyết định, phân biệt với dữ liệu thô. Một địa chỉ IP trong log là *dữ liệu*; xác định IP đó là máy chủ C2 của một nhóm đang nhắm vào ngành tài chính kèm khuyến nghị chặn là *intelligence*. CTI giải quyết bài toán quá tải cảnh báo: lọc ra điều đáng lo, lý do, và hành động kế tiếp.
 
-- **Threat Intelligence là gì?** Là thông tin về kẻ xấu đã được **xử lý và thêm bối cảnh** để giúp ta ra quyết định, chứ không phải dữ liệu thô. Ví dụ: "có một địa chỉ IP lạ trong log" mới chỉ là dữ liệu; còn "IP này là máy chủ điều khiển của một nhóm tội phạm đang nhắm vào ngân hàng, nên chặn ngay" mới là intelligence. Giống như khác biệt giữa "trời có mây" và "bản tin dự báo bão khuyên bạn nên ở nhà".
-- **Vì sao cần?** Vì mỗi ngày có hàng triệu cảnh báo. Nếu không biến chúng thành thông tin **hành động được**, đội bảo mật sẽ chết chìm trong nhiễu. CTI giúp lọc ra "cái gì đáng lo, vì sao, và làm gì tiếp theo".
+**Cyber Kill Chain.** Mô hình chia tấn công có chủ đích thành **7 giai đoạn tuyến tính**, từ trinh sát tới hành động trên mục tiêu. Giá trị cốt lõi: phá vỡ bất kỳ một mắt xích nào cũng làm gãy toàn chuỗi, đồng thời cung cấp khung tường thuật ở mức chiến lược cho lãnh đạo.
 
-### Cyber Kill Chain — nói đơn giản
+**Diamond Model.** Mô hình hóa mỗi sự kiện xâm nhập qua **4 đỉnh**: adversary (kẻ tấn công), capability (năng lực, công cụ/mã độc), infrastructure (hạ tầng C2, tên miền, IP) và victim (nạn nhân). Sức mạnh nằm ở **pivoting**: nắm một đỉnh cho phép lần ra các đỉnh còn lại — từ một tên miền độc hại suy ra IP dùng chung, rồi các tên miền khác của cùng nhóm.
 
-- **Là gì?** Là cách chia một cuộc tấn công có chủ đích thành **7 bước nối tiếp**, từ lúc kẻ địch dò la cho đến lúc chúng đánh cắp được dữ liệu. Hãy hình dung như các bước của một vụ trộm nhà: rình rập trước cửa → chuẩn bị đồ nghề → lẻn vào → mở két → ôm tài sản chạy.
-- **Vì sao cần?** Vì nó cho ta một câu chuyện dễ kể và một bài học quý: chỉ cần **chặn được một mắt xích** bất kỳ là cả chuỗi tấn công đứt gãy. Nó giúp lãnh đạo hình dung bức tranh tổng thể.
+**IOC và IOA.** **IOC (Indicator of Compromise)** là bằng chứng tĩnh cho biết sự cố đã xảy ra: hash file độc, IP xấu, registry key. **IOA (Indicator of Attack)** là chuỗi hành vi đáng ngờ đang diễn ra: ví dụ Word sinh PowerShell rồi tải file từ Internet. IOC dễ bị thay đổi (đổi một byte là có hash mới) nên kém bền; IOA dựa trên logic tấn công nên khó né hơn và bắt được cả biến thể chưa từng thấy.
 
-### Diamond Model — nói đơn giản
+**Pyramid of Pain.** Xếp hạng các loại indicator theo **mức chi phí kẻ tấn công phải bỏ ra để né tránh** khi bị chặn. Đáy tháp (hash, IP) thay đổi trong vài phút; đỉnh tháp (TTP — cách hành động) buộc đối thủ thay đổi cả lối đánh. Mô hình định hướng đầu tư phát hiện: ưu tiên các tầng cao để đạt hiệu quả bền vững.
 
-- **Là gì?** Là cách nhìn mỗi sự cố qua **4 góc của một viên kim cương**: kẻ tấn công, năng lực (công cụ/mã độc), hạ tầng (máy chủ, tên miền chúng dùng) và nạn nhân. Như bảng điều tra với 4 tấm ảnh được nối bằng dây.
-- **Vì sao cần?** Vì khi nắm được **một góc**, ta có thể lần ra các góc còn lại (gọi là "pivoting" — bắc cầu điều tra). Biết một tên miền độc hại có thể lần ra địa chỉ IP, rồi ra các tên miền khác của cùng băng nhóm.
+**MITRE ATT&CK.** Knowledge base liệt kê các hành vi đối thủ **quan sát được trong thực tế**, tổ chức theo ma trận và cây phân cấp: *Tactic* (mục tiêu — "vì sao"), *Technique* (phương pháp — "làm gì"), *Sub-technique* (biến thể — "làm như thế nào"), *Procedure* (hiện thực cụ thể). Mỗi mục có định danh duy nhất (ví dụ `T1059.001`), cho phép đo độ phủ phát hiện và viết rule theo từng hành vi.
 
-### IOC và IOA — nói đơn giản
+**ATT&CK Navigator.** Ứng dụng web tô màu ma trận ATT&CK để trực quan hóa độ phủ phát hiện, hoạt động của một nhóm APT và phân tích khoảng trống. Dữ liệu lưu dưới dạng layer file (JSON), giúp lãnh đạo và đội phòng thủ thấy ngay điểm yếu thay vì đọc danh sách dài.
 
-- **IOC (dấu hiệu đã bị xâm nhập) là gì?** Là **bằng chứng tĩnh** cho biết "đã có chuyện xảy ra" — ví dụ mã băm (hash) của một file độc, một địa chỉ IP xấu. Giống dấu vân tay để lại tại hiện trường.
-- **IOA (dấu hiệu đang bị tấn công) là gì?** Là **một chuỗi hành vi đáng ngờ đang diễn ra** — ví dụ "Word tự mở PowerShell rồi tải file từ Internet". Giống việc thấy ai đó đang cạy cửa sổ ngay lúc này.
-- **Vì sao cần phân biệt?** Vì IOC dễ bị kẻ địch thay đổi (đổi 1 byte là có hash mới), còn hành vi (IOA) thì khó đổi hơn nhiều. Tập trung vào IOA giúp bắt được cả những biến thể chưa từng thấy.
+**Detection Engineering: Sigma, YARA, Suricata.** Ba định dạng rule tương ứng ba lớp dấu vết:
+- **Sigma**: rule phát hiện trên **log** theo định dạng SIEM-agnostic, biên dịch sang Splunk, Elastic, Sentinel...
+- **YARA**: rule khớp **chuỗi/byte/regex trong file hoặc bộ nhớ** để phân loại mã độc.
+- **Suricata**: IDS/IPS soi **lưu lượng mạng** để phát hiện kênh C2 và exfil.
 
-### Pyramid of Pain — nói đơn giản
+Cả ba đều gắn được định danh ATT&CK để đo độ phủ theo từng technique.
 
-- **Là gì?** Là một cái tháp xếp hạng: chặn loại dấu hiệu nào thì **gây "đau" (tốn kém) nhất** cho kẻ tấn công. Đáy tháp (mã băm, IP) thì chúng đổi trong vài phút; đỉnh tháp (cách hành động — TTP) thì chúng phải thay đổi cả lối đánh, rất khó.
-- **Vì sao cần?** Để ta đầu tư công sức cho đúng chỗ: chặn IP thì rẻ nhưng mau lỗi thời; phát hiện theo hành vi thì khó làm hơn nhưng bền hơn nhiều.
+**Chia sẻ tình báo: STIX, TAXII, MISP.**
+- **STIX**: định dạng JSON chuẩn để biểu diễn thông tin mối đe dọa cho máy đọc hiểu.
+- **TAXII**: giao thức REST/HTTPS để trao đổi STIX tự động giữa các bên.
+- **MISP**: nền tảng lưu trữ và chia sẻ IOC, tích hợp nhãn TLP và ATT&CK Galaxy.
 
-### MITRE ATT&CK — nói đơn giản
+Cơ sở của việc chia sẻ: kẻ tấn công tái sử dụng thủ đoạn cho nhiều nạn nhân, nên cảnh báo kịp thời bảo vệ các tổ chức tiếp theo.
 
-- **Là gì?** Là một **cuốn bách khoa toàn thư** liệt kê những việc kẻ tấn công **thực sự làm** trong đời thực, sắp thành ma trận. Nó dùng cây phân cấp: *Tactic* (mục tiêu — "vì sao"), *Technique* (cách làm — "làm gì"), *Sub-technique* (biến thể — "làm như thế nào"), *Procedure* (ai cụ thể làm ra sao). Mỗi mục có một mã định danh như `T1059.001`. Hãy coi nó như danh mục chiêu thức võ thuật, mỗi chiêu có tên riêng.
-- **Vì sao cần?** Vì nhờ ai cũng gọi cùng một chiêu bằng cùng một mã, ta có thể **đo được** mình phát hiện được bao nhiêu chiêu, còn sót chiêu nào, và viết quy tắc phát hiện theo từng chiêu.
-
-### ATT&CK Navigator — nói đơn giản
-
-- **Là gì?** Là một công cụ web **tô màu** lên ma trận ATT&CK để nhìn bằng mắt: ô xanh là chiêu ta đã phát hiện được, ô đỏ là "lỗ hổng" chưa phát hiện được. Dữ liệu lưu trong một file JSON gọi là "layer".
-- **Vì sao cần?** Vì một bảng màu trực quan giúp sếp và cả đội thấy ngay "ta đang yếu ở đâu" thay vì phải đọc danh sách dài.
-
-### Detection Engineering: Sigma, YARA, Suricata — nói đơn giản
-
-- **Sigma là gì?** Là cách viết **một quy tắc phát hiện trên log** theo định dạng trung lập, rồi dịch tự động sang nhiều hệ thống SIEM khác nhau (Splunk, Elastic...). Giống viết công thức một lần rồi dịch ra nhiều thứ tiếng.
-- **YARA là gì?** Là cách viết quy tắc để **tìm chuỗi/byte đặc trưng trong file hay bộ nhớ**, dùng để nhận diện mã độc. Như mô tả đặc điểm nhận dạng của một tên tội phạm để máy quét tìm ra.
-- **Suricata là gì?** Là "lính gác mạng" (IDS/IPS) soi **lưu lượng đi qua dây mạng** để bắt kênh điều khiển của mã độc hay dữ liệu bị tuồn ra.
-- **Vì sao cần cả ba?** Vì kẻ tấn công để lại dấu vết ở ba nơi khác nhau — trong log, trong file, và trên đường mạng — nên cần ba loại "kính lúp" tương ứng. Cả ba đều gắn được mã ATT&CK để biết mình đang phủ chiêu nào.
-
-### Chia sẻ tình báo: STIX, TAXII, MISP — nói đơn giản
-
-- **STIX là gì?** Là một **định dạng chuẩn (JSON)** để viết thông tin về mối đe dọa sao cho máy nào cũng đọc hiểu. Như một mẫu biểu thống nhất để khai báo.
-- **TAXII là gì?** Là **giao thức để gửi/nhận** các tờ khai STIX đó qua mạng một cách tự động. Như dịch vụ bưu điện chuyên chuyển những tờ khai ấy.
-- **MISP là gì?** Là một **nền tảng phần mềm thực dụng** để các tổ chức cùng nhau lưu trữ và chia sẻ IOC, có gắn cả nhãn TLP (đèn giao thông quy định ai được xem) và ATT&CK.
-- **Vì sao cần?** Vì kẻ tấn công thường dùng lại thủ đoạn cho nhiều nạn nhân; nếu các tổ chức chia sẻ kịp thời thì người sau được cảnh báo trước.
-
-### Phân loại và phân tích Malware — nói đơn giản
-
-- **Là gì?** Phần cuối chương phân biệt các loại mã độc (virus, worm, trojan, ransomware...) theo cách chúng lây lan và tự nhân bản, rồi giới thiệu cách **mổ xẻ một mẫu mã độc** (phân tích tĩnh: nhìn file mà không chạy; phân tích động: cho chạy trong môi trường cách ly để quan sát).
-- **Vì sao cần?** Vì gọi đúng tên loại mã độc và hiểu cách nó hoạt động giúp ta chọn đúng cách phòng chống và phản ứng.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+**Phân loại và phân tích Malware.** Phần cuối chương phân biệt các loại mã độc (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) theo cơ chế lây lan và khả năng tự nhân bản, rồi trình bày hai hướng mổ xẻ mẫu: **phân tích tĩnh** (khảo sát file không thực thi) và **phân tích động** (chạy trong môi trường cô lập để quan sát hành vi). Gọi đúng tên loại mã độc và hiểu cơ chế là cơ sở để chọn biện pháp phòng chống và phản ứng phù hợp.
 
 > Mục tiêu chương: trang bị cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) một mô hình tư duy thống nhất để **mô tả**, **phát hiện**, **đo lường** và **phản ứng** với hành vi của kẻ tấn công. Chương đi từ lý thuyết tình báo (CTI) xuống tới cấu trúc dữ liệu cụ thể (STIX object, MISP attribute, định dạng IOC, header PE), tới lệnh và file cấu hình chạy được (Sigma, YARA, Suricata, ATT&CK Navigator JSON, MISP REST API).
 
@@ -152,6 +125,17 @@ Mô hình kinh điển (gốc từ cộng đồng tình báo quân sự/CIA, áp
 ## 15.3. Cyber Kill Chain (Lockheed Martin) — 7 bước
 
 Mô hình do Lockheed Martin công bố (2011), mô tả tấn công có chủ đích (APT) như chuỗi tuyến tính. Triết lý phòng thủ: **phá vỡ bất kỳ một mắt xích nào** thì toàn chuỗi gãy → "intrusion kill chain".
+
+```
+ [1]            [2]             [3]          [4]             [5]            [6]            [7]
+Recon ──▶ Weaponization ──▶ Delivery ──▶ Exploitation ──▶ Installation ──▶ C2 ──▶ Actions on Objectives
+ dò la      ghép exploit     gửi tới      chạy code        cài đặt        kênh    đánh cắp / phá hoại /
+ mục tiêu   + payload        nạn nhân     khai thác        persistence    điều khiển   lan ngang
+                                                                            ▲
+   ── chặn được BẤT KỲ một mắt xích nào ──▶ toàn chuỗi gãy ─────────────────┘
+```
+
+Sơ đồ cho thấy bản chất tuyến tính của mô hình: tấn công đi tuần tự từ trái sang phải, và phòng thủ chỉ cần làm gãy một bước là vô hiệu cả chiến dịch. Đây cũng là điểm yếu — mô hình giả định một dòng chảy một chiều, khó mô tả lateral movement lặp lại hay tấn công cloud không có khâu "delivery" malware.
 
 | # | Giai đoạn | Hành động của attacker | Dấu hiệu / Phòng thủ Blue Team |
 |---|---|---|---|

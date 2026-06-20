@@ -1,62 +1,38 @@
 # Chương 4 — Mật mã học & Nền tảng bảo mật
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về **mật mã học** — tức là cái nghệ thuật và khoa học giấu thông tin, niêm phong thông tin, và chứng minh thông tin là thật. Nó quan trọng vì gần như mọi thứ bạn làm trên Internet (đăng nhập, chuyển tiền, nhắn tin, mua hàng) đều dựa trên mấy "viên gạch" này để kẻ xấu không đọc trộm, không sửa lén, và không giả mạo được. Nếu bạn là người mới, đừng lo về công thức toán bên dưới — phần này sẽ giải thích từng món đồ nghề bằng ngôn ngữ đời thường trước, rồi các mục sau mới đi vào chi tiết kỹ thuật.
+**Mật mã học (cryptography)** là khoa học bảo vệ thông tin bằng ba năng lực cốt lõi: giữ bí mật, bảo đảm toàn vẹn, và chứng minh nguồn gốc. Mọi giao dịch trên Internet (đăng nhập, chuyển tiền, nhắn tin, mua hàng) đều dựa trên các nguyên thủy mật mã để chống đọc trộm, sửa lén và giả mạo. Chương trình bày từng nguyên thủy theo trình tự: **khái niệm → cơ chế → ví dụ → lưu ý bảo mật**.
 
-### CIA, AAA, Non-repudiation — nói đơn giản
+**Ba mục tiêu nền tảng (CIA, AAA, Non-repudiation):**
 
-- **CIA** không phải là cơ quan tình báo, mà là ba mục tiêu của bảo mật: **Confidentiality** (bí mật — chỉ người được phép mới đọc được), **Integrity** (toàn vẹn — dữ liệu không bị sửa lén), **Availability** (sẵn sàng — khi cần thì dùng được). Mỗi lần chọn công cụ mật mã, bạn nên hỏi: "Tôi đang bảo vệ cái nào trong ba cái này?"
-- **AAA** trả lời ba câu hỏi về một người dùng: *Bạn là ai?* (Authentication — xác thực), *Bạn được làm gì?* (Authorization — phân quyền), *Bạn đã làm gì?* (Accounting — ghi nhật ký). Ví dụ: thẻ ra vào tòa nhà chứng minh bạn là ai; thẻ đó mở được tầng nào là phân quyền; camera ghi lại bạn đi đâu là accounting.
-- **Non-repudiation (chống chối bỏ)** nghĩa là "anh không thể chối là anh không làm". Giống như chữ ký tay trên hợp đồng — chỉ bạn ký được, và sau này bạn không thể nói "đó không phải tôi". Trong máy tính, chỉ chữ ký số mới làm được điều này.
+- **CIA** — ba mục tiêu bảo mật: **Confidentiality** (bí mật — chỉ chủ thể được phép đọc), **Integrity** (toàn vẹn — dữ liệu không bị sửa trái phép), **Availability** (sẵn sàng — truy cập được khi cần). Mỗi lựa chọn công cụ phải xác định rõ thuộc tính nào đang được bảo vệ.
+- **AAA** — ba câu hỏi về chủ thể: **Authentication** (xác thực — "là ai"), **Authorization** (phân quyền — "được làm gì"), **Accounting** (ghi nhật ký — "đã làm gì").
+- **Non-repudiation (chống chối bỏ)** — chủ thể không thể phủ nhận hành vi đã thực hiện. Chỉ đạt được bằng chữ ký số với khóa riêng.
 
-### Encoding vs Hashing vs Encryption — ba thứ rất hay bị nhầm
+**Phân biệt Encoding — Hashing — Encryption:**
 
-Ba cái này trông giống nhau (đều biến chữ thành chuỗi loằng ngoằng) nhưng mục đích khác hẳn:
-- **Encoding (mã hóa biểu diễn, ví dụ Base64)** chỉ là *đổi cách viết* cho máy dễ truyền, ai cũng đảo ngược được, **không bảo mật gì cả**. Giống như viết chữ bằng bảng chữ cái Morse — ai biết Morse đều đọc được. Sai lầm kinh điển của người mới là "Base64 mật khẩu cho an toàn" — hoàn toàn sai.
-- **Hashing (băm)** là xay thông tin thành một "dấu vân tay" cố định, **không đảo ngược được**. Dùng để kiểm tra "dữ liệu có bị sửa không" và để lưu mật khẩu an toàn. Giống như xay sinh tố: từ trái cây ra ly sinh tố thì dễ, nhưng không thể từ ly sinh tố dựng lại trái cây.
-- **Encryption (mã hóa bảo mật)** mới thực sự là *khóa* thông tin lại bằng một chiếc chìa (khóa). Có chìa thì mở ra đọc được, không có chìa thì chịu. Đây mới là thứ đảm bảo bí mật.
+- **Encoding** (ví dụ Base64) — chỉ đổi cách biểu diễn dữ liệu, đảo ngược được không cần khóa, **không cung cấp bảo mật**. Base64 mật khẩu là sai lầm phổ biến.
+- **Hashing (băm)** — tạo dấu vân tay cố định, **một chiều không đảo ngược**. Dùng kiểm tra toàn vẹn và lưu mật khẩu.
+- **Encryption (mã hóa)** — khóa dữ liệu bằng khóa bí mật, đảo ngược được khi có khóa. Đây là nguyên thủy duy nhất bảo đảm bí mật.
 
-### Mã hóa đối xứng — AES nói đơn giản
+**Mã hóa đối xứng** — dùng **một khóa duy nhất** cho cả mã và giải. **AES** là chuẩn phổ biến nhất, nhanh, phù hợp khối lượng dữ liệu lớn. Mã hóa thuần không bảo đảm toàn vẹn; thực tế dùng **AEAD** (AES-GCM, ChaCha20-Poly1305) để gộp bí mật và toàn vẹn.
 
-**Mã hóa đối xứng** là kiểu dùng **một chiếc chìa khóa duy nhất** để vừa khóa vừa mở — giống ổ khóa tủ đồ ở phòng gym, ai cầm chìa cũng khóa/mở được. **AES** là tiêu chuẩn mã hóa đối xứng phổ biến nhất thế giới, nhanh và an toàn. Vấn đề nó giải quyết: khóa một lượng dữ liệu lớn (file, ổ đĩa, lưu lượng mạng) thật nhanh. Lưu ý quan trọng cho người mới: bản thân việc khóa chưa chắc chống được kẻ *sửa lén* dữ liệu, nên người ta hay dùng phiên bản "có niêm phong" gọi là **AEAD** (như AES-GCM) — vừa khóa kín vừa dán tem chống bóc.
+**Mã hóa bất đối xứng** — dùng **cặp khóa** công khai/riêng tư, giải bài toán trao khóa giữa các bên chưa từng chia sẻ bí mật. **RSA** dựa trên độ khó phân tích thừa số; **ECC** đạt cùng độ an toàn với khóa ngắn hơn; **Diffie-Hellman/ECDHE** cho phép thỏa thuận khóa chung qua kênh hở. Biến thể **ephemeral** (ECDHE) cung cấp **Forward Secrecy**: lộ khóa server về sau không giải được phiên cũ.
 
-### Mã hóa bất đối xứng — RSA, ECC, Diffie-Hellman nói đơn giản
+**Hàm băm mật mã** — biến dữ liệu thành dấu vân tay cố định với hiệu ứng **avalanche** (đổi một bit input → đổi ~50% bit output) và không đảo ngược. **SHA-256** là khuyến nghị hiện hành; **SHA-3** là dự phòng kiến trúc. **MD5 và SHA-1 đã vỡ** — cấm dùng cho mục đích bảo mật.
 
-**Mã hóa bất đối xứng** dùng **một cặp chìa khóa**: một chiếc công khai (ai cũng có) và một chiếc riêng tư (chỉ mình bạn giữ). Tưởng tượng một chiếc hộp thư: ai cũng bỏ thư vào khe (khóa công khai), nhưng chỉ người có chìa hộp mới lấy thư ra (khóa riêng). Nó giải quyết bài toán "làm sao gửi bí mật cho người mình chưa từng trao đổi chìa khóa".
-- **RSA** dựa trên việc nhân hai số nguyên tố rất lớn thì dễ, nhưng tách ngược lại thì gần như bất khả thi.
-- **ECC (mật mã đường cong elliptic)** làm việc tương tự nhưng với chìa khóa ngắn hơn nhiều mà vẫn an toàn ngang — nhẹ và nhanh hơn, hợp với điện thoại, thẻ thông minh.
-- **Diffie-Hellman / ECDHE** là mẹo để hai người *cùng pha chế ra một bí mật chung* ngay giữa chỗ đông người mà không ai nghe lén bắt được. Phiên bản "ephemeral" (tạm thời, vứt đi sau mỗi phiên) cho ta **Forward Secrecy**: lỡ sau này khóa server bị lộ thì các cuộc trò chuyện cũ đã ghi lại vẫn không giải mã được.
+**Lưu trữ mật khẩu** — không lưu dạng rõ và không dùng hash thường (quá nhanh). Dùng hàm **chậm có chủ đích, tốn bộ nhớ** (**Argon2**, **bcrypt**, **scrypt**) kèm **salt** (ngẫu nhiên riêng mỗi user) và **pepper** (bí mật chung lưu tách biệt).
 
-### Hàm băm mật mã — SHA-256, SHA-3 nói đơn giản
+**HMAC** — dùng khóa bí mật chung để xác thực toàn vẹn và nguồn gốc thông điệp. Ứng dụng: JWT, chữ ký webhook, ký request API.
 
-**Hàm băm** biến mọi dữ liệu thành một dấu vân tay ngắn, cố định. Đặc tính thần kỳ: đổi *một ký tự* trong đầu vào thì dấu vân tay đổi hoàn toàn (gọi là **avalanche** — hiệu ứng tuyết lở), và không thể từ dấu vân tay dựng lại dữ liệu gốc. Dùng để kiểm tra file có bị hỏng/sửa không, để lưu mật khẩu, để ký số. **SHA-256** là loại đang được tin dùng; **SHA-3** là loại dự phòng có kiến trúc khác để đa dạng rủi ro. Người mới cần nhớ: **MD5 và SHA-1 đã "vỡ"** (kẻ xấu tạo được hai file khác nhau cùng dấu vân tay), nên tuyệt đối không dùng cho mục đích bảo mật nữa.
+**Chữ ký số** — ký bằng **khóa riêng**, kiểm tra bằng **khóa công khai**; bảo đảm đồng thời toàn vẹn, xác thực và chống chối bỏ. Ngược chiều với mã hóa bất đối xứng về vai trò của cặp khóa.
 
-### Lưu trữ mật khẩu an toàn — nói đơn giản
+**PKI & X.509** — hệ thống chứng chỉ bảo đảm khóa công khai thuộc đúng chủ thể. **CA (Certificate Authority)** ký bảo đảm **chứng chỉ X.509**; cơ chế **thu hồi** (CRL, OCSP) hủy chứng chỉ bị lộ hoặc cấp sai. Đây là nền tảng của HTTPS.
 
-Không bao giờ lưu mật khẩu dạng chữ thật, và cũng **không** dùng hàm băm thường (như SHA-256) vì nó quá nhanh — máy tính mạnh thử hàng tỷ mật khẩu mỗi giây. Ta cần loại hàm **cố tình chạy chậm** và tốn bộ nhớ như **bcrypt**, **scrypt**, **Argon2** để kẻ tấn công đoán cũng đuối sức. Thêm hai mẹo: **salt** (một chuỗi ngẫu nhiên riêng cho mỗi người, để hai người trùng mật khẩu vẫn ra dấu vân tay khác nhau) và **pepper** (một bí mật chung cất riêng nơi an toàn). Đây là lý do "rò rỉ database mật khẩu" không tự động đồng nghĩa với "lộ mật khẩu" nếu làm đúng.
+**Mô hình rủi ro** — bốn khái niệm cần phân biệt: **Vulnerability** (điểm yếu), **Threat** (tác nhân đe dọa), **Exploit** (công cụ khai thác), **Risk** (= Likelihood × Impact). Định danh dùng **CVE** (lỗ hổng cụ thể), **CWE** (loại điểm yếu chung), **CVSS** (thang điểm 0–10).
 
-### HMAC — nói đơn giản
-
-**HMAC** là cách dùng một khóa bí mật chung để dán "tem niêm phong" lên một thông điệp, chứng minh hai điều: thông điệp không bị sửa, và nó đến từ người biết khóa. Giống như con dấu sáp trên phong thư ngày xưa — chỉ ai có khuôn dấu mới đóng được, và phong thư bị bóc ra thì lộ. Dùng nhiều trong token đăng nhập (JWT), chữ ký webhook, ký request gọi API.
-
-### Chữ ký số — nói đơn giản
-
-**Chữ ký số** giống chữ ký tay nhưng mạnh hơn nhiều: bạn dùng *khóa riêng* của mình để ký, và bất kỳ ai cũng dùng *khóa công khai* của bạn để kiểm tra chữ ký đó là thật. Nó cho cả ba thứ một lúc: dữ liệu nguyên vẹn, đúng người ký, và người ký không chối được. Khác với mã hóa ở chỗ chiều ngược lại: mã hóa thì khóa công khai để khóa, còn ký thì khóa riêng để ký.
-
-### PKI & X.509 — nói đơn giản
-
-Vấn đề: làm sao tin rằng khóa công khai của "ngân-hang.com" đúng là của ngân hàng chứ không phải kẻ giả mạo? Câu trả lời là **PKI** — một hệ thống *giấy chứng nhận* (gọi là **chứng chỉ X.509**) do các tổ chức uy tín (**CA — Certificate Authority**) cấp và ký bảo đảm. Giống như hộ chiếu do nhà nước cấp: bạn tin hộ chiếu vì tin cơ quan cấp nó. Có cả cơ chế **thu hồi** (CRL, OCSP) để hủy chứng chỉ khi nó bị lộ hoặc cấp sai. Đây chính là thứ làm nên ổ khóa xanh HTTPS trên trình duyệt.
-
-### Mô hình rủi ro & quản lý lỗ hổng — nói đơn giản
-
-Phần này dạy cách *suy nghĩ* về nguy hiểm chứ không phải thuật toán. Bốn từ cần phân biệt: **Vulnerability** (điểm yếu — cái cửa sổ không cài chốt), **Threat** (mối đe dọa — tên trộm có thể vào), **Exploit** (công cụ khai thác — cái xà beng cụ thể), và **Risk** (rủi ro = khả năng xảy ra × mức thiệt hại). Để gọi tên lỗ hổng cho thống nhất, người ta dùng mã **CVE** (một ca lỗi cụ thể, như "ca bệnh") và **CWE** (loại lỗi chung, như "loại bệnh"), còn **CVSS** là thang điểm 0–10 để chấm mức nghiêm trọng.
-
-### Nguyên tắc thiết kế bảo mật — nói đơn giản
-
-Cuối cùng là vài "châm ngôn" để thiết kế hệ thống cho chắc, ví dụ: **Least Privilege** (chỉ cấp quyền tối thiểu đủ dùng), **Defense in Depth** (nhiều lớp phòng thủ, một lớp thủng vẫn còn lớp khác), **Zero Trust** ("không tin ai mặc định, luôn xác minh"). Nổi bật nhất là **nguyên lý Kerckhoffs**: hệ thống phải an toàn ngay cả khi kẻ địch biết hết cách nó hoạt động, chỉ cần *chìa khóa* được giữ kín. Đó là lý do các thuật toán như AES, RSA đều công khai cho cả thế giới mổ xẻ — "giấu thuật toán" không phải là bảo mật thật.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+**Nguyên tắc thiết kế** — gồm **Least Privilege**, **Defense in Depth**, **Zero Trust** và đặc biệt là **nguyên lý Kerckhoffs**: hệ thống phải an toàn ngay cả khi kẻ địch biết toàn bộ cơ chế, chỉ cần khóa được giữ kín. Đây là lý do AES, RSA, SHA-256 đều là chuẩn mở.
 
 > Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ KHÁI NIỆM → CƠ CHẾ BÊN TRONG (mức bit/byte/bước) → VÍ DỤ THỰC TẾ CHẠY ĐƯỢC → LƯU Ý BẢO MẬT. Các con số kỹ thuật bám theo NIST FIPS / RFC; chỗ nào cần kiểm chứng thêm sẽ ghi rõ.
 
@@ -325,6 +301,22 @@ session-key-material
 ```
 
 RSA chỉ mã hóa được dữ liệu nhỏ hơn modulus → thực tế dùng **hybrid encryption**: RSA mã hóa một khóa AES ngẫu nhiên, AES mã hóa dữ liệu lớn.
+
+```
+Sơ đồ mã hóa lai (hybrid encryption):
+
+Bên gửi                                              Bên nhận
+────────                                             ────────
+data (lớn) ──┐
+             │
+   K_sym ────┼──► AES-GCM(K_sym, data) ─► ciphertext ─────────► AES-GCM giải ─► data
+ (ngẫu nhiên)│                                                       ▲
+             │                                                       │ K_sym
+             └──► RSA-OAEP(pub, K_sym) ─► enc_key ──────────► RSA giải (priv)
+                  (bất đối xứng trao khóa)            (đối xứng mã dữ liệu khối lớn)
+```
+
+Bất đối xứng (RSA/ECDH) chỉ làm nhiệm vụ **trao khóa phiên** an toàn; khóa đối xứng (AES) gánh phần mã hóa khối lượng dữ liệu lớn vì nhanh hơn nhiều. Đây chính là mô hình TLS dùng cho mọi phiên HTTPS.
 
 ### 4.4.2. ECC — Elliptic Curve Cryptography
 

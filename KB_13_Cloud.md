@@ -1,64 +1,24 @@
-# Chương 13 — Bảo mật Đám mây (AWS & GCP)
+# Chương 13 — Bảo mật Đám mây
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách giữ an toàn cho mọi thứ bạn đặt trên "đám mây" — tức là khi bạn thuê máy chủ, ổ cứng, cơ sở dữ liệu của những công ty như Amazon (AWS) hay Google (GCP) thay vì tự mua máy về nhà. Nó quan trọng vì ngày nay gần như mọi ứng dụng, website, dữ liệu khách hàng đều nằm trên đám mây; chỉ cần cấu hình sai một chỗ là cả kho dữ liệu có thể lộ ra Internet cho bất kỳ ai. Phần lớn các vụ rò rỉ dữ liệu lớn trên báo đều không phải do hacker phá được Amazon, mà do người dùng để hớ. Hiểu chương này là hiểu cách "khóa cửa" cho ngôi nhà trên mây của mình.
+**Bảo mật đám mây** là tập hợp các biện pháp bảo vệ tài nguyên (compute, storage, database, mạng) được vận hành trên hạ tầng của nhà cung cấp như AWS hoặc GCP, thay vì hạ tầng tự sở hữu (on-premises). Vấn đề cốt lõi mà nó giải quyết: trên đám mây, một sai sót cấu hình duy nhất có thể phơi toàn bộ dữ liệu ra Internet công khai, và phần lớn sự cố rò rỉ dữ liệu thực tế bắt nguồn từ lỗi cấu hình phía khách hàng — không phải từ việc nhà cung cấp bị xâm nhập.
 
-Dưới đây là các "nhân vật chính" sẽ xuất hiện ở phần sau, giải thích bằng ngôn ngữ thật bình dân.
+Chương trình bày các khối kiến thức sau, mỗi khối kèm định nghĩa và vấn đề nó giải quyết:
 
-### Mô hình dịch vụ IaaS / PaaS / SaaS — nói đơn giản
-
-Hãy tưởng tượng bạn muốn có một bữa tối. **IaaS** giống như bạn thuê một căn bếp đầy đủ dụng cụ — bạn tự nấu, tự rửa, tự lo nguyên liệu (bạn quản nhiều nhất). **PaaS** giống như mua nguyên liệu sơ chế sẵn, chỉ việc bỏ vào nồi (nhà cung cấp lo phần dưới, bạn lo phần ứng dụng). **SaaS** là vào nhà hàng gọi món, ăn xong đứng dậy đi (bạn gần như không phải lo gì ngoài dữ liệu của mình). Vì sao cần phân biệt: vì nó quyết định **ai chịu trách nhiệm vá lỗi và khóa cửa ở tầng nào** — nhầm chỗ này là gốc rễ của hầu hết sự cố.
-
-### Shared Responsibility Model (Trách nhiệm chung) — nói đơn giản
-
-Đây là bản "hợp đồng phân chia ai lo việc gì" giữa bạn và nhà cung cấp đám mây. Amazon lo "bảo mật CỦA đám mây" (nhà cửa, điện nước, tường rào vật lý); bạn lo "bảo mật TRONG đám mây" (khóa cửa phòng mình, ai được vào, dữ liệu để đâu). Cần nó vì rất nhiều người tưởng "đã lên cloud là Amazon lo hết" — thực ra phần dễ sai nhất lại nằm ở phía bạn.
-
-### IAM — quản lý danh tính và quyền truy cập — nói đơn giản
-
-IAM là **hệ thống cấp thẻ ra vào và phân quyền** cho cả công ty trên cloud: ai là ai, ai được mở cửa nào, làm được việc gì. Nó dùng các "tài liệu phân quyền" viết bằng JSON để ghi rõ "người này được đọc kho A, không được xóa kho B". Vì sao cần: nếu phát thẻ vạn năng cho tất cả mọi người thì chỉ cần một thẻ rơi vào tay kẻ xấu là mất sạch — IAM giúp mỗi người chỉ có đúng quyền tối thiểu cần thiết.
-
-### VPC — mạng riêng ảo — nói đơn giản
-
-VPC là **khu đất riêng có hàng rào** mà bạn dựng lên trong đám mây để đặt máy chủ vào đó, tách biệt với người khác. Bên trong bạn chia thành các "khu" (subnet): khu công khai có cổng ra đường lớn (Internet), khu kín thì không cho ai bên ngoài vào thẳng. Cần nó để máy chủ chứa dữ liệu nhạy cảm (như cơ sở dữ liệu) nằm trong khu kín, không phơi ra Internet.
-
-### Security Group và Network ACL — nói đơn giản
-
-Cả hai đều là **tường lửa** — tức người gác cổng quyết định gói tin nào được vào/ra. **Security Group** giống bảo vệ thông minh đứng ngay cửa từng căn phòng (máy chủ): nhớ được "ai vừa đi ra thì cho đi vào lại". **Network ACL** giống bảo vệ ở cổng cả khu phố, máy móc hơn, không nhớ gì cả nên phải ghi rõ luật cho cả chiều vào lẫn chiều ra. Cần chúng để chặn kẻ lạ gõ cửa những cổng nguy hiểm (như cổng quản trị từ xa).
-
-### Amazon S3 — kho lưu trữ đối tượng — nói đơn giản
-
-S3 là **cái kho khổng lồ trên mây** để chứa file: ảnh, video, bản sao lưu, tài liệu. Mỗi kho gọi là "bucket". Vì sao nó hay xuất hiện trong các vụ rò rỉ: rất dễ vô tình bật chế độ "ai cũng đọc được" (public), thế là toàn bộ file trong kho phơi ra Internet. Chương sẽ dạy cách bật "Block Public Access" — chốt cửa để không bao giờ lỡ tay mở kho cho cả thiên hạ.
-
-### KMS — quản lý khóa mã hóa — nói đơn giản
-
-KMS là **két sắt giữ chìa khóa**. Dữ liệu của bạn được mã hóa (xáo trộn để người ngoài đọc không hiểu), và muốn xáo/giải xáo thì cần chìa khóa — KMS giữ chìa đó cẩn thận, ghi lại mọi lần ai mượn chìa. Cần nó vì mã hóa mà để chìa khóa vứt lung tung thì cũng như khóa cửa rồi dán chìa lên cửa.
-
-### CloudTrail và CloudWatch — nói đơn giản
-
-**CloudTrail** là **camera an ninh ghi lại mọi hành động**: ai đã gọi lệnh gì, lúc nào, từ địa chỉ nào. Khi có sự cố, đây là cuốn băng để tua lại điều tra. **CloudWatch** là **bảng đồng hồ + chuông báo động**: theo dõi tình trạng hệ thống và réo lên khi có điều bất thường (ví dụ tài khoản root vừa đăng nhập). Cần chúng vì "không ghi log thì không bao giờ biết mình đã bị tấn công".
-
-### GuardDuty — nói đơn giản
-
-GuardDuty là **bảo vệ biết suy luận**: nó tự đọc các cuốn băng camera (log) và cảnh báo khi thấy hành vi đáng ngờ — ví dụ chìa khóa của một máy chủ bỗng được dùng từ một nước lạ. Cần nó vì con người không thể ngồi đọc hàng triệu dòng log mỗi ngày; GuardDuty làm việc đó tự động.
-
-### IMDS — dịch vụ metadata của máy ảo — nói đơn giản
-
-Mỗi máy ảo trên cloud có một "quầy thông tin nội bộ" ở địa chỉ cố định `169.254.169.254`, nơi nó tự lấy chìa khóa tạm để làm việc. Vấn đề: phiên bản cũ (IMDSv1) ai hỏi cũng đưa, nên nếu ứng dụng có lỗ hổng (SSRF), kẻ tấn công có thể lừa máy chủ tự ra quầy lấy chìa rồi đưa cho chúng. IMDSv2 sửa điều này bằng cách bắt phải có "vé" mới được hỏi. Cần hiểu để biết vì sao phải luôn ép dùng IMDSv2.
-
-### Organizations và SCP — nói đơn giản
-
-Khi công ty có nhiều tài khoản cloud, **Organizations** là cách gom chúng thành một cây quản lý chung. **SCP** là **luật trần áp từ trên xuống**: dù ai đó trong một tài khoản con có quyền cao đến đâu, họ cũng không vượt qua được luật trần này (ví dụ "cấm tắt camera an ninh"). Cần nó để đặt lan can an toàn cho cả tổ chức, không lệ thuộc vào việc từng người có cấu hình đúng hay không.
-
-### GCP — bản tương đương của Google — nói đơn giản
-
-GCP là dịch vụ đám mây của Google, có gần như đầy đủ các "nhân vật" tương tự AWS chỉ khác tên gọi (ví dụ S3 ↔ Cloud Storage, IAM Role ↔ Service Account, CloudTrail ↔ Audit Logs). Chương có bảng ánh xạ để bạn học một bên rồi suy ra bên kia. Cần biết vì nhiều công ty dùng cả hai.
-
-### Các kiểu tấn công, CSPM và Secret Manager — nói đơn giản
-
-Phần cuối gom lại **những cách kẻ xấu hay đột nhập** (cấu hình sai, lộ chìa khóa trong mã nguồn, leo thang quyền) và **những công cụ tự động đi tuần** để bắt lỗi: **CSPM** giống thanh tra đi kiểm tra xem mọi cửa đã khóa đúng chuẩn chưa; **Secret Manager** là nơi cất giữ mật khẩu, chìa khóa API đàng hoàng thay vì viết thẳng vào mã nguồn (rất dễ lộ). Cần chúng vì phòng bệnh và phát hiện sớm luôn rẻ hơn chữa cháy.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+- **Mô hình dịch vụ IaaS / PaaS / SaaS** — ba mức phân tầng theo "ai vận hành tầng nào" trong ngăn xếp. IaaS giao khách hàng quản nhiều nhất (guest OS, runtime, app); SaaS giao ít nhất (chủ yếu dữ liệu). Giải quyết: xác định ranh giới trách nhiệm vá lỗi và cấu hình ở từng tầng — nhầm ranh giới là gốc rễ của hầu hết sự cố.
+- **Shared Responsibility Model (mô hình trách nhiệm chung)** — khung phân định trách nhiệm bảo mật giữa nhà cung cấp ("security OF the cloud": phần cứng, hypervisor, mạng vật lý) và khách hàng ("security IN the cloud": IAM, mã hóa, cấu hình mạng, dữ liệu). Giải quyết: chống ngộ nhận "lên cloud là nhà cung cấp lo hết".
+- **IAM (Identity and Access Management)** — hệ thống quản lý danh tính và phân quyền, biểu diễn quyền bằng tài liệu policy JSON. Giải quyết: thực thi least privilege, mỗi danh tính chỉ có đúng quyền tối thiểu cần thiết.
+- **VPC (Virtual Private Cloud)** — mạng ảo cô lập, chia thành subnet public (có đường ra Internet) và private (không phơi ra ngoài). Giải quyết: cô lập tài nguyên nhạy cảm như database khỏi truy cập trực tiếp từ Internet.
+- **Security Group và Network ACL** — hai cơ chế tường lửa: Security Group hoạt động ở mức instance và có trạng thái (stateful); Network ACL hoạt động ở mức subnet và không trạng thái (stateless). Giải quyết: kiểm soát luồng vào/ra, đặc biệt chặn các cổng quản trị nhạy cảm.
+- **Amazon S3** — kho lưu trữ đối tượng theo đơn vị bucket. Giải quyết: lưu file quy mô lớn; rủi ro chính là cấu hình public ngoài ý muốn, kiểm soát bằng Block Public Access.
+- **KMS (Key Management Service)** — dịch vụ quản lý khóa mã hóa, giữ khóa gốc trong HSM và ghi log mọi lần sử dụng. Giải quyết: bảo vệ khóa mã hóa và tạo dấu vết audit cho từng lần giải mã.
+- **CloudTrail và CloudWatch** — CloudTrail ghi nhật ký mọi lệnh gọi API (nguồn điều tra chính); CloudWatch cung cấp metrics, log và cảnh báo. Giải quyết: khả năng quan sát và phát hiện hành vi bất thường.
+- **GuardDuty** — dịch vụ phát hiện mối đe dọa dựa trên ML và threat intel, phân tích log tự động. Giải quyết: phát hiện hành vi đáng ngờ ở quy mô không thể xử lý thủ công.
+- **IMDS (Instance Metadata Service)** — dịch vụ cấp credential tạm thời cho instance tại địa chỉ link-local `169.254.169.254`. IMDSv1 dễ bị khai thác qua SSRF; IMDSv2 yêu cầu session token. Giải quyết: lý do bắt buộc ép dùng IMDSv2.
+- **Organizations và SCP (Service Control Policy)** — Organizations gom nhiều tài khoản thành cây quản lý; SCP đặt trần quyền tối đa áp từ cấp tổ chức xuống, ràng buộc cả root của tài khoản con. Giải quyết: thiết lập guardrail an toàn không phụ thuộc cấu hình của từng tài khoản.
+- **GCP và bảng ánh xạ tương đương** — GCP cung cấp các dịch vụ tương đương AWS với tên gọi khác (S3 ↔ Cloud Storage, IAM Role ↔ Service Account, CloudTrail ↔ Audit Logs). Giải quyết: học một nền tảng và suy ra nền tảng còn lại trong môi trường đa đám mây.
+- **Tấn công đám mây, CSPM và Secret Manager** — các đường tấn công phổ biến (misconfiguration, lộ credential trong mã nguồn, leo thang quyền), công cụ CSPM quét cấu hình sai liên tục, và Secret Manager lưu trữ bí mật tập trung thay vì hardcode. Giải quyết: phòng ngừa và phát hiện sớm với chi phí thấp hơn xử lý sự cố.
 
 > Chương này là tài liệu tham chiếu kỹ thuật để tự học và tra cứu. Mọi cấu trúc dữ liệu được mô tả tới mức trường/byte; mọi công cụ đều có ví dụ lệnh thật, file cấu hình thật và output mẫu. Nơi nào con số có thể thay đổi theo thời gian (giới hạn dịch vụ, region, định dạng nội bộ chưa công bố), tài liệu ghi rõ "cần kiểm chứng".
 
@@ -107,6 +67,29 @@ Khung phân định trách nhiệm bảo mật. AWS gọi tắt:
 - **Security IN the cloud** — của khách hàng: IAM, mã hóa dữ liệu, cấu hình Security Group, vá guest OS (với IaaS), phân loại dữ liệu.
 
 GCP dùng cụm "Shared fate" (số phận chung) — nhấn mạnh Google chủ động cung cấp blueprint an toàn mặc định, nhưng phân định trách nhiệm về cơ bản tương đương.
+
+Sơ đồ ranh giới trách nhiệm:
+
+```
+        ===== SECURITY IN THE CLOUD (Khách hàng) =====
+        +-----------------------------------------------+
+        |  Dữ liệu khách hàng + phân loại dữ liệu        |
+        |  IAM / policy / quản lý danh tính & truy cập   |
+        |  Cấu hình Security Group, NACL, firewall       |
+        |  Mã hóa at-rest / in-transit (bật & cấu hình)  |
+        |  Vá guest OS, runtime, ứng dụng (mức IaaS)     |
+        +-----------------------------------------------+
+                          | ranh giới phân định
+        +-----------------------------------------------+
+        |  Hypervisor / ảo hóa                           |
+        |  Dịch vụ nền (compute, storage, DB engine)     |
+        |  Mạng vật lý, region / AZ                       |
+        |  Phần cứng, cơ sở vật lý (datacenter)          |
+        +-----------------------------------------------+
+        ===== SECURITY OF THE CLOUD (Nhà cung cấp) =====
+```
+
+Đường phân định dịch chuyển lên/xuống theo mô hình dịch vụ (IaaS đẩy ranh giới xuống thấp, SaaS đẩy lên cao), nhưng dữ liệu và cấu hình truy cập luôn thuộc trách nhiệm khách hàng. Đây là lý do hầu hết sự cố rò rỉ nằm ở nửa trên của sơ đồ.
 
 ### 13.2.2. Bảng phân định chi tiết theo dịch vụ
 
@@ -326,6 +309,36 @@ TOTP = HOTP(K, T)  với  T = floor((UnixTime - T0) / X)
 ---
 
 ## 13.4. AWS VPC — Virtual Private Cloud
+
+Sơ đồ kiến trúc VPC điển hình (subnet public/private, IGW/NAT, vị trí SG và NACL):
+
+```
+                          Internet
+                             |
+                       +-----------+
+                       |    IGW    |  (Internet Gateway)
+                       +-----------+
+                             |
+   VPC 10.0.0.0/16           |
+   +-------------------------|-----------------------------------+
+   |   PUBLIC SUBNET 10.0.1.0/24                                  |
+   |   route: 0.0.0.0/0 -> IGW          [NACL áp ở mức subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  NAT Gateway   |      |  Bastion/LB     | (SG ở mức ENI) |
+   |   +-------+--------+      +-----------------+                |
+   |           |                                                  |
+   |  ---------|------------------------------------------------  |
+   |   PRIVATE SUBNET 10.0.2.0/24                                 |
+   |   route: 0.0.0.0/0 -> NAT GW       [NACL áp ở mức subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  App server    |----->|  Database (RDS) | (SG ở mức ENI) |
+   |   |  (SG)          |      |  (SG)           |                |
+   |   +----------------+      +-----------------+                |
+   |     không có public IP — chỉ ra Internet QUA NAT GW          |
+   +-------------------------------------------------------------+
+```
+
+Điểm then chốt: **NACL lọc ở biên subnet (stateless)**, còn **Security Group lọc ngay tại ENI của từng instance (stateful)**. Tài nguyên nhạy cảm (DB) đặt trong private subnet, chỉ ra Internet một chiều qua NAT Gateway và không nhận kết nối đến từ Internet.
 
 ### 13.4.1. CIDR và phân bổ địa chỉ
 

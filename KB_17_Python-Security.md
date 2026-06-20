@@ -1,67 +1,28 @@
-# Chương 17 — Python cho An ninh mạng & Tự động hóa
+# Chương 17 — Lập trình & Tự động hóa cho bảo mật
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về chuyện rất đơn giản: **dùng ngôn ngữ Python để làm các công việc an ninh mạng nhanh và tự động**, thay vì làm tay. Tưởng tượng bạn là một người bảo vệ tòa nhà: thay vì tự mình đi soi từng cánh cửa, từng cuốn sổ ghi chép, bạn viết một "trợ lý robot" nhỏ bằng Python để nó làm hộ — quét cửa, đọc nhật ký, báo động khi có kẻ lạ. Việc này quan trọng vì trong bảo mật, dữ liệu cần xử lý rất lớn (log vài GB, hàng nghìn máy chủ, hàng triệu gói tin), con người không kham nổi, mà Python lại viết nhanh và có sẵn "đồ nghề" cho gần như mọi việc.
+Chương này trình bày việc dùng **Python làm ngôn ngữ tự động hóa cho an ninh mạng**: thay thế các thao tác thủ công lặp lại bằng script và công cụ. Đây là nhu cầu bắt buộc vì khối lượng dữ liệu bảo mật vượt khả năng xử lý thủ công — log nhiều GB, hàng nghìn máy chủ, hàng triệu gói tin — trong khi Python cho tốc độ phát triển nhanh và hệ sinh thái thư viện bao phủ gần như mọi tác vụ.
 
-Dưới đây là các "đồ nghề" lớn trong chương, giải thích theo kiểu kể chuyện cho người mới. Đọc xong mấy ý này, bạn sẽ biết mỗi phần dùng để làm gì trước khi lao vào chi tiết.
+**Định nghĩa cốt lõi.** Tự động hóa bảo mật là quá trình chuyển các tác vụ thu thập, phân tích, ra quyết định và phản ứng sự cố thành mã chạy được, có thể lặp lại và kiểm chứng. Python đóng vai trò **ngôn ngữ keo (glue language)**: phần logic viết bằng Python, phần tính toán nặng giao cho thư viện C đã tối ưu và được audit.
 
-### Vì sao lại là Python — nói đơn giản
-- **Python là "ngôn ngữ keo" (glue language)**: nó không phải nhanh nhất, nhưng nó nối được mọi thứ lại với nhau dễ dàng. Giống như băng keo trong nhà — không sang trọng nhưng việc gì cũng dán được. Bạn viết phần logic bằng Python, còn phần nặng nhọc thì để các thư viện viết sẵn (bằng C, đã tối ưu) gánh. Nhờ vậy dân bảo mật dựng được công cụ rất nhanh.
+**Các nhóm công cụ trong chương — khái niệm và vấn đề chúng giải quyết:**
 
-### Cú pháp nền tảng & `bytes` vs `str` — nói đơn giản
-- **`bytes` và `str`** là hai cách máy tính hiểu dữ liệu. `str` là chữ cho người đọc ("héllo"); `bytes` là dãy số 0–255 thô mà máy và mạng thực sự gửi đi. Giống như sự khác nhau giữa một câu nói (chữ) và file ghi âm câu đó (số). Trong bảo mật ta hay làm việc trực tiếp với "file ghi âm" (gói tin, mã băm), nên phân biệt rõ hai loại này tránh được rất nhiều lỗi.
-- **`struct`** là cái khuôn để đọc/ghi dữ liệu nhị phân theo từng ô. Như một cái khay đựng thuốc có ngăn rõ ràng: ô này 1 byte, ô kia 2 byte. Nó giúp bạn bóc tách một gói tin mạng thành từng trường có ý nghĩa.
+- **Nền tảng cú pháp (`bytes`/`str`, `struct`):** phân biệt dữ liệu văn bản (`str`) với dữ liệu nhị phân thô (`bytes`) mà mạng và crypto thực sự truyền; `struct` bóc tách gói tin thành từng trường. Giải quyết: nguồn lỗi số một khi parse packet và tính hash.
+- **`socket`:** tạo kết nối TCP/UDP cấp thấp. Giải quyết: xây port scanner — bước trinh sát cơ bản trong kiểm thử an ninh.
+- **`requests`:** HTTP client gọi REST API theo cách lập trình. Giải quyết: tự động tạo ticket, gửi cảnh báo, lấy dữ liệu từ Jira/Slack/SIEM.
+- **`re` (regex):** mô tả khuôn mẫu để trích thông tin từ văn bản phi cấu trúc. Giải quyết: lọc sự kiện cần thiết trong log hàng triệu dòng.
+- **`subprocess` & `os`:** gọi chương trình hệ thống và thao tác file/quyền. Giải quyết: tích hợp công cụ ngoài; đồng thời là điểm nóng số một của **command injection**, chương trình bày cách gọi an toàn.
+- **`json`:** định dạng trao đổi dữ liệu giữa các chương trình. Giải quyết: ngôn ngữ chung với API và file cấu hình mà cả người lẫn máy đọc được.
+- **`scapy`:** dựng, gửi và sniff gói tin tới từng trường header. Giải quyết: các tác vụ socket thường không làm được — quét kín đáo, phát hiện ARP spoofing.
+- **`paramiko`:** client SSHv2 thuần Python. Giải quyết: tự động đăng nhập, chạy lệnh audit cấu hình trên fleet hàng trăm máy chủ.
+- **`boto3`:** SDK AWS chính thức. Giải quyết: audit cấu hình cloud (S3 public, security group mở), thu thập log, phản ứng sự cố tự động.
+- **`hashlib` & `hmac`:** hàm băm mật mã và mã xác thực thông điệp có khóa. Giải quyết: kiểm tra toàn vẹn file và xác thực nguồn gốc thông điệp (webhook) chống giả mạo.
+- **`secrets`:** sinh giá trị ngẫu nhiên bằng CSPRNG của OS. Giải quyết: tạo token/session ID không đoán được, tránh bẫy `random` (Mersenne Twister) vốn dự đoán được.
+- **Secure coding & SAST:** tập thói quen viết mã không tạo lỗ hổng (injection, path traversal) và công cụ (Bandit) tự dò anti-pattern. Giải quyết: phát hiện sớm sai sót do con người bỏ sót.
+- **IR Agent & Docker:** IR Agent (Incident Response) là ví dụ tổng hợp ghép các phần trên thành luồng đọc log → phát hiện → cảnh báo → phản ứng; Docker đóng gói công cụ cùng dependency vào image bất biến, chạy nhất quán và cô lập khỏi host phân tích.
 
-### `socket` — nói đơn giản
-- **`socket` là gì?** Là "ổ cắm điện thoại" để chương trình của bạn gọi điện cho một máy khác qua mạng. Khi bạn gõ một địa chỉ web, máy bạn cũng dùng socket để bắt liên lạc.
-- **Giải quyết vấn đề gì?** Nó cho phép viết công cụ quét cổng (port scanner) — tức là đi gõ cửa từng "phòng" của một máy chủ để xem cửa nào mở, cửa nào đóng. Đây là bước trinh sát cơ bản nhất trong kiểm thử an ninh.
-
-### `requests` — nói đơn giản
-- **`requests` là gì?** Là thư viện giúp Python "lướt web" và gọi các dịch vụ trên internet một cách lập trình, thay vì bấm chuột. Như một nhân viên gửi và nhận thư tự động.
-- **Giải quyết vấn đề gì?** Hầu hết hệ thống ngày nay (Jira, Slack, công cụ giám sát) đều cho phép điều khiển qua "API" — một kiểu cửa dịch vụ. `requests` là cách dễ nhất để robot của bạn tự tạo ticket cảnh báo, gửi tin nhắn báo động, lấy dữ liệu về phân tích.
-
-### `re` (regex) — nói đơn giản
-- **Regex là gì?** Là cách mô tả "khuôn mẫu chữ" để tìm và bắt thông tin trong văn bản lộn xộn. Giống như dạy máy: "tìm cho tôi mọi chuỗi trông giống một địa chỉ IP". 
-- **Giải quyết vấn đề gì?** Nhật ký hệ thống (log) là hàng triệu dòng chữ. Regex giúp lọc ra đúng thông tin cần — ví dụ "ai đang dò mật khẩu SSH của ta", chỉ trong vài dòng code.
-
-### `subprocess` & `os` — nói đơn giản
-- **`subprocess` là gì?** Là cách để Python ra lệnh cho hệ điều hành chạy một chương trình khác (như gõ lệnh trong cửa sổ dòng lệnh), rồi đọc kết quả về.
-- **Giải quyết vấn đề gì?** Nhiều công cụ bảo mật là chương trình riêng; `subprocess` giúp robot của bạn gọi chúng. Nhưng đây cũng là chỗ nguy hiểm nhất: nếu làm ẩu, kẻ xấu có thể "nhét" thêm lệnh độc vào — gọi là command injection. Chương sẽ chỉ cách làm an toàn.
-
-### `json` — nói đơn giản
-- **JSON là gì?** Là một định dạng văn bản gọn để trao đổi dữ liệu giữa các chương trình, gồm các cặp "tên: giá trị". Như một biểu mẫu điền sẵn ô. Gần như mọi API trên đời nói chuyện bằng JSON.
-- **Giải quyết vấn đề gì?** Nó là "ngôn ngữ chung" để công cụ của bạn nhận dữ liệu từ API và gửi đi, hoặc lưu file cấu hình mà cả người lẫn máy đều đọc được.
-
-### `scapy` — nói đơn giản
-- **`scapy` là gì?** Là bộ đồ nghề cho phép bạn tự tay nặn ra từng gói tin mạng, gửi đi, và "nghe lén" (sniff) các gói chạy qua. Như được mở nắp capo xe để chỉnh từng con ốc của mạng.
-- **Giải quyết vấn đề gì?** Nó cho phép làm những việc tinh vi mà socket thường không làm được — ví dụ quét kiểu kín đáo hơn, hoặc phát hiện kẻ giả mạo trong mạng nội bộ (ARP spoofing).
-
-### `paramiko` — nói đơn giản
-- **`paramiko` là gì?** Là thư viện giúp Python tự đăng nhập SSH vào máy chủ từ xa một cách an toàn (SSH là cách gõ lệnh lên máy khác qua kết nối mã hóa).
-- **Giải quyết vấn đề gì?** Khi bạn có hàng trăm máy chủ cần kiểm tra cấu hình, không ai đăng nhập tay từng cái. `paramiko` để robot tự vào, chạy lệnh kiểm tra, lấy kết quả về.
-
-### `boto3` — nói đơn giản
-- **`boto3` là gì?** Là bộ điều khiển chính thức để Python ra lệnh cho dịch vụ đám mây AWS của Amazon.
-- **Giải quyết vấn đề gì?** Hạ tầng nay chạy phần lớn trên cloud. `boto3` giúp tự động kiểm tra xem có "kho lưu trữ" nào bị mở công khai ra internet không, thu thập nhật ký, và phản ứng khi có sự cố — tự động thay vì dò bằng tay.
-
-### `hashlib` & `hmac` — nói đơn giản
-- **Hash (băm) là gì?** Là biến một dữ liệu bất kỳ thành một "dấu vân tay" ngắn cố định. Đổi một chữ trong file thì dấu vân tay đổi hoàn toàn — nên nó dùng để kiểm tra file có bị sửa đổi không.
-- **HMAC là gì?** Là dấu vân tay có kèm một "khóa bí mật", để chứng minh thông điệp đúng là do người biết khóa gửi, không bị giả mạo dọc đường. Giải quyết vấn đề tin tưởng: làm sao biết tin nhắn webhook thực sự đến từ nguồn thật.
-
-### `secrets` — nói đơn giản
-- **`secrets` là gì?** Là cách sinh ra các con số/chuỗi ngẫu nhiên *thật sự khó đoán* để làm token, mật khẩu tạm, mã phiên đăng nhập.
-- **Giải quyết vấn đề gì?** Có một module ngẫu nhiên cũ tên `random` trông cũng ngẫu nhiên nhưng thực ra đoán được — kẻ tấn công xem vài kết quả là tính ra phần còn lại. `secrets` tránh đúng cái bẫy chết người đó.
-
-### Secure coding & SAST — nói đơn giản
-- **Secure coding là gì?** Là tập thói quen viết code sao cho không tự đào hố cho mình: không để kẻ xấu chèn lệnh, chèn câu truy vấn cơ sở dữ liệu độc (SQL injection), hay đọc trộm file ngoài phạm vi.
-- **SAST là gì?** Viết tắt của "kiểm tra code tĩnh" — có công cụ (như Bandit) tự đọc code của bạn và chỉ ra chỗ nguy hiểm, giống một người soát lỗi chính tả nhưng cho lỗi bảo mật. Giải quyết vấn đề con người hay quên; máy soát giúp bắt sớm.
-
-### IR Agent & Docker — nói đơn giản
-- **IR Agent là gì?** "IR" là Incident Response (phản ứng sự cố). IR Agent là con robot ghép tất cả mảnh ghép trên lại: đọc log → phát hiện tấn công → tạo cảnh báo → báo cho người. Đây là ví dụ tổng hợp cuối chương.
-- **Docker là gì?** Là cách đóng gói công cụ cùng mọi thứ nó cần vào một "hộp" chạy y hệt nhau ở mọi nơi. Như đồ ăn đóng hộp: mở ra đâu cũng dùng được, không lo "máy tôi chạy được mà máy anh thì không", và cô lập để không làm bẩn máy chủ.
-
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+Các mục sau đi sâu vào cơ chế kỹ thuật của từng thành phần.
 
 > Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo cấu trúc: **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT**. Các con số kỹ thuật đều cố gắng bám theo spec/RFC/manual chính thức; những điểm cần kiểm chứng đều được ghi rõ.
 
@@ -967,6 +928,24 @@ Giải thích: `-ll` lọc theo severity; mỗi mã `Bxxx` ứng với một tes
 ## 17.15. Ghép nối — Một IR Agent mini (kết hợp re + requests + json + secrets)
 
 Pattern thực tế: parser log → phát hiện brute-force → tạo ticket SIEM/Jira → notify Slack. Kết hợp các phần trên:
+
+```
+   NGUỒN DỮ LIỆU            PHÂN TÍCH              QUYẾT ĐỊNH             HÀNH ĐỘNG / API
+  +--------------+      +---------------+      +----------------+      +------------------+
+  | auth.log     | ---> | re: trích IP  | ---> | đếm >= ngưỡng? |--no--> (bỏ qua / log)
+  | (đọc dòng    |      | + đếm lần thử |      |  (Counter)     |
+  |  bằng        |      | (Counter)     |      +----------------+
+  |  generator)  |      +---------------+              | yes
+  +--------------+                                     v
+                                            +--------------------+      +----------------+
+                                            | json.dumps báo cáo | ---> | requests.post  |
+                                            +--------------------+      | -> Jira ticket |
+                                                                        | -> Slack alert |
+                                                                        +----------------+
+                                                            (secret lấy từ env, timeout mọi call)
+```
+
+Luồng một script tự động hóa luôn đi theo bốn chặng: **nhận dữ liệu → phân tích → ra quyết định theo ngưỡng → gọi API để hành động/cảnh báo**. Mỗi chặng dùng một module ở các mục trên, và secret luôn nạp từ biến môi trường, mọi call mạng đều đặt timeout.
 
 ```python
 #!/usr/bin/env python3

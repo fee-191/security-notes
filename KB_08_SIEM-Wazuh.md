@@ -1,94 +1,98 @@
-# Chương 8 — SIEM & Wazuh
+# Chương 8 — SIEM & Quản lý log tập trung
 
-## Nhập môn — hiểu nôm na trước khi đi sâu
+## Tổng quan
 
-Chương này nói về cách một tổ chức "nhìn thấy" chuyện gì đang xảy ra trong toàn bộ hệ thống của mình, để phát hiện kẻ tấn công và sự cố. Trung tâm là **SIEM** (phần mềm thu gom và phân tích nhật ký) và **Wazuh** (một SIEM mã nguồn mở phổ biến). Quan trọng vì trong an toàn thông tin, "không nhìn thấy" gần như là "không phòng thủ được": không biết có người dò mật khẩu hay sửa file lạ trên máy chủ thì không thể phản ứng. Phần dưới đây giải thích từng khái niệm lớn bằng ngôn ngữ đời thường, trước khi vào chi tiết kỹ thuật.
+Chương này trình bày cách một tổ chức thu thập và phân tích nhật ký để phát hiện tấn công và sự cố trên toàn hạ tầng. Hai trọng tâm: **SIEM** (lớp phần mềm thu gom, chuẩn hóa, tương quan và lưu trữ log bảo mật) và **Wazuh** (nền tảng SIEM/HIDS mã nguồn mở triển khai đầy đủ pipeline này). Khả năng quan sát (visibility) là điều kiện tiên quyết của phòng thủ: không thu được log dò mật khẩu hay thay đổi file trên máy chủ thì không thể phát hiện và phản ứng. Các mục dưới đây định nghĩa từng khái niệm cốt lõi và bài toán nó giải quyết, trước khi đi vào chi tiết kỹ thuật.
 
-### SIEM — nói đơn giản
+### SIEM
 
-**Là gì?** Hãy tưởng tượng tòa nhà có hàng trăm camera, mỗi cái tự ghi lại của riêng nó. SIEM giống **phòng giám sát trung tâm**: kéo hình ảnh từ tất cả về một chỗ, đồng bộ giờ giấc, cho người (hoặc máy) xem tổng thể. Trong máy tính, "camera" là các bản ghi nhật ký (log) từ máy chủ, tường lửa, ứng dụng.
+**Định nghĩa.** SIEM là lớp phần mềm tập trung hóa log từ nhiều nguồn (máy chủ, tường lửa, ứng dụng, thiết bị mạng), đồng bộ thời gian, chuẩn hóa về một mô hình dữ liệu chung và phân tích tương quan để sinh cảnh báo.
 
-**Vì sao cần?** Một cuộc tấn công không để lại dấu vết ở một nơi — nó rải rác trên nhiều máy, nhiều file log, và không ai đọc nổi hàng triệu dòng log mỗi ngày. SIEM gom tất cả về một chỗ, dịch về một "ngôn ngữ" chung, rồi tự ghép nối các mẩu dấu vết để báo động khi có chuyện đáng ngờ.
+**Bài toán giải quyết.** Dấu vết của một cuộc tấn công nằm rải rác trên nhiều hệ thống và nhiều file log; khối lượng hàng triệu dòng/ngày vượt khả năng đọc thủ công. SIEM gom log về một nơi, quy về một "ngôn ngữ" chung và tự động ghép nối các mẩu dấu vết để báo động khi có hành vi đáng ngờ.
 
-### Pipeline dữ liệu (đường ống xử lý log) — nói đơn giản
+### Pipeline dữ liệu (đường ống xử lý log)
 
-**Là gì?** Là chuỗi bước mà mọi mẩu log phải đi qua, như dây chuyền nhà máy: thu thập → bóc tách → chuẩn hóa → làm giàu (dán nhãn thông tin) → tương quan (ghép nối tìm quy luật) → báo động → lưu kho.
+**Định nghĩa.** Là chuỗi bước xử lý cố định mà mọi event đi qua: thu thập (collect) → bóc tách (parse) → chuẩn hóa (normalize) → làm giàu (enrich) → tương quan (correlate) → báo động (alert) → lưu kho (store).
 
-**Vì sao cần?** Log thô mỗi nguồn viết một kiểu, rất lộn xộn; không có dây chuyền này thì chỉ là đống chữ vô nghĩa. Riêng bước **chuẩn hóa** rất quan trọng: nó khiến "địa chỉ IP" từ ba phần mềm (mỗi cái gọi một tên) đều quy về một tên, nhờ vậy mới viết được một quy tắc dùng chung.
+**Bài toán giải quyết.** Log thô mỗi nguồn một định dạng, không thể so sánh trực tiếp. Pipeline biến dữ liệu hỗn tạp thành dạng có cấu trúc, đồng nhất. Bước **chuẩn hóa** đặc biệt quan trọng: nó quy "địa chỉ IP nguồn" từ nhiều phần mềm (mỗi nơi đặt một tên trường khác nhau) về một tên trường chung, nhờ đó một rule duy nhất áp dụng được cho mọi nguồn.
 
-### Phân biệt AV / EDR / SIEM / SOAR / XDR / NDR — nói đơn giản
+### Phân biệt AV / EDR / SIEM / SOAR / XDR / NDR
 
-**Là gì?** Các "nghề" khác nhau trong đội phòng thủ, hay bị nhầm vì tên na ná:
-- **AV (Antivirus)**: bảo vệ một máy, bắt virus đã có "ảnh nhận dạng" — như bảo vệ nhận diện kẻ gian theo danh sách truy nã.
-- **EDR**: cũng một máy nhưng theo dõi **hành vi** sâu hơn (tiến trình chạy, gọi gì) — như thám tử quan sát cử chỉ đáng ngờ.
-- **NDR**: theo dõi **luồng mạng** — như camera quan sát lối đi trong tòa nhà.
-- **SIEM**: nhìn **toàn cảnh** từ mọi nguồn log (phòng giám sát trung tâm).
-- **SOAR**: lo **phản ứng tự động** theo kịch bản — như "báo cháy thì tự khóa cửa, gọi cứu hỏa".
-- **XDR**: gói hợp nhất nhiều thứ trên của cùng một hãng, ghép nối sẵn.
+Các lớp công cụ phòng thủ khác nhau về phạm vi quan sát và dữ liệu nhìn thấy:
 
-**Vì sao cần phân biệt?** Mỗi loại nhìn thấy dữ liệu khác nhau; chọn nhầm thì có góc bạn vĩnh viễn không thấy. Wazuh thú vị ở chỗ kiêm cả vai EDR nhẹ lẫn SIEM.
+- **AV (Antivirus):** bảo vệ một endpoint, chặn malware đã biết theo signature/hash.
+- **EDR (Endpoint Detection & Response):** một endpoint, giám sát sâu hành vi (process tree, syscall, registry, network của host).
+- **NDR (Network Detection & Response):** giám sát lưu lượng mạng (packet, flow, metadata) để phát hiện C2, exfiltration, lateral movement.
+- **SIEM:** quan sát toàn cảnh từ mọi nguồn log đã chuẩn hóa; tương quan, lưu trữ, điều tra, compliance.
+- **SOAR (Security Orchestration, Automation & Response):** tự động hóa phản ứng theo playbook (chặn, mở ticket, làm giàu).
+- **XDR (Extended Detection & Response):** gói hợp nhất nhiều lớp (EDR/NDR/email/cloud) của cùng một vendor, đã tương quan sẵn.
 
-### Wazuh — nói đơn giản
+**Bài toán giải quyết.** Mỗi lớp nhìn thấy tập dữ liệu khác nhau; chọn sai để lại điểm mù cố định. Wazuh kiêm đồng thời vai trò agent kiểu EDR nhẹ và SIEM.
 
-**Là gì?** Wazuh là nền tảng bảo mật miễn phí, mã nguồn mở, đóng vai trò SIEM cộng nhiều tính năng giám sát máy chủ. Nó gồm: **agent** (phần mềm nhỏ trên từng máy để thu và gửi log — như người đưa tin tại chỗ), **manager** (bộ não nhận và phân tích — như người điều phối), **indexer** (kho lưu trữ tìm kiếm nhanh — như thư viện có mục lục), và **dashboard** (màn hình cho con người xem).
+### Wazuh
 
-**Vì sao cần?** Để có một SIEM hoàn chỉnh mà không phải mua phần mềm thương mại đắt tiền. Hiểu bốn thành phần này giúp hình dung dữ liệu chảy từ máy cần giám sát đến màn hình người trực.
+**Định nghĩa.** Wazuh là nền tảng bảo mật mã nguồn mở đóng vai trò SIEM kèm nhiều tính năng giám sát endpoint. Bốn thành phần:
 
-### Agent gửi dữ liệu về manager (enrollment) — nói đơn giản
+- **Agent:** phần mềm trên mỗi endpoint, thu log/telemetry và gửi về manager.
+- **Manager:** lõi nhận, decode, áp rule và sinh alert.
+- **Indexer:** kho lưu trữ và tìm kiếm alert (OpenSearch).
+- **Dashboard:** giao diện web trực quan hóa và quản trị.
 
-**Là gì?** Trước khi được gửi log, agent phải "trình diện lấy thẻ ra vào" — bước này gọi là **enrollment** (đăng ký). Có thẻ (một khóa bí mật) rồi, agent dùng nó để mã hóa và gửi log liên tục qua kênh riêng. Giống nhân viên mới làm thẻ một lần rồi quẹt cửa hằng ngày.
+**Bài toán giải quyết.** Cung cấp một SIEM hoàn chỉnh không phụ thuộc phần mềm thương mại đắt tiền. Nắm bốn thành phần giúp hình dung đường đi của dữ liệu từ endpoint tới màn hình vận hành.
 
-**Vì sao cần?** Để chỉ máy hợp lệ mới gửi được dữ liệu, và để kẻ gian không giả mạo log hay nghe lén. Tách riêng cổng "làm thẻ" và cổng "gửi dữ liệu" giúp giảm bề mặt bị tấn công.
+### Enrollment — agent đăng ký với manager
 
-### ossec.conf — file cấu hình — nói đơn giản
+**Định nghĩa.** Trước khi gửi log, agent thực hiện **enrollment** (đăng ký) để nhận một khóa bí mật (pre-shared key). Sau đó agent dùng khóa này mã hóa và truyền log liên tục qua kênh dữ liệu riêng.
 
-**Là gì?** Là file văn bản nơi bạn khai báo cho Wazuh biết phải làm gì: đọc file log nào, gửi về đâu, khi nào báo động. Giống bảng nội quy và lịch phân công của phòng giám sát.
+**Bài toán giải quyết.** Chỉ host hợp lệ mới gửi được dữ liệu, ngăn giả mạo log và nghe lén. Tách riêng cổng enrollment (cấp khóa) khỏi cổng truyền dữ liệu giúp thu hẹp bề mặt tấn công.
 
-**Vì sao cần?** Mỗi hệ thống mỗi khác — phải nói rõ nguồn log ở đâu và mức nhạy cảm ra sao. Sửa sai file này có thể làm cả hệ thống "mù", nên cần kiểm tra cú pháp trước khi áp dụng.
+### ossec.conf — file cấu hình
 
-### Decoder — nói đơn giản
+**Định nghĩa.** File cấu hình XML khai báo hành vi của Wazuh: đọc nguồn log nào, gửi về đâu, ngưỡng báo động ra sao; áp dụng cho cả manager lẫn agent.
 
-**Là gì?** Một dòng log thô là câu chữ lộn xộn. **Decoder** là quy tắc dạy Wazuh "đọc hiểu" câu đó và rút ra các mẩu thông tin có nghĩa (ai? từ IP nào? làm gì?). Giống thư ký đọc lá đơn viết tay rồi điền vào các ô trong biểu mẫu.
+**Bài toán giải quyết.** Mỗi hệ thống có nguồn log và mức nhạy cảm khác nhau, cần khai báo tường minh. Lỗi cú pháp trong file này có thể làm hệ thống mất khả năng giám sát, nên phải kiểm tra cú pháp trước khi áp dụng.
 
-**Vì sao cần?** Máy không thể ra quyết định dựa trên câu chữ tự do. Phải bóc thành các trường rõ ràng (như "IP nguồn = 203.0.113.5") thì mới đem so sánh, đếm, báo động được.
+### Decoder
 
-### Rule (quy tắc phát hiện) — nói đơn giản
+**Định nghĩa.** Decoder là quy tắc chỉ cho Wazuh cách trích các trường có nghĩa (user, IP nguồn, hành động) ra khỏi một dòng log thô. Decoder chuẩn bị dữ liệu, không sinh alert.
 
-**Là gì?** **Rule** quyết định "khi nào kêu báo động và ở mức nghiêm trọng nào". Ví dụ: "một IP đăng nhập sai 8 lần trong 2 phút thì đây là dò mật khẩu — báo động mức cao". Giống nội quy "ai quẹt thẻ sai 8 lần liên tiếp thì khóa cửa, gọi bảo vệ".
+**Bài toán giải quyết.** Logic phát hiện không thao tác được trên văn bản tự do; phải bóc thành các trường rõ ràng (ví dụ `srcip = 203.0.113.5`) thì mới so sánh, đếm và báo động được.
 
-**Vì sao cần?** Decoder chỉ bóc tách dữ liệu, còn rule mới là phần "suy nghĩ" để phân biệt chuyện bình thường với chuyện nguy hiểm — trái tim của phát hiện tấn công.
+### Rule (quy tắc phát hiện)
 
-### FIM / Syscheck (giám sát toàn vẹn tệp) — nói đơn giản
+**Định nghĩa.** Rule quyết định event nào trở thành alert và ở mức nghiêm trọng (level) nào, dựa trên các trường đã decode. Ví dụ: một IP đăng nhập sai 8 lần trong 120 giây được phân loại là brute-force, level cao.
 
-**Là gì?** **FIM** theo dõi các file quan trọng có bị thêm, sửa, xóa không. Nó ghi "dấu vân tay" (mã băm) của file rồi định kỳ kiểm tra dấu đó có đổi không. Giống niêm phong cửa kho: niêm phong rách là biết có người động vào.
+**Bài toán giải quyết.** Decoder chỉ bóc tách dữ liệu; rule là tầng quyết định phân biệt hành vi bình thường với nguy hiểm — trung tâm của năng lực phát hiện.
 
-**Vì sao cần?** Nhiều tấn công để lại dấu bằng cách thả file lạ (như webshell) hay sửa file cấu hình. FIM bắt đúng loại dấu đó, kể cả khi kẻ tấn công cố làm giả thời gian sửa file.
+### FIM / Syscheck (giám sát toàn vẹn tệp)
 
-### Active Response (phản ứng tự động) — nói đơn giản
+**Định nghĩa.** FIM (File Integrity Monitoring) theo dõi việc tạo, sửa, xóa file và thư mục quan trọng bằng cách lưu hash nội dung và kiểm tra thay đổi định kỳ hoặc theo thời gian thực.
 
-**Là gì?** Khi một rule báo động, Wazuh có thể **tự chạy một hành động** thay vì chỉ ngồi báo — ví dụ tự chặn IP đang tấn công bằng tường lửa rồi tự gỡ sau một lúc. Giống hệ thống tự khóa cửa khi phát hiện đột nhập.
+**Bài toán giải quyết.** Nhiều tấn công để lại dấu qua việc thả file lạ (webshell) hoặc sửa file cấu hình. FIM phát hiện đúng loại thay đổi này, kể cả khi kẻ tấn công làm giả mtime — vì so sánh hash nội dung chứ không chỉ metadata.
 
-**Vì sao cần?** Con người không thể phản ứng trong vài giây giữa đêm; tự động hóa chặn đứng tấn công tức thì. Nhưng phải cẩn thận kẻo tự chặn nhầm hạ tầng của chính mình.
+### Active Response (phản ứng tự động)
 
-### Vulnerability Detection (phát hiện lỗ hổng) — nói đơn giản
+**Định nghĩa.** Khi một rule khớp, Wazuh có thể tự thực thi một hành động (script) — ví dụ chặn IP tấn công bằng firewall rồi tự gỡ sau một khoảng timeout.
 
-**Là gì?** Tính năng này so sánh **danh sách phần mềm đã cài** với **danh mục lỗ hổng đã biết (CVE)** để báo "máy này chạy phiên bản có lỗ hổng". Giống đối chiếu thuốc trong tủ với thông báo thu hồi để biết lọ nào cần bỏ.
+**Bài toán giải quyết.** Phản ứng trong vài giây vượt khả năng con người trực 24/7; tự động hóa chặn tấn công tức thì. Đổi lại cần kiểm soát chặt để tránh tự chặn nhầm hạ tầng hợp lệ.
 
-**Vì sao cần?** Phần mềm cũ thường có lỗ hổng đã công bố mà kẻ tấn công khai thác được; biết sớm để vá là cách phòng thủ rẻ và hiệu quả.
+### Vulnerability Detection (phát hiện lỗ hổng)
 
-### SCA (đánh giá cấu hình an toàn) — nói đơn giản
+**Định nghĩa.** Tính năng đối chiếu danh sách package đã cài (kèm version) với danh mục lỗ hổng đã biết (CVE feed) để xác định host nào chạy phiên bản có lỗ hổng.
 
-**Là gì?** **SCA** kiểm tra máy có cấu hình "đúng chuẩn an toàn" không (ví dụ có cấm đăng nhập thẳng bằng tài khoản quản trị cao nhất), dựa trên các bộ chuẩn như CIS Benchmark. Giống bảng kiểm tra an toàn lao động, từng mục đánh dấu đạt/không đạt.
+**Bài toán giải quyết.** Phần mềm cũ thường mang lỗ hổng đã công bố và bị khai thác; phát hiện sớm để vá là biện pháp phòng thủ chi phí thấp, hiệu quả cao.
 
-**Vì sao cần?** Nhiều vụ xâm nhập không phải vì phần mềm có lỗi, mà vì cấu hình lỏng lẻo. SCA phát hiện và giúp siết những điểm yếu này.
+### SCA (Security Configuration Assessment)
 
-### MITRE ATT&CK & Detection Engineering — nói đơn giản
+**Định nghĩa.** SCA kiểm tra cấu hình hệ thống so với baseline an toàn (ví dụ CIS Benchmark) như cấm đăng nhập trực tiếp bằng tài khoản quyền cao nhất, và báo pass/fail từng kiểm tra.
 
-**Là gì?** **MITRE ATT&CK** là "từ điển" chuẩn liệt kê các kỹ thuật kẻ tấn công hay dùng, có mã số rõ ràng, giúp mọi người nói chung một ngôn ngữ. **Detection Engineering** là nghề viết và tinh chỉnh rule sao cho vừa bắt đúng kẻ gian (giảm bỏ sót) vừa ít báo động giả (giảm phiền nhiễu).
+**Bài toán giải quyết.** Nhiều vụ xâm nhập bắt nguồn từ cấu hình lỏng lẻo chứ không phải lỗi phần mềm. SCA phát hiện và hỗ trợ siết các điểm yếu cấu hình này.
 
-**Vì sao cần?** Gắn báo động với mã MITRE giúp hiểu nhanh "đây là kiểu tấn công gì". Còn cân bằng "bỏ sót" với "báo nhầm" là kỹ năng cốt lõi để SIEM hữu dụng, chứ không thành cái máy kêu loạn xạ bị mọi người phớt lờ.
+### MITRE ATT&CK & Detection Engineering
 
-Nắm được mấy ý trên rồi thì phần dưới đây sẽ đi sâu vào chi tiết kỹ thuật.
+**Định nghĩa.** **MITRE ATT&CK** là khung chuẩn hóa các kỹ thuật của attacker, mỗi kỹ thuật có mã định danh (`T####`), giúp mô tả tấn công bằng một ngôn ngữ chung. **Detection Engineering** là công việc viết và tinh chỉnh rule để cân bằng giữa bỏ sót (false negative) và báo động giả (false positive).
+
+**Bài toán giải quyết.** Gắn alert với mã MITRE giúp nhận diện nhanh loại tấn công và đo độ phủ phát hiện. Cân bằng FP/FN là kỹ năng cốt lõi để SIEM hữu dụng thay vì trở thành nguồn báo động nhiễu bị bỏ qua.
 
 > Tài liệu tham chiếu chuyên sâu dành cho kỹ sư Blue Team / AppSec / DevSecOps. Mỗi mục đi từ **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT**.
 

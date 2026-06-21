@@ -134,6 +134,22 @@ html[data-theme="dark"]{
   --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
   --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
 }
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%));
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);
@@ -226,14 +242,14 @@ tbody tr:nth-child(even){background:var(--tbl-zebra)}
 
 JS = r"""
 const root=document.documentElement;
-function syncTheme(){const d=root.getAttribute('data-theme')==='dark';
-  document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=d?'☀️':'🌙');}
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
 syncTheme();
 document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
-  const d=root.getAttribute('data-theme')==='dark';
-  if(d){root.removeAttribute('data-theme');localStorage.setItem('kb-theme','light');}
-  else{root.setAttribute('data-theme','dark');localStorage.setItem('kb-theme','dark');}
-  syncTheme();
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
 }));
 const navChapters=[...document.querySelectorAll('.nav-chapter')];
 function openOnly(ch){navChapters.forEach(c=>{c.classList.toggle('open',c.dataset.ch===ch);c.classList.toggle('active',c.dataset.ch===ch);});}
@@ -253,7 +269,7 @@ const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>d
 if(navChapters[0])navChapters[0].classList.add('open','active');
 """
 
-HEAD_THEME = "<script>(function(){var t=localStorage.getItem('kb-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>"
+HEAD_THEME = "<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>"
 
 
 def build(lang, other_exists):
@@ -275,7 +291,13 @@ def build(lang, other_exists):
 
     lang_btn = (f'<a class="ctrl-btn themeLink" href="{cfg["other_href"]}">🌐 {cfg["other"]}</a>'
                 if other_exists else "")
-    controls = f'<button class="ctrl-btn themeBtn" title="Sáng/Tối">🌙</button>{lang_btn}'
+    controls = f'<button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}'
+    prefix = "../" if lang == "en" else ""
+    wibu_style = ""
+    for _e in ("jpg", "jpeg", "png", "webp", "gif"):
+        if os.path.exists(f"{DIR}/assets/wibu-bg.{_e}"):
+            wibu_style = f'<style>:root{{--wibu-bg:url("{prefix}assets/wibu-bg.{_e}")}}</style>'
+            break
     page = f"""<!doctype html>
 <html lang="{cfg['htmllang']}">
 <head>
@@ -284,6 +306,7 @@ def build(lang, other_exists):
 <title>{cfg['title']} — Lê Dương Phi</title>
 <meta name="description" content="{cfg['metadesc']}">
 {HEAD_THEME}
+{wibu_style}
 <style>{CSS}</style>
 </head>
 <body>
@@ -298,7 +321,7 @@ def build(lang, other_exists):
   </aside>
   <div class="content">
     <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">{cfg['title']}</span>
-      <button class="ctrl-btn themeBtn" title="Sáng/Tối">🌙</button>{lang_btn}</div>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}</div>
     <main class="main">
       {''.join(sections)}
     </main>

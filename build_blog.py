@@ -169,6 +169,8 @@ a:hover{text-decoration:underline}
   border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
   cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
 .ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.bgReset{display:none}
+html.has-custom-bg .bgReset{display:inline-flex}
 .search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
 .search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
   border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
@@ -251,6 +253,24 @@ syncTheme();
 document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
   const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
 }));
+function applyBg(u){root.style.setProperty('--wibu-bg','url('+u+')');root.classList.add('has-custom-bg');}
+function clearBg(){root.style.removeProperty('--wibu-bg');root.classList.remove('has-custom-bg');localStorage.removeItem('kb-wibu-bg');}
+const bgInput=document.getElementById('bgInput');
+document.querySelectorAll('.bgBtn').forEach(b=>b.addEventListener('click',()=>{if(curTheme()!=='wibu')setTheme('wibu');bgInput.click();}));
+document.querySelectorAll('.bgReset').forEach(b=>b.addEventListener('click',clearBg));
+if(bgInput)bgInput.addEventListener('change',function(){
+  const f=this.files&&this.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=e=>{const img=new Image();img.onload=()=>{
+    const max=1920;let w=img.width,h=img.height;if(w>max){h=Math.round(h*max/w);w=max;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    let url;try{url=c.toDataURL('image/jpeg',0.82);}catch(_){url=e.target.result;}
+    try{localStorage.setItem('kb-wibu-bg',url);}catch(_){alert('Ảnh hơi lớn để lưu lâu dài — vẫn áp dụng cho phiên này.');}
+    applyBg(url);
+  };img.src=e.target.result;};
+  rd.readAsDataURL(f);this.value='';
+});
 const navChapters=[...document.querySelectorAll('.nav-chapter')];
 function openOnly(ch){navChapters.forEach(c=>{c.classList.toggle('open',c.dataset.ch===ch);c.classList.toggle('active',c.dataset.ch===ch);});}
 navChapters.forEach(c=>{c.querySelector('.nav-ch-title').addEventListener('click',()=>{openOnly(c.dataset.ch);if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');});});
@@ -269,7 +289,7 @@ const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>d
 if(navChapters[0])navChapters[0].classList.add('open','active');
 """
 
-HEAD_THEME = "<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>"
+HEAD_THEME = "<script>(function(){var r=document.documentElement;var t=localStorage.getItem('kb-theme');if(t&&t!=='light')r.setAttribute('data-theme',t);var b=localStorage.getItem('kb-wibu-bg');if(b){r.style.setProperty('--wibu-bg','url('+b+')');r.classList.add('has-custom-bg');}})();</script>"
 
 
 def build(lang, other_exists):
@@ -291,7 +311,10 @@ def build(lang, other_exists):
 
     lang_btn = (f'<a class="ctrl-btn themeLink" href="{cfg["other_href"]}">🌐 {cfg["other"]}</a>'
                 if other_exists else "")
-    controls = f'<button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}'
+    controls = ('<button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>'
+                '<button class="ctrl-btn bgBtn" title="Đổi ảnh nền (Wibu)">🖼️</button>'
+                '<button class="ctrl-btn bgReset" title="Bỏ ảnh nền">✕</button>'
+                f'{lang_btn}')
     prefix = "../" if lang == "en" else ""
     wibu_style = ""
     for _e in ("jpg", "jpeg", "png", "webp", "gif"):
@@ -321,10 +344,11 @@ def build(lang, other_exists):
   </aside>
   <div class="content">
     <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">{cfg['title']}</span>
-      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}</div>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><button class="ctrl-btn bgBtn" title="Đổi ảnh nền (Wibu)">🖼️</button><button class="ctrl-btn bgReset" title="Bỏ ảnh nền">✕</button>{lang_btn}</div>
     <main class="main">
       {''.join(sections)}
     </main>
+    <input id="bgInput" type="file" accept="image/*" hidden>
     <footer class="site-foot">
       <p>{cfg['foot1']}
       &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>

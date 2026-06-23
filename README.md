@@ -31,4 +31,4 @@ python3 build_blog.py
 
 Chia sẻ tự do cho việc học (CC BY 4.0) — dùng và chia sẻ lại thoải mái, ghi nguồn giúp mình là được. Mọi nội dung ở đây nhằm mục đích học tập và phòng thủ; đừng dùng vào việc phạm pháp.
 
-— Lê Dương Phi · [GitHub](https://github.com/fee-191) · [LinkedIn](https://linkedin.com/in/leduongphi191)
+— Fee · [GitHub](https://github.com/fee-191) · [LinkedIn](https://linkedin.com/in/leduongphi191)

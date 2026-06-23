@@ -1,6 +1,6 @@
 # Security Handbook
 
-> A security knowledge base — notes I've collected and organized while learning and working in security. I try to explain the underlying mechanisms in depth and include practical examples, both to revise for myself and hopefully to help others who are studying.
+> A security handbook I've put together while learning and working. The core is **foundational knowledge and technical mechanisms, organized for reference**; each chapter ends with **personal notes** drawn from practice. I explain mechanisms in depth with real examples — to revise for myself, and hopefully to help others who are studying.
 
 Each chapter follows the same flow: **concept → how it works → practical example → security notes**, favoring understanding *why* over rote memorization. If you spot anything inaccurate, feedback is very welcome.
 
@@ -73,6 +73,6 @@ Written for both **newcomers** and **practitioners who need a quick reference** 
 
 ## About
 
-This handbook is written and shared by **Lê Dương Phi**, free for learning purposes. If you find it useful, feel free to use it for your own revision or share it onward.
+This handbook is written and shared by **Fee**, free for learning purposes. If you find it useful, feel free to use it for your own revision or share it onward.
 
 > This is educational content. Any offensive techniques shown here are meant to help you understand how to defend — use them responsibly and legally, only on systems you are authorized to test.

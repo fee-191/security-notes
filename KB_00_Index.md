@@ -1,6 +1,6 @@
 # Sổ tay An toàn thông tin
 
-> Blog chia sẻ kiến thức an toàn thông tin — những gì mình ghi chép, tổng hợp lại trong quá trình học và làm việc. Mình cố gắng giải thích kỹ cơ chế và kèm ví dụ thực tế, vừa để tự ôn lại, vừa hy vọng giúp được các bạn đang học.
+> Sổ tay an toàn thông tin mình gom lại trong quá trình học và làm. Phần chính là **kiến thức nền và cơ chế kỹ thuật được hệ thống lại để tra cứu**; cuối mỗi chương có thêm **ghi chú cá nhân** rút ra từ thực tế. Giải thích kỹ cơ chế kèm ví dụ thật — vừa để tự ôn, vừa mong giúp được người đang học.
 
 Mỗi chương đi theo lối: **khái niệm → cơ chế hoạt động → ví dụ thực tế → lưu ý bảo mật**, ưu tiên hiểu *vì sao* hơn là học thuộc. Nếu có chỗ chưa chính xác, rất mong nhận được góp ý.
 
@@ -73,6 +73,6 @@ Hướng tới cả người **mới học** lẫn người **đi làm cần tra
 
 ## Về tài liệu này
 
-Sổ tay này được ghi chép và chia sẻ bởi **Lê Dương Phi**, tự do cho mục đích học tập. Nếu thấy hữu ích thì bạn cứ dùng để tự ôn hoặc chia sẻ tiếp.
+Sổ tay này được ghi chép và chia sẻ bởi **Fee**, tự do cho mục đích học tập. Nếu thấy hữu ích thì bạn cứ dùng để tự ôn hoặc chia sẻ tiếp.
 
 > Nội dung mang tính giáo dục. Mọi kỹ thuật tấn công trình bày ở đây chỉ nhằm hiểu để **phòng thủ** — hãy dùng có trách nhiệm và hợp pháp, chỉ thực hành trên hệ thống bạn được phép.

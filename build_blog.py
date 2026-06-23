@@ -50,7 +50,7 @@ LANGS = {
             "16": "Tuân thủ & Quản trị (GRC)", "17": "Lập trình & Tự động hóa",
             "99": "Thuật ngữ & viết tắt",
         },
-        "foot1": 'Ghi chép & chia sẻ bởi <span class="name">Lê Dương Phi</span> · tự do cho mục đích học tập.',
+        "foot1": 'Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.',
         "foot2": "Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.",
     },
     "en": {
@@ -76,7 +76,7 @@ LANGS = {
             "16": "Compliance & Governance (GRC)", "17": "Programming & Automation",
             "99": "Glossary & Abbreviations",
         },
-        "foot1": 'Written & shared by <span class="name">Lê Dương Phi</span> · free for learning purposes.',
+        "foot1": 'Written & shared by <span class="name">Fee</span> · free for learning purposes.',
         "foot2": "Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.",
     },
 }
@@ -305,7 +305,7 @@ def build(lang, other_exists):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{cfg['title']} — Lê Dương Phi</title>
+<title>{cfg['title']} — Fee</title>
 <meta name="description" content="{cfg['metadesc']}">
 {HEAD_THEME}
 {wibu_style}
@@ -316,7 +316,7 @@ def build(lang, other_exists):
   <aside class="sidebar" id="sidebar">
     <div class="brand"><h1>{cfg['title']}</h1>
       <p class="tag">{cfg['tag']}</p>
-      <span class="author">✍️ Lê Dương Phi</span>
+      <span class="author">✍️ Fee</span>
       <div class="controls">{controls}</div></div>
     <div class="search"><input id="q" type="search" placeholder="{cfg['search']}" autocomplete="off"></div>
     <nav class="nav">{''.join(nav)}</nav>

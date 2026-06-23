@@ -6,7 +6,7 @@ Each chapter follows the same flow: **concept → how it works → practical exa
 
 ## How to use this handbook
 
-Written for both **newcomers** and **practitioners who need a quick reference** — read by need, you don't have to digest it all at once:
+Written for both **newcomers** and **practitioners who need a quick reference** — read it as you need; there's no need to read everything at once:
 
 - **The "Overview"** at the top of each chapter: read it quickly to get the big picture (what it is, why it matters).
 - **The numbered sections** (1.1, 1.2…): the in-depth reference, down to bit/byte/config level — **no need to memorize it all now**, come back when you need it.

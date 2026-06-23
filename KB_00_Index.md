@@ -6,7 +6,7 @@ Mỗi chương đi theo lối: **khái niệm → cơ chế hoạt động → v
 
 ## Dùng sổ tay này thế nào
 
-Hướng tới cả người **mới học** lẫn người **đi làm cần tra cứu nhanh** — nên đọc theo nhu cầu, không cần nuốt hết một lượt:
+Hướng tới cả người **mới học** lẫn người **đi làm cần tra cứu nhanh** — nên đọc theo nhu cầu, không cần đọc hết trong một lần:
 
 - **Mục "Tổng quan"** đầu mỗi chương: đọc nhanh để nắm bức tranh lớn (cái gì, vì sao cần).
 - **Các mục đánh số** (1.1, 1.2…): phần tra cứu chuyên sâu, đi tới chi tiết bit/byte/cấu hình — **không cần nhớ hết ngay**, khi nào cần thì quay lại.

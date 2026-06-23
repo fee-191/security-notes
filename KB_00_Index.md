@@ -4,6 +4,14 @@
 
 Mỗi chương đi theo lối: **khái niệm → cơ chế hoạt động → ví dụ thực tế → lưu ý bảo mật**, ưu tiên hiểu *vì sao* hơn là học thuộc. Nếu có chỗ chưa chính xác, rất mong nhận được góp ý.
 
+## Dùng sổ tay này thế nào
+
+Hướng tới cả người **mới học** lẫn người **đi làm cần tra cứu nhanh** — nên đọc theo nhu cầu, không cần nuốt hết một lượt:
+
+- **Mục "Tổng quan"** đầu mỗi chương: đọc nhanh để nắm bức tranh lớn (cái gì, vì sao cần).
+- **Các mục đánh số** (1.1, 1.2…): phần tra cứu chuyên sâu, đi tới chi tiết bit/byte/cấu hình — **không cần nhớ hết ngay**, khi nào cần thì quay lại.
+- Mới bắt đầu thì theo **Gợi ý lộ trình học** bên dưới; gặp thuật ngữ lạ thì tra ở **Phụ lục — Thuật ngữ & viết tắt**.
+
 ---
 
 ## Mục lục — 17 chương

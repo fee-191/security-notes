@@ -621,6 +621,8 @@ Explanation of each part:
 
 ### 8.7.4. Example — writing a custom decoder for a self-defined application log
 
+> **[DEMO]** The decoder below only illustrates the parent/child + `<order>` mechanism; test it with `wazuh-logtest` and anchor the regex before using it in production.
+
 Suppose an internal application produces the log:
 ```
 Jun 19 11:05:00 app01 paywall: AUTH_FAIL user=jdoe ip=198.51.100.7 reason=bad_token txn=AB12
@@ -708,6 +710,8 @@ Paths:
 
 ### 8.8.4. Example — a stateless rule mapped onto the paywall decoder from 8.7.4
 
+> **[DEMO]** A sample rule for the `paywall` decoder above — it illustrates the `<field>` structure, `level`, and MITRE mapping; adjust the `level` and conditions to your environment before real use.
+
 `local_rules.xml`:
 ```xml
 <group name="paywall,authentication,">
@@ -734,6 +738,8 @@ Explanation:
 ### 8.8.5. Key example — brute-force correlation (frequency + timeframe)
 
 This is the classic stateful example: many login failures from the same IP within a time window → a single brute-force alert.
+
+> **[DEMO]** A correlation rule illustrating the `frequency`+`timeframe`+`same_source_ip` mechanism; the thresholds must be tuned to real traffic (see the tuning process in 8.14). Attaching the `T####` code is covered in detail in [Chapter 15](#sec-15).
 
 ```xml
 <group name="paywall,authentication,attack,">
@@ -788,6 +794,8 @@ A table illustrating an event sequence (frequency=8, timeframe=120):
 
 Do not edit the base files; instead, in `local_rules.xml`:
 
+> **[DEMO]** The override/exception example illustrates the `overwrite` and `<if_sid>` mechanisms; the trusted `srcip` range must be set to your real internal network.
+
 ```xml
 <!-- Lower the level of a noisy base rule in your environment -->
 <rule id="5710" level="0" overwrite="yes">
@@ -838,6 +846,8 @@ Two modes:
 
 ### 8.9.3. Example — `<syscheck>` configuration in `ossec.conf`
 
+> **[PROD]** The configuration below is tight enough to use for a typical web host (realtime in the right places, noise exclusions, `<nodiff>` for sensitive paths); still review the `<directories>` list per system.
+
 ```xml
 <syscheck>
   <disabled>no</disabled>
@@ -870,7 +880,7 @@ Two modes:
 
 ### 8.9.4. Example — a sample FIM alert (webshell)
 
-When an attacker drops `shell.php` into `/var/www/html`, syscheck (realtime) generates an event that matches a base FIM rule (the `syscheck` group, rules 550–554), and alerts.json:
+When an attacker drops `shell.php` into `/var/www/html`, syscheck (realtime) generates an event that matches a base FIM rule (the `syscheck` group, rules 550–554), and alerts.json (for investigating such an alert, see [Chapter 10](#sec-10)):
 ```json
 {
   "rule": { "id": "554", "level": 7, "description": "File added to the system." },
@@ -917,6 +927,8 @@ wazuh-execd on the agent calls a script in /var/ossec/active-response/bin/
 The AR script receives parameters via **stdin (JSON)** in Wazuh 4.x: comprising `command` (`add`/`delete`) and `parameters.alert` (the entire alert, which contains `srcip`). Why a timeout: blocking permanently risks a self-DoS (mistakenly blocking a legitimate IP, or a shared NAT IP) — the timeout allows automatic removal.
 
 ### 8.10.3. Real-world example — blocking a brute-force IP with firewall-drop
+
+> **[DEMO]** The AR configuration below illustrates the automatic block/unblock flow; before enabling it in production you must have an allowlist of infrastructure IPs and restrict `<location>` (see the Warning at the end of this section).
 
 Step 1 — define the **command** and the **active-response** in `ossec.conf` (on the manager):
 ```xml
@@ -1034,6 +1046,8 @@ Flow:
 
 An SCA policy (a YAML file in `/var/ossec/ruleset/sca/`) comprises `checks`, each check having `rules` evaluated by logic.
 
+> **[DEMO]** The sample check below illustrates the `rules`/`condition` syntax; use Wazuh's official CIS policy directly rather than copying individual checks by hand.
+
 ```yaml
 policy:
   id: "cis_debian12"
@@ -1090,7 +1104,7 @@ checks:
 
 ### 8.13.1. What it is
 
-**MITRE ATT&CK** is a matrix that standardizes attacker techniques by Tactic (the objective) → Technique (the method). Wazuh attaches a technique code (`T####`, sub-technique `T####.###`) to rules, allowing the dashboard to display attacks by the matrix and to support threat hunting.
+**MITRE ATT&CK** is a matrix that standardizes attacker techniques by Tactic (the objective) → Technique (the method). Wazuh attaches a technique code (`T####`, sub-technique `T####.###`) to rules, allowing the dashboard to display attacks by the matrix and to support threat hunting. How to map techniques and read the ATT&CK matrix is covered in [Chapter 15](#sec-15).
 
 | Concept | Example |
 |-----------|-------|
@@ -1151,6 +1165,8 @@ Recall    = TP / (TP + FN)     (what fraction of real attacks are caught)
 ### 8.14.3. Example — tuning the brute-force rule to reduce FP
 
 The problem: rule 100110 fires when a proxy/NAT makes many real users fail from the same srcip. Tuning:
+
+> **[DEMO]** The tuned rule pair below illustrates FP-reduction techniques (changing the group key, excluding a NAT range); the IP ranges and thresholds must be changed to your real environment.
 
 ```xml
 <!-- v2: only count brute-force when the same IP BUT a different user (a sign of user enumeration),
@@ -1246,6 +1262,9 @@ Wazuh ships a rule for this out of the box:
 → After the 8th failure within 120s from `203.0.113.5`, a level-10 alert fires.
 
 ### Step 6 — The alert JSON (written to `/var/ossec/logs/alerts/alerts.json`)
+
+This alert is the starting point of the incident investigation/response process (see [Chapter 10](#sec-10)).
+
 ```json
 {
   "timestamp": "2026-06-19T10:23:11.044+0000",
@@ -1317,3 +1336,10 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 ---
 
 *End of Chapter 8.*
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

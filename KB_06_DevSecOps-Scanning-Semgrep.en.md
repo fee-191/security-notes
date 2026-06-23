@@ -223,7 +223,7 @@ A Semgrep rule file is YAML with the root key `rules` (an array). Each element d
 A metavariable is a **variable within a pattern**, written in uppercase and starting with `$`: `$X`, `$FUNC`, `$ARG`. It matches any AST node (an expression, an identifier, a call, etc.) and **remembers** (binds) that value. The same metavariable name within the same pattern must match the same content.
 
 ```yaml
-# Catch comparing a variable with itself (always true/false — a logic bug)
+# [DEMO] Catch comparing a variable with itself (always true/false — a logic bug); illustrates the metavariable mechanism only.
 rules:
   - id: self-comparison
     languages: [python]
@@ -249,6 +249,7 @@ The ellipsis `...` is very important: `foo(...)` matches `foo()`, `foo(1)`, `foo
 ### 6.4.3. `patterns` (AND), `pattern-either` (OR), `pattern-not`, `pattern-inside`
 
 ```yaml
+# [PROD] Rule tight enough for production use (constant commands excluded via pattern-not).
 rules:
   - id: dangerous-subprocess-with-shell
     languages: [python]
@@ -274,6 +275,7 @@ Logical semantics:
 Example of `pattern-inside` to catch the bug only within a route handler:
 
 ```yaml
+# [PROD] Rule tight enough for production use (context scoped to a Flask route via pattern-inside).
 rules:
   - id: raw-sql-in-flask-route
     languages: [python]
@@ -290,6 +292,7 @@ rules:
 ### 6.4.4. `metavariable-regex` and `metavariable-pattern`
 
 ```yaml
+# [PROD] Rule tight enough for production use (weak algorithm constrained via metavariable-regex).
 rules:
   - id: weak-hash-algo
     languages: [python]
@@ -326,6 +329,7 @@ Semgrep tracks the propagation of taint through assignments, string concatenatio
 ### 6.5.2. Taint example catching SQL injection
 
 ```yaml
+# [PROD] Taint rule tight enough for production use (has source/sink/sanitizer and focus-metavariable).
 rules:
   - id: python-sqli-taint
     languages: [python]
@@ -376,6 +380,7 @@ cursor.execute("SELECT * FROM users WHERE id=%s", (uid,))  # parameterized
 ### 6.6.1. Catching `eval()` on dynamic input (RCE)
 
 ```yaml
+# [PROD] Rule tight enough for production use.
 rules:
   - id: js-eval-user-input
     languages: [javascript, typescript]
@@ -395,6 +400,7 @@ eval("1 + 1");          // ✅ skipped thanks to pattern-not
 ### 6.6.2. Catching hardcoded secrets
 
 ```yaml
+# [PROD] Rule tight enough for production use (matches AWS Access Key ID structure + constrains the variable name).
 rules:
   - id: hardcoded-aws-key
     languages: [python, javascript, go]
@@ -420,6 +426,7 @@ rules:
 ### 6.6.3. Catching command injection (Go)
 
 ```yaml
+# [PROD] Taint rule tight enough for production use.
 rules:
   - id: go-command-injection
     languages: [go]
@@ -437,6 +444,7 @@ rules:
 ### 6.6.4. Autofix
 
 ```yaml
+# [PROD] Rule tight enough for production use (includes autofix to safe_load).
 rules:
   - id: insecure-yaml-load
     languages: [python]
@@ -526,6 +534,7 @@ gitleaks detect --source . --report-format sarif --report-path leaks.sarif
 ### 6.7.3. `.gitleaks.toml` example
 
 ```toml
+# [PROD] Configuration tight enough for production use (inherits the default rules, adds internal rules + allowlist).
 title = "Company Gitleaks configuration"
 
 [extend]
@@ -618,6 +627,7 @@ trivy config ./infra/
 ### 6.8.3. Gate in CI
 
 ```bash
+# [PROD] Tiered-gate command pair, tight enough for production use.
 trivy image --exit-code 0 --severity MEDIUM,HIGH --format table myapp:ci   # warn
 trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed myapp:ci    # block
 ```
@@ -936,7 +946,7 @@ The principle running throughout: **each tier has a blind spot, so stack the tie
 
 ## Appendix A — OWASP ZAP (DAST) runnable example
 
-ZAP (Zed Attack Proxy) is OWASP's open-source DAST tool. It ships with two packaged scan modes:
+ZAP (Zed Attack Proxy) is OWASP's open-source DAST tool (see also [Chapter 12](#sec-12)). It ships with two packaged scan modes:
 
 ```bash
 # Baseline scan: passive (spider + response analysis), NO active attacks.
@@ -960,3 +970,10 @@ docker run --rm -v "$PWD:/zap/wrk:rw" \
 | `-I` | Do not return a failing exit on warnings (for a warning gate) |
 
 Baseline vs. full mechanism: **baseline** only spiders and **passively** analyzes responses (missing headers, cookies without `Secure/HttpOnly`), so it is harmless — suitable as a CI gate on every PR. **Full** actually **fires attack payloads** at parameters, which can create junk data / trigger side effects — run it only on staging with disposable data, never on production. This is why the two modes are split, mirroring the tiered gate principle in 6.9.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

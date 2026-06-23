@@ -358,13 +358,13 @@ Mỗi event được render thành XML với `<System>` (Provider, EventID, Time
 | Type | Tên | Ý nghĩa |
 |------|-----|---------|
 | 2 | Interactive | Đăng nhập tại bàn phím (hoặc RDP qua console) |
-| 3 | Network | Truy cập tài nguyên qua mạng (SMB, IIS) — **không** lưu credential trên máy đích |
+| 3 | Network | Đăng nhập mạng: truy cập tài nguyên qua mạng (SMB, IIS) — **không** lưu credential trên máy đích |
 | 4 | Batch | Scheduled task |
 | 5 | Service | SCM khởi động service |
 | 7 | Unlock | Mở khóa màn hình |
 | 8 | NetworkCleartext | Mật khẩu gửi cleartext (IIS Basic Auth) |
 | 9 | NewCredentials | `runas /netonly` — credential mới cho kết nối mạng (dấu hiệu pass-the-hash với Mimikatz!) |
-| 10 | RemoteInteractive | RDP / Terminal Services |
+| 10 | RemoteInteractive | RDP / Terminal Services (kể cả RDP qua NLA) |
 | 11 | CachedInteractive | Đăng nhập bằng cached credential (offline) |
 
 > **Cảnh báo:** Logon Type 9 rất đáng ngờ. Mimikatz `sekurlsa::pth` tạo logon session type 9 + LogonProcessName `seclogo`. Săn: 4624 type 9 + process là `mimikatz`/`rundll32` bất thường.
@@ -854,6 +854,8 @@ trong đó `NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)`. NT-Hash 
 
 ## 3.11. Tấn công Active Directory và dấu hiệu Event ID
 
+(Bối cảnh tấn công đầy đủ: [Chương 15](#sec-15); kỹ thuật phát hiện và giám sát: [Chương 10](#sec-10).)
+
 ### 3.11.1. Pass-the-Hash (PtH)
 
 **Cơ chế**: dùng trực tiếp NT hash (không cần plaintext) để hoàn thành NTLM authentication tới dịch vụ từ xa (SMB, WMI).
@@ -1056,3 +1058,10 @@ New-ADAuthenticationPolicy -Name "T0-Policy" `
 | Giám sát AD | Audit 4662, 4769 EncType, 4624 Type 9 | DCSync, Kerberoast, PtH |
 
 Toàn bộ nội dung trên tạo nền tảng để vận hành phát hiện và đáp ứng sự cố trong môi trường Windows/AD ở mức kỹ thuật chi tiết: từ byte trong hive/ticket/token cho tới event ID cụ thể tương ứng từng kỹ thuật tấn công.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

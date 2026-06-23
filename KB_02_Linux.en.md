@@ -1250,3 +1250,10 @@ journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
 - **Observability**: structured logs (journald + auditd), pushed centrally to a SIEM before an attacker deletes them, and fluent reading of `auth.log`/AVC with grep/awk.
 - **Integrity**: `dpkg -V`/`rpm -V`, FSS for the journal, baselines of SUID/cron to detect changes.
 - **Every hardening configuration** (sshd, fail2ban, nftables, systemd unit, SELinux) has a concrete file/syntax above — use them as verifiable templates on a real system.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

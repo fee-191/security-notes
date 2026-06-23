@@ -679,7 +679,7 @@ Navigator hỗ trợ **layer arithmetic**: ví dụ tạo layer mới = `a - b` 
 
 **Là gì:** định dạng YAML mô tả detection trên **log** một cách trung lập, rồi `sigma-cli` chuyển sang truy vấn Splunk/Elastic/Sentinel...
 
-**Cấu trúc rule — từng trường:**
+**[PROD] Cấu trúc rule — từng trường** (rule này khớp theo hành vi trên `CommandLine`, thuộc tầng cao Pyramid of Pain — xem [Chương 10](#sec-10) về detection engineering và [Chương 8](#sec-08) về telemetry endpoint):
 
 ```yaml
 title: PowerShell EncodedCommand Suspicious
@@ -732,7 +732,7 @@ sigma convert -t splunk -p splunk_windows powershell_enc.yml
 
 **Là gì:** ngôn ngữ rule khớp **chuỗi/byte/regex** trong file hoặc process memory → phân loại malware (mức "Tools" trên Pyramid of Pain).
 
-**Cấu trúc rule:**
+**[PROD] Cấu trúc rule** (khớp chuỗi đặc trưng của công cụ — tầng "Tools", tương đối bền vì buộc đối thủ đổi công cụ):
 
 ```yara
 import "pe"
@@ -777,7 +777,7 @@ yara mimikatz.yar --scan-list pids.txt        # quét theo PID (memory)
 
 **Là gì:** IDS/IPS chữ ký + phân tích giao thức. Rule khớp gói/flow, gắn `metadata` ATT&CK.
 
-**Cấu trúc rule — từng phần:**
+**[DEMO] Cấu trúc rule — từng phần** (chỉ minh hoạ cơ chế, KHÔNG dùng thẳng production): IOC kiểu chuỗi User-Agent/URI cố định nằm ở đáy Pyramid of Pain — đối thủ đổi User-Agent hoặc URI trong vài phút nên rule này **kém bền**, dễ né và dễ false positive. Khi triển khai thật, hãy ưu tiên phát hiện theo hành vi/TTP (xem [Chương 10](#sec-10)) và bổ sung telemetry mạng tương quan với endpoint (xem [Chương 8](#sec-08)).
 
 ```
 alert http $HOME_NET any -> $EXTERNAL_NET any ( \
@@ -818,7 +818,7 @@ cat ./out/fast.log
 
 **STIX (Structured Threat Information eXpression)** dùng **JSON**; mọi thứ là **SDO** (STIX Domain Object), **SRO** (Relationship Object), hoặc **SCO** (Cyber-observable Object).
 
-**STIX Indicator (SDO) — từng trường:**
+**[DEMO] STIX Indicator (SDO) — từng trường** (minh hoạ cấu trúc; bản thân IOC domain đơn lẻ thuộc đáy Pyramid of Pain, mau hỏng — không nên là trụ cột phát hiện):
 
 ```json
 {
@@ -1119,3 +1119,10 @@ Bảng tra cứu nhanh nối **giai đoạn → technique → telemetry → dete
 ### Tài liệu nên kiểm chứng khi trích dẫn chính xác
 - Số tactic/technique và ID cụ thể thay đổi theo từng phiên bản ATT&CK — luôn đối chiếu `attack.mitre.org` và `versions.attack` trong layer.
 - Số giai đoạn Unified Kill Chain (18) và chi tiết STIX media types nên kiểm lại theo bản đặc tả gốc (OASIS STIX/TAXII 2.1) trước khi dùng trong tài liệu chính thức.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

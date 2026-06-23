@@ -898,3 +898,10 @@ Separation of duties: CI handles build & verify (with no cluster privilege), Arg
 - Secret hygiene: masking is not sufficient control; do not log secrets, do not interpolate secrets into shell commands via an interpolation engine.
 - Drift detection & self-heal (Argo) as a layer of defense against unauthorized cluster changes.
 - Run SAST/SCA/secret-scan in the pipeline; block merges when there are critical findings.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

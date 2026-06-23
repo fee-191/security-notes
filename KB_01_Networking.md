@@ -780,6 +780,8 @@ curl -v http://example.com/      # -v in cả request/response headers
 
 ### 1.7.4. TLS — 1.2 và 1.3
 
+Phần nền tảng mật mã đứng sau TLS/PKI (trao đổi khóa, AEAD, chứng chỉ X.509) được trình bày tại [Chương 4 — Mật mã & Nền tảng bảo mật](#sec-04).
+
 **TLS Record layer — header 5 byte (bọc mọi message TLS):**
 
 | Trường | Kích thước | Ý nghĩa | Ví dụ |
@@ -936,3 +938,10 @@ Quy trình điều tra điển hình: bắt bằng tcpdump trên server không c
 | Port ranges | 0–1023 / 1024–49151 / 49152–65535 |
 
 > Các con số RFC trên là chuẩn ổn định. Với các chi tiết phụ thuộc cài đặt (MSL, kích thước backlog, thuật toán congestion mặc định) hãy kiểm chứng trên hệ thống cụ thể bằng `sysctl`/`ss` vì giá trị thay đổi theo OS và phiên bản kernel.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

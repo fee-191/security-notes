@@ -1193,3 +1193,10 @@ echo "Evidence package: $OUT"
 | Pháp lý VN — dữ liệu cá nhân | NĐ 13/2023 |
 
 **Quy tắc tự bảo vệ khi viết tài liệu tuân thủ:** mọi số hiệu văn bản, điều khoản, thời hạn retention pháp lý phải đối chiếu văn bản gốc trước khi dùng chính thức. Tài liệu này đánh dấu `[CẦN KIỂM CHỨNG]` ở mọi chỗ chưa xác minh được — đặc biệt **Nghị định 356/2025** (chưa có thông tin tin cậy), các số hiệu thông tư NHNN, mã mục TCVN 11930, và thời hạn breach notification của NĐ 13/2023.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

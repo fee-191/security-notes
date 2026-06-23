@@ -989,3 +989,10 @@ cat /etc/shadow               # -> "Read sensitive file"
 | Admission | Pod Security + Gatekeeper/Kyverno (only signed images from a trusted registry) |
 | Runtime detect | Falco + Falcosidekick → SIEM; apiserver audit log → SIEM |
 | Supply chain | SBOM (syft), sign + verify (cosign), pin digest, periodically re-scan running images |
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

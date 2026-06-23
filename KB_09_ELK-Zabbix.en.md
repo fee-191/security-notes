@@ -1040,3 +1040,10 @@ A reference architecture within an organization:
 | "ZBXD" magic + length header | Frames messages over a TCP stream |
 | Zabbix TLS/PSK, ES xpack.security | Unencrypted by default = data leak/spoofing |
 | Zabbix ≠ SIEM | Metric/threshold vs event/correlation — they complement each other |
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

@@ -590,7 +590,7 @@ Ví dụ tính: 3 sự cố với (detect − start) = 4h, 12h, 2h → MTTD = (4
 
 **Là gì:** Sigma là định dạng YAML mô tả detection rule một cách generic, sau đó dùng `sigma`/`sigmac` (pySigma) chuyển sang query của SIEM cụ thể (Splunk SPL, Elastic KQL/EQL, QRadar AQL...).
 
-**Ví dụ rule thực tế — phát hiện brute-force SSH/Windows:**
+**[DEMO]** Ví dụ rule minh hoạ cơ chế — phát hiện brute-force SSH/Windows (chỉ minh hoạ, cần tinh chỉnh trước khi dùng production):
 
 ```yaml
 title: Multiple Failed Logons Followed by Success (Possible Brute-Force)
@@ -606,7 +606,7 @@ detection:
   success:
     EventID: 4624
   timeframe: 5m
-  condition: failed | count() by IpAddress > 20
+  condition: failed | count() by IpAddress >= 20 and success
 fields:
   - IpAddress
   - TargetUserName
@@ -620,7 +620,7 @@ tags:
   - attack.t1110            # Brute Force
 ```
 
-Giải thích tham số: `logsource` xác định nguồn để pySigma chọn field mapping đúng; `detection` chứa các "search identifier" (`failed`, `success`); `condition` là biểu thức logic; `timeframe` là cửa sổ tương quan; `tags` ánh xạ MITRE ATT&CK (T1110 = Brute Force).
+Giải thích tham số: `logsource` xác định nguồn để pySigma chọn field mapping đúng; `detection` chứa các "search identifier" (`failed`, `success`); `condition` khớp đúng mô tả title — gom theo `IpAddress`, yêu cầu **nhiều failed (≥ 20) RỒI có ít nhất một success từ cùng nguồn** (`failed | count() by IpAddress >= 20 and success`), không chỉ đếm failed; `timeframe` là cửa sổ tương quan; `tags` ánh xạ MITRE ATT&CK (T1110 = Brute Force, xem [Chương 15](#sec-15)).
 
 **Convert sang Splunk:**
 
@@ -628,10 +628,12 @@ Giải thích tham số: `logsource` xác định nguồn để pySigma chọn f
 sigma convert -t splunk -p splunk_windows brute_force.yml
 ```
 
-Output mẫu (rút gọn):
+**[DEMO]** Output mẫu (rút gọn, phản ánh điều kiện "fail rồi success"):
 
 ```
-EventCode=4625 | stats count by IpAddress | where count > 20
+(EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success by IpAddress
+| where failed >= 20 AND success > 0
 ```
 
 **Lưu ý bảo mật:** luôn khai báo `falsepositives` để Tier 1 biết bối cảnh; ánh xạ `tags` MITRE giúp đo coverage (ô nào trên ATT&CK matrix đã có rule).
@@ -646,7 +648,7 @@ EventCode=4625 | stats count by IpAddress | where count > 20
 action proto src_ip src_port direction dst_ip dst_port (options)
 ```
 
-Ví dụ thực tế — phát hiện SSH brute-force bằng threshold:
+**[DEMO]** Ví dụ minh hoạ — phát hiện SSH brute-force bằng threshold (ngưỡng cần tune theo baseline trước khi dùng production):
 
 ```
 alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"SSH brute force attempt"; \
@@ -720,7 +722,7 @@ yara -r downloader.yar /home/user/Downloads/
 
 ### 10.8.4. Splunk SPL — truy vấn điều tra
 
-**Ví dụ phát hiện brute-force-rồi-success (kịch bản mục 10.10):**
+**[DEMO]** Ví dụ phát hiện brute-force-rồi-success (kịch bản mục 10.10):
 
 ```spl
 index=wineventlog (EventCode=4625 OR EventCode=4624)
@@ -730,6 +732,16 @@ index=wineventlog (EventCode=4625 OR EventCode=4624)
 ```
 
 Giải thích tham số: `transaction` gom các event cùng `IpAddress` trong `maxspan=10m`; `eventcount` là số event trong transaction; điều kiện lọc giao dịch vừa có nhiều fail vừa có ít nhất 1 success.
+
+> **Lưu ý hiệu năng:** lệnh SPL `transaction` tốn tài nguyên trên dữ liệu lớn (giữ trạng thái từng nhóm sự kiện trong bộ nhớ); **[PROD]** production nên dùng `stats` gom theo field thay cho `transaction`:
+>
+> ```spl
+> index=wineventlog (EventCode=4625 OR EventCode=4624)
+> | stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success,
+>         min(_time) as first_seen, max(_time) as last_seen,
+>         values(TargetUserName) as users by IpAddress
+> | where failed > 20 AND success > 0
+> ```
 
 ### 10.8.5. Velociraptor / osquery — truy vấn endpoint phục vụ hunt
 
@@ -1005,3 +1017,10 @@ Vận hành SOC là một vòng khép kín:
 
 - **Nắm chắc chi tiết byte/field/bước** là điều kiện tiên quyết của vận hành chắc tay.
 - Bỏ qua chúng là để lại điểm mù — và kẻ tấn công khai thác đúng những điểm mù đó trong vận hành.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

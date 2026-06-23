@@ -685,6 +685,8 @@ CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
 
 Qualitative thresholds: 0.0 None · 0.1–3.9 Low · 4.0–6.9 Medium · 7.0–8.9 High · 9.0–10.0 Critical.
 
+> **Scope is the pivotal metric.** Unlike the other seven metrics, which each contribute to only one side, Scope affects **both Exploitability and Impact**: when `S:Changed`, the scoring formula shifts and the Impact ceiling is raised, so a single change in Scope can push the score up substantially. Assessing Scope accurately (whether the exploit reaches beyond the security authority of the affected component) is therefore a critical decision when scoring CVSS.
+
 Beyond the Base score there are the **Temporal** group (exploit maturity, whether a patch exists) and the **Environmental** group (customized to the organization's environment). Note: CVSS v4.0 has been released (2023) with a changed metric structure — when deploying, verify which version is in use.
 
 ```bash
@@ -720,7 +722,52 @@ Total: 2 (HIGH: 1, CRITICAL: 1)
 
 ---
 
-## 4.12. Summary decision map
+## 4.12. Post-Quantum Cryptography & crypto-agility
+
+### 4.12.1. Why quantum computers are a threat
+
+All asymmetric cryptography in use today (see [Chapter 4](#sec-04) above, and PKI/TLS in [Chapter 1](#sec-01)) rests on two problems: integer factorization (RSA) and discrete logarithms (ECC, DH/ECDHE). **Shor's algorithm**, run on a sufficiently large quantum computer, solves both in polynomial time, breaking RSA and ECC fundamentally — not by requiring longer keys but by eliminating the very mathematical hardness they rely on.
+
+Symmetric cryptography and hash functions are affected more mildly: **Grover's algorithm** only reduces security to the square root, so AES-256 retains roughly 128-bit security and SHA-256/SHA-384 remain usable. The remedy for the symmetric side is simply to increase key/digest length; the real burden lies with the asymmetric side.
+
+### 4.12.2. Harvest-now, decrypt-later
+
+The threat is not confined to the distant future: an attacker can **collect encrypted traffic today and decrypt it later** once a quantum computer becomes available (the "harvest-now, decrypt-later" model). ECDHE's forward secrecy (see 4.4.3) does **not** help here, because the ECDHE key exchange itself is broken by Shor.
+
+The risk is proportional to the **lifetime over which a secret must stay protected**. For long-retained financial data — KYC records, transaction history, signing keys, contracts — data intercepted today is still sensitive when decrypted years later. This is why the financial sector should plan its PQC migration earlier rather than wait for quantum computers to arrive.
+
+### 4.12.3. The NIST PQC 2024 standards
+
+In August 2024 NIST published its first PQC standards, based on lattice problems (which Shor does not break):
+
+| Standard | Algorithm | Role |
+|---|---|---|
+| **FIPS 203** | **ML-KEM** (formerly CRYSTALS-Kyber) | Key encapsulation — key exchange, replacing ECDHE/RSA key exchange |
+| **FIPS 204** | **ML-DSA** (formerly CRYSTALS-Dilithium) | Digital signatures — replacing RSA-PSS/ECDSA |
+| **FIPS 205** | **SLH-DSA** (formerly SPHINCS+) | Hash-based signatures, serving as a risk-diversifying fallback |
+
+ML-KEM is a **KEM** (Key Encapsulation Mechanism), not a direct encryption scheme: it produces a shared symmetric session key, after which data is still encrypted with AEAD (see [Chapter 11](#sec-11)) — the same hybrid model as RSA/ECDH exchanging a key for AES in 4.4.1.
+
+### 4.12.4. Hybrid key exchange
+
+Because the PQC algorithms are still relatively new, the current deployment practice is **hybrid** (classical + post-quantum): combine a thoroughly vetted algorithm with a PQC one, so the session key is exposed only if **both** are broken.
+
+For example, in TLS 1.3 the key group **X25519MLKEM768** pairs X25519 (classical) with ML-KEM-768 (post-quantum): client and server derive a shared secret from both exchanges and concatenate them as input to the key schedule. If ML-KEM is later found to have an implementation weakness, X25519 still holds at the classical level; conversely, if a quantum computer breaks X25519, ML-KEM still stands. Browsers and several large CDNs already enable this configuration by default.
+
+### 4.12.5. Crypto-agility
+
+**Crypto-agility** is the ability to design a system so that you can **swap cryptographic algorithms without rewriting the architecture**. The PQC migration will span years and may recur (if a PQC standard reveals a weakness), so agility is an operational requirement, not just a technical detail:
+
+- **Do not hard-code algorithms/key lengths** scattered throughout the code; centralize them in an abstraction layer or configuration.
+- **Declare the algorithm explicitly** in the data format (an algorithm identifier alongside the ciphertext/signature) so the decrypting side knows how to process it and rotation is easy.
+- **Inventory every place cryptography is used** — libraries, certificates, protocols, hardware — so you know the scope to change when standards shift.
+- Prefer **hybrid** during the transition to reduce the risk of betting on a single PQC algorithm.
+
+The overarching principle is still Kerckhoffs (see 4.11): security rests on the key and on the ability to rotate quickly, not on any single algorithm remaining unchanged forever.
+
+---
+
+## 4.13. Summary decision map
 
 | What you need | What to use |
 |---|---|
@@ -734,3 +781,10 @@ Total: 2 (HIGH: 1, CRITICAL: 1)
 | Server identity on the Internet | X.509 + TLS 1.3 + OCSP stapling |
 
 The overarching rule: **do not implement cryptographic primitives yourself**, use vetted libraries (libsodium, BoringSSL, Go crypto, Python `cryptography`), follow Kerckhoffs, prefer AEAD and forward secrecy, and always ask "which CIA property is being protected?" before choosing a tool.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

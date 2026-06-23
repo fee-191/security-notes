@@ -8,7 +8,7 @@ This chapter covers the following knowledge blocks, each with a definition and t
 
 - **IaaS / PaaS / SaaS service models** — three tiers layered by "who operates which layer" of the stack. IaaS leaves the customer the most to manage (guest OS, runtime, app); SaaS leaves the least (mainly data). Solves: defining the responsibility boundary for patching and configuration at each layer — misjudging that boundary is the root of most incidents.
 - **Shared Responsibility Model** — a framework that divides security responsibility between the provider ("security OF the cloud": hardware, hypervisor, physical network) and the customer ("security IN the cloud": IAM, encryption, network configuration, data). Solves: countering the misconception that "moving to the cloud means the provider handles everything."
-- **IAM (Identity and Access Management)** — the system for managing identities and permissions, expressing permissions through JSON policy documents. Solves: enforcing least privilege, so each identity holds only the minimum permissions it actually needs.
+- **IAM (Identity and Access Management)** — the system for managing identities and permissions, expressing permissions through JSON policy documents (the cryptographic foundations of keys, signatures, and tokens are covered in [Chapter 4](#sec-04)). Solves: enforcing least privilege, so each identity holds only the minimum permissions it actually needs.
 - **VPC (Virtual Private Cloud)** — an isolated virtual network, divided into public subnets (with an Internet route) and private subnets (not exposed externally). Solves: isolating sensitive resources such as databases from direct Internet access.
 - **Security Group and Network ACL** — two firewall mechanisms: Security Groups operate at the instance level and are stateful; Network ACLs operate at the subnet level and are stateless. Solves: controlling inbound/outbound traffic, especially blocking sensitive administrative ports.
 - **Amazon S3** — object storage organized into buckets. Solves: storing files at large scale; the main risk is unintended public configuration, controlled with Block Public Access.
@@ -573,7 +573,7 @@ done
 
 ### 13.7.2. Envelope Encryption — step by step
 
-KMS does not encrypt large data blocks directly (the limit for `Encrypt` is ~4 KB). Instead it uses **envelope encryption**:
+KMS does not encrypt large data blocks directly (the limit for `Encrypt` is ~4 KB). Instead it uses **envelope encryption** (the principles of AES, AES-GCM, and key management are covered in [Chapter 4](#sec-04)):
 
 ```
 1. The client calls KMS GenerateDataKey(KeyId=CMK, KeySpec=AES_256).
@@ -752,7 +752,7 @@ Credential output:
 
 ### 13.11.2. IMDSv1 (simple request/response — and the SSRF vulnerability)
 
-IMDSv1: a single HTTP GET to `169.254.169.254` is all it takes. NO token is needed. This is the root of countless SSRF incidents.
+IMDSv1: a single HTTP GET to `169.254.169.254` is all it takes. NO token is needed. This is the root of countless SSRF incidents (the SSRF mechanism is covered in [Chapter 5 — Web Application Security](#sec-05)).
 
 SSRF attack scenario via IMDSv1:
 
@@ -1204,3 +1204,10 @@ gcloud secrets versions access latest --secret=db-pass
 | Continuous detection | CSPM (Prowler/ScoutSuite/SCC) + secret scanning in CI |
 
 All cloud security architecture reduces to: **tight identity control (IAM), eliminating long-lived secrets, encrypting everywhere, complete and immutable logging, blocking public access by default, and continuously scanning for misconfigurations.** Most real-world incidents lie within "IN the cloud" — that is, within your control and your responsibility.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

@@ -989,3 +989,10 @@ cat /etc/shadow               # -> "Read sensitive file"
 | Admission | Pod Security + Gatekeeper/Kyverno (chỉ image đã ký từ registry tin cậy) |
 | Runtime detect | Falco + Falcosidekick → SIEM; audit log apiserver → SIEM |
 | Supply chain | SBOM (syft), ký + verify (cosign), pin digest, quét định kỳ lại image đang chạy |
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

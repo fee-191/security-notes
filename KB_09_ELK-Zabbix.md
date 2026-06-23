@@ -1040,3 +1040,10 @@ Kiến trúc tham chiếu trong một tổ chức:
 | Magic "ZBXD" + length header | Tách message trên TCP stream |
 | TLS/PSK Zabbix, xpack.security ES | Mặc định không mã hóa = lộ dữ liệu/giả mạo |
 | Zabbix ≠ SIEM | Metric/threshold vs event/correlation — bổ sung nhau |
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

@@ -1197,3 +1197,10 @@ echo "Evidence package: $OUT"
 | Vietnamese law — personal data | Decree 13/2023 |
 
 **Self-protection rule when writing compliance documentation:** every document number, article, and legal retention period must be cross-checked against the original text before official use. This document marks `[NEEDS VERIFICATION]` everywhere it could not be verified — especially **Decree 356/2025** (no reliable information yet), the SBV circular numbers, the TCVN 11930 section codes, and the breach notification time limit of Decree 13/2023.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

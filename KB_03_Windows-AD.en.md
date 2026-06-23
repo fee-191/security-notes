@@ -358,13 +358,13 @@ This is the most important event. The main `<EventData>` fields:
 | Type | Name | Meaning |
 |------|-----|---------|
 | 2 | Interactive | Logon at the keyboard (or RDP via console) |
-| 3 | Network | Accessing a resource over the network (SMB, IIS) — credentials are **not** stored on the target machine |
+| 3 | Network | Network logon: accessing a resource over the network (SMB, IIS) — credentials are **not** stored on the target machine |
 | 4 | Batch | Scheduled task |
 | 5 | Service | The SCM starting a service |
 | 7 | Unlock | Screen unlock |
 | 8 | NetworkCleartext | Password sent in cleartext (IIS Basic Auth) |
 | 9 | NewCredentials | `runas /netonly` — new credentials for network connections (a sign of pass-the-hash with Mimikatz!) |
-| 10 | RemoteInteractive | RDP / Terminal Services |
+| 10 | RemoteInteractive | RDP / Terminal Services (including RDP over NLA) |
 | 11 | CachedInteractive | Logon using cached credentials (offline) |
 
 > **Warning:** Logon Type 9 is highly suspicious. Mimikatz `sekurlsa::pth` creates a logon session of type 9 + a LogonProcessName of `seclogo`. Hunt: 4624 type 9 + an anomalous process such as `mimikatz`/`rundll32`.
@@ -854,6 +854,8 @@ where `NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)`. The NT-Hash =
 
 ## 3.11. Active Directory attacks and their Event ID signatures
 
+(Full attack context: [Chapter 15](#sec-15); detection and monitoring techniques: [Chapter 10](#sec-10).)
+
 ### 3.11.1. Pass-the-Hash (PtH)
 
 **Mechanism**: use the NT hash directly (no plaintext needed) to complete NTLM authentication to a remote service (SMB, WMI).
@@ -1056,3 +1058,10 @@ New-ADAuthenticationPolicy -Name "T0-Policy" `
 | AD monitoring | Audit 4662, 4769 EncType, 4624 Type 9 | DCSync, Kerberoast, PtH |
 
 All of the content above provides a foundation for running detection and incident response in Windows/AD environments at a detailed technical level: from the bytes within a hive/ticket/token all the way to the specific Event ID corresponding to each attack technique.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

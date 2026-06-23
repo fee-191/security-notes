@@ -685,6 +685,8 @@ CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
 
 Phân ngưỡng định tính: 0.0 None · 0.1–3.9 Low · 4.0–6.9 Medium · 7.0–8.9 High · 9.0–10.0 Critical.
 
+> **Scope là metric bản lề.** Khác bảy metric còn lại vốn chỉ đóng góp vào một phía, Scope tác động đồng thời tới **cả Exploitability lẫn Impact**: khi `S:Changed`, công thức tính điểm thay đổi và trần điểm Impact được nâng lên, nên một thay đổi Scope đơn lẻ có thể đẩy điểm số lên đáng kể. Vì vậy đánh giá chính xác Scope (khai thác có vượt ra ngoài security authority của component bị ảnh hưởng hay không) là quyết định trọng yếu khi chấm CVSS.
+
 Ngoài Base còn có nhóm **Temporal** (mức trưởng thành exploit, có bản vá chưa) và **Environmental** (tùy chỉnh theo môi trường tổ chức). Lưu ý: CVSS v4.0 đã ra (2023) thay đổi cấu trúc metric — khi triển khai cần kiểm chứng phiên bản đang dùng.
 
 ```bash
@@ -720,7 +722,52 @@ Total: 2 (HIGH: 1, CRITICAL: 1)
 
 ---
 
-## 4.12. Tổng kết bản đồ quyết định
+## 4.12. Mật mã hậu lượng tử (Post-Quantum Cryptography) & crypto-agility
+
+### 4.12.1. Vì sao máy tính lượng tử là mối đe dọa
+
+Toàn bộ mật mã bất đối xứng đang dùng (xem [Chương 4](#sec-04) ở trên, và PKI/TLS ở [Chương 1](#sec-01)) đặt nền trên hai bài toán: phân tích thừa số (RSA) và logarit rời rạc (ECC, DH/ECDHE). **Thuật toán Shor** chạy trên một máy tính lượng tử đủ lớn giải được cả hai trong thời gian đa thức, phá vỡ RSA và ECC một cách căn bản — không phải bằng cách tăng độ dài khóa mà bằng cách triệt tiêu chính độ khó toán học mà chúng dựa vào.
+
+Mật mã đối xứng và hàm băm chịu ảnh hưởng nhẹ hơn: **thuật toán Grover** chỉ rút ngắn độ an toàn còn căn bậc hai, nên AES-256 vẫn giữ mức an toàn ~128-bit và SHA-256/SHA-384 vẫn dùng được. Biện pháp ứng phó cho khối đối xứng đơn giản là tăng độ dài khóa/digest; gánh nặng thực sự nằm ở khối bất đối xứng.
+
+### 4.12.2. Harvest-now, decrypt-later
+
+Mối đe dọa không nằm ở tương lai xa: kẻ tấn công có thể **thu thập lưu lượng mã hóa ngay hôm nay và giải mã về sau** khi máy tính lượng tử khả dụng (mô hình "harvest-now, decrypt-later"). Forward secrecy của ECDHE (xem 4.4.3) **không** cứu được trường hợp này, vì chính phép trao khóa ECDHE cũng bị Shor phá.
+
+Rủi ro tỷ lệ thuận với **thời gian bí mật cần được bảo vệ**. Với dữ liệu tài chính lưu lâu — hồ sơ KYC, lịch sử giao dịch, khóa ký, hợp đồng — dữ liệu chặn được hôm nay vẫn còn nhạy cảm khi bị giải mã sau nhiều năm. Đây là lý do ngành tài chính cần lên kế hoạch chuyển đổi PQC sớm hơn là chờ máy tính lượng tử xuất hiện.
+
+### 4.12.3. Chuẩn NIST PQC 2024
+
+Tháng 8/2024 NIST công bố bộ chuẩn PQC đầu tiên, dựa trên bài toán lattice (vốn không bị Shor phá):
+
+| Chuẩn | Thuật toán | Vai trò |
+|---|---|---|
+| **FIPS 203** | **ML-KEM** (gốc CRYSTALS-Kyber) | Key encapsulation — trao khóa, thay ECDHE/RSA key exchange |
+| **FIPS 204** | **ML-DSA** (gốc CRYSTALS-Dilithium) | Chữ ký số — thay RSA-PSS/ECDSA |
+| **FIPS 205** | **SLH-DSA** (gốc SPHINCS+) | Chữ ký số dựa trên hash, làm phương án dự phòng đa dạng hóa rủi ro |
+
+ML-KEM là một **KEM** (Key Encapsulation Mechanism) chứ không phải sơ đồ mã hóa trực tiếp: nó sinh ra một khóa phiên đối xứng chung, sau đó dữ liệu vẫn được mã hóa bằng AEAD (xem [Chương 11](#sec-11)) — mô hình lai giống hệt cách RSA/ECDH trao khóa cho AES ở 4.4.1.
+
+### 4.12.4. Hybrid key exchange
+
+Vì các thuật toán PQC còn tương đối mới, thực tiễn triển khai hiện nay là **hybrid** (lai cổ điển + hậu lượng tử): kết hợp một thuật toán đã được kiểm chứng kỹ với một thuật toán PQC, sao cho khóa phiên chỉ bị lộ khi **cả hai** cùng bị phá.
+
+Ví dụ trong TLS 1.3, nhóm khóa **X25519MLKEM768** ghép X25519 (cổ điển) với ML-KEM-768 (hậu lượng tử): client và server suy ra secret chung từ cả hai phép trao khóa rồi nối lại làm đầu vào cho key schedule. Nếu ML-KEM về sau bị phát hiện điểm yếu cài đặt, X25519 vẫn giữ an toàn ở mức cổ điển; ngược lại nếu máy tính lượng tử phá X25519, ML-KEM vẫn đứng vững. Trình duyệt và một số CDN lớn đã bật cấu hình này theo mặc định.
+
+### 4.12.5. Crypto-agility
+
+**Crypto-agility** là năng lực thiết kế hệ thống sao cho **thay thuật toán mật mã mà không phải viết lại kiến trúc**. Việc chuyển đổi PQC sẽ kéo dài nhiều năm và có thể lặp lại (nếu một chuẩn PQC lộ điểm yếu), nên agility là yêu cầu vận hành, không chỉ là chi tiết kỹ thuật:
+
+- **Không hard-code thuật toán/độ dài khóa** rải rác trong code; tập trung vào một lớp trừu tượng hoặc cấu hình.
+- **Khai báo thuật toán tường minh** trong định dạng dữ liệu (algorithm identifier đi kèm ciphertext/chữ ký) để bên giải mã biết cách xử lý và để xoay vòng dễ dàng.
+- **Kiểm kê (inventory) toàn bộ nơi dùng mật mã** — thư viện, chứng chỉ, giao thức, phần cứng — để biết phạm vi cần thay khi tiêu chuẩn đổi.
+- Ưu tiên **hybrid** trong giai đoạn chuyển tiếp để giảm rủi ro đặt cược vào một thuật toán PQC đơn lẻ.
+
+Nguyên tắc bao trùm vẫn là Kerckhoffs (xem 4.11): an toàn dựa vào khóa và vào khả năng xoay vòng nhanh, không dựa vào việc một thuật toán cụ thể bất biến mãi mãi.
+
+---
+
+## 4.13. Tổng kết bản đồ quyết định
 
 | Cần gì | Dùng gì |
 |---|---|
@@ -734,3 +781,10 @@ Total: 2 (HIGH: 1, CRITICAL: 1)
 | Danh tính máy chủ trên Internet | X.509 + TLS 1.3 + OCSP stapling |
 
 Quy tắc bao trùm: **không tự cài nguyên thủy mật mã**, dùng thư viện đã kiểm chứng (libsodium, BoringSSL, Go crypto, Python `cryptography`), tuân Kerckhoffs, ưu tiên AEAD và forward secrecy, và luôn đặt câu hỏi "thuộc tính CIA nào đang được bảo vệ?" trước khi chọn công cụ.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

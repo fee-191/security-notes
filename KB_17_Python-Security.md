@@ -1050,3 +1050,10 @@ docker scout cves ir-agent:1.0     # hoặc: trivy image ir-agent:1.0
 5. Input không tin cậy: validate (`ipaddress`/`pathlib`), parameterized query, không `eval/exec/pickle`.
 6. Secret từ env/vault, pin dependency, quét bằng `bandit`/`pip-audit`/`gitleaks`/`trivy`.
 7. Đóng gói Docker non-root, read-only, drop capability, scan trước deploy.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

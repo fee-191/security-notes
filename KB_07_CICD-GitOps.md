@@ -898,3 +898,10 @@ Tách bạch: CI lo build & verify (không có quyền cluster), Argo lo deploy 
 - Secret hygiene: masked không phải kiểm soát đủ; không log secret, không nội suy secret vào lệnh shell qua interpolation engine.
 - Phát hiện drift & self-heal (Argo) như một lớp phòng thủ chống thay đổi cluster trái phép.
 - Quét SAST/SCA/secret-scan trong pipeline; chặn merge khi có finding nghiêm trọng.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

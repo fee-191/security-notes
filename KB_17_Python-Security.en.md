@@ -1050,3 +1050,10 @@ docker scout cves ir-agent:1.0     # or: trivy image ir-agent:1.0
 5. Untrusted input: validate (`ipaddress`/`pathlib`), parameterized queries, no `eval/exec/pickle`.
 6. Secrets from env/vault, pin dependencies, scan with `bandit`/`pip-audit`/`gitleaks`/`trivy`.
 7. Package with Docker as non-root, read-only, dropping capabilities, scanned before deploy.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

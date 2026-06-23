@@ -1250,3 +1250,10 @@ journalctl | grep apparmor      # xem denial (ALLOWED/DENIED)
 - **Khả năng quan sát**: log có cấu trúc (journald + auditd), đẩy tập trung tới SIEM trước khi attacker xóa, đọc thành thạo `auth.log`/AVC bằng grep/awk.
 - **Toàn vẹn**: `dpkg -V`/`rpm -V`, FSS cho journal, baseline SUID/cron để phát hiện thay đổi.
 - **Mọi cấu hình hardening** (sshd, fail2ban, nftables, systemd unit, SELinux) đều có file/cú pháp cụ thể ở trên — dùng làm khuôn mẫu kiểm chứng được trên hệ thật.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

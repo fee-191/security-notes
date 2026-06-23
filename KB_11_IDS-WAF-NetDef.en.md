@@ -203,6 +203,7 @@ Explaining `offset`/`depth` and `distance`/`within` (very commonly confused):
 
 Detecting a `UNION SELECT` SQLi in an HTTP request:
 ```
+# [PROD] has a fast pattern + a normalized sticky buffer + a refining pcre; still tune against real traffic
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (
     msg:"WEB SQLi UNION SELECT in URI";
     flow:established,to_server;
@@ -222,6 +223,7 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (
 
 Detecting an nmap SYN scan (many SYNs to many ports in a short period):
 ```
+# [PROD] the count/seconds threshold must be calibrated to the network baseline to avoid false positives
 alert tcp $EXTERNAL_NET any -> $HOME_NET any (
     msg:"SCAN nmap SYN scan";
     flags:S;
@@ -235,6 +237,7 @@ alert tcp $EXTERNAL_NET any -> $HOME_NET any (
 
 Detecting a C2 beacon via a suspicious User-Agent:
 ```
+# [DEMO] illustrates the mechanism only: it relies on a default artifact, so an attacker who changes their profile evades it — do NOT use directly in production
 alert http $HOME_NET any -> $EXTERNAL_NET any (
     msg:"MALWARE Suspicious User-Agent C2 beacon";
     flow:established,to_server;
@@ -250,6 +253,7 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (
 
 Using `flowbits` to correlate across packets (only alert on exfil after a login has been observed):
 ```
+# [DEMO] the sample URIs /login, /export?all=1 only illustrate the flowbits mechanism — replace with real routes before use
 alert http any any -> any any ( msg:"login seen"; http.uri; content:"/login"; flowbits:set,auth; flowbits:noalert; sid:1000030; )
 alert http any any -> any any ( msg:"download after login"; http.uri; content:"/export?all=1"; flowbits:isset,auth; sid:1000031; )
 ```
@@ -268,18 +272,21 @@ Snort/Suricata are primarily signature-based, but the preprocessors have an anom
 
 ### 11.2.5. TCP flags — needed for the `flags:` rule
 
-TCP flags reside in 1 byte (offset 13 of the TCP header), the low 6 bits (+2 ECN/NS bits):
+TCP defines 9 control flags. 8 of them fit within 1 byte at offset 13 of the TCP header (the 6 classic flags FIN..URG plus the 2 ECN flags ECE/CWR per RFC 3168); the 9th, NS (Nonce Sum, RFC 3540), resides in the lowest bit of the byte at offset 12 (sharing that byte with the Data Offset field), so it is not in the same byte as the other 8:
 
-| Bit | Flag | Meaning |
+| Bit (byte offset 13) | Flag | Meaning |
 |---|---|---|
-| 0x01 | FIN | Terminate |
+| 0x01 | FIN | Terminate the connection |
 | 0x02 | SYN | Open a connection |
-| 0x04 | RST | Reset |
-| 0x08 | PSH | Push buffer |
-| 0x10 | ACK | Acknowledge |
-| 0x20 | URG | Urgent |
+| 0x04 | RST | Reset the connection |
+| 0x08 | PSH | Push the buffer to the application immediately |
+| 0x10 | ACK | Acknowledge (the Acknowledgment field is valid) |
+| 0x20 | URG | Urgent (the Urgent Pointer field is valid) |
+| 0x40 | ECE | ECN-Echo — signals congestion (RFC 3168) |
+| 0x80 | CWR | Congestion Window Reduced (RFC 3168) |
+| — (low bit of byte offset 12) | NS | Nonce Sum — ECN nonce (RFC 3540; rarely implemented, moved to experimental by RFC 8311) |
 
-`flags` syntax: `flags:S` (SYN only), `flags:SA` (SYN+ACK), `flags:S,12` (SYN set, ignore bits 1&2 = CWR/ECE when matching), `flags:!R` (no RST). NULL scan = `flags:0`; XMAS = `flags:FPU`.
+`flags` syntax: `flags:S` (SYN only), `flags:SA` (SYN+ACK), `flags:S,CE` (SYN set, ignore the CWR/ECE bits when matching — equivalent to the numeric form `flags:S,12`), `flags:!R` (no RST). NULL scan = `flags:0`; XMAS = `flags:FPU`. Flag letters in a Snort/Suricata rule: `C`=CWR, `E`=ECE, `U`=URG, `A`=ACK, `P`=PSH, `R`=RST, `S`=SYN, `F`=FIN.
 
 ### 11.2.6. Install, run, and TEST that a rule triggers
 
@@ -331,7 +338,7 @@ A WAF (Web Application Firewall) operates at L7: it parses the HTTP request (met
 | TLS | Not required | Must be terminated to read plaintext |
 | Understands application context | No | Yes (per-param, per-route) |
 
-ModSecurity is a rule engine that runs as an embedded module (Apache `mod_security2`, the NGINX `ModSecurity-nginx` connector) or as a reverse proxy. The OWASP CRS (Core Rule Set) is the standard rule set that runs on that engine.
+ModSecurity is a rule engine that runs as an embedded module (Apache `mod_security2`, the NGINX `ModSecurity-nginx` connector) or as a reverse proxy. The OWASP CRS (Core Rule Set) is the standard rule set that runs on that engine. (For the classes of web vulnerability a WAF aims to block — SQLi, XSS, the OWASP Top 10 — see [Chapter 5](#sec-05).)
 
 ### 11.3.2. The five processing phases of ModSecurity
 
@@ -354,6 +361,7 @@ SecRule VARIABLES "OPERATOR" "ACTIONS"
 ```
 Example:
 ```
+# [DEMO] illustrates the SecRule syntax; in production prefer the OWASP CRS with anomaly scoring rather than denying on the first rule match
 SecRule ARGS "@detectSQLi" "id:1001,phase:2,deny,status:403,log,msg:'SQLi detected',t:none,t:urlDecodeUni,t:lowercase"
 ```
 
@@ -442,6 +450,7 @@ SecAction "id:900110,phase:1,nolog,pass,t:none,\
 
 An example CRS rule blocking SQLi (illustrating the scoring mechanism):
 ```apache
+# [PROD] this is the official CRS rule (942100): uses libinjection + anomaly scoring, production-ready after tuning exclusions
 SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES "@detectSQLi" \
     "id:942100,phase:2,block,capture,t:none,t:urlDecodeUni,\
      msg:'SQL Injection Attack Detected via libinjection',\
@@ -456,6 +465,7 @@ SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES "@detectSQLi" \
 
 Creating an exclusion (removing a false positive for one route):
 ```apache
+# [DEMO] the route /api/free-text-comment and rule id 942100 are examples only — substitute the real route and rule id
 SecRule REQUEST_URI "@beginsWith /api/free-text-comment" \
     "id:1000100,phase:1,pass,nolog,ctl:ruleRemoveTargetById=942100;ARGS:comment"
 ```
@@ -584,7 +594,7 @@ pfSense creates a VLAN interface on one physical NIC (router-on-a-stick): each V
 
 ## 11.5. VPN — IPsec, OpenVPN, WireGuard (deep dive)
 
-A VPN creates an encrypted "tunnel": the original packet is wrapped in a new packet with authentication + encryption. The core difference between the three technologies lies in: how keys are exchanged, the structure of the wrapping packet, and complexity.
+A VPN creates an encrypted "tunnel": the original packet is wrapped in a new packet with authentication + encryption. The core difference between the three technologies lies in: how keys are exchanged, the structure of the wrapping packet, and complexity. (For the cryptographic foundations — Diffie-Hellman key exchange, AEAD, PFS — see [Chapter 4](#sec-04).)
 
 ### 11.5.1. IPsec — the architecture
 
@@ -952,3 +962,10 @@ The core operational principles:
 5. Encryption blinds the NIDS: consider TLS inspection at the reverse proxy (where the keys already are) instead of decrypting mid-path.
 6. Protect the VPN keys and peer identities: private key permission 600, PFS/rekey, pin the cert/public key, monitor handshakes.
 7. Correlate multiple sources: NIDS (Suricata) + NSM (Zeek) + HIDS (Wazuh) + WAF audit logs → SIEM to see the full attack chain instead of disjointed alerts.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

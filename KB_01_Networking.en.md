@@ -780,6 +780,8 @@ curl -v http://example.com/      # -v prints both request and response headers
 
 ### 1.7.4. TLS — 1.2 and 1.3
 
+The cryptographic foundations behind TLS/PKI (key exchange, AEAD, X.509 certificates) are covered in [Chapter 4 — Cryptography & Security Foundations](#sec-04).
+
 **TLS Record layer — 5-byte header (wraps every TLS message):**
 
 | Field | Size | Meaning | Example |
@@ -936,3 +938,10 @@ A typical investigation workflow: capture with tcpdump on a headless server (`-w
 | Port ranges | 0–1023 / 1024–49151 / 49152–65535 |
 
 > The RFC numbers above are stable standards. For implementation-dependent details (MSL, backlog size, the default congestion algorithm), verify them on the specific system using `sysctl`/`ss`, as the values vary by OS and kernel version.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

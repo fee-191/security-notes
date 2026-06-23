@@ -203,6 +203,7 @@ Giải thích `offset`/`depth` và `distance`/`within` (rất hay nhầm):
 
 Phát hiện SQLi `UNION SELECT` trong HTTP request:
 ```
+# [PROD] rule có fast pattern + sticky buffer chuẩn hoá + pcre tinh lọc; vẫn cần tuning theo lưu lượng thực tế
 alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (
     msg:"WEB SQLi UNION SELECT in URI";
     flow:established,to_server;
@@ -222,6 +223,7 @@ alert http $EXTERNAL_NET any -> $HOME_NET $HTTP_PORTS (
 
 Phát hiện nmap SYN scan (nhiều SYN tới nhiều cổng trong thời gian ngắn):
 ```
+# [PROD] ngưỡng count/seconds cần hiệu chỉnh theo baseline mạng để tránh false positive
 alert tcp $EXTERNAL_NET any -> $HOME_NET any (
     msg:"SCAN nmap SYN scan";
     flags:S;
@@ -235,6 +237,7 @@ alert tcp $EXTERNAL_NET any -> $HOME_NET any (
 
 Phát hiện C2 beacon qua User-Agent đáng ngờ:
 ```
+# [DEMO] chỉ minh hoạ cơ chế: dựa vào artefact mặc định, attacker đổi profile là né được — KHÔNG dùng thẳng production
 alert http $HOME_NET any -> $EXTERNAL_NET any (
     msg:"MALWARE Suspicious User-Agent C2 beacon";
     flow:established,to_server;
@@ -250,6 +253,7 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (
 
 Dùng `flowbits` để tương quan đa gói (chỉ alert exfil sau khi đã thấy đăng nhập):
 ```
+# [DEMO] URI mẫu /login, /export?all=1 chỉ minh hoạ cơ chế flowbits — thay bằng route thật trước khi dùng
 alert http any any -> any any ( msg:"login seen"; http.uri; content:"/login"; flowbits:set,auth; flowbits:noalert; sid:1000030; )
 alert http any any -> any any ( msg:"download after login"; http.uri; content:"/export?all=1"; flowbits:isset,auth; sid:1000031; )
 ```
@@ -268,18 +272,21 @@ Snort/Suricata chủ yếu signature-based, nhưng preprocessors có yếu tố 
 
 ### 11.2.5. TCP flags — cần cho rule `flags:`
 
-TCP flags nằm trong 1 byte (offset 13 của TCP header), 6 bit thấp (+2 bit ECN/NS):
+TCP định nghĩa 9 cờ điều khiển. 8 cờ nằm gọn trong 1 byte tại offset 13 của TCP header (gồm 6 cờ cổ điển FIN..URG cộng 2 cờ ECN là ECE/CWR theo RFC 3168); cờ thứ 9 là NS (Nonce Sum, RFC 3540) nằm ở bit thấp nhất của byte offset 12 (dùng chung byte với trường Data Offset), nên không cùng byte với 8 cờ còn lại:
 
-| Bit | Cờ | Ý nghĩa |
+| Bit (byte offset 13) | Cờ | Ý nghĩa |
 |---|---|---|
-| 0x01 | FIN | Kết thúc |
+| 0x01 | FIN | Kết thúc kết nối |
 | 0x02 | SYN | Mở kết nối |
-| 0x04 | RST | Reset |
-| 0x08 | PSH | Push buffer |
-| 0x10 | ACK | Xác nhận |
-| 0x20 | URG | Khẩn |
+| 0x04 | RST | Reset kết nối |
+| 0x08 | PSH | Đẩy buffer lên ứng dụng ngay |
+| 0x10 | ACK | Xác nhận (trường Acknowledgment hợp lệ) |
+| 0x20 | URG | Khẩn (trường Urgent Pointer hợp lệ) |
+| 0x40 | ECE | ECN-Echo — báo hiệu tắc nghẽn (RFC 3168) |
+| 0x80 | CWR | Congestion Window Reduced (RFC 3168) |
+| — (bit thấp byte offset 12) | NS | Nonce Sum — ECN nonce (RFC 3540; ít triển khai, được RFC 8311 chuyển sang thử nghiệm) |
 
-Cú pháp `flags`: `flags:S` (chỉ SYN), `flags:SA` (SYN+ACK), `flags:S,12` (SYN bật, bỏ qua bit 1&2 = CWR/ECE khi so), `flags:!R` (không RST). NULL scan = `flags:0`; XMAS = `flags:FPU`.
+Cú pháp `flags`: `flags:S` (chỉ SYN), `flags:SA` (SYN+ACK), `flags:S,CE` (SYN bật, bỏ qua hai bit CWR/ECE khi so — tương đương ký pháp số `flags:S,12`), `flags:!R` (không RST). NULL scan = `flags:0`; XMAS = `flags:FPU`. Ký hiệu cờ trong rule Snort/Suricata: `C`=CWR, `E`=ECE, `U`=URG, `A`=ACK, `P`=PSH, `R`=RST, `S`=SYN, `F`=FIN.
 
 ### 11.2.6. Cài đặt, chạy, và TEST trigger rule
 
@@ -331,7 +338,7 @@ WAF (Web Application Firewall) hoạt động ở L7: nó parse HTTP request (me
 | TLS | Không cần | Phải termination để đọc plaintext |
 | Hiểu ngữ cảnh ứng dụng | Không | Có (per-param, per-route) |
 
-ModSecurity là một engine rule chạy như module embedded (Apache `mod_security2`, NGINX `ModSecurity-nginx` connector) hoặc reverse proxy. OWASP CRS (Core Rule Set) là bộ rule chuẩn chạy trên engine đó.
+ModSecurity là một engine rule chạy như module embedded (Apache `mod_security2`, NGINX `ModSecurity-nginx` connector) hoặc reverse proxy. OWASP CRS (Core Rule Set) là bộ rule chuẩn chạy trên engine đó. (Các lớp lỗ hổng web mà WAF nhắm chặn — SQLi, XSS, OWASP Top 10 — xem [Chương 5](#sec-05).)
 
 ### 11.3.2. Năm phase xử lý của ModSecurity
 
@@ -354,6 +361,7 @@ SecRule VARIABLES "OPERATOR" "ACTIONS"
 ```
 Ví dụ:
 ```
+# [DEMO] minh hoạ cú pháp SecRule; production nên dùng OWASP CRS với anomaly scoring thay vì deny ngay khi một rule khớp
 SecRule ARGS "@detectSQLi" "id:1001,phase:2,deny,status:403,log,msg:'SQLi detected',t:none,t:urlDecodeUni,t:lowercase"
 ```
 
@@ -442,6 +450,7 @@ SecAction "id:900110,phase:1,nolog,pass,t:none,\
 
 Ví dụ rule CRS chặn SQLi (minh hoạ cơ chế scoring):
 ```apache
+# [PROD] đây là rule CRS chính thức (942100): dùng libinjection + cộng điểm anomaly, chạy được trong production sau khi tuning exclusion
 SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES "@detectSQLi" \
     "id:942100,phase:2,block,capture,t:none,t:urlDecodeUni,\
      msg:'SQL Injection Attack Detected via libinjection',\
@@ -456,6 +465,7 @@ SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES "@detectSQLi" \
 
 Tạo exclusion (gỡ false positive cho một route):
 ```apache
+# [DEMO] route /api/free-text-comment và rule id 942100 chỉ là ví dụ — thay bằng route và rule id thực tế
 SecRule REQUEST_URI "@beginsWith /api/free-text-comment" \
     "id:1000100,phase:1,pass,nolog,ctl:ruleRemoveTargetById=942100;ARGS:comment"
 ```
@@ -584,7 +594,7 @@ pfSense tạo interface VLAN trên một NIC vật lý (router-on-a-stick): mỗ
 
 ## 11.5. VPN — IPsec, OpenVPN, WireGuard (cực sâu)
 
-VPN tạo "đường hầm" mã hoá: gói gốc được bọc trong gói mới có xác thực + mã hoá. Khác biệt cốt lõi giữa ba công nghệ nằm ở: cách trao khoá, cấu trúc gói bọc, và độ phức tạp.
+VPN tạo "đường hầm" mã hoá: gói gốc được bọc trong gói mới có xác thực + mã hoá. Khác biệt cốt lõi giữa ba công nghệ nằm ở: cách trao khoá, cấu trúc gói bọc, và độ phức tạp. (Nền tảng mật mã — trao khoá Diffie-Hellman, AEAD, PFS — xem [Chương 4](#sec-04).)
 
 ### 11.5.1. IPsec — kiến trúc
 
@@ -952,3 +962,10 @@ Nguyên tắc vận hành cốt lõi:
 5. Mã hoá làm NIDS mù: cân nhắc TLS inspection ở reverse proxy (nơi đã có khoá) thay vì giải mã giữa đường.
 6. Bảo vệ khoá VPN và danh tính peer: private key quyền 600, PFS/rekey, ghim cert/public key, giám sát handshake.
 7. Tương quan đa nguồn: NIDS (Suricata) + NSM (Zeek) + HIDS (Wazuh) + WAF audit log → SIEM để thấy chuỗi tấn công đầy đủ thay vì cảnh báo rời rạc.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

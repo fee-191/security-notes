@@ -679,7 +679,7 @@ Navigator supports **layer arithmetic**: for example, create a new layer = `a - 
 
 **What it is:** a YAML format that describes detections over **logs** in a neutral way, which `sigma-cli` then converts into Splunk/Elastic/Sentinel queries, etc.
 
-**Rule structure — field by field:**
+**[PROD] Rule structure — field by field** (this rule matches on `CommandLine` behavior, sitting in the upper tiers of the Pyramid of Pain — see [Chapter 10](#sec-10) on detection engineering and [Chapter 8](#sec-08) on endpoint telemetry):
 
 ```yaml
 title: PowerShell EncodedCommand Suspicious
@@ -732,7 +732,7 @@ sigma convert -t splunk -p splunk_windows powershell_enc.yml
 
 **What it is:** a rule language that matches **strings/bytes/regex** in files or process memory → to classify malware (the "Tools" tier on the Pyramid of Pain).
 
-**Rule structure:**
+**[PROD] Rule structure** (matches strings characteristic of the tool — the "Tools" tier, relatively durable since it forces the adversary to switch tools):
 
 ```yara
 import "pe"
@@ -777,7 +777,7 @@ yara mimikatz.yar --scan-list pids.txt        # scan by PID (memory)
 
 **What it is:** a signature-based IDS/IPS with protocol analysis. Rules match packets/flows and are tagged with ATT&CK `metadata`.
 
-**Rule structure — part by part:**
+**[DEMO] Rule structure — part by part** (illustrates the mechanism only, NOT for direct production use): IOCs based on a fixed User-Agent/URI string sit at the base of the Pyramid of Pain — the adversary changes the User-Agent or URI within minutes, so this rule is **short-lived**, easily evaded, and prone to false positives. For real deployment, prioritize behavior/TTP-based detection (see [Chapter 10](#sec-10)) and add network telemetry correlated with the endpoint (see [Chapter 8](#sec-08)).
 
 ```
 alert http $HOME_NET any -> $EXTERNAL_NET any ( \
@@ -818,7 +818,7 @@ cat ./out/fast.log
 
 **STIX (Structured Threat Information eXpression)** uses **JSON**; everything is an **SDO** (STIX Domain Object), an **SRO** (Relationship Object), or an **SCO** (Cyber-observable Object).
 
-**A STIX Indicator (SDO) — field by field:**
+**[DEMO] A STIX Indicator (SDO) — field by field** (illustrates the structure; a single-domain IOC itself sits at the base of the Pyramid of Pain and is short-lived — it should not be a pillar of detection):
 
 ```json
 {
@@ -1119,3 +1119,10 @@ A quick-reference table linking **stage → technique → telemetry → detectio
 ### References to verify when citing precisely
 - The number of tactics/techniques and specific IDs change with each ATT&CK version — always cross-check `attack.mitre.org` and the `versions.attack` value in your layer.
 - The number of Unified Kill Chain stages (18) and the details of the STIX media types should be re-checked against the original specification (OASIS STIX/TAXII 2.1) before use in formal documentation.
+
+
+---
+
+## My notes
+
+> *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*

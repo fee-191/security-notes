@@ -8,7 +8,7 @@ Chương trình bày các khối kiến thức sau, mỗi khối kèm định ng
 
 - **Mô hình dịch vụ IaaS / PaaS / SaaS** — ba mức phân tầng theo "ai vận hành tầng nào" trong ngăn xếp. IaaS giao khách hàng quản nhiều nhất (guest OS, runtime, app); SaaS giao ít nhất (chủ yếu dữ liệu). Giải quyết: xác định ranh giới trách nhiệm vá lỗi và cấu hình ở từng tầng — nhầm ranh giới là gốc rễ của hầu hết sự cố.
 - **Shared Responsibility Model (mô hình trách nhiệm chung)** — khung phân định trách nhiệm bảo mật giữa nhà cung cấp ("security OF the cloud": phần cứng, hypervisor, mạng vật lý) và khách hàng ("security IN the cloud": IAM, mã hóa, cấu hình mạng, dữ liệu). Giải quyết: chống ngộ nhận "lên cloud là nhà cung cấp lo hết".
-- **IAM (Identity and Access Management)** — hệ thống quản lý danh tính và phân quyền, biểu diễn quyền bằng tài liệu policy JSON. Giải quyết: thực thi least privilege, mỗi danh tính chỉ có đúng quyền tối thiểu cần thiết.
+- **IAM (Identity and Access Management)** — hệ thống quản lý danh tính và phân quyền, biểu diễn quyền bằng tài liệu policy JSON (nền tảng mật mã của khóa, chữ ký và token xem [Chương 4](#sec-04)). Giải quyết: thực thi least privilege, mỗi danh tính chỉ có đúng quyền tối thiểu cần thiết.
 - **VPC (Virtual Private Cloud)** — mạng ảo cô lập, chia thành subnet public (có đường ra Internet) và private (không phơi ra ngoài). Giải quyết: cô lập tài nguyên nhạy cảm như database khỏi truy cập trực tiếp từ Internet.
 - **Security Group và Network ACL** — hai cơ chế tường lửa: Security Group hoạt động ở mức instance và có trạng thái (stateful); Network ACL hoạt động ở mức subnet và không trạng thái (stateless). Giải quyết: kiểm soát luồng vào/ra, đặc biệt chặn các cổng quản trị nhạy cảm.
 - **Amazon S3** — kho lưu trữ đối tượng theo đơn vị bucket. Giải quyết: lưu file quy mô lớn; rủi ro chính là cấu hình public ngoài ý muốn, kiểm soát bằng Block Public Access.
@@ -573,7 +573,7 @@ done
 
 ### 13.7.2. Envelope Encryption — từng bước
 
-KMS không mã hóa khối dữ liệu lớn trực tiếp (giới hạn ~4 KB cho `Encrypt`). Thay vào đó dùng **envelope encryption**:
+KMS không mã hóa khối dữ liệu lớn trực tiếp (giới hạn ~4 KB cho `Encrypt`). Thay vào đó dùng **envelope encryption** (nguyên lý AES, AES-GCM và quản lý khóa xem [Chương 4](#sec-04)):
 
 ```
 1. Client gọi KMS GenerateDataKey(KeyId=CMK, KeySpec=AES_256).
@@ -752,7 +752,7 @@ Output credential:
 
 ### 13.11.2. IMDSv1 (request/response đơn giản — và lỗ hổng SSRF)
 
-IMDSv1: chỉ cần một HTTP GET tới `169.254.169.254`. KHÔNG cần token. Đây là gốc của vô số sự cố SSRF.
+IMDSv1: chỉ cần một HTTP GET tới `169.254.169.254`. KHÔNG cần token. Đây là gốc của vô số sự cố SSRF (cơ chế SSRF được trình bày ở [Chương 5 — An ninh ứng dụng Web](#sec-05)).
 
 Kịch bản tấn công SSRF qua IMDSv1:
 
@@ -1204,3 +1204,10 @@ gcloud secrets versions access latest --secret=db-pass
 | Phát hiện liên tục | CSPM (Prowler/ScoutSuite/SCC) + secret scanning trong CI |
 
 Toàn bộ kiến trúc bảo mật đám mây quy về: **kiểm soát danh tính (IAM) chặt, loại bỏ bí mật lâu dài, mã hóa mọi nơi, ghi log đầy đủ và bất biến, chặn public mặc định, và quét cấu hình sai liên tục.** Phần lớn sự cố thực tế nằm ở "IN the cloud" — tức trong tầm kiểm soát và trách nhiệm của bạn.
+
+
+---
+
+## Ghi chú của mình
+
+> *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*

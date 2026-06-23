@@ -13,7 +13,7 @@ Cả hai đều thiết yếu với an toàn thông tin: dấu vết tấn công
 
 - **Log**: bản ghi tuần tự các sự kiện do hệ thống sinh ra (truy cập, đăng nhập thất bại, lỗi phần mềm). Là nguồn bằng chứng chính khi điều tra sự cố bảo mật, nhưng chỉ hữu dụng khi được tập trung và cho phép tìm kiếm.
 - **ELK Stack**: bộ ba **E**lasticsearch + **L**ogstash + **K**ibana (thường kèm Beats). Giải quyết bài toán log phân tán trên nhiều máy: gom về một nơi, đánh chỉ mục để tìm kiếm full-text và trực quan hóa phục vụ điều tra.
-- **Elasticsearch**: **search engine** dựa trên Lucene, dùng **inverted index** để tra cứu full-text ở quy mô tỷ bản ghi với độ trễ mili-giây — điều CSDL quan hệ không đáp ứng được.
+- **Elasticsearch**: **search engine** dựa trên Lucene, dùng **inverted index** để tra cứu full-text ở quy mô tỷ bản ghi với độ trễ mili-giây — điều RDBMS (CSDL quan hệ) không đáp ứng được.
 - **Logstash**: pipeline xử lý đặt giữa nguồn log và Elasticsearch; nhận log thô, parse, làm sạch và chuẩn hóa thành dữ liệu có cấu trúc. Dữ liệu sạch là điều kiện để tìm kiếm và thống kê chính xác.
 - **Kibana**: lớp trực quan hóa và truy vấn trên Elasticsearch; biến dữ liệu thô thành biểu đồ, bảng và dashboard, giúp phát hiện bất thường nhanh hơn đọc log thô.
 - **Beats**: họ agent nhẹ trên host nguồn — Filebeat (log file), Metricbeat (CPU/RAM), Winlogbeat (Windows Event Log). Thu thập dữ liệu tại chỗ và đẩy về Logstash/Elasticsearch.
@@ -21,11 +21,11 @@ Cả hai đều thiết yếu với an toàn thông tin: dấu vết tấn công
 - **Metric** và **Trigger**: **Metric** là giá trị đo tại một thời điểm (ví dụ CPU 87%); chuỗi metric theo thời gian cho thấy xu hướng. **Trigger** là biểu thức điều kiện ("nếu CPU trung bình 5 phút vượt 90% thì cảnh báo") — cơ chế giám sát tự động thay cho việc trực màn hình thủ công.
 - **SIEM** (Wazuh, Splunk): hệ phát hiện tấn công, đọc log và tương quan sự kiện để nhận diện mẫu hành vi đáng ngờ. Phân định cốt lõi: **Zabbix giám sát sức khỏe hạ tầng, SIEM phát hiện an ninh** — hai hệ bổ sung, không thay thế nhau.
 
-## 9.0 Tổng quan và định vị công cụ
+## 9.0 Bảng định vị công cụ
 
-Chương này đào sâu hai họ công cụ thường bị nhầm lẫn về vai trò trong môi trường vận hành: **ELK/Elastic Stack** (nền tảng thu thập, lưu trữ, truy vấn và trực quan hóa log/event ở quy mô lớn) và **Zabbix** (nền tảng giám sát hạ tầng và hiệu năng theo mô hình metric/threshold). Mục tiêu của chương không phải "giới thiệu sản phẩm" mà mô tả tới mức **định dạng dữ liệu trên dây (wire format), cấu trúc bản ghi trên đĩa, từng trường cấu hình và từng bước xử lý** — đủ để một kỹ sư Blue Team/AppSec/DevSecOps vận hành thật, gỡ lỗi thật và đánh giá rủi ro thật.
+Phần Tổng quan ở trên đã giới thiệu từng công cụ. Mục này không lặp lại các định nghĩa đó, mà đặt ba họ công cụ cạnh nhau để thấy rõ chúng khác nhau ở đâu — trước khi đi sâu vào từng phần. Cách trình bày của chương cũng đi tới mức **định dạng dữ liệu trên dây (wire format), cấu trúc bản ghi trên đĩa, từng trường cấu hình và từng bước xử lý** — đủ để một kỹ sư Blue Team/AppSec/DevSecOps vận hành, gỡ lỗi và đánh giá rủi ro trong thực tế.
 
-Một điểm phân định bản chất phải nắm ngay từ đầu:
+Một điểm phân định bản chất nên ghi nhớ trước khi đọc tiếp:
 
 | Khía cạnh | ELK Stack | Zabbix | SIEM (vd Wazuh, Splunk ES) |
 |---|---|---|---|
@@ -35,7 +35,7 @@ Một điểm phân định bản chất phải nắm ngay từ đầu:
 | Cơ chế cảnh báo | Watcher/ElastAlert/Detection rules (bổ sung) | Trigger expression (lõi) | Correlation rules + decoder (lõi) |
 | Bản chất | Search engine | Monitoring system | Detection & response |
 
-Ghi nhớ: Elasticsearch **là một search engine** chứ không phải database quan hệ; Zabbix **là một monitoring system** chứ không phải log store. Mọi quyết định thiết kế bên dưới đều bắt nguồn từ hai bản chất này.
+Ghi nhớ: Elasticsearch **là một search engine** chứ không phải RDBMS (CSDL quan hệ); Zabbix **là một monitoring system** chứ không phải log store. Phần lớn các quyết định thiết kế bên dưới đều có thể truy ngược về hai bản chất này.
 
 ---
 
@@ -43,7 +43,7 @@ Ghi nhớ: Elasticsearch **là một search engine** chứ không phải databas
 
 ### 9.1.1 Inverted index — Vì sao và cấu trúc bên trong
 
-Elasticsearch dựng trên thư viện **Apache Lucene**. Cấu trúc dữ liệu trung tâm là **inverted index** (chỉ mục đảo). Trong CSDL quan hệ, ta đi từ hàng → cột → giá trị (forward). Inverted index đảo ngược: đi từ **term (từ) → danh sách document chứa term đó**. Đây là lý do tìm full-text trên hàng tỷ document vẫn ở mức mili-giây: thay vì quét tuyến tính, ta tra cứu term rồi hợp/giao các posting list.
+Elasticsearch dựng trên thư viện **Apache Lucene**. Cấu trúc dữ liệu trung tâm là **inverted index** (chỉ mục đảo). Trong RDBMS, ta đi từ hàng → cột → giá trị (forward). Inverted index đảo ngược: đi từ **term (từ) → danh sách document chứa term đó**. Đây là lý do tìm full-text trên hàng tỷ document vẫn ở mức mili-giây: thay vì quét tuyến tính, ta tra cứu term rồi hợp/giao các posting list.
 
 Quy trình đánh chỉ mục một trường text:
 
@@ -183,6 +183,8 @@ Bảng data type quan trọng:
 | `ip` | IPv4 (32-bit) / IPv6 (128-bit) | Có | Có | địa chỉ IP, hỗ trợ CIDR |
 | `boolean` | true/false | — | Có | cờ |
 | `geo_point` | lat/lon | — | Có | tọa độ, geo query |
+
+Dấu `—` ở cột Inverted index nghĩa là kiểu đó không nằm trong inverted index dạng term; thay vào đó Lucene đánh chỉ mục bằng cấu trúc point/BKD-tree để tối ưu cho range query trên số, ngày, IP và tọa độ.
 
 **Vì sao trường `request` vừa là `text` vừa có sub-field `raw` kiểu `keyword`?** Đây là pattern multi-field kinh điển: bản `text` cho phép tìm full-text ("tìm request chứa /admin"), bản `keyword` cho phép aggregate chính xác ("top 10 URL gọi nhiều nhất"). Một dữ liệu, hai cách dùng.
 
@@ -943,7 +945,7 @@ Event (trigger PROBLEM)
    │
    ▼ Operations
        - gửi message qua Media (Email/Telegram/Slack/Webhook)
-       - chạy remote command (vd restart service) — CẨN TRỌNG
+       - chạy remote command (vd restart service) — cẩn trọng
    │
    ▼ Recovery operations  (gửi thông báo đã OK)
    │

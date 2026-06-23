@@ -16,11 +16,11 @@
 - **Hashing** — produces a fixed-length fingerprint, **one-way and irreversible**. Used for integrity checks and password storage.
 - **Encryption** — locks data with a secret key, reversible only with the key. This is the only primitive that guarantees confidentiality.
 
-**Symmetric encryption** — uses **a single key** for both encryption and decryption. **AES** is the most widely adopted standard: fast and suitable for large data volumes. Plain encryption does not guarantee integrity; in practice **AEAD** (AES-GCM, ChaCha20-Poly1305) is used to combine confidentiality and integrity.
+**Symmetric encryption** — one key for both encryption and decryption; **AES** + **AEAD** (see 4.3).
 
-**Asymmetric encryption** — uses a **key pair** (public/private), solving the key-exchange problem between parties that have never shared a secret. **RSA** is based on the difficulty of integer factorization; **ECC** achieves the same security level with shorter keys; **Diffie-Hellman/ECDHE** allows agreeing on a shared key over an open channel. The **ephemeral** variant (ECDHE) provides **Forward Secrecy**: a future leak of the server key cannot decrypt past sessions.
+**Asymmetric encryption** — a **key pair** (public/private) for key exchange; **RSA**, **ECC**, **DH/ECDHE** (see 4.4).
 
-**Cryptographic hash functions** — turn data into a fixed-length fingerprint with the **avalanche** effect (changing one input bit → ~50% of output bits change) and irreversibility. **SHA-256** is the current recommendation; **SHA-3** is an architectural backup. **MD5 and SHA-1 are broken** — forbidden for security purposes.
+**Cryptographic hash functions** — a fixed-length, one-way fingerprint with the **avalanche** effect; **SHA-256/SHA-3**, **MD5/SHA-1 are broken** (see 4.5).
 
 **Password storage** — never store in plaintext and never use a fast hash (too fast). Use a function that is **deliberately slow and memory-hard** (**Argon2**, **bcrypt**, **scrypt**) together with a **salt** (random and unique per user) and a **pepper** (a shared secret stored separately).
 
@@ -34,7 +34,7 @@
 
 **Design principles** — including **Least Privilege**, **Defense in Depth**, **Zero Trust**, and especially **Kerckhoffs's principle**: a system must remain secure even when an adversary knows the entire mechanism, as long as the key is kept secret. This is why AES, RSA, and SHA-256 are all open standards.
 
-> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section progresses from CONCEPT → INTERNAL MECHANISM (at the bit/byte/step level) → RUNNABLE REAL-WORLD EXAMPLE → SECURITY NOTES. The technical figures follow NIST FIPS / RFC; anything requiring further verification is noted explicitly.
+> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section progresses from concept → internal mechanism (at the bit/byte/step level) → runnable real-world example → security notes. The technical figures follow NIST FIPS / RFC; anything requiring further verification is noted explicitly.
 
 ---
 
@@ -133,6 +133,8 @@ Each round (except the final one, which omits MixColumns) consists of 4 steps on
 
 **1. SubBytes** — a nonlinear substitution of each byte through an **S-box** (256 entries). The S-box = the inverse in the Galois field GF(2⁸) (irreducible polynomial `0x11B`) followed by an affine transform. Purpose: create **confusion** (a complex key↔ciphertext relationship), resisting linear/differential attacks.
 
+For the GF(2⁸) math here you only need the **idea**: each byte is "scrambled" through a fixed lookup table so the input-output relationship is nonlinear and hard to analyze. In practice the S-box is a precomputed table, so you never have to compute it yourself.
+
 ```
 byte 0x53 → S-box[0x53] = 0xED
 (look up row 0x5, column 0x3 in the 16×16 table)
@@ -157,7 +159,7 @@ b3 b7 b11 b15   b15 b3  b7  b11   (shift 3)
 | 03 01 01 02 |   | s3 |
 ```
 
-Purpose: **diffusion** — one input byte affects all 4 output bytes of the column. (The final round omits this step because it adds no security, only cost, and to make decryption symmetric.)
+Purpose: **diffusion** — one input byte affects all 4 output bytes of the column. (The final round omits this step because it adds no security, only cost, and to make decryption symmetric.) The matrix multiplication in GF(2⁸) looks heavy, but grasping the **idea** — "stir together the bytes within a single column" — is enough; the arithmetic detail is only for those implementing the algorithm.
 
 **4. AddRoundKey** — XOR the state with the round's 128-bit round key. This is the only step that introduces the key. Round keys are generated from the **key schedule** (Rijndael key expansion) using RotWord, SubWord, Rcon.
 
@@ -391,6 +393,8 @@ This is why TLS 1.3 **mandates** the use of ephemeral (EC)DHE, completely removi
                      ↑ chaining value fed into the next block
 ```
 
+You don't need to memorize each Σ/σ/Ch/Maj function — grasping the **idea** is enough: split the message into blocks, "compress" each block in turn into a state value carried to the next block, and the final block yields the digest.
+
 ```bash
 $ echo -n "abc" | sha256sum
 ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  -
@@ -409,7 +413,7 @@ SHA-3 (FIPS 202) uses a **sponge** structure entirely different from Merkle–Da
 - The **squeeze** phase: take output from the rate portion.
 - Immune to length-extension. It also has the SHAKE128/256 variants (XOF — output of arbitrary length).
 
-SHA-3 is an architectural backup for SHA-2, **not** a replacement because SHA-2 is weak (SHA-2 remains secure). The difference helps diversify risk.
+SHA-3 is an architectural backup for SHA-2, **not** because SHA-2 has become weak — SHA-2 remains secure today. Having two function families with entirely different structures diversifies risk: if Merkle–Damgård is ever attacked, we still have the sponge to switch to.
 
 ### 4.5.4. Why MD5 and SHA-1 are retired
 

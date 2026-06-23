@@ -2,49 +2,20 @@
 
 ## Tổng quan
 
-Chương này trình bày cơ chế truyền dữ liệu giữa các máy tính qua mạng, từ khi một byte rời tiến trình ứng dụng cho tới khi tới đích. Đây là nền tảng bắt buộc cho công việc an toàn thông tin: phần lớn kỹ thuật tấn công (nghe lén, giả mạo, chặn bắt, từ chối dịch vụ) diễn ra tại một tầng cụ thể của ngăn xếp mạng. Nắm cơ chế vận hành từng tầng là điều kiện để xác định bề mặt tấn công và điểm cần phòng thủ.
+Chương này trình bày cơ chế truyền dữ liệu giữa các máy tính qua mạng, từ khi một byte rời tiến trình ứng dụng cho tới khi tới đích. Đây là nền tảng cho công việc an toàn thông tin: phần lớn kỹ thuật tấn công (nghe lén, giả mạo, chặn bắt, từ chối dịch vụ) diễn ra tại một tầng cụ thể của ngăn xếp mạng. Nắm cơ chế vận hành từng tầng giúp ta xác định được bề mặt tấn công và điểm cần phòng thủ.
 
-**Mô hình phân tầng (OSI & TCP/IP).** Mạng được tổ chức thành các **tầng** xếp chồng: mỗi tầng cung cấp dịch vụ cho tầng trên và sử dụng dịch vụ của tầng dưới qua một interface cố định. Phân tầng giải quyết vấn đề độ phức tạp và khả năng thay thế: có thể đổi công nghệ một tầng (cáp đồng sang cáp quang, Wi-Fi sang Ethernet) mà không phá vỡ các tầng khác. **OSI** là mô hình lý thuyết 7 tầng dùng để chuẩn hóa thuật ngữ; **TCP/IP** là mô hình 4 tầng vận hành thực tế trên Internet. Cả hai cần thông thạo vì công cụ và tài liệu bảo mật trộn lẫn cách gọi ("tấn công L2", "tường lửa L7").
+Đây là bản đồ nhanh các khái niệm trong chương; định nghĩa và cơ chế đầy đủ nằm ở từng mục bên dưới.
 
-**Đóng gói / mở gói (Encapsulation).** Dữ liệu được bọc tuần tự qua các tầng, mỗi tầng thêm một header (đôi khi trailer) chứa thông tin định danh rồi truyền xuống dưới; bên nhận bóc ngược từng lớp. Giá trị với bảo mật: mỗi header chứa thông tin mà công cụ phân tích và kẻ tấn công đều đọc được — địa chỉ nguồn/đích, cổng, giao thức. Đọc gói tin chính là đọc các lớp header này theo đúng thứ tự bọc/mở.
+- **Mô hình phân tầng (OSI & TCP/IP)** — mạng tổ chức thành các tầng xếp chồng, mỗi tầng phục vụ tầng trên qua một interface cố định. OSI là mô hình lý thuyết 7 tầng; TCP/IP là mô hình 4 tầng chạy thực tế trên Internet.
+- **Encapsulation / Decapsulation** — dữ liệu được bọc tuần tự qua các tầng, mỗi tầng thêm một header rồi truyền xuống; bên nhận bóc ngược. Mỗi header chứa thông tin mà cả công cụ phân tích lẫn kẻ tấn công đều đọc được.
+- **Tầng 2 — Ethernet, MAC, VLAN, ARP, switch** — định danh phần cứng và trao đổi frame trong cùng LAN.
+- **Tầng 3 — IP, ICMP, định tuyến, NAT** — định danh logic và định tuyến qua nhiều mạng tới đích.
+- **Tầng 4 — TCP và UDP** — vận chuyển dữ liệu và dùng port phân hướng tới đúng ứng dụng.
+- **Cổng (port) phổ biến** — một host một IP nhưng nhiều dịch vụ; port phân biệt từng dịch vụ và phản ánh bề mặt tấn công.
+- **Tầng 7 — DNS, DHCP, HTTP, TLS** — các giao thức ứng dụng ta gặp hằng ngày.
+- **Tường lửa, DMZ, công cụ phân tích gói** — lọc gói theo chính sách, cô lập vùng tiếp xúc Internet, và bắt/đọc gói bằng tcpdump/Wireshark.
 
-**Tầng 2 — Ethernet, MAC, VLAN, ARP, switch.**
-
-- **MAC & Ethernet**: mỗi NIC có một **địa chỉ MAC** 48 bit định danh phần cứng. Trong cùng một LAN, các host trao đổi frame dựa trên MAC.
-- **Switch**: thiết bị chuyển mạch L2, học vị trí (MAC → port) để forward frame đúng đích thay vì flood.
-- **VLAN**: phân tách logic nhiều mạng trên cùng hạ tầng vật lý, dùng để cô lập các nhóm host và giảm bề mặt tấn công.
-- **ARP**: ánh xạ IP sang MAC trong cùng broadcast domain. **Lưu ý bảo mật:** ARP không xác thực nguồn trả lời, cho phép ARP spoofing để thực hiện man-in-the-middle.
-
-**Tầng 3 — IP, ICMP, định tuyến, NAT.**
-
-- **Địa chỉ IP**: định danh logic của host, dùng để định tuyến qua nhiều mạng tới đích.
-- **Định tuyến (routing)**: các **router** quyết định next-hop cho mỗi packet. Trường TTL giới hạn số hop, chống định tuyến lặp vô hạn.
-- **ICMP**: giao thức điều khiển/báo lỗi của tầng mạng; nền tảng của `ping` và `traceroute`.
-- **NAT**: dịch địa chỉ riêng sang địa chỉ công khai tại router biên, cho phép nhiều host private chia sẻ một public IP. **Lưu ý:** NAT che địa chỉ nội bộ nhưng không phải là tường lửa.
-
-**Tầng 4 — TCP và UDP.** Tầng giao vận xác định cách vận chuyển dữ liệu và dùng **cổng (port)** để phân hướng dữ liệu tới đúng ứng dụng.
-
-- **TCP**: hướng kết nối, thiết lập qua bắt tay 3 bước, đảm bảo độ tin cậy và đúng thứ tự, có truyền lại và kiểm soát luồng. Dùng cho web, email.
-- **UDP**: phi kết nối, không đảm bảo độ tin cậy hay thứ tự, độ trễ thấp. Dùng cho VoIP, game, DNS.
-
-Ý nghĩa bảo mật: cơ chế bắt tay và đóng kết nối của TCP là cơ sở cho kỹ thuật quét cổng và cũng là điểm phát sinh tấn công từ chối dịch vụ (SYN flood).
-
-**Cổng (port) phổ biến.** Một host có một IP nhưng chạy nhiều dịch vụ; **port** phân biệt từng dịch vụ (HTTP 80/443, SSH 22, DNS 53). Danh sách cổng mở phản ánh các dịch vụ đang chạy và là bề mặt tấn công; thuộc các cổng phổ biến giúp đọc kết quả quét và đánh giá rủi ro nhanh.
-
-**Tầng 7 — DNS, DHCP, HTTP, TLS.**
-
-- **DNS**: phân giải tên miền sang địa chỉ IP. **Bảo mật:** cache poisoning chèn bản ghi giả để chuyển hướng nạn nhân.
-- **DHCP**: cấp phát IP, gateway và DNS động qua bốn bước DORA. **Bảo mật:** rogue DHCP server cấp cấu hình giả để thực hiện MITM.
-- **HTTP**: giao thức tầng ứng dụng cho web, dạng văn bản gồm request và response.
-- **TLS**: lớp mã hóa và xác thực bọc quanh HTTP (tạo `https`), bảo vệ tính bí mật/toàn vẹn và dùng **chứng chỉ số** để xác thực danh tính máy chủ.
-
-**Tường lửa, DMZ và công cụ phân tích gói.**
-
-- **Tường lửa (firewall)**: lọc gói theo chính sách. Loại **stateful** theo dõi trạng thái kết nối nên tự chấp nhận gói trả về hợp lệ.
-- **DMZ**: vùng mạng đệm chứa server tiếp xúc Internet, tách khỏi LAN nội bộ để hạn chế khả năng pivot khi server bị chiếm.
-- **tcpdump / Wireshark**: công cụ bắt và phân tích gói. tcpdump chạy dòng lệnh (phù hợp server không GUI), Wireshark cung cấp giao diện đồ họa.
-
-> Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ *LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT*. Mọi cấu trúc dữ liệu được mô tả tới từng trường (field), kích thước chính xác và offset. Mọi công cụ đều có lệnh/cấu hình/output mẫu chạy được.
+> Sổ tay này dành cho người học và làm an toàn thông tin (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo một mạch quen thuộc: khái niệm là gì, cơ chế bên trong (tới mức bit/byte/bước/tham số), một ví dụ chạy thật, rồi vài lưu ý bảo mật. Cấu trúc dữ liệu mô tả tới từng trường (field), kích thước và offset; mỗi công cụ kèm lệnh, cấu hình và output mẫu để bạn gõ lại được.
 
 ---
 
@@ -52,7 +23,7 @@ Chương này trình bày cơ chế truyền dữ liệu giữa các máy tính 
 
 ### 1.1.1. Vì sao cần mô hình phân tầng
 
-Mạng máy tính là bài toán cực kỳ phức tạp: biểu diễn bit trên dây đồng/sợi quang, định địa chỉ máy, định tuyến qua hàng chục router, đảm bảo độ tin cậy, mã hóa, biểu diễn dữ liệu ứng dụng. Nếu thiết kế thành một khối nguyên (monolith) thì không thể bảo trì, không thể thay thế công nghệ từng phần (đổi từ cáp đồng sang quang, đổi IPv4 sang IPv6) mà không phá vỡ toàn bộ.
+Truyền dữ liệu qua mạng là một bài toán rất nhiều việc: biểu diễn bit trên dây đồng/sợi quang, định địa chỉ máy, định tuyến qua hàng chục router, đảm bảo độ tin cậy, mã hóa, biểu diễn dữ liệu ứng dụng. Gom tất cả vào một khối nguyên (monolith) thì gần như không thể bảo trì, cũng không thể thay từng phần công nghệ (đổi cáp đồng sang quang, đổi IPv4 sang IPv6) mà không phá vỡ toàn bộ.
 
 Giải pháp là **phân tầng (layering)**: mỗi tầng cung cấp dịch vụ cho tầng trên và sử dụng dịch vụ của tầng dưới, qua một **interface** cố định. Nguyên tắc cốt lõi:
 
@@ -204,13 +175,13 @@ Khi cần phân tách logic nhiều mạng trên cùng hạ tầng vật lý, sw
 | VID (VLAN ID) | 12 bit | ID VLAN (0–4095; 0 và 4095 dành riêng) | `100` |
 
 - VID 12 bit → tối đa **4094 VLAN** dùng được. **Native VLAN**: trên trunk port, VLAN không tag.
-- **Lưu ý bảo mật — VLAN hopping:**
+- **Lưu ý: VLAN hopping.**
   - *Double tagging*: kẻ tấn công gắn 2 tag; switch bóc tag ngoài (native VLAN), forward sang trunk còn tag trong → frame nhảy sang VLAN khác. Phòng: đặt native VLAN là một VLAN "chết" không dùng, hoặc tag cả native VLAN (`vlan dot1q tag native`).
   - *Switch spoofing*: kẻ tấn công giả DTP để biến port access thành trunk. Phòng: tắt DTP (`switchport mode access`, `switchport nonegotiate`).
 
 ### 1.3.3. ARP — Address Resolution Protocol (RFC 826)
 
-**LÀ GÌ:** ARP ánh xạ địa chỉ IP (L3) sang địa chỉ MAC (L2) trong cùng broadcast domain. Trước khi gửi IP packet tới một host cùng subnet, máy phải biết MAC của host đó.
+ARP ánh xạ địa chỉ IP (L3) sang địa chỉ MAC (L2) trong cùng broadcast domain. Trước khi gửi IP packet tới một host cùng subnet, máy phải biết MAC của host đó.
 
 **Layout gói ARP (28 byte cho IPv4-over-Ethernet), đặt trong payload Ethernet EtherType 0x0806:**
 
@@ -241,7 +212,7 @@ arping -I eth0 10.0.0.1        # Gửi ARP request thủ công
 sudo tcpdump -i eth0 -nn arp  # Bắt gói ARP
 ```
 
-**ARP spoofing/poisoning (LƯU Ý BẢO MẬT):** ARP không có xác thực. Kẻ tấn công gửi **ARP reply giả** (gratuitous ARP) liên tục: "IP gateway `10.0.0.1` có MAC = MAC_kẻ_tấn_công". Nạn nhân ghi đè cache → mọi traffic ra gateway đi qua máy attacker (Man-in-the-Middle).
+**ARP spoofing/poisoning.** **Lưu ý:** ARP không có xác thực. Kẻ tấn công gửi **ARP reply giả** (gratuitous ARP) liên tục: "IP gateway `10.0.0.1` có MAC = MAC_kẻ_tấn_công". Nạn nhân ghi đè cache → mọi traffic ra gateway đi qua máy attacker (Man-in-the-Middle).
 
 ```bash
 # Minh họa (chỉ trong lab được phép):
@@ -257,7 +228,7 @@ Switch học MAC bằng cách xem **Source MAC** của frame đến trên mỗi 
 - Có trong CAM → gửi đúng port (unicast).
 - Không có (unknown unicast) hoặc broadcast/multicast → flood ra tất cả port trừ port đến.
 
-**CAM table overflow / MAC flooding (bảo mật):** attacker bơm hàng nghìn frame với Source MAC ngẫu nhiên (`macof`) làm đầy CAM table. Khi đầy, switch flood mọi traffic như hub → attacker sniff được. Phòng: **port security** giới hạn số MAC/port.
+**Bảo mật — CAM table overflow / MAC flooding:** attacker bơm hàng nghìn frame với Source MAC ngẫu nhiên (`macof`) làm đầy CAM table. Khi đầy, switch flood mọi traffic như hub → attacker sniff được. Phòng: **port security** giới hạn số MAC/port.
 
 ```
 Switch(config-if)# switchport port-security
@@ -334,10 +305,14 @@ Tất cả mảnh dùng **cùng Identification**. Bên nhận ráp lại theo of
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |         Payload Length        |  Next Header  |   Hop Limit   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Source Address (128 bit)                     |
-+ ... (16 byte) ...                                             +
-|                  Destination Address (128 bit)               |
-+ ... (16 byte) ...                                             +
+|                                                               |
++                  Source Address (128 bit)                     +
+|                       ... (16 byte) ...                       |
++                                                               +
+|                                                               |
++                Destination Address (128 bit)                  +
+|                       ... (16 byte) ...                       |
++                                                               +
 ```
 
 | Trường | Kích thước | Ý nghĩa | Ví dụ |
@@ -737,7 +712,7 @@ example.com.    3600   IN   A   93.184.216.34
 
 **DNSSEC:** thêm bản ghi `RRSIG` (chữ ký), `DNSKEY` (khóa công khai), `DS` (delegation signer), `NSEC/NSEC3` (chứng minh không tồn tại). Bit `AD` (Authenticated Data) trong flags báo resolver đã xác thực chữ ký. Mục tiêu: chống cache poisoning/spoofing bằng chữ ký số (không mã hóa nội dung).
 
-**DNS tunneling (bảo mật):** mã hóa dữ liệu exfil vào QNAME (`base64data.attacker.com`) hoặc TXT records → vượt firewall vì DNS hiếm khi bị chặn. Phát hiện: QNAME bất thường dài/entropy cao, lượng query TXT lớn.
+**Bảo mật — DNS tunneling:** mã hóa dữ liệu exfil vào QNAME (`base64data.attacker.com`) hoặc TXT records → vượt firewall vì DNS hiếm khi bị chặn. Phát hiện: QNAME bất thường dài/entropy cao, lượng query TXT lớn.
 
 **Cache poisoning (Kaminsky):** đoán Transaction ID (16 bit) + source port để chèn answer giả trước answer thật. Phòng: random source port (entropy lớn hơn), DNSSEC, DNS-over-TLS/HTTPS.
 

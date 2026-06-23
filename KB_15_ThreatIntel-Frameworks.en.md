@@ -36,6 +36,8 @@ The rationale for sharing: attackers reuse their tradecraft against many victims
 
 > Chapter goal: equip security engineers (Blue Team / AppSec / DevSecOps) with a unified mental model to **describe**, **detect**, **measure**, and **respond to** adversary behavior. The chapter goes from intelligence theory (CTI) down to concrete data structures (STIX objects, MISP attributes, IOC formats, PE headers), and on to runnable commands and configuration files (Sigma, YARA, Suricata, ATT&CK Navigator JSON, MISP REST API).
 
+> Need a quick lookup? Table **15.15** links each attack stage to its representative technique, telemetry source, and detection rule — use it as the chapter's hands-on index.
+
 ---
 
 ## 15.1. Why frameworks are needed: from "scattered alerts" to a "common language"
@@ -92,12 +94,11 @@ Intelligence must be **actionable** and carry **context** (who, what target, why
 The classic model (originating in the military/CIA intelligence community, applied to CTI):
 
 ```
-        ┌──────────────────────────────────────────┐
-        ▼                                            │
- 1.Direction → 2.Collection → 3.Processing →         │
-                                   4.Analysis →       │
-                                   5.Dissemination →  │
-                                   6.Feedback ────────┘
+   ┌────────────────────────────────────────────────────────────┐
+   ▼                                                              │
+1.Direction → 2.Collection → 3.Processing → 4.Analysis → 5.Dissemination → 6.Feedback
+   │                                                                          │
+   └──────────────────────────── closed feedback loop ───────────────────────┘
 ```
 
 | Phase | What is done | Output | Technical note |
@@ -194,6 +195,8 @@ The Diamond Model complements ATT&CK: ATT&CK fills in **Capability** (concrete T
 
 ## 15.5. IOC vs IOA
 
+An everyday analogy: an IOC is like the fingerprint a burglar leaves behind after the break-in — static evidence that something *has happened*. An IOA is like a camera catching someone *prying a window open right now* — a chain of behavior *in progress* that you can interrupt before anything is stolen.
+
 | Criterion | **IOC (Indicator of Compromise)** | **IOA (Indicator of Attack)** |
 |---|---|---|
 | Nature | Static evidence of what has happened | Behavior/intent in progress |
@@ -217,22 +220,26 @@ No single indicator above is "absolutely malicious" — it is the **chain** itse
 
 ## 15.6. Pyramid of Pain (David Bianco, 2013)
 
-Measures the **degree of pain** that blocking a type of indicator causes the adversary — that is, the cost they must pay to evade.
+Picture chasing off a burglar: change the lock and they just try the window (cheap, swapped in minutes); but if you make their very *method of breaking in* unusable, they have to relearn the whole trade. The Pyramid of Pain measures exactly that "pain."
+
+It measures the **degree of pain** that blocking a type of indicator causes the adversary — that is, the cost they must pay to evade.
 
 ```
-                /\
-               /  \   TTPs            ←  TOUGH!   (hardest for the attacker to change)
-              /----\
-             / Tools \                ←  Challenging
-            /--------\
-           / Network/ \  Host Artifacts ← Annoying
-          /------------\
-         /  Domain Names \            ←  Simple
-        /----------------\
-       /   IP Addresses    \          ←  Easy
-      /--------------------\
-     /     Hash Values       \        ←  Trivial (change 1 byte → new hash)
-    /------------------------\
+                    /\
+                   /  \                    ← Tough!       (hardest for the attacker to change)
+                  / TTP \
+                 /------\
+                / Tools  \                 ← Challenging
+               /----------\
+              /  Network/   \              ← Annoying
+             / Host Artifacts \
+            /------------------\
+           /   Domain Names     \          ← Simple
+          /----------------------\
+         /     IP Addresses       \        ← Easy
+        /--------------------------\
+       /        Hash Values         \      ← Trivial   (change 1 byte → new hash)
+      /------------------------------\
 ```
 
 | Tier | Indicator | Adversary cost to evade | Blue Team action |
@@ -921,6 +928,8 @@ curl -s https://misp.local/events/add \
 ---
 
 ## 15.13. Malware classification
+
+Think of it like a disease: a virus must attach to a "host" to spread (like the flu latching onto a person), a worm crawls to other machines on its own with no one opening anything (like an airborne epidemic), and a trojan disguises itself as a harmless gift so we carry it inside ourselves. Naming the "disease" correctly is what lets you pick the right "cure."
 
 | Type | Propagation mechanism/definition | Needs a host? | Self-replicates? | Related ATT&CK |
 |---|---|---|---|---|

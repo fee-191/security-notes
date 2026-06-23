@@ -23,7 +23,7 @@ The foundational kernel mechanisms:
 
 **Falco.** A real-time runtime detection tool for containers and Kubernetes: it monitors **syscalls** and alerts on anomalous behavior (opening a shell inside a container, reading `/etc/shadow`, etc.). It is a detection layer that complements preventive measures (RBAC, firewall), and typically forwards alerts to a SIEM.
 
-> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the sequence: WHAT IT IS → INTERNAL MECHANISM (down to the bit/byte/step/parameter level) → REAL-WORLD EXAMPLE → SECURITY NOTES.
+> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the sequence: *what it is* → *internal mechanism* (down to the bit/byte/step/parameter level) → *real-world example* → *security notes*.
 
 ---
 
@@ -57,6 +57,8 @@ Note that KVM is a hybrid case: KVM is a **Linux kernel module** (`kvm.ko` + `kv
 
 ### 14.1.3. Hardware-assisted virtualization: VT-x / AMD-V and VMCS
 
+> Note: this section drills down to the hardware level. If you only need the big picture, skim it and skip to 14.2.
+
 Intel VT-x adds two new operating modes (not new rings):
 
 - **VMX root mode**: where the hypervisor (VMM) runs. It adds the instructions `VMXON`, `VMLAUNCH`, `VMRESUME`, `VMEXIT`, `VMREAD`, `VMWRITE`, `VMPTRLD`.
@@ -76,6 +78,8 @@ The transition state is stored in the **VMCS** (Virtual Machine Control Structur
 When a VM-exit occurs, the CPU writes the reason code (Basic Exit Reason — 16 bits) into the VMCS. For example, exit reason `0` = NMI, `1` = external interrupt, `12` = HLT, `30` = I/O instruction, `48` = EPT violation. The hypervisor reads it with `VMREAD` to dispatch handling.
 
 ### 14.1.4. Memory virtualization: shadow page tables vs EPT/NPT
+
+> Note: this section keeps drilling down, into the MMU mechanism. If you only need the big picture, skim it and skip to 14.2.
 
 The guest has its own page tables translating **GVA → GPA** (Guest Virtual → Guest Physical). But the GPA is not a real RAM address (HPA — Host Physical Address). An additional translation layer GPA → HPA is needed.
 
@@ -110,6 +114,8 @@ Used Ring         ->  host pushes the index of a descriptor "finished processing
 ```
 
 This mechanism reduces the number of VM-exits (batching I/O, notifying in bulk), so throughput is near-native. This is why Linux VMs on KVM/Proxmox should use the `virtio-scsi` disk bus and the `virtio` NIC model instead of emulating `e1000`/`IDE`.
+
+By now we have seen virtualization build its isolation boundary in hardware (VT-x/EPT) with a separate kernel for each VM. Containers take a different path: they share the host kernel. Section 14.4 puts the two models side by side to make the isolation trade-off clear; before that, 14.2–14.3 walk through two real-world hypervisors, Proxmox and VMware.
 
 ---
 
@@ -220,25 +226,25 @@ VMFS is a clustered filesystem with distributed locking (SCSI reservations / ATS
 
 ---
 
-## 14.4. VM vs Container — a comparison down to the roots
+## 14.4. VM vs Container — a comparison from the ground up
 
 A diagram of the two models' stacks shows the core difference: a VM replicates an entire kernel + OS for each workload (isolation via the hypervisor/hardware), while containers share one host kernel (isolation via that kernel's own namespaces/cgroups).
 
 ```
-        VIRTUAL MACHINES                          CONTAINERS
-  +------+ +------+ +------+              +------+ +------+ +------+
-  | App  | | App  | | App  |              | App  | | App  | | App  |
-  | Libs | | Libs | | Libs |              | Libs | | Libs | | Libs |
-  +------+ +------+ +------+              +------+ +------+ +------+
-  |Guest | |Guest | |Guest |  <- separate |  Container Runtime    |
-  |  OS  | |  OS  | |  OS  |     kernel    |  (containerd/CRI-O)   |
-  +------+-+------+-+------+    per VM     +-----------------------+
-  |      Hypervisor       |               |  Host kernel (SHARED) | <- 1 kernel
-  +-----------------------+               +-----------------------+   for all
-  |  Host OS (Type 2) /   |               |       Host OS         |
-  |  none (Type 1)        |               +-----------------------+
-  +-----------------------+               |    Physical hardware   |
-  |   Physical hardware    |               +-----------------------+
+          VIRTUAL MACHINES                         CONTAINERS
+  +------+ +------+ +------+             +------+ +------+ +------+
+  | App  | | App  | | App  |            | App  | | App  | | App  |
+  | Libs | | Libs | | Libs |            | Libs | | Libs | | Libs |
+  +------+ +------+ +------+             +------+ +------+ +------+
+  |Guest | |Guest | |Guest | <- separate |   Container Runtime  |
+  |  OS  | |  OS  | |  OS  |    kernel   |   (containerd/CRI-O) |
+  +------+-+------+-+------+   per VM    +----------------------+
+  |       Hypervisor      |             | Host kernel (SHARED) | <- 1 kernel
+  +-----------------------+             +----------------------+    for all
+  |  Host OS (Type 2) /   |             |        Host OS       |
+  |    none (Type 1)      |             +----------------------+
+  +-----------------------+             |   Physical hardware  |
+  |    Physical hardware  |             +----------------------+
   +-----------------------+
 ```
 

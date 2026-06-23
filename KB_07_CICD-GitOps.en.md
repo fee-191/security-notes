@@ -28,7 +28,7 @@ This chapter covers **the automation chain that takes source code from a develop
 **Tool comparison and selection.** The final section contrasts the three CI engines (GitLab CI, GitHub Actions, Jenkins) and compares the push deployment model (CI pushes to infrastructure itself) with the pull model (GitOps/Argo CD).
 - Problem it solves: no tool is optimal for every situation. Understand each one's strengths, weaknesses, and security risks to choose correctly. The modern model usually combines them: CI handles build and test, Argo CD handles deployment, each component keeping minimal privilege.
 
-> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the structure: **WHAT IT IS → HOW IT WORKS INTERNALLY → REAL-WORLD EXAMPLE → SECURITY NOTES**. Specific version numbers and tool behaviors change across versions; anything that needs verification is explicitly flagged.
+> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the structure: **what it is → how it works internally → real-world example → security notes**. Specific version numbers and tool behaviors change across versions; anything that needs verification is explicitly flagged.
 
 ---
 
@@ -44,13 +44,20 @@ The difference between Delivery and Deployment **is solely a single approval gat
 
 ### 7.1.2. Typical pipeline stages
 
-```
- source → build → test → sast/sca → package → publish → deploy(staging) → integration test → deploy(prod) → verify
-   │        │       │        │           │         │           │                 │                  │           │
- commit   compile  unit/   code/        package   push to    deploy            end-to-end         deploy       smoke
- /MR               int.    dependency   (image/jar) registry  intermediate      test              production   test
-                   test    scan                               environment
-```
+The flow: `source → build → test → sast/sca → package → publish → deploy(staging) → integration test → deploy(prod) → verify`. What each stage does:
+
+| Stage | Description |
+|---|---|
+| `source` | Receives a commit or MR |
+| `build` | Compiles the source code |
+| `test` | Runs unit tests / integration tests |
+| `sast/sca` | Scans code (SAST) and dependencies (SCA) |
+| `package` | Packages the artifact (image/jar) |
+| `publish` | Pushes the artifact to a registry |
+| `deploy(staging)` | Deploys to the intermediate environment |
+| `integration test` | End-to-end testing |
+| `deploy(prod)` | Deploys to production |
+| `verify` | Smoke test after deployment |
 
 Each stage is a **trust boundary**: an artifact passing through a stage is "promoted" in trust. Supply-chain attacks aim to inject a payload **before** a stage so that it gets promoted in trust without passing through controls.
 
@@ -65,7 +72,7 @@ Instead of configuring the pipeline through a UI (click-ops), the entire pipelin
 | Reproducible | Same commit → same pipeline; no hidden "config drift" in the UI |
 | Co-located | Pipeline travels with the code → different branches have different pipelines |
 
-**Core security note:** because pipeline-as-code lives in the repo and usually runs with high privilege (access to secrets, registry, cluster), anyone who can edit the pipeline file (via MR/PR, or a direct commit to an unprotected branch) gains the ability to **execute arbitrary code in the CI environment**. This is the primary attack surface throughout this chapter.
+**Note:** because pipeline-as-code lives in the repo and usually runs with high privilege (access to secrets, registry, cluster), anyone who can edit the pipeline file (via MR/PR, or a direct commit to an unprotected branch) gains the ability to **execute arbitrary code in the CI environment**. This is the primary attack surface throughout this chapter.
 
 ---
 
@@ -184,7 +191,7 @@ check_interval = 3
   executor = "docker"
   [runners.docker]
     image = "alpine:3.20"
-    privileged = false          # IMPORTANT: privileged=true ⇒ easy container escape
+    privileged = false          # Note: privileged=true ⇒ easy container escape to host
     volumes = ["/cache"]
     pull_policy = ["if-not-present"]
 ```

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This chapter examines the inner workings of the Linux operating system from an information-security perspective: privilege separation, the process lifecycle, filesystem organization, logging, and hardening measures. The bulk of server infrastructure (web servers, databases, containers, cloud) runs on Linux; consequently both attack and defense play out directly against the mechanisms described here. This section summarizes the core concepts to frame the detailed technical material that follows.
+This chapter looks at the inner workings of Linux from an information-security perspective: privilege separation, the process lifecycle, filesystem organization, logging, and hardening measures. Most server infrastructure — web servers, databases, containers, cloud — runs on Linux. So both attack and defense play out directly on the mechanisms described here. What follows is a short map of the concepts; the full definitions live in the technical sections below.
 
 ### User space and kernel space
 The **kernel** runs at ring 0 with exclusive access to the hardware and to system data structures. Application processes run in **user space** (ring 3) and cannot directly touch the hardware or another process's memory. Every resource request (reading a file, opening a socket) must go through a **system call (syscall)**, where the kernel checks permissions. This boundary is the root security barrier: it isolates faults and malicious code from the hardware and from the address space of other processes.
@@ -14,7 +14,7 @@ The **Filesystem Hierarchy Standard (FHS)** standardizes the location of each ty
 Every file carries three sets of **read / write / execute (rwx)** permissions for three classes: **owner, group, and others (other)**. Three special bits are added: **SUID**, **SGID**, and the **sticky bit**; of these, SUID lets a process run with the permissions of the file's owner (possibly root). Misconfigured permissions — especially a poorly written SUID-root binary — are among the most common privilege-escalation vectors.
 
 ### `/etc/passwd`, `/etc/shadow`, and password hashes
-`/etc/passwd` is the world-readable account database (name, UID, shell). Passwords are not stored here; they are **hashed** and placed in `/etc/shadow`, which only root can read. A hash is a one-way transformation: the original password cannot be computed back from it. Splitting the two files keeps the account table public for UID↔name mapping while isolating sensitive data from access for offline cracking.
+`/etc/passwd` is the world-readable account database (name, UID, shell). Passwords are not stored here; instead they are **hashed** and placed in `/etc/shadow` — which only root can read. A hash is a one-way transformation: the original password cannot be computed back from it. Splitting the two files keeps the account table public for UID↔name mapping, while isolating the sensitive data out of reach of offline cracking.
 
 ### `sudo`, PAM
 - **sudo**: lets a user execute specified commands with another user's privileges (root by default) without sharing the root password; every invocation is logged. Compared with `su`, sudo provides least privilege and an audit trail.
@@ -47,7 +47,7 @@ Every process opens three standard **file descriptors**: stdin (0), stdout (1), 
 A suite of tools for filtering and extracting text: `grep` finds lines by pattern, `awk` processes by column/field, `sed` substitutes lines, `sort`/`uniq` sort and count. On logs that can run to millions of lines, these tools allow fast queries (for example, listing the IPs with the most failed logins) in a single command line — a daily investigative skill.
 
 ### Hardening (sshd, fail2ban, firewall, SELinux/AppArmor)
-**Hardening** is a set of measures that shrink the attack surface: configuring SSH securely, using `fail2ban` to automatically block password-guessing IPs, using a firewall (netfilter) to open only the necessary ports, and applying **Mandatory Access Control** (SELinux/AppArmor) to constrain a service's behavior even after it is compromised. Default configurations are usually permissive; hardening brings the system back to the principle of least privilege.
+**Hardening** is a set of measures that shrink the attack surface: configuring SSH securely, using `fail2ban` to automatically block password-guessing IPs, and using a firewall (netfilter) to open only the necessary ports. It can also apply **Mandatory Access Control** (SELinux/AppArmor) to constrain a service's behavior even after it is compromised. Default configurations are usually permissive; hardening brings the system back to the principle of least privilege.
 
 > A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Every data structure is described down to the field/byte level; every tool comes with a runnable, real-world example. Sample commands and output are taken from common Linux environments (Debian/Ubuntu, RHEL/Rocky); a few figures that depend on the kernel/distribution version are noted explicitly.
 
@@ -1030,7 +1030,7 @@ This result feeds directly into an allowlist/blocklist or an alert (see fail2ban
 
 File `/etc/ssh/sshd_config`; apply with `systemctl reload sshd`. A sample hardened configuration:
 
-```sshdconfig
+```ini
 Port 22
 Protocol 2
 AddressFamily inet

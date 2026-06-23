@@ -2,21 +2,25 @@
 
 ## Overview
 
-**GRC (Governance, Risk, Compliance)** is the framework an organization uses to govern its own information security operations: defining who is accountable, which risks to prioritize, and what evidence demonstrates compliance to regulators, customers, and partners. Security is not purely a technical matter (firewalls, encryption) but also a matter of **accountability and evidence**: when an incident occurs and there is no documentation proving that proper procedures were followed, the organization may face penalties, lose certifications, or incur legal liability. Engineering builds a robust system; GRC ensures that system has a legal basis, operational records, and clear assignment of responsibility.
+**GRC (Governance, Risk, Compliance)** is the framework an organization uses to govern its own information security operations. It answers three questions: who is accountable, which risks to prioritize, and what evidence demonstrates compliance to regulators, customers, and partners.
+
+Security is not purely a technical matter (firewalls, encryption) but also a matter of **accountability and evidence**. When an incident occurs and there is no documentation proving that proper procedures were followed, the organization may face penalties, lose certifications, or incur legal liability. Engineering builds a robust system; GRC ensures that system has a legal basis, operational records, and clear assignment of responsibility.
 
 This chapter covers the following knowledge blocks:
 
-- **GRC** — three nested layers. **Governance** is the outer layer: leadership sets the rules of the game, defines risk appetite, and establishes decision-making authority. **Risk** is the middle layer: assessing what could go wrong and the magnitude of damage. **Compliance** is the inner layer: proving adherence to standards and laws. Without centralized governance, each team does things its own way, residual risk goes untracked, and there are no records when an audit comes.
-- **Risk Management** — risk is formed from the chain **asset → threat → vulnerability → impact × likelihood**. It is measured in two ways: **quantitative** (assigning monetary values: SLE, ARO, ALE) to compare the cost of controls, and **qualitative** (scoring on a 1–5 likelihood × impact scale) when financial data is lacking. Risk treatment has 4 options: **mitigate, transfer, avoid, accept** — every residual risk must be formally signed off and accepted by a risk owner. The **Risk Register** is the central repository tracking every risk along with its owner and remediation deadline.
+- **GRC** — three nested layers. **Governance** is the outer layer: leadership sets the rules of the game, defines risk appetite, and establishes decision-making authority. **Risk** is the middle layer: assessing what could go wrong and the magnitude of damage. **Compliance** is the inner layer: proving adherence to standards and laws. Without centralized governance, each team does things its own way, residual risk (the risk that remains after treatment) goes untracked, and there are no records when an audit comes.
+- **Risk Management** — risk is formed from the chain **asset → threat → vulnerability → impact × likelihood**. It is measured in two ways: **quantitative** (assigning monetary values: SLE, ARO, ALE) to compare the cost of controls, and **qualitative** (scoring on a 1–5 likelihood × impact scale) when financial data is lacking. Risk treatment has 4 options: **mitigate, transfer, avoid, accept** — the portion of risk left after treatment is the **residual risk**, and every residual risk must be formally signed off and accepted by a risk owner. The **Risk Register** is the central repository tracking every risk along with its owner and remediation deadline.
 - **NIST Cybersecurity Framework (CSF)** — a voluntary framework providing a common language to describe security posture, divided into 6 Functions (CSF 2.0): **Govern, Identify, Protect, Detect, Respond, Recover**. CSF defines *what to do* rather than prescribing *specific technologies*.
 - **NIST Special Publications** — **SP 800-53** is a detailed control catalog (answering the specific questions CSF leaves open). **SP 800-61** is the incident response process: preparation → detection and analysis → containment/eradication/recovery → lessons learned. **SP 800-207 (Zero Trust)** eliminates default trust based on network location; every access request must be authenticated and have its risk re-evaluated.
 - **ISO/IEC 27001 & 27002** — **27001** is the international standard for an Information Security Management System (ISMS), which is **certifiable** by a third party. **27002** is a code of practice providing guidance on implementing each control. The central document is the **SoA (Statement of Applicability)** — listing every control with the rationale for applying or excluding it, which is the auditor's starting point.
 - **PCI DSS** — a contractually mandated standard (not a law) for any organization that stores, processes, or transmits payment card data; it comprises 12 requirements. The core rule: Sensitive Authentication Data (CVV, magnetic stripe data, PIN) **must never be stored** after authorization. **Tokenization** replaces real card numbers with meaningless tokens to reduce compliance scope.
 - **Vietnamese law** — four main instruments: the **Law on Cyber Information Security 2015** (foundational technical framework), the **Cybersecurity Law 2018** (national security, data localization requirements), **Decree 85/2016** (classifying systems into 5 levels), and **Decree 13/2023** (personal data protection, similar to GDPR). These are mandatory legal regulations; determining a system's classification level and obtaining consent when collecting personal data drives system design and data storage location.
+- **Operational Compliance** — turning frameworks into day-to-day practice: data classification so you know which controls to apply, a hash-chain audit trail for non-repudiation, log retention and data residency, and a crosswalk mapping one control onto multiple frameworks to avoid duplicated work.
+- **Banking/financial GRC** — industry specifics: the **Three Lines Model** that separates operating / oversight / independent-audit responsibilities, the State Bank of Vietnam supervisory framework and the Anti-Money-Laundering Law, and continuous compliance (policy-as-code running in CI/CD, fail-closed).
 
 The sections below present the technical detail for each block.
 
-> This chapter is intended for security engineers (Blue Team / AppSec / DevSecOps) who need to look things up and operate in practice. Each concept follows the sequence: **WHAT IT IS → INTERNAL MECHANISM (down to fields/steps/parameters) → REAL, RUNNABLE EXAMPLE → SECURITY NOTES**. Vietnamese legal provisions are presented at the level of **operational meaning**; wherever document numbers/articles need verification, this is explicitly marked `[NEEDS VERIFICATION]` rather than fabricated.
+> This chapter is intended for security engineers (Blue Team / AppSec / DevSecOps) who need to look things up and operate in practice. Each concept follows the sequence: **what it is → how it works internally (down to fields/steps/parameters) → a real, runnable example → security notes**. Vietnamese legal provisions are presented at the level of **operational meaning**; wherever document numbers/articles need verification, this is explicitly marked `[NEEDS VERIFICATION]` rather than fabricated.
 
 ---
 
@@ -53,7 +57,7 @@ GRC = **Governance, Risk, Compliance**. These are not three separate things but 
 | 3 | Procedure | "Which steps to follow" — mandatory | "KMS key rotation procedure every 90 days: step 1..n" |
 | 4 | Guideline | "Should do" — recommended | "Prefer envelope encryption" |
 
-**WHY separate into 4 tiers?** So that the policy remains stable over the long term (changes rarely → less re-approval at the leadership level), while standards/procedures change with technology. If you embed "AES-256" into the policy, then every time the algorithm changes you would have to get the entire Board to re-sign — which is not practical.
+**Why separate into 4 tiers?** So that the policy remains stable over the long term (changes rarely → less re-approval at the leadership level), while standards/procedures change with technology. If you embed "AES-256" into the policy, then every time the algorithm changes you would have to get the entire Board to re-sign — which is not practical.
 
 ---
 
@@ -62,45 +66,46 @@ GRC = **Governance, Risk, Compliance**. These are not three separate things but 
 Risk management is an iterative cycle, not a one-off activity. The diagram below summarizes the process from establishing context to continuous monitoring (mapped to ISO 31000 and the NIST RMF):
 
 ```
-   ┌──────────────────────────────────────────────────────────────┐
-   │            ESTABLISH CONTEXT (scope, risk appetite)           │
-   └───────────────────────────────┬──────────────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  RISK IDENTIFICATION                              │
-        │  asset → threat → vulnerability                   │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  ANALYSIS & EVALUATION                            │
-        │  Inherent risk = Likelihood × Impact              │
-        │  (quantitative SLE/ALE  or  qualitative 5×5)      │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  RISK TREATMENT (4 options)                       │
-        │  mitigate | transfer | avoid | accept             │
-        │  → Residual risk remains                          │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  RECORD in RISK REGISTER + risk owner signs       │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  MONITOR & REVIEW PERIODICALLY ──┐                 │
-        └────────────────────────────────┘                   │
-                  └──────────────────────────────────────────┘
-              (loop: residual risk is periodically reassessed)
+   ┌──────────────────────────────────────────────────────────┐
+   │  ① ESTABLISH CONTEXT (scope, risk appetite)              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ② RISK IDENTIFICATION                                   │
+   │     asset → threat → vulnerability                       │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ③ ANALYSIS & EVALUATION                                 │
+   │     Inherent risk = Likelihood × Impact                  │
+   │     (quantitative SLE/ALE  or  qualitative 5×5)          │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ④ RISK TREATMENT (4 options)                            │
+   │     mitigate | transfer | avoid | accept                 │
+   │     → residual risk remains                              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑤ RECORD in RISK REGISTER + risk owner signs           │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑥ MONITOR & REVIEW PERIODICALLY                         │
+   └───────────────────────────────┬──────────────────────────┘
+                                   │
+   └───────────────────────────────┘  (loop: back to ② —
+        residual risk is periodically reassessed)
 ```
 
 Note: risk is progressively reduced over each cycle (inherent → residual), but never reaches zero — the residual portion must be formally accepted by someone with the authority to do so. The monitoring loop closes the cycle: an outdated register creates a false sense of security, so it must be reviewed periodically.
 
 ### 16.1.1. The causal chain: asset → threat → vulnerability → risk
 
-**WHAT IT IS.** Risk does not arise on its own. It is the result of a chain: there is a valuable **asset** → a **threat** exists that wants/is able to cause harm → the asset has a **vulnerability** for the threat to exploit → when successfully exploited it causes an **impact** with a certain **likelihood**. Risk = a function of likelihood and impact.
+**What it is.** Risk does not arise on its own. It is the result of a chain: there is a valuable **asset** → a **threat** exists that wants/is able to cause harm → the asset has a **vulnerability** for the threat to exploit → when successfully exploited it causes an **impact** with a certain **likelihood**. Risk = a function of likelihood and impact.
 
-**MECHANISM — precise definition of each component:**
+**Mechanism — precise definition of each component:**
 
 | Component | Operational definition | Example on an exchange system (CEX) |
 |------------|---------------------|------------------------------------------|
@@ -121,11 +126,11 @@ Residual Risk  = Likelihood(after control) x Impact(after control)
 Risk Treatment works on the gap: Inherent - Residual
 ```
 
-**SECURITY NOTES.** A common mistake: assessing risk based only on the *vulnerability* (scan results) while ignoring asset value. A CVE 9.8 on an internal printer with no sensitive data has a lower residual risk than a CVE 6.5 on a payment gateway. Always multiply by the *impact on the asset*, do not rank purely by CVSS.
+**Security note:** A common mistake: assessing risk based only on the *vulnerability* (scan results) while ignoring asset value. A CVE 9.8 on an internal printer with no sensitive data has a lower residual risk than a CVE 6.5 on a payment gateway. Always multiply by the *impact on the asset*, do not rank purely by CVSS.
 
 ### 16.1.2. Quantitative: SLE, ARO, ALE
 
-**WHAT IT IS.** A method that assigns a **monetary value** to risk for objective comparison and to justify the cost of controls (cost-benefit). The standard trio of terms (NIST/(ISC)² CISSP):
+**What it is.** A method that assigns a **monetary value** to risk for objective comparison and to justify the cost of controls (cost-benefit). The standard trio of terms (NIST/(ISC)² CISSP):
 
 | Symbol | Full name | Unit | Formula |
 |---------|-----------|--------|-----------|
@@ -182,11 +187,11 @@ ALE post = 60,000 USD/yr
 ROSI     = 200%
 ```
 
-**SECURITY NOTES.** Quantitative analysis sounds scientific, but **EF and ARO are usually guesses**. Use it for *relative comparison* of options, not to report "the risk is exactly USD 300,000" — that is pseudoscience. For long-tail risks such as the loss of the entire cold wallet key, ALE underestimates because it is an extremely small ARO × an extremely large impact → it is better to use a separate scenario analysis.
+**Security note:** Quantitative analysis sounds scientific, but **EF and ARO are usually guesses**. Use it for *relative comparison* of options, not to report "the risk is exactly USD 300,000" — that is pseudoscience. For long-tail risks such as the loss of the entire cold wallet key, ALE underestimates because it is an extremely small ARO × an extremely large impact → it is better to use a separate scenario analysis.
 
 ### 16.1.3. Qualitative: the likelihood × impact matrix
 
-**WHAT IT IS.** When there is no reliable monetary data, use a qualitative scale (usually 5×5). Each axis is 1–5, the risk score = the product, mapped to a color band.
+**What it is.** When there is no reliable monetary data, use a qualitative scale (usually 5×5). Each axis is 1–5, the risk score = the product, mapped to a color band.
 
 ```
 IMPACT →        1-Insig  2-Minor  3-Mod   4-Major  5-Severe
@@ -220,11 +225,11 @@ Band:  1-4 = Low (green)  |  5-9 = Medium (yellow)
 | **Avoid** | Drop the activity that generates the risk | Risk exceeds appetite and is not offset by the benefit | Stop storing credit card numbers |
 | **Accept** | Keep as-is, formally documented | Residual ≤ risk appetite | Accept a low risk with the risk owner's signature |
 
-**WHY must there be a formal "Accept"?** Every residual risk must have a **risk owner** sign off on its acceptance. This is the key legal/governance point: if an incident occurs, the documentation proves the risk was recognized and someone with authority decided to accept it — rather than "no one knew."
+**Why must there be a formal "Accept"?** Every residual risk must have a **risk owner** sign off on its acceptance. This is the key legal/governance point: if an incident occurs, the documentation proves the risk was recognized and someone with authority decided to accept it — rather than "no one knew."
 
 ### 16.1.5. Risk Register — the record structure down to each field
 
-**WHAT IT IS.** A risk register — the central repository tracking every risk. Each row = one risk. Below is the standard schema (CSV) down to each field:
+**What it is.** A risk register — the central repository tracking every risk. Each row = one risk. Below is the standard schema (CSV) down to each field:
 
 | Field | Type/Size | Meaning | Example |
 |--------|-----------------|---------|-------|
@@ -267,7 +272,7 @@ Output:
 RISK-0042: Hot wallet signer (res=10, owner=CISO)
 ```
 
-**SECURITY NOTES.** The risk register is a sensitive document — it draws a map of weaknesses for an attacker. Access must be controlled (need-to-know), not left in an open wiki. At the same time it must stay *alive*: review it periodically (e.g. quarterly) — an outdated register is more dangerous than none because it creates a false sense of security.
+**Security note:** The risk register is a sensitive document — it draws a map of weaknesses for an attacker. Access must be controlled (need-to-know), not left in an open wiki. At the same time it must stay *alive*: review it periodically (e.g. quarterly) — an outdated register is more dangerous than none because it creates a false sense of security.
 
 ---
 
@@ -275,7 +280,7 @@ RISK-0042: Hot wallet signer (res=10, owner=CISO)
 
 ### 16.2.1. Structure & the 6 Functions (CSF 2.0)
 
-**WHAT IT IS.** The NIST CSF is a voluntary framework, not a control checklist but a **common language** for describing security posture. CSF 1.1 has 5 Functions; **CSF 2.0 (released 2024) adds GOVERN** for a total of 6:
+**What it is.** The NIST CSF is a voluntary framework, not a control checklist but a **common language** for describing security posture. CSF 1.1 has 5 Functions; **CSF 2.0 (released 2024) adds GOVERN** for a total of 6:
 
 ```
             +-------------------+
@@ -353,7 +358,7 @@ PR.DS-01	gap=1	owner=Platform
 DE.CM-01	gap=1	owner=SOC
 ```
 
-**SECURITY NOTES.** CSF specifies the framework only; it does *not* say "you must configure AES-256." For concrete action you must drop down to the Informative References → NIST SP 800-53 or the CIS Controls. Do not stop at the CSF level and assume you have controls in place.
+**Security note:** CSF specifies the framework only; it does *not* say "you must configure AES-256." For concrete action you must drop down to the Informative References → NIST SP 800-53 or the CIS Controls. Do not stop at the CSF level and assume you have controls in place.
 
 ---
 
@@ -361,7 +366,7 @@ DE.CM-01	gap=1	owner=SOC
 
 ### 16.3.1. SP 800-53 — Catalog of Security and Privacy Controls
 
-**WHAT IT IS.** NIST's most detailed control catalog (Rev. 5). Mandatory for U.S. federal systems (via FISMA), and widely used as a control library. Organized by **control family** (20 families in Rev. 5).
+**What it is.** NIST's most detailed control catalog (Rev. 5). Mandatory for U.S. federal systems (via FISMA), and widely used as a control library. Organized by **control family** (20 families in Rev. 5).
 
 **Control identifier structure:**
 
@@ -446,11 +451,11 @@ sudo auditctl -l                  # list active rules
 sudo ausearch -k privilege --start today
 ```
 
-**SECURITY NOTES.** The control `AU-9 Protection of Audit Information` requires that logs cannot be modified by an attacker. On auditd, `-e 2` makes the configuration immutable; in addition, logs must be pushed **away** (remote syslog/SIEM) immediately, because an attacker who gains root will delete local logs. The audit trail loses its non-repudiation property if an attacker can modify it.
+**Security note:** The control `AU-9 Protection of Audit Information` requires that logs cannot be modified by an attacker. On auditd, `-e 2` makes the configuration immutable; in addition, logs must be pushed **away** (remote syslog/SIEM) immediately, because an attacker who gains root will delete local logs. The audit trail loses its non-repudiation property if an attacker can modify it.
 
 ### 16.3.2. SP 800-61 — Computer Security Incident Handling Guide
 
-**WHAT IT IS.** A guide to the incident response (IR) process. It defines a **4-phase lifecycle** (note: this differs from the 6-step SANS PICERL model):
+**What it is.** A guide to the incident response (IR) process. It defines a **4-phase lifecycle** (note: this differs from the 6-step SANS PICERL model):
 
 ```
    ┌──────────────────────┐
@@ -508,11 +513,11 @@ printf '%s\tcollector=%s\thost=%s\tsha256=%s\n' \
   >> /evidence/custody.log
 ```
 
-**SECURITY NOTES.** Hashing with SHA-256 *at the moment of collection* is legal proof that the evidence was not modified afterward. If the hash changes → the evidence loses its value in court. Never analyze the original — work on a copy whose hash has been verified.
+**Security note:** Hashing with SHA-256 *at the moment of collection* is legal proof that the evidence was not modified afterward. If the hash changes → the evidence loses its value in court. Never analyze the original — work on a copy whose hash has been verified.
 
 ### 16.3.3. SP 800-207 — Zero Trust Architecture
 
-**WHAT IT IS.** A model that drops "trust based on network location" (no more "inside the network = safe"). Every access request must be authenticated + authorized + have its risk continuously evaluated, based on 7 principles (tenets).
+**What it is.** A model that drops "trust based on network location" (no more "inside the network = safe"). Every access request must be authenticated + authorized + have its risk continuously evaluated, based on 7 principles (tenets).
 
 **Logical architecture — PEP/PDP:**
 
@@ -525,9 +530,11 @@ printf '%s\tcollector=%s\thost=%s\tsha256=%s\n' \
                                                     ▼
                               ┌──────────── Control Plane ──────────────┐
                               │  PDP = Policy Decision Point             │
-                              │   ├─ Policy Engine (PE): computes trust score│
-                              │   └─ Policy Administrator (PA): grants/revokes │
-                              │      tokens, configures the channel      │
+                              │   ├─ Policy Engine (PE):                 │
+                              │   │     computes the trust score         │
+                              │   └─ Policy Administrator (PA):          │
+                              │         grants/revokes tokens,           │
+                              │         configures the channel           │
                               └────────────┬─────────────────────────────┘
         Signals into the PE:               │
         CDM, threat intel, SIEM, ID mgmt, data access policy, PKI
@@ -593,7 +600,7 @@ Output:
 true
 ```
 
-**SECURITY NOTES.** The PDP/PEP becomes a point of concentrated power — if an attacker takes over the Policy Administrator, they control all authorization. The control plane must be protected at the highest level (HSM-backed signing tokens, log every decision to the SIEM, never let the PEP fail-open). Issued tokens must be short-lived (a few minutes) for continuous evaluation to be meaningful.
+**Security note:** The PDP/PEP becomes a point of concentrated power — if an attacker takes over the Policy Administrator, they control all authorization. The control plane must be protected at the highest level (HSM-backed signing tokens, log every decision to the SIEM, never let the PEP fail-open). Issued tokens must be short-lived (a few minutes) for continuous evaluation to be meaningful.
 
 ---
 
@@ -601,7 +608,7 @@ true
 
 ### 16.4.1. ISO/IEC 27001 — ISMS
 
-**WHAT IT IS.** The international standard for an **Information Security Management System (ISMS)**. Unlike the NIST CSF (voluntary), 27001 is a **certifiable** standard — an organization is audited by a third party and issued a certificate. Current version: **ISO/IEC 27001:2022**.
+**What it is.** The international standard for an **Information Security Management System (ISMS)**. Unlike the NIST CSF (voluntary), 27001 is a **certifiable** standard — an organization is audited by a third party and issued a certificate. Current version: **ISO/IEC 27001:2022**.
 
 **Structure of 27001 = the clause section (clauses 4–10, MANDATORY) + Annex A (reference controls).**
 
@@ -662,7 +669,7 @@ Output:
 A.5.7 (Threat intelligence) -> In progress
 ```
 
-**WHY is the SoA important?** The auditor uses the SoA as a starting point: for each "Applicable + Implemented" control, they demand **evidence**. For each "Not applicable," they demand a **reasonable justification**. The SoA is the contract between the organization and the auditor.
+**Why is the SoA important?** The auditor uses the SoA as a starting point: for each "Applicable + Implemented" control, they demand **evidence**. For each "Not applicable," they demand a **reasonable justification**. The SoA is the contract between the organization and the auditor.
 
 **Annex A of 27001:2022 — 93 controls, 4 themes** (restructured from the 114 controls/14 domains of the 2013 version):
 
@@ -675,7 +682,7 @@ A.5.7 (Threat intelligence) -> In progress
 
 ### 16.4.2. ISO/IEC 27002 — Code of practice
 
-**WHAT IT IS.** While 27001 *says which control* (Annex A lists the names), **27002 explains what that control means and how to implement it** (implementation guidance). It uses the same numbering (A.5–A.8).
+**What it is.** While 27001 *says which control* (Annex A lists the names), **27002 explains what that control means and how to implement it** (implementation guidance). It uses the same numbering (A.5–A.8).
 
 **The 5 new attributes in 27002:2022** — each control is tagged to enable filtering/mapping:
 
@@ -687,7 +694,7 @@ A.5.7 (Threat intelligence) -> In progress
 | Operational capabilities | Governance, Asset_mgmt, Identity_and_access_mgmt... |
 | Security domains | Governance_and_Ecosystem, Protection, Defence, Resilience |
 
-**WHY have attributes?** They allow you to slice the control catalog across multiple dimensions — for example, filtering all "Detective + Detect" controls to build monitoring capability. This is the technical bridge between ISO and the NIST CSF.
+**Why have attributes?** They allow you to slice the control catalog across multiple dimensions — for example, filtering all "Detective + Detect" controls to build monitoring capability. This is the technical bridge between ISO and the NIST CSF.
 
 ### 16.4.3. Audit & certification
 
@@ -720,13 +727,13 @@ Surveillance audit (year 1, year 2) -> Recertification (year 3)
 | Minor nonconformity | A localized, non-systemic deviation | Requires a corrective action plan |
 | Observation/OFI | An opportunity for improvement | Not mandatory, but should be addressed |
 
-**SECURITY NOTES.** A 27001 certificate certifies that a *management system* exists and operates, NOT that the system "cannot be hacked." A narrow scope (e.g. only one department) can still receive a valid certificate — always read the **scope statement** on a vendor's certificate before trusting it. This is an important due diligence point when assessing a vendor.
+**Security note:** A 27001 certificate certifies that a *management system* exists and operates, NOT that the system "cannot be hacked." A narrow scope (e.g. only one department) can still receive a valid certificate — always read the **scope statement** on a vendor's certificate before trusting it. This is an important due diligence point when assessing a vendor.
 
 ---
 
 ## 16.5. PCI DSS (overview — financial/card industry)
 
-**WHAT IT IS.** The Payment Card Industry Data Security Standard — a standard mandated by *contract* (not by law) for any organization that stores/processes/transmits **cardholder data (CHD)**. Current version **PCI DSS v4.0 / v4.0.1**. 6 objectives, **12 requirements**.
+**What it is.** The Payment Card Industry Data Security Standard — a standard mandated by *contract* (not by law) for any organization that stores/processes/transmits **cardholder data (CHD)**. Current version **PCI DSS v4.0 / v4.0.1**. 6 objectives, **12 requirements**.
 
 **Cardholder data — classified down to each field (EXTREMELY important, it determines what may be stored):**
 
@@ -787,7 +794,7 @@ def luhn_ok(pan: str) -> bool:
 print(luhn_ok("4111111111111111"))   # -> True
 ```
 
-**SECURITY NOTES.** The most effective way to reduce PCI scope is **tokenization** — replace the PAN with a meaningless token, keeping the real PAN in a vault or offloading it entirely to a payment processor (the PAN never touches your system). Every system that "touches" CHD falls into audit scope, so a good architecture isolates the **Cardholder Data Environment (CDE)** with strict segmentation (Requirement 1) to narrow the scope.
+**Security note:** The most effective way to reduce PCI scope is **tokenization** — replace the PAN with a meaningless token, keeping the real PAN in a vault or offloading it entirely to a payment processor (the PAN never touches your system). Every system that "touches" CHD falls into audit scope, so a good architecture isolates the **Cardholder Data Environment (CDE)** with strict segmentation (Requirement 1) to narrow the scope.
 
 ---
 
@@ -797,7 +804,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.1. Law on Cyber Information Security 2015
 
-**WHAT IT IS.** The Law on Cyber Information Security No. **86/2015/QH13**, effective **2016-07-01**. The foundational legal framework for information security: protecting information on networks, classifying information, protecting personal information (at the level of principle), information system security, the business of information security products/services (licensing), and civil cryptography.
+**What it is.** The Law on Cyber Information Security No. **86/2015/QH13**, effective **2016-07-01**. The foundational legal framework for information security: protecting information on networks, classifying information, protecting personal information (at the level of principle), information system security, the business of information security products/services (licensing), and civil cryptography.
 
 **Operational meaning for engineers:**
 
@@ -810,7 +817,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.2. Cybersecurity Law 2018
 
-**WHAT IT IS.** The Cybersecurity Law No. **24/2018/QH14**, effective **2019-01-01**. It focuses on **national security and social order and safety** in cyberspace — a different emphasis from the Cyber Information Security Law (which leans technical).
+**What it is.** The Cybersecurity Law No. **24/2018/QH14**, effective **2019-01-01**. It focuses on **national security and social order and safety** in cyberspace — a different emphasis from the Cyber Information Security Law (which leans technical).
 
 **Two notable operational points (controversial and affecting system architecture):**
 
@@ -824,7 +831,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.3. Classifying systems by level — Decree 85/2016/NĐ-CP
 
-**WHAT IT IS.** Decree **85/2016/NĐ-CP** on **ensuring the security of information systems by level** (guiding the Cyber Information Security Law 2015). It classifies information systems into **5 levels** by the severity of consequences if compromised. The higher the level → the stricter the technical & management requirements.
+**What it is.** Decree **85/2016/NĐ-CP** on **ensuring the security of information systems by level** (guiding the Cyber Information Security Law 2015). It classifies information systems into **5 levels** by the severity of consequences if compromised. The higher the level → the stricter the technical & management requirements.
 
 **Similar in spirit to the U.S. FIPS 199 (Low/Mod/High) but with 5 levels:**
 
@@ -850,11 +857,11 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 > **Level 4 and above** carry strict technical & management requirements (monitoring, response plans, strong access control...). `[NEEDS VERIFICATION]` The detailed technical requirements for each level are in **TCVN 11930:2017** and the guiding circulars of the Ministry of Information and Communications — consult the original text for a precise list of each technical requirement for level 4.
 
-**SECURITY NOTES.** For an exchange/financial system in Vietnam, determining the level (usually falling into level 3 or 4) drives the entire legally mandatory control baseline — similar to how FIPS 199 determines the 800-53 baseline. You must prepare the level dossier before designing controls, not the other way around.
+**Security note:** For an exchange/financial system in Vietnam, determining the level (usually falling into level 3 or 4) drives the entire legally mandatory control baseline — similar to how FIPS 199 determines the 800-53 baseline. You must prepare the level dossier before designing controls, not the other way around.
 
 ### 16.6.4. Personal data protection — Decree 13/2023/NĐ-CP
 
-**WHAT IT IS.** Decree **13/2023/NĐ-CP** on **personal data protection (PDPD)**, effective **2023-07-01**. This is the instrument closest to the GDPR in Vietnam to date. It defines personal data, sensitive personal data, the roles of the parties, data subject rights, and obligations.
+**What it is.** Decree **13/2023/NĐ-CP** on **personal data protection (PDPD)**, effective **2023-07-01**. This is the instrument closest to the GDPR in Vietnam to date. It defines personal data, sensitive personal data, the roles of the parties, data subject rights, and obligations.
 
 **Classification of personal data (determines the level of technical protection):**
 
@@ -903,7 +910,7 @@ UPDATE consent_records SET withdrawn_at = now()
  WHERE data_subject = 'subj_8f2a' AND purpose = 'marketing';
 ```
 
-**SECURITY NOTES.** The consent table is **legal evidence** — it must be immutable (append-only/audit log), with no arbitrary UPDATE/DELETE allowed on `granted_at`. When handling the "right to erasure," it must be balanced against other retention obligations (e.g. anti-money-laundering law requires keeping KYC for many years) — not all data can be deleted immediately; this is a very real retention conflict.
+**Security note:** The consent table is **legal evidence** — it must be immutable (append-only/audit log), with no arbitrary UPDATE/DELETE allowed on `granted_at`. When handling the "right to erasure," it must be balanced against other retention obligations (e.g. anti-money-laundering law requires keeping KYC for many years) — not all data can be deleted immediately; this is a very real retention conflict.
 
 ### 16.6.5. Decree 356/2025 (needs verification)
 
@@ -920,7 +927,7 @@ UPDATE consent_records SET withdrawn_at = now()
 
 ### 16.7.1. Data Classification
 
-**WHAT IT IS.** Labeling data by sensitivity to apply corresponding controls. This is a *prerequisite* for every other control (encryption, retention, access) — without classification you do not know what to apply.
+**What it is.** Labeling data by sensitivity to apply corresponding controls. This is a *prerequisite* for every other control (encryption, retention, access) — without classification you do not know what to apply.
 
 **A typical 4-level model + control mapping:**
 
@@ -1039,11 +1046,11 @@ resource "aws_s3_bucket" "kyc" {
 }
 ```
 
-**SECURITY NOTES.** Data residency is not only the bucket's region — beware of: automatic backups to another region, CDN edge cache, log forwarding to a US SaaS (Datadog/Splunk Cloud), an international email/SMS provider. You must draw a complete **data flow map** to know where PII *actually* goes, and not trust only the primary DB's region configuration.
+**Security note:** Data residency is not only the bucket's region — beware of: automatic backups to another region, CDN edge cache, log forwarding to a US SaaS (Datadog/Splunk Cloud), an international email/SMS provider. You must draw a complete **data flow map** to know where PII *actually* goes, and not trust only the primary DB's region configuration.
 
 ### 16.7.4. Control crosswalk across frameworks
 
-**WHY.** An organization is often subject to multiple frameworks at once (27001 + CSF + Decree 85 + PCI). Implementing one physical control → satisfies multiple requirements. A **crosswalk** avoids duplicated work.
+**Why.** An organization is often subject to multiple frameworks at once (27001 + CSF + Decree 85 + PCI). Implementing one physical control → satisfies multiple requirements. A **crosswalk** avoids duplicated work.
 
 **Example mapping of the control "MFA for privileged access":**
 
@@ -1089,28 +1096,30 @@ ORG-MFA-PRIV: 7 requirements
 
 ### 16.8.1. The Three Lines Model
 
-**WHAT IT IS.** The standard risk governance model in the financial industry (IIA — the Institute of Internal Auditors). It separates responsibilities to avoid conflicts of interest.
+**What it is.** The standard risk governance model in the financial industry (IIA — the Institute of Internal Auditors). It separates responsibilities to avoid conflicts of interest.
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│ BOARD OF DIRECTORS / AUDIT COMMITTEE (oversight)            │
-└───────────────┬──────────────────────────────────────────────┘
-   1st Line            2nd Line              3rd Line
-┌──────────────┐ ┌──────────────────┐ ┌─────────────────────┐
-│ Owns &       │ │ Risk oversight & │ │ Independent          │
-│ manages risk │ │ compliance        │ │ assurance           │
-│ day-to-day   │ │ (Risk, Compliance,│ │ (Internal Audit)    │
-│ (Dev, SecOps,│ │  CISO office)     │ │                     │
-│  IT, biz)    │ │ - sets policy     │ │ - independent audit │
-│              │ │ - monitors        │ │   of 1st & 2nd line │
-│              │ │   controls        │ │ - reports directly  │
-│              │ │                   │ │   to the Board       │
-└──────────────┘ └──────────────────┘ └─────────────────────┘
-        ▲                                  │ External Audit + Regulator
-        └──────────────────────────────────┘ (external)
+┌──────────────────────────────────────────────────────────────────┐
+│  BOARD OF DIRECTORS / AUDIT COMMITTEE  (overall oversight)        │
+└──────────────────────────────────────────────────────────────────┘
+        1st Line               2nd Line               3rd Line
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│ Owns & manages     │ │ Risk oversight &   │ │ Independent        │
+│ risk day-to-day    │ │ compliance         │ │ assurance          │
+│                    │ │ (Risk, Compliance, │ │ (Internal Audit)   │
+│ (Dev, SecOps,      │ │  CISO office)      │ │                    │
+│  IT, business)     │ │                    │ │ - independent      │
+│ - operates         │ │ - sets policy      │ │   audit of 1st &   │
+│   controls         │ │ - monitors         │ │   2nd line         │
+│                    │ │   controls         │ │ - reports straight │
+│                    │ │                    │ │   to the Board     │
+└────────────────────┘ └────────────────────┘ └─────────┬──────────┘
+                                                         │
+                  External Audit + Regulator ◄───────────┘
+                  (external, independent)
 ```
 
-**WHY separate the lines?** The people who *operate* the controls (1st) must not *assess* their own controls (3rd) — otherwise it is a case of "playing and refereeing at the same time." Internal Audit (3rd line) reports straight to the Board, not through the CISO, to preserve independence.
+**Why separate the lines?** The people who *operate* the controls (1st) must not *assess* their own controls (3rd) — otherwise it is a case of "playing and refereeing at the same time." Internal Audit (3rd line) reports straight to the Board, not through the CISO, to preserve independence.
 
 ### 16.8.2. The legal/supervisory framework for the Vietnamese financial industry (operational level)
 
@@ -1125,7 +1134,7 @@ ORG-MFA-PRIV: 7 requirements
 
 ### 16.8.3. Continuous Compliance in DevSecOps
 
-**WHAT IT IS.** Instead of a manual audit once a year, **continuous compliance control** via policy-as-code running in CI/CD. This is the intersection of GRC and DevSecOps.
+**What it is.** Instead of a manual audit once a year, **continuous compliance control** via policy-as-code running in CI/CD. This is the intersection of GRC and DevSecOps.
 
 **A real example — checking a control in the pipeline (OPA Conftest checking IaC before deploy):**
 
@@ -1167,7 +1176,7 @@ sha256sum "$OUT" | tee "${OUT}.sha256"
 echo "Evidence package: $OUT"
 ```
 
-**SECURITY NOTES.** Policy-as-code can **fail-open** if the pipeline skips the test step on error (e.g. `|| true`). In a financial environment, the compliance control must **fail-closed** — the pipeline must stop (exit non-zero) when a policy is violated or when the policy engine itself fails. At the same time, automated evidence must be immutable (write-once, pushed to object lock / WORM storage) for the auditor to trust it.
+**Security note:** Policy-as-code can **fail-open** if the pipeline skips the test step on error (e.g. `|| true`). In a financial environment, the compliance control must **fail-closed** — the pipeline must stop (exit non-zero) when a policy is violated or when the policy engine itself fails. At the same time, automated evidence must be immutable (write-once, pushed to object lock / WORM storage) for the auditor to trust it.
 
 ---
 

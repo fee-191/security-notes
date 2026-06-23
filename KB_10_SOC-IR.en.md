@@ -123,7 +123,7 @@ To understand everything that follows, you need to know precisely where the data
 | Detection | Generates alerts from rules/ML/correlation | Sigma rule, EQL, SPL, KQL |
 | People | Triage, investigate, respond | Ticket, playbook, case |
 
-**WHY the layered design:** decoupling source — transport — storage — detection allows each component to be replaced independently (swap the SIEM without reconfiguring every endpoint), absorb load with buffers (Kafka absorbs bursts), and apply distinct security controls at each stage (transport encryption, access control over the log store).
+**Why the layered design:** decoupling source — transport — storage — detection allows each component to be replaced independently (swap the SIEM without reconfiguring every endpoint), absorb load with buffers (Kafka absorbs bursts), and apply distinct security controls at each stage (transport encryption, access control over the log store).
 
 ---
 
@@ -183,7 +183,7 @@ Severity table (RFC 5424 §6.2.1):
 
 Facility table (some important values): 0=kernel, 1=user, 2=mail, 3=daemon, 4=auth/security, 10=authpriv, 16–23=local0–local7.
 
-**WHY Facility and Severity are packed into one byte:** the design dates from an era of narrow bandwidth and small packets; a single integer lets routers/collectors filter quickly (for example, "only forward messages with severity ≤ 3") without parsing the entire message.
+**Why Facility and Severity are packed into one byte:** the design dates from an era of narrow bandwidth and small packets; a single integer lets routers/collectors filter quickly (for example, "only forward messages with severity ≤ 3") without parsing the entire message.
 
 **Security note:** UDP 514 has no authentication, no encryption, and no guarantee of ordering or delivery. An attacker can **spoof** logs (forge the source) to create noise or erase traces by injecting fake logs. Production must use **syslog over TLS (RFC 5425, TCP 6514)** with mutual certificates.
 
@@ -245,7 +245,7 @@ A table of security Event IDs you must memorize:
 | 10 | RemoteInteractive (RDP) |
 | 11 | CachedInteractive (using cached credentials) |
 
-**The `Status`/`SubStatus` fields (Event 4625)** — NTSTATUS error codes that indicate WHY the logon failed:
+**The `Status`/`SubStatus` fields (Event 4625)** — NTSTATUS error codes that indicate why the logon failed:
 
 | Code | Meaning |
 |---|---|
@@ -328,7 +328,7 @@ Note: alerts move up (escalate) when they exceed the capability/complexity of th
 - Performs intermediate-level forensics (memory, basic disk artifacts).
 - Writes and tunes detection rules to reduce FPs for Tier 1.
 
-### 10.3.3. Tier 3 — Threat Hunter / Forensic & Malware Expert
+### 10.3.3. Tier 3 — Threat Hunter / Forensics & Malware Expert
 
 **Responsibilities:**
 - Proactive **threat hunting**: forming hypotheses and searching for traces of attackers that alerts have NOT detected.
@@ -346,7 +346,7 @@ Note: alerts move up (escalate) when they exceed the capability/complexity of th
 | Typical tools | SIEM console, SOAR | SIEM query, EDR, sandbox | Volatility, IDA/Ghidra, YARA, threat intel |
 | Output | TP/FP ticket, escalation | Investigation report, IOC | New detections, IOC/TTP, RCA |
 
-**WHY tiering:** alerts arrive in high volume but most are simple or false positives. Having expensive specialists (Tier 3) handle FPs is wasteful and causes burnout. Tiering ensures simple work is handled quickly and cheaply, while hard work is routed to people with the right capability.
+**Why tiering:** alerts arrive in high volume but most are simple or false positives. Having expensive specialists (Tier 3) handle FPs is wasteful and causes burnout. Tiering ensures simple work is handled quickly and cheaply, while hard work is routed to people with the right capability.
 
 ---
 
@@ -397,16 +397,17 @@ An example mapping into a P1–P4 matrix:
 NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide) defines a 4-phase lifecycle. Note that the lifecycle is a **repeating cycle** (not linear) — Detection & Analysis and Containment/Eradication/Recovery may loop multiple times.
 
 ```
-        ┌─────────────────────────────────────────────┐
-        │                                             │
-        ▼                                             │
-  ┌───────────┐    ┌───────────────────┐    ┌──────────────────────────┐    ┌──────────────────┐
-  │1.Preparation│──>│2.Detection &      │──>│3.Containment, Eradication │──>│4.Post-Incident   │
-  │           │    │  Analysis          │   │  & Recovery               │   │  Activity        │
-  └───────────┘    └───────────────────┘    └──────────────────────────┘   │  (Lessons Learned)│
-        ▲                  │  ▲                       │  ▲                  └────────┬─────────┘
-        │                  └──┘  (analysis loop)      └──┘ (handling loop)          │
-        └──────────────────────────────────────────────────────────────────────────┘
+      ┌───────────────────────────────────────────────────────────────────────────┐
+      │                                                                           │
+      ▼                                                                           │
+┌───────────────┐   ┌───────────────┐   ┌───────────────────────────┐   ┌───────────────────┐
+│ 1.Preparation │──>│ 2.Detection & │──>│ 3.Containment, Eradication│──>│ 4.Post-Incident   │
+│               │   │   Analysis    │   │   & Recovery              │   │   Activity        │
+│               │   │               │   │                           │   │ (Lessons Learned) │
+└───────────────┘   └───────┬───────┘   └─────────────┬─────────────┘   └─────────┬─────────┘
+      ▲                  ▲  │                      ▲  │                           │
+      │                  └──┘ (analysis loop)      └──┘ (handling loop)           │
+      └───────────────────────────────────────────────────────────────────────────┘
 ```
 
 #### Phase 1 — Preparation
@@ -553,7 +554,7 @@ TRIGGER: Alert on mass file rename/encrypt, ransom note, EDR detection.
 
 ### 10.7.1. Formulas
 
-**MTTD (Mean Time To Detect):** the average time from when an incident BEGINS to when it is DETECTED.
+**MTTD (Mean Time To Detect):** the average time from when an incident begins to when it is detected.
 
 ```
 MTTD = Σ (T_detect[i] − T_start[i]) / N
@@ -587,7 +588,7 @@ Example calculation: 3 incidents with (detect − start) = 4h, 12h, 2h → MTTD 
 
 ### 10.8.1. Sigma — writing SIEM-independent detection rules
 
-**WHAT IT IS:** Sigma is a YAML format that describes a detection rule generically, after which `sigma`/`sigmac` (pySigma) converts it into the query language of a specific SIEM (Splunk SPL, Elastic KQL/EQL, QRadar AQL, etc.).
+**What it is:** Sigma is a YAML format that describes a detection rule generically, after which `sigma`/`sigmac` (pySigma) converts it into the query language of a specific SIEM (Splunk SPL, Elastic KQL/EQL, QRadar AQL, etc.).
 
 **A real-world rule example — detecting SSH/Windows brute-force:**
 
@@ -637,7 +638,7 @@ EventCode=4625 | stats count by IpAddress | where count > 20
 
 ### 10.8.2. Suricata — IDS/IPS, dissecting a rule
 
-**WHAT IT IS:** Suricata is an IDS/IPS engine that analyzes packets by signature.
+**What it is:** Suricata is an IDS/IPS engine that analyzes packets by signature.
 
 **Rule structure:**
 
@@ -687,7 +688,7 @@ Sample `fast.log` output:
 
 ### 10.8.3. YARA — classifying files/malware by pattern
 
-**WHAT IT IS:** YARA describes patterns (strings, bytes, regex) to identify malware families.
+**What it is:** YARA describes patterns (strings, bytes, regex) to identify malware families.
 
 ```yara
 rule Suspicious_PowerShell_Downloader
@@ -749,7 +750,7 @@ SELECT * FROM crontab WHERE command LIKE '%curl%' OR command LIKE '%wget%';
 
 ### 10.8.6. TheHive / SOAR — case management & automation
 
-**WHAT IT IS:** TheHive is an IR case management platform; Cortex runs "analyzers" (e.g. a VirusTotal hash lookup). SOAR (Security Orchestration, Automation and Response) runs automated playbooks.
+**What it is:** TheHive is an IR case management platform; Cortex runs "analyzers" (e.g. a VirusTotal hash lookup). SOAR (Security Orchestration, Automation and Response) runs automated playbooks.
 
 Example SOAR playbook logic (pseudocode) for phishing:
 
@@ -832,7 +833,7 @@ When creating IOCs/detections, prioritize the indicators that are hardest to eva
             ▼
 ```
 
-**WHY:** a hash changes just by adding 1 byte; but behavior (TTP) reflects how the attacker OPERATES, which is very costly to change. Hunting by TTP/behavior is more durable than hunting by static IOCs.
+**Why:** a hash changes just by adding 1 byte; but behavior (TTP) reflects how the attacker operates, which is very costly to change. Hunting by TTP/behavior is more durable than hunting by static IOCs.
 
 ---
 
@@ -911,7 +912,7 @@ last; w        # login sessions
 
 ### 10.11.1. Chain of Custody
 
-**WHAT IT IS:** a record documenting WHO held the evidence, WHEN, and WHAT was done with it — so the evidence has legal value (proving it was not tampered with).
+**What it is:** a record documenting who held the evidence, when, and what was done with it — so the evidence has legal value (proving it was not tampered with).
 
 A chain-of-custody form template — each required field:
 
@@ -940,7 +941,7 @@ Collect in order from most easily lost to most durable:
 8. External storage media (backups, ...)
 ```
 
-**WHY:** RAM is lost when power is removed; powering off immediately = losing the reverse shell, code running only in memory, and decryption keys. This is why, in the ransomware/brute-force playbooks, we **do not power off** the machine, only isolate the network.
+**Why:** RAM is lost when power is removed; powering off immediately = losing the reverse shell, code running only in memory, and decryption keys. This is why, in the ransomware/brute-force playbooks, we **do not power off** the machine, only isolate the network.
 
 ### 10.11.3. Collection & integrity verification
 
@@ -954,7 +955,7 @@ sha256sum -c image.dd.sha256
 # image.dd: OK
 ```
 
-**WHY use a hash:** SHA-256 (a 256-bit/32-byte digest) lets you prove the image has not changed by a single bit since collection. One changed bit → the hash changes completely (avalanche effect). Use a hardware **write-blocker** to ensure evidence is not overwritten while reading it.
+**Why use a hash:** SHA-256 (a 256-bit/32-byte digest) lets you prove the image has not changed by a single bit since collection. One changed bit → the hash changes completely (avalanche effect). Use a hardware **write-blocker** to ensure evidence is not overwritten while reading it.
 
 **Security/legal note:** a break in the chain of custody (a time gap, no hash, using an untrusted tool) renders evidence worthless in court. Forensics must be performed on a **copy** (image), never on the original drive.
 
@@ -977,7 +978,7 @@ sha256sum -c image.dd.sha256
 | Warm | 30–90 days | Partially indexed, slower | Investigation of recent incidents |
 | Cold/Archive | 90 days–several years | Compressed, cheap storage (object storage), slow recovery | Compliance, old investigations, legal |
 
-**WHY tiering:** a hot index consumes CPU/RAM/disk; keeping everything hot is very expensive. Tiering balances cost against accessibility.
+**Why tiering:** a hot index consumes CPU/RAM/disk; keeping everything hot is very expensive. Tiering balances cost against accessibility.
 
 ### 10.12.3. Protecting log integrity
 
@@ -991,4 +992,16 @@ sha256sum -c image.dd.sha256
 
 ## 10.13. Summary — tying the pieces together
 
-SOC operations form a closed loop: **preparation (logging, playbooks, tools) → detection (rules over normalized logs) → triage (Tier 1) → investigation (Tier 2) → response (containment/eradication/recovery, preserving evidence) → lessons → detection improvement**. Threat hunting (Tier 3) feeds new findings back to enrich automated detection. Every step rests on a common foundation: **reading logs correctly down to each field** (syslog PRI, Event ID/LogonType/Status, CEF extension), **measuring correctly** (clearly defined MTTD/MTTR), and **handling evidence to standard** (order of volatility, chain of custody, integrity hashing). Mastering these byte/field/step details is the prerequisite for not letting an attacker exploit the very blind spots in your operations.
+SOC operations form a closed loop:
+
+- **Operational loop:** preparation (logging, playbooks, tools) → detection (rules over normalized logs) → triage (Tier 1) → investigation (Tier 2) → response (containment/eradication/recovery, preserving evidence) → lessons → detection improvement.
+- **Feedback from hunting:** threat hunting (Tier 3) feeds new findings back to enrich automated detection.
+- **The common foundation of every step:**
+  - **Reading logs correctly down to each field** — syslog PRI, Event ID/LogonType/Status, CEF extension.
+  - **Measuring correctly** — clearly defined MTTD/MTTR.
+  - **Handling evidence to standard** — order of volatility, chain of custody, integrity hashing.
+
+The takeaway that ties it together:
+
+- **Mastering the byte/field/step details** is the prerequisite for steady, reliable operations.
+- Skipping them leaves blind spots — and an attacker exploits exactly those blind spots in your operations.

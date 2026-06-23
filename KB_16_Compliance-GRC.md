@@ -2,21 +2,25 @@
 
 ## Tổng quan
 
-**GRC (Governance, Risk, Compliance)** là khuôn khổ để một tổ chức tự quản lý hoạt động an toàn thông tin: xác định ai chịu trách nhiệm, rủi ro nào cần ưu tiên, và bằng chứng nào chứng minh tổ chức tuân thủ với cơ quan quản lý, khách hàng và đối tác. Bảo mật không chỉ là vấn đề kỹ thuật (firewall, mã hóa) mà còn là vấn đề **trách nhiệm và bằng chứng**: khi xảy ra sự cố mà thiếu hồ sơ chứng minh đã thực hiện đúng quy trình, tổ chức có thể bị xử phạt, mất chứng chỉ hoặc chịu trách nhiệm pháp lý. Kỹ thuật xây dựng hệ thống vững chắc; GRC bảo đảm hệ thống đó có cơ sở pháp lý, hồ sơ vận hành và phân định trách nhiệm rõ ràng.
+**GRC (Governance, Risk, Compliance)** là khuôn khổ để một tổ chức tự quản lý hoạt động an toàn thông tin. Nó trả lời ba câu hỏi: ai chịu trách nhiệm, rủi ro nào cần ưu tiên, và bằng chứng nào chứng minh tổ chức tuân thủ với cơ quan quản lý, khách hàng và đối tác.
+
+Bảo mật không chỉ là vấn đề kỹ thuật (firewall, mã hóa) mà còn là vấn đề **trách nhiệm và bằng chứng**. Khi xảy ra sự cố mà thiếu hồ sơ chứng minh đã thực hiện đúng quy trình, tổ chức có thể bị xử phạt, mất chứng chỉ hoặc chịu trách nhiệm pháp lý. Kỹ thuật xây dựng hệ thống vững chắc; GRC bảo đảm hệ thống đó có cơ sở pháp lý, hồ sơ vận hành và phân định trách nhiệm rõ ràng.
 
 Chương này bao gồm các khối kiến thức sau:
 
 - **GRC** — ba lớp lồng nhau. **Governance (quản trị)** là lớp ngoài: lãnh đạo đặt luật chơi, xác định khẩu vị rủi ro (risk appetite) và thẩm quyền quyết định. **Risk (rủi ro)** là lớp giữa: đánh giá điều gì có thể hỏng và mức thiệt hại. **Compliance (tuân thủ)** là lớp trong: chứng minh tuân thủ các tiêu chuẩn và luật. Thiếu quản trị tập trung, mỗi đội làm theo cách riêng, rủi ro tồn dư không được theo dõi, và không có hồ sơ khi bị kiểm toán.
-- **Quản lý rủi ro (Risk Management)** — rủi ro hình thành từ chuỗi **tài sản → mối đe dọa → điểm yếu → tác động × khả năng xảy ra**. Đo lường theo hai cách: **định lượng** (gán giá trị tiền: SLE, ARO, ALE) để so sánh chi phí kiểm soát, và **định tính** (chấm thang 1–5 likelihood × impact) khi thiếu số liệu tài chính. Xử lý rủi ro có 4 lựa chọn: **giảm thiểu (mitigate), chuyển giao (transfer), né tránh (avoid), chấp nhận (accept)** — mọi rủi ro tồn dư phải có risk owner ký chấp nhận chính thức. **Risk Register** là kho trung tâm theo dõi mọi rủi ro kèm chủ sở hữu và hạn xử lý.
+- **Quản lý rủi ro (Risk Management)** — rủi ro hình thành từ chuỗi **tài sản → mối đe dọa → điểm yếu → tác động × khả năng xảy ra**. Đo lường theo hai cách: **định lượng** (gán giá trị tiền: SLE, ARO, ALE) để so sánh chi phí kiểm soát, và **định tính** (chấm thang 1–5 likelihood × impact) khi thiếu số liệu tài chính. Xử lý rủi ro có 4 lựa chọn: **giảm thiểu (mitigate), chuyển giao (transfer), né tránh (avoid), chấp nhận (accept)** — phần rủi ro còn lại sau khi xử lý gọi là **residual risk (rủi ro tồn dư)**, và mọi rủi ro tồn dư phải có risk owner ký chấp nhận chính thức. **Risk Register** là kho trung tâm theo dõi mọi rủi ro kèm chủ sở hữu và hạn xử lý.
 - **NIST Cybersecurity Framework (CSF)** — khung tự nguyện cung cấp ngôn ngữ chung để mô tả tình trạng an ninh, chia thành 6 Function (CSF 2.0): **Govern, Identify, Protect, Detect, Respond, Recover**. CSF xác định *cần làm gì* chứ không quy định *công nghệ cụ thể*.
 - **NIST Special Publications** — **SP 800-53** là catalog control chi tiết (trả lời câu hỏi cụ thể mà CSF để ngỏ). **SP 800-61** là quy trình ứng phó sự cố: chuẩn bị → phát hiện và phân tích → khoanh vùng/diệt/phục hồi → rút kinh nghiệm. **SP 800-207 (Zero Trust)** loại bỏ tin tưởng mặc định theo vị trí mạng; mỗi truy cập đều phải xác thực và đánh giá rủi ro lại.
 - **ISO/IEC 27001 & 27002** — **27001** là tiêu chuẩn quốc tế cho Hệ thống quản lý an toàn thông tin (ISMS), **có chứng nhận** bởi bên thứ ba. **27002** là code of practice hướng dẫn triển khai từng control. Tài liệu trung tâm là **SoA (Statement of Applicability)** — liệt kê mọi control kèm lý do áp dụng hay loại trừ, là điểm xuất phát của auditor.
 - **PCI DSS** — tiêu chuẩn bắt buộc theo hợp đồng (không phải luật) cho mọi tổ chức lưu, xử lý hoặc truyền dữ liệu thẻ thanh toán; gồm 12 yêu cầu. Quy tắc cốt lõi: Sensitive Authentication Data (CVV, dữ liệu dải từ, PIN) **tuyệt đối không được lưu** sau khi authorize. **Tokenization** thay số thẻ thật bằng token vô nghĩa để giảm phạm vi tuân thủ.
 - **Pháp lý Việt Nam** — bốn văn bản chính: **Luật An toàn thông tin mạng 2015** (khung kỹ thuật nền), **Luật An ninh mạng 2018** (an ninh quốc gia, yêu cầu lưu dữ liệu trong nước), **Nghị định 85/2016** (phân loại hệ thống thành 5 cấp độ), **Nghị định 13/2023** (bảo vệ dữ liệu cá nhân, tương tự GDPR). Đây là quy định pháp luật bắt buộc; việc xác định cấp độ hệ thống và xin sự đồng ý (consent) khi thu thập dữ liệu cá nhân quyết định thiết kế hệ thống và nơi lưu trữ dữ liệu.
+- **Vận hành tuân thủ (Operational Compliance)** — biến framework thành thao tác hằng ngày: phân loại dữ liệu (data classification) để biết áp control nào, audit trail dạng hash chain chống chối bỏ, log retention và data residency, và crosswalk ánh xạ một control sang nhiều framework để khỏi làm trùng.
+- **GRC ngân hàng/tài chính** — đặc thù ngành: **Three Lines Model** tách trách nhiệm vận hành / giám sát / kiểm toán độc lập, khung giám sát của Ngân hàng Nhà nước và Luật Phòng chống rửa tiền, và continuous compliance (policy-as-code chạy trong CI/CD, fail-closed).
 
 Các mục dưới đây trình bày chi tiết kỹ thuật cho từng khối.
 
-> Chương này dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) cần tra cứu và vận hành thực tế. Mỗi khái niệm đi theo trình tự: **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức trường/bước/tham số) → VÍ DỤ THỰC TẾ CHẠY ĐƯỢC → LƯU Ý BẢO MẬT**. Các điều khoản pháp lý Việt Nam được trình bày ở mức **ý nghĩa vận hành**; chỗ nào số hiệu/điều khoản cần kiểm chứng sẽ được ghi rõ `[CẦN KIỂM CHỨNG]` thay vì bịa.
+> Chương này dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) cần tra cứu và vận hành thực tế. Mỗi khái niệm đi theo trình tự: **là gì → cơ chế bên trong (tới mức trường/bước/tham số) → ví dụ thực tế chạy được → lưu ý bảo mật**. Các điều khoản pháp lý Việt Nam được trình bày ở mức **ý nghĩa vận hành**; chỗ nào số hiệu/điều khoản cần kiểm chứng sẽ được ghi rõ `[CẦN KIỂM CHỨNG]` thay vì bịa.
 
 ---
 
@@ -52,7 +56,7 @@ GRC = **Governance, Risk, Compliance**. Đây không phải ba thứ rời rạc
 | 3 | Procedure (quy trình) | "Làm theo các bước nào" — bắt buộc | "Quy trình xoay khóa KMS mỗi 90 ngày: bước 1..n" |
 | 4 | Guideline (hướng dẫn) | "Nên làm" — khuyến nghị | "Nên dùng envelope encryption" |
 
-**VÌ SAO tách 4 tầng?** Để policy ổn định lâu dài (ít thay đổi → ít phải tái phê duyệt cấp lãnh đạo), trong khi standard/procedure thay đổi theo công nghệ. Nếu nhét "AES-256" vào policy thì mỗi lần đổi thuật toán phải đưa cả Board ký lại — không khả thi.
+**Vì sao tách 4 tầng?** Để policy ổn định lâu dài (ít thay đổi → ít phải tái phê duyệt cấp lãnh đạo), trong khi standard/procedure thay đổi theo công nghệ. Nếu nhét "AES-256" vào policy thì mỗi lần đổi thuật toán phải đưa cả Board ký lại — không khả thi.
 
 ---
 
@@ -61,45 +65,46 @@ GRC = **Governance, Risk, Compliance**. Đây không phải ba thứ rời rạc
 Quản lý rủi ro là một chu trình lặp, không phải hoạt động một lần. Sơ đồ dưới đây tóm tắt quy trình từ thiết lập bối cảnh đến giám sát liên tục (ánh xạ với ISO 31000 và NIST RMF):
 
 ```
-   ┌──────────────────────────────────────────────────────────────┐
-   │            THIẾT LẬP BỐI CẢNH (scope, risk appetite)           │
-   └───────────────────────────────┬──────────────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  NHẬN DIỆN RỦI RO                                  │
-        │  asset → threat → vulnerability                   │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  PHÂN TÍCH & ĐÁNH GIÁ                              │
-        │  Inherent risk = Likelihood × Impact              │
-        │  (định lượng SLE/ALE  hoặc  định tính 5×5)         │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  XỬ LÝ RỦI RO (4 lựa chọn)                         │
-        │  mitigate | transfer | avoid | accept             │
-        │  → còn lại Residual risk                           │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  GHI NHẬN vào RISK REGISTER + risk owner ký        │
-        └───────────────────────────┬───────────────────────┘
-                                    ▼
-        ┌───────────────────────────────────────────────────┐
-        │  GIÁM SÁT & SOÁT XÉT ĐỊNH KỲ ──┐                   │
-        └────────────────────────────────┘                   │
-                  └──────────────────────────────────────────┘
-              (vòng lặp: residual risk được tái đánh giá định kỳ)
+   ┌──────────────────────────────────────────────────────────┐
+   │  ① THIẾT LẬP BỐI CẢNH (scope, risk appetite)             │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ② NHẬN DIỆN RỦI RO                                       │
+   │     asset → threat → vulnerability                       │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ③ PHÂN TÍCH & ĐÁNH GIÁ                                   │
+   │     Inherent risk = Likelihood × Impact                  │
+   │     (định lượng SLE/ALE  hoặc  định tính 5×5)            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ④ XỬ LÝ RỦI RO (4 lựa chọn)                              │
+   │     mitigate | transfer | avoid | accept                 │
+   │     → còn lại residual risk (rủi ro tồn dư)              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑤ GHI NHẬN vào RISK REGISTER + risk owner ký            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑥ GIÁM SÁT & SOÁT XÉT ĐỊNH KỲ                            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   │
+   └───────────────────────────────┘  (vòng lặp: quay lại ② —
+        residual risk được tái đánh giá định kỳ)
 ```
 
 Chú thích: rủi ro được giảm dần qua từng vòng (inherent → residual), nhưng không bao giờ về 0 — phần tồn dư phải được một người có thẩm quyền chấp nhận chính thức. Vòng giám sát đóng lại chu trình: register lỗi thời tạo cảm giác an toàn giả nên phải soát xét định kỳ.
 
 ### 16.1.1. Chuỗi nhân quả: asset → threat → vulnerability → risk
 
-**LÀ GÌ.** Rủi ro không tự sinh ra. Nó là kết quả của một chuỗi: có **tài sản** (asset) giá trị → tồn tại **mối đe dọa** (threat) muốn/có thể gây hại → tài sản có **điểm yếu** (vulnerability) để mối đe dọa khai thác → khi khai thác thành công gây **tác động** (impact) với một **khả năng xảy ra** (likelihood). Risk = hàm của likelihood và impact.
+**Là gì.** Rủi ro không tự sinh ra. Nó là kết quả của một chuỗi: có **tài sản** (asset) giá trị → tồn tại **mối đe dọa** (threat) muốn/có thể gây hại → tài sản có **điểm yếu** (vulnerability) để mối đe dọa khai thác → khi khai thác thành công gây **tác động** (impact) với một **khả năng xảy ra** (likelihood). Risk = hàm của likelihood và impact.
 
-**CƠ CHẾ — định nghĩa chính xác từng thành phần:**
+**Cơ chế — định nghĩa chính xác từng thành phần:**
 
 | Thành phần | Định nghĩa vận hành | Ví dụ trên hệ thống sàn giao dịch (CEX) |
 |------------|---------------------|------------------------------------------|
@@ -120,11 +125,11 @@ Residual Risk  = Likelihood(sau control)  x Impact(sau control)
 Risk Treatment làm việc trên khoảng cách: Inherent - Residual
 ```
 
-**LƯU Ý BẢO MẬT.** Sai lầm phổ biến: đánh giá rủi ro chỉ trên *vulnerability* (kết quả scan) mà bỏ asset value. Một CVE 9.8 trên máy in nội bộ không có dữ liệu nhạy cảm có residual risk thấp hơn một CVE 6.5 trên gateway thanh toán. Luôn nhân với *impact lên asset*, không xếp hạng thuần theo CVSS.
+**Lưu ý bảo mật.** Sai lầm phổ biến: đánh giá rủi ro chỉ trên *vulnerability* (kết quả scan) mà bỏ asset value. Một CVE 9.8 trên máy in nội bộ không có dữ liệu nhạy cảm có residual risk thấp hơn một CVE 6.5 trên gateway thanh toán. Luôn nhân với *impact lên asset*, không xếp hạng thuần theo CVSS.
 
 ### 16.1.2. Định lượng (Quantitative): SLE, ARO, ALE
 
-**LÀ GÌ.** Phương pháp gán **giá trị tiền** cho rủi ro để so sánh khách quan và biện minh chi phí kiểm soát (cost-benefit). Bộ ba thuật ngữ chuẩn (NIST/(ISC)² CISSP):
+**Là gì.** Phương pháp gán **giá trị tiền** cho rủi ro để so sánh khách quan và biện minh chi phí kiểm soát (cost-benefit). Bộ ba thuật ngữ chuẩn (NIST/(ISC)² CISSP):
 
 | Ký hiệu | Tên đầy đủ | Đơn vị | Công thức |
 |---------|-----------|--------|-----------|
@@ -181,11 +186,11 @@ ALE post = 60,000 USD/yr
 ROSI     = 200%
 ```
 
-**LƯU Ý BẢO MẬT.** Định lượng nghe khoa học nhưng **EF và ARO thường là phỏng đoán**. Dùng nó để *so sánh tương đối* các phương án, không để báo cáo "rủi ro chính xác 300.000 USD" — đó là giả khoa học. Với rủi ro đuôi dài (tail risk) như mất toàn bộ khóa ví lạnh, ALE đánh giá thấp vì ARO cực nhỏ × impact cực lớn → nên dùng phân tích kịch bản riêng.
+**Lưu ý bảo mật.** Định lượng nghe khoa học nhưng **EF và ARO thường là phỏng đoán**. Dùng nó để *so sánh tương đối* các phương án, không để báo cáo "rủi ro chính xác 300.000 USD" — đó là giả khoa học. Với rủi ro đuôi dài (tail risk) như mất toàn bộ khóa ví lạnh, ALE đánh giá thấp vì ARO cực nhỏ × impact cực lớn → nên dùng phân tích kịch bản riêng.
 
 ### 16.1.3. Định tính (Qualitative): ma trận likelihood × impact
 
-**LÀ GÌ.** Khi không có dữ liệu tiền cậy, dùng thang định tính (thường 5×5). Mỗi trục 1–5, risk score = tích, ánh xạ sang vùng màu.
+**Là gì.** Khi không có dữ liệu tiền cậy, dùng thang định tính (thường 5×5). Mỗi trục 1–5, risk score = tích, ánh xạ sang vùng màu.
 
 ```
 IMPACT →        1-Insig  2-Minor  3-Mod   4-Major  5-Severe
@@ -219,11 +224,11 @@ Vùng:  1-4 = Low (xanh)  |  5-9 = Medium (vàng)
 | **Avoid** (né tránh) | Bỏ hoạt động sinh rủi ro | Rủi ro vượt khẩu vị, không bù được lợi ích | Ngừng lưu số thẻ tín dụng |
 | **Accept** (chấp nhận) | Giữ nguyên, ghi nhận chính thức | Residual ≤ risk appetite | Chấp nhận rủi ro thấp có chữ ký risk owner |
 
-**VÌ SAO phải có "Accept" chính thức?** Mọi rủi ro tồn dư bắt buộc có **risk owner** ký chấp nhận. Đây là điểm pháp lý/quản trị then chốt: nếu sự cố xảy ra, tài liệu chứng minh rủi ro đã được nhận biết và một người có thẩm quyền đã quyết định chấp nhận — chứ không phải "không ai biết".
+**Vì sao phải có "Accept" chính thức?** Mọi rủi ro tồn dư bắt buộc có **risk owner** ký chấp nhận. Đây là điểm pháp lý/quản trị then chốt: nếu sự cố xảy ra, tài liệu chứng minh rủi ro đã được nhận biết và một người có thẩm quyền đã quyết định chấp nhận — chứ không phải "không ai biết".
 
 ### 16.1.5. Risk Register — cấu trúc bản ghi tới từng trường
 
-**LÀ GÌ.** Sổ đăng ký rủi ro — kho trung tâm theo dõi mọi rủi ro. Mỗi dòng = một rủi ro. Dưới đây là schema chuẩn (CSV) tới từng trường:
+**Là gì.** Sổ đăng ký rủi ro — kho trung tâm theo dõi mọi rủi ro. Mỗi dòng = một rủi ro. Dưới đây là schema chuẩn (CSV) tới từng trường:
 
 | Trường | Kiểu/Kích thước | Ý nghĩa | Ví dụ |
 |--------|-----------------|---------|-------|
@@ -266,7 +271,7 @@ Output:
 RISK-0042: Hot wallet signer (res=10, owner=CISO)
 ```
 
-**LƯU Ý BẢO MẬT.** Risk register là tài liệu nhạy cảm — nó vẽ bản đồ điểm yếu cho attacker. Phải kiểm soát truy cập (need-to-know), không để trong wiki mở. Đồng thời phải *sống*: review định kỳ (vd hàng quý) — register lỗi thời còn nguy hiểm hơn không có vì tạo cảm giác an toàn giả.
+**Lưu ý bảo mật.** Risk register là tài liệu nhạy cảm — nó vẽ bản đồ điểm yếu cho attacker. Phải kiểm soát truy cập (need-to-know), không để trong wiki mở. Đồng thời phải *sống*: review định kỳ (vd hàng quý) — register lỗi thời còn nguy hiểm hơn không có vì tạo cảm giác an toàn giả.
 
 ---
 
@@ -274,7 +279,7 @@ RISK-0042: Hot wallet signer (res=10, owner=CISO)
 
 ### 16.2.1. Cấu trúc & 6 Functions (CSF 2.0)
 
-**LÀ GÌ.** NIST CSF là khung tự nguyện, không phải checklist control mà là **ngôn ngữ chung** để mô tả tình trạng an ninh. CSF 1.1 có 5 Functions; **CSF 2.0 (phát hành 2024) thêm GOVERN** thành 6:
+**Là gì.** NIST CSF là khung tự nguyện, không phải checklist control mà là **ngôn ngữ chung** để mô tả tình trạng an ninh. CSF 1.1 có 5 Functions; **CSF 2.0 (phát hành 2024) thêm GOVERN** thành 6:
 
 ```
             +-------------------+
@@ -352,7 +357,7 @@ PR.DS-01	gap=1	owner=Platform
 DE.CM-01	gap=1	owner=SOC
 ```
 
-**LƯU Ý BẢO MẬT.** CSF chỉ định khung; nó *không* nói "phải cấu hình AES-256". Để hành động cụ thể phải nhảy xuống Informative References → NIST SP 800-53 hoặc CIS Controls. Đừng dừng ở mức CSF rồi tưởng đã có control.
+**Lưu ý bảo mật.** CSF chỉ định khung; nó *không* nói "phải cấu hình AES-256". Để hành động cụ thể phải nhảy xuống Informative References → NIST SP 800-53 hoặc CIS Controls. Đừng dừng ở mức CSF rồi tưởng đã có control.
 
 ---
 
@@ -360,7 +365,7 @@ DE.CM-01	gap=1	owner=SOC
 
 ### 16.3.1. SP 800-53 — Catalog of Security and Privacy Controls
 
-**LÀ GÌ.** Bộ catalog control chi tiết nhất của NIST (Rev. 5). Bắt buộc cho hệ thống liên bang Mỹ (qua FISMA), được dùng rộng làm thư viện control. Tổ chức theo **control family** (20 họ ở Rev.5).
+**Là gì.** Bộ catalog control chi tiết nhất của NIST (Rev. 5). Bắt buộc cho hệ thống liên bang Mỹ (qua FISMA), được dùng rộng làm thư viện control. Tổ chức theo **control family** (20 họ ở Rev.5).
 
 **Cấu trúc định danh control:**
 
@@ -445,11 +450,11 @@ sudo auditctl -l                  # liệt kê rule đang chạy
 sudo ausearch -k privilege --start today
 ```
 
-**LƯU Ý BẢO MẬT.** Control `AU-9 Protection of Audit Information` đòi log không bị attacker sửa. Trên auditd, `-e 2` đặt cấu hình immutable; ngoài ra phải đẩy log ra **xa** (remote syslog/SIEM) ngay lập tức vì attacker giành root sẽ xóa log cục bộ. Audit trail mất tính chống chối bỏ (non-repudiation) nếu attacker sửa được.
+**Lưu ý bảo mật.** Control `AU-9 Protection of Audit Information` đòi log không bị attacker sửa. Trên auditd, `-e 2` đặt cấu hình immutable; ngoài ra phải đẩy log ra **xa** (remote syslog/SIEM) ngay lập tức vì attacker giành root sẽ xóa log cục bộ. Audit trail mất tính chống chối bỏ (non-repudiation) nếu attacker sửa được.
 
 ### 16.3.2. SP 800-61 — Computer Security Incident Handling Guide
 
-**LÀ GÌ.** Hướng dẫn quy trình ứng phó sự cố (IR). Định nghĩa **vòng đời 4 giai đoạn** (lưu ý: khác với mô hình 6 bước SANS PICERL):
+**Là gì.** Hướng dẫn quy trình ứng phó sự cố (IR). Định nghĩa **vòng đời 4 giai đoạn** (lưu ý: khác với mô hình 6 bước SANS PICERL):
 
 ```
    ┌──────────────────────┐
@@ -507,11 +512,11 @@ printf '%s\tcollector=%s\thost=%s\tsha256=%s\n' \
   >> /evidence/custody.log
 ```
 
-**LƯU Ý BẢO MẬT.** Băm SHA-256 *ngay lúc thu thập* là bằng chứng pháp lý rằng chứng cứ không bị sửa sau này. Nếu hash thay đổi → chứng cứ mất giá trị tại tòa. Không bao giờ phân tích trên bản gốc — làm việc trên bản sao đã verify hash.
+**Lưu ý bảo mật.** Băm SHA-256 *ngay lúc thu thập* là bằng chứng pháp lý rằng chứng cứ không bị sửa sau này. Nếu hash thay đổi → chứng cứ mất giá trị tại tòa. Không bao giờ phân tích trên bản gốc — làm việc trên bản sao đã verify hash.
 
 ### 16.3.3. SP 800-207 — Zero Trust Architecture
 
-**LÀ GÌ.** Mô hình bỏ "tin tưởng theo vị trí mạng" (không còn "trong mạng = an toàn"). Mọi yêu cầu truy cập đều phải xác thực + ủy quyền + đánh giá rủi ro liên tục, dựa trên 7 nguyên lý (tenets).
+**Là gì.** Mô hình bỏ "tin tưởng theo vị trí mạng" (không còn "trong mạng = an toàn"). Mọi yêu cầu truy cập đều phải xác thực + ủy quyền + đánh giá rủi ro liên tục, dựa trên 7 nguyên lý (tenets).
 
 **Kiến trúc logic — PEP/PDP:**
 
@@ -592,7 +597,7 @@ Output:
 true
 ```
 
-**LƯU Ý BẢO MẬT.** PDP/PEP trở thành điểm tập trung quyền lực — nếu attacker chiếm Policy Administrator, họ kiểm soát toàn bộ ủy quyền. Phải bảo vệ control plane ở mức cao nhất (HSM-backed signing token, log mọi quyết định vào SIEM, không cho PEP fail-open). Token cấp phải ngắn hạn (vài phút) để continuous evaluation có ý nghĩa.
+**Lưu ý bảo mật.** PDP/PEP trở thành điểm tập trung quyền lực — nếu attacker chiếm Policy Administrator, họ kiểm soát toàn bộ ủy quyền. Phải bảo vệ control plane ở mức cao nhất (HSM-backed signing token, log mọi quyết định vào SIEM, không cho PEP fail-open). Token cấp phải ngắn hạn (vài phút) để continuous evaluation có ý nghĩa.
 
 ---
 
@@ -600,7 +605,7 @@ true
 
 ### 16.4.1. ISO/IEC 27001 — ISMS
 
-**LÀ GÌ.** Tiêu chuẩn quốc tế cho **Hệ thống quản lý an toàn thông tin (ISMS)**. Khác NIST CSF (tự nguyện), 27001 là tiêu chuẩn **có chứng nhận** (certifiable) — tổ chức được audit bởi bên thứ ba và cấp chứng chỉ. Phiên bản hiện hành: **ISO/IEC 27001:2022**.
+**Là gì.** Tiêu chuẩn quốc tế cho **Hệ thống quản lý an toàn thông tin (ISMS)**. Khác NIST CSF (tự nguyện), 27001 là tiêu chuẩn **có chứng nhận** (certifiable) — tổ chức được audit bởi bên thứ ba và cấp chứng chỉ. Phiên bản hiện hành: **ISO/IEC 27001:2022**.
 
 **Cấu trúc 27001 = Phần điều khoản (clauses 4–10, BẮT BUỘC) + Annex A (control tham chiếu).**
 
@@ -661,7 +666,7 @@ Output:
 A.5.7 (Threat intelligence) -> In progress
 ```
 
-**VÌ SAO SoA quan trọng?** Auditor dùng SoA làm điểm xuất phát: với mỗi control "Applicable + Implemented", họ đòi **bằng chứng** (evidence). Với "Not applicable", họ đòi **lý do hợp lý**. SoA là khế ước giữa tổ chức và auditor.
+**Vì sao SoA quan trọng?** Auditor dùng SoA làm điểm xuất phát: với mỗi control "Applicable + Implemented", họ đòi **bằng chứng** (evidence). Với "Not applicable", họ đòi **lý do hợp lý**. SoA là khế ước giữa tổ chức và auditor.
 
 **Annex A 27001:2022 — 93 control, 4 theme** (đã tái cấu trúc từ 114 control/14 domain của bản 2013):
 
@@ -674,7 +679,7 @@ A.5.7 (Threat intelligence) -> In progress
 
 ### 16.4.2. ISO/IEC 27002 — Code of practice
 
-**LÀ GÌ.** Trong khi 27001 *nói control nào* (Annex A liệt kê tên), **27002 giải thích control đó nghĩa là gì và triển khai ra sao** (implementation guidance). Cùng đánh số (A.5–A.8).
+**Là gì.** Trong khi 27001 *nói control nào* (Annex A liệt kê tên), **27002 giải thích control đó nghĩa là gì và triển khai ra sao** (implementation guidance). Cùng đánh số (A.5–A.8).
 
 **5 thuộc tính (attributes) mới ở 27002:2022** — gắn nhãn mỗi control để lọc/ánh xạ:
 
@@ -686,7 +691,7 @@ A.5.7 (Threat intelligence) -> In progress
 | Operational capabilities | Governance, Asset_mgmt, Identity_and_access_mgmt... |
 | Security domains | Governance_and_Ecosystem, Protection, Defence, Resilience |
 
-**VÌ SAO có attributes?** Cho phép cắt lát danh mục control theo nhiều chiều — ví dụ lọc tất cả control "Detective + Detect" để xây năng lực giám sát. Đây là cầu nối kỹ thuật giữa ISO và NIST CSF.
+**Vì sao có attributes?** Cho phép cắt lát danh mục control theo nhiều chiều — ví dụ lọc tất cả control "Detective + Detect" để xây năng lực giám sát. Đây là cầu nối kỹ thuật giữa ISO và NIST CSF.
 
 ### 16.4.3. Audit & chứng nhận
 
@@ -719,13 +724,13 @@ Surveillance audit (năm 1, năm 2) -> Recertification (năm 3)
 | Minor nonconformity | Sai lệch cục bộ, không hệ thống | Phải có corrective action plan |
 | Observation/OFI | Cơ hội cải tiến | Không bắt buộc, nên xử lý |
 
-**LƯU Ý BẢO MẬT.** Chứng chỉ 27001 chứng nhận *hệ thống quản lý* tồn tại và vận hành, KHÔNG đảm bảo hệ thống "không thể bị hack". Scope hẹp (vd chỉ 1 phòng ban) vẫn được cấp chứng chỉ hợp lệ — luôn đọc **scope statement** trên chứng chỉ của nhà cung cấp trước khi tin tưởng. Đây là điểm due diligence quan trọng khi đánh giá vendor.
+**Lưu ý bảo mật.** Chứng chỉ 27001 chứng nhận *hệ thống quản lý* tồn tại và vận hành, KHÔNG đảm bảo hệ thống "không thể bị hack". Scope hẹp (vd chỉ 1 phòng ban) vẫn được cấp chứng chỉ hợp lệ — luôn đọc **scope statement** trên chứng chỉ của nhà cung cấp trước khi tin tưởng. Đây là điểm due diligence quan trọng khi đánh giá vendor.
 
 ---
 
 ## 16.5. PCI DSS (sơ lược — ngành tài chính/thẻ)
 
-**LÀ GÌ.** Payment Card Industry Data Security Standard — tiêu chuẩn bắt buộc theo *hợp đồng* (không phải luật) với mọi tổ chức lưu/xử lý/truyền **dữ liệu chủ thẻ (CHD)**. Phiên bản hiện hành **PCI DSS v4.0 / v4.0.1**. 6 mục tiêu, **12 yêu cầu**.
+**Là gì.** Payment Card Industry Data Security Standard — tiêu chuẩn bắt buộc theo *hợp đồng* (không phải luật) với mọi tổ chức lưu/xử lý/truyền **dữ liệu chủ thẻ (CHD)**. Phiên bản hiện hành **PCI DSS v4.0 / v4.0.1**. 6 mục tiêu, **12 yêu cầu**.
 
 **Dữ liệu chủ thẻ — phân loại tới từng trường (CỰC KỲ quan trọng, quyết định cái gì được lưu):**
 
@@ -786,7 +791,7 @@ def luhn_ok(pan: str) -> bool:
 print(luhn_ok("4111111111111111"))   # -> True
 ```
 
-**LƯU Ý BẢO MẬT.** Cách giảm scope PCI hiệu quả nhất là **tokenization** — thay PAN bằng token vô nghĩa, để PAN thật trong vault hoặc đẩy toàn bộ cho payment processor (PAN không bao giờ chạm hệ thống mình). Mỗi hệ thống "chạm" CHD đều rơi vào scope audit, nên kiến trúc tốt là cô lập **Cardholder Data Environment (CDE)** bằng segmentation chặt (Requirement 1) để thu hẹp phạm vi.
+**Lưu ý bảo mật.** Cách giảm scope PCI hiệu quả nhất là **tokenization** — thay PAN bằng token vô nghĩa, để PAN thật trong vault hoặc đẩy toàn bộ cho payment processor (PAN không bao giờ chạm hệ thống mình). Mỗi hệ thống "chạm" CHD đều rơi vào scope audit, nên kiến trúc tốt là cô lập **Cardholder Data Environment (CDE)** bằng segmentation chặt (Requirement 1) để thu hẹp phạm vi.
 
 ---
 
@@ -796,7 +801,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.1. Luật An toàn thông tin mạng 2015
 
-**LÀ GÌ.** Luật ATTT mạng số **86/2015/QH13**, hiệu lực **01/07/2016**. Khung pháp lý nền cho an toàn thông tin: bảo vệ thông tin trên mạng, phân loại thông tin, bảo vệ thông tin cá nhân (ở mức nguyên tắc), an toàn hệ thống thông tin, kinh doanh sản phẩm/dịch vụ ATTT (giấy phép), mật mã dân sự.
+**Là gì.** Luật ATTT mạng số **86/2015/QH13**, hiệu lực **01/07/2016**. Khung pháp lý nền cho an toàn thông tin: bảo vệ thông tin trên mạng, phân loại thông tin, bảo vệ thông tin cá nhân (ở mức nguyên tắc), an toàn hệ thống thông tin, kinh doanh sản phẩm/dịch vụ ATTT (giấy phép), mật mã dân sự.
 
 **Ý nghĩa vận hành cho kỹ sư:**
 
@@ -809,7 +814,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.2. Luật An ninh mạng 2018
 
-**LÀ GÌ.** Luật An ninh mạng số **24/2018/QH14**, hiệu lực **01/01/2019**. Tập trung **an ninh quốc gia, trật tự an toàn xã hội** trên không gian mạng — khác trọng tâm với Luật ATTT (thiên kỹ thuật).
+**Là gì.** Luật An ninh mạng số **24/2018/QH14**, hiệu lực **01/01/2019**. Tập trung **an ninh quốc gia, trật tự an toàn xã hội** trên không gian mạng — khác trọng tâm với Luật ATTT (thiên kỹ thuật).
 
 **Hai điểm vận hành nổi bật (gây tranh luận và ảnh hưởng kiến trúc hệ thống):**
 
@@ -823,7 +828,7 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.3. Phân loại hệ thống theo cấp độ — Nghị định 85/2016/NĐ-CP
 
-**LÀ GÌ.** Nghị định **85/2016/NĐ-CP** về **bảo đảm an toàn hệ thống thông tin theo cấp độ** (hướng dẫn Luật ATTT 2015). Phân hệ thống thông tin thành **5 cấp độ** theo mức độ hậu quả nếu bị xâm phạm. Cấp càng cao → yêu cầu kỹ thuật & quản lý càng nghiêm.
+**Là gì.** Nghị định **85/2016/NĐ-CP** về **bảo đảm an toàn hệ thống thông tin theo cấp độ** (hướng dẫn Luật ATTT 2015). Phân hệ thống thông tin thành **5 cấp độ** theo mức độ hậu quả nếu bị xâm phạm. Cấp càng cao → yêu cầu kỹ thuật & quản lý càng nghiêm.
 
 **Tương tự về tinh thần với FIPS 199 (Low/Mod/High) của Mỹ nhưng có 5 mức:**
 
@@ -849,11 +854,11 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 > **Cấp 4 trở lên** có yêu cầu kỹ thuật & quản lý chặt (giám sát, phương án ứng cứu, kiểm soát truy cập mạnh...). `[CẦN KIỂM CHỨNG]` Yêu cầu kỹ thuật chi tiết từng cấp nằm ở **TCVN 11930:2017** và các thông tư hướng dẫn của Bộ TT&TT — cần tra cứu bản gốc để liệt kê chính xác từng yêu cầu kỹ thuật cho cấp 4.
 
-**LƯU Ý BẢO MẬT.** Với hệ thống sàn giao dịch/tài chính ở VN, việc xác định cấp độ (thường rơi vào cấp 3 hoặc 4) quyết định toàn bộ baseline control bắt buộc về pháp lý — tương tự cách FIPS 199 quyết định baseline 800-53. Phải làm hồ sơ cấp độ trước khi thiết kế control, không làm ngược lại.
+**Lưu ý bảo mật.** Với hệ thống sàn giao dịch/tài chính ở VN, việc xác định cấp độ (thường rơi vào cấp 3 hoặc 4) quyết định toàn bộ baseline control bắt buộc về pháp lý — tương tự cách FIPS 199 quyết định baseline 800-53. Phải làm hồ sơ cấp độ trước khi thiết kế control, không làm ngược lại.
 
 ### 16.6.4. Bảo vệ dữ liệu cá nhân — Nghị định 13/2023/NĐ-CP
 
-**LÀ GÌ.** Nghị định **13/2023/NĐ-CP** về **bảo vệ dữ liệu cá nhân (PDPD)**, hiệu lực **01/07/2023**. Đây là văn bản gần với GDPR nhất ở VN tính tới thời điểm hiện tại. Định nghĩa dữ liệu cá nhân, dữ liệu cá nhân nhạy cảm, vai trò các bên, quyền của chủ thể, và nghĩa vụ.
+**Là gì.** Nghị định **13/2023/NĐ-CP** về **bảo vệ dữ liệu cá nhân (PDPD)**, hiệu lực **01/07/2023**. Đây là văn bản gần với GDPR nhất ở VN tính tới thời điểm hiện tại. Định nghĩa dữ liệu cá nhân, dữ liệu cá nhân nhạy cảm, vai trò các bên, quyền của chủ thể, và nghĩa vụ.
 
 **Phân loại dữ liệu cá nhân (quyết định mức bảo vệ kỹ thuật):**
 
@@ -902,7 +907,7 @@ UPDATE consent_records SET withdrawn_at = now()
  WHERE data_subject = 'subj_8f2a' AND purpose = 'marketing';
 ```
 
-**LƯU Ý BẢO MẬT.** Bảng consent là **chứng cứ pháp lý** — phải bất biến (append-only/audit log), không cho phép UPDATE/DELETE tùy tiện trên `granted_at`. Khi xử lý "quyền được xóa" (right to erasure), phải cân bằng với nghĩa vụ lưu giữ khác (vd luật phòng chống rửa tiền yêu cầu giữ KYC nhiều năm) — không phải dữ liệu nào cũng xóa được ngay; đây là xung đột retention rất thực tế.
+**Lưu ý bảo mật.** Bảng consent là **chứng cứ pháp lý** — phải bất biến (append-only/audit log), không cho phép UPDATE/DELETE tùy tiện trên `granted_at`. Khi xử lý "quyền được xóa" (right to erasure), phải cân bằng với nghĩa vụ lưu giữ khác (vd luật phòng chống rửa tiền yêu cầu giữ KYC nhiều năm) — không phải dữ liệu nào cũng xóa được ngay; đây là xung đột retention rất thực tế.
 
 ### 16.6.5. Nghị định 356/2025 (cần kiểm chứng)
 
@@ -919,7 +924,7 @@ UPDATE consent_records SET withdrawn_at = now()
 
 ### 16.7.1. Phân loại dữ liệu (Data Classification)
 
-**LÀ GÌ.** Gán nhãn dữ liệu theo độ nhạy cảm để áp control tương ứng. Đây là *điều kiện tiên quyết* cho mọi control khác (mã hóa, retention, access) — không phân loại thì không biết áp gì.
+**Là gì.** Gán nhãn dữ liệu theo độ nhạy cảm để áp control tương ứng. Đây là *điều kiện tiên quyết* cho mọi control khác (mã hóa, retention, access) — không phân loại thì không biết áp gì.
 
 **Mô hình 4 mức điển hình + ánh xạ control:**
 
@@ -1038,11 +1043,11 @@ resource "aws_s3_bucket" "kyc" {
 }
 ```
 
-**LƯU Ý BẢO MẬT.** Data residency không chỉ là region của bucket — coi chừng: backup tự động sang region khác, CDN edge cache, log forwarding sang SaaS US (Datadog/Splunk Cloud), email/SMS provider quốc tế. Phải vẽ **data flow map** đầy đủ để biết PII *thực sự* đi đâu, không tin mỗi cấu hình region của DB chính.
+**Lưu ý bảo mật.** Data residency không chỉ là region của bucket — coi chừng: backup tự động sang region khác, CDN edge cache, log forwarding sang SaaS US (Datadog/Splunk Cloud), email/SMS provider quốc tế. Phải vẽ **data flow map** đầy đủ để biết PII *thực sự* đi đâu, không tin mỗi cấu hình region của DB chính.
 
 ### 16.7.4. Ánh xạ control xuyên framework (crosswalk)
 
-**VÌ SAO.** Một tổ chức thường chịu nhiều framework cùng lúc (27001 + CSF + NĐ 85 + PCI). Triển khai một control vật lý → thỏa nhiều yêu cầu. **Crosswalk** tránh làm việc trùng lặp.
+**Vì sao.** Một tổ chức thường chịu nhiều framework cùng lúc (27001 + CSF + NĐ 85 + PCI). Triển khai một control vật lý → thỏa nhiều yêu cầu. **Crosswalk** tránh làm việc trùng lặp.
 
 **Ví dụ ánh xạ control "MFA cho truy cập đặc quyền":**
 
@@ -1088,27 +1093,29 @@ ORG-MFA-PRIV: 7 requirements
 
 ### 16.8.1. Three Lines Model (mô hình 3 tuyến phòng thủ)
 
-**LÀ GÌ.** Mô hình quản trị rủi ro chuẩn ngành tài chính (IIA — Institute of Internal Auditors). Tách bạch trách nhiệm để tránh xung đột lợi ích.
+**Là gì.** Mô hình quản trị rủi ro chuẩn ngành tài chính (IIA — Institute of Internal Auditors). Tách bạch trách nhiệm để tránh xung đột lợi ích.
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│ HỘI ĐỒNG QUẢN TRỊ / ỦY BAN KIỂM TOÁN (giám sát)              │
-└───────────────┬──────────────────────────────────────────────┘
-   1st Line            2nd Line              3rd Line
-┌──────────────┐ ┌──────────────────┐ ┌─────────────────────┐
-│ Sở hữu &     │ │ Giám sát rủi ro & │ │ Đảm bảo độc lập     │
-│ quản lý rủi  │ │ tuân thủ          │ │ (Internal Audit)    │
-│ ro hằng ngày │ │ (Risk, Compliance,│ │                     │
-│ (Dev, SecOps,│ │  CISO office)     │ │ - audit độc lập     │
-│  IT, biz)    │ │ - đặt policy      │ │   1st & 2nd line     │
-│              │ │ - giám sát control│ │ - báo cáo trực tiếp  │
-│              │ │                   │ │   HĐQT               │
-└──────────────┘ └──────────────────┘ └─────────────────────┘
-        ▲                                  │ External Audit + Regulator
-        └──────────────────────────────────┘ (bên ngoài)
+┌──────────────────────────────────────────────────────────────────┐
+│  HỘI ĐỒNG QUẢN TRỊ / ỦY BAN KIỂM TOÁN  (giám sát tổng thể)        │
+└──────────────────────────────────────────────────────────────────┘
+        1st Line               2nd Line               3rd Line
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│ Sở hữu & quản lý   │ │ Giám sát rủi ro    │ │ Đảm bảo độc lập    │
+│ rủi ro hằng ngày   │ │ & tuân thủ         │ │ (Internal Audit)   │
+│                    │ │ (Risk, Compliance, │ │                    │
+│ (Dev, SecOps,      │ │  CISO office)      │ │ - audit độc lập    │
+│  IT, business)     │ │                    │ │   1st & 2nd line   │
+│ - vận hành         │ │ - đặt policy       │ │ - báo cáo thẳng    │
+│   control          │ │ - giám sát control │ │   HĐQT, không qua  │
+│                    │ │                    │ │   CISO             │
+└────────────────────┘ └────────────────────┘ └─────────┬──────────┘
+                                                         │
+                  External Audit + Regulator ◄───────────┘
+                  (bên ngoài, độc lập)
 ```
 
-**VÌ SAO tách tuyến?** Người *vận hành* control (1st) không được tự *đánh giá* control của mình (3rd) — nếu không sẽ "vừa đá bóng vừa thổi còi". Internal Audit (3rd line) báo cáo thẳng HĐQT, không qua CISO, để giữ độc lập.
+**Vì sao tách tuyến?** Người *vận hành* control (1st) không được tự *đánh giá* control của mình (3rd) — nếu không sẽ "vừa đá bóng vừa thổi còi". Internal Audit (3rd line) báo cáo thẳng HĐQT, không qua CISO, để giữ độc lập.
 
 ### 16.8.2. Khung pháp lý/giám sát ngành tài chính VN (mức vận hành)
 
@@ -1123,7 +1130,7 @@ ORG-MFA-PRIV: 7 requirements
 
 ### 16.8.3. Vận hành GRC liên tục (Continuous Compliance) trong DevSecOps
 
-**LÀ GÌ.** Thay vì audit thủ công 1 lần/năm, **kiểm soát tuân thủ liên tục** bằng policy-as-code chạy trong CI/CD. Đây là điểm giao giữa GRC và DevSecOps.
+**Là gì.** Thay vì audit thủ công 1 lần/năm, **kiểm soát tuân thủ liên tục** bằng policy-as-code chạy trong CI/CD. Đây là điểm giao giữa GRC và DevSecOps.
 
 **Ví dụ thực tế — kiểm tra control trong pipeline (OPA Conftest kiểm IaC trước deploy):**
 
@@ -1165,7 +1172,7 @@ sha256sum "$OUT" | tee "${OUT}.sha256"
 echo "Evidence package: $OUT"
 ```
 
-**LƯU Ý BẢO MẬT.** Policy-as-code có thể bị **fail-open** nếu pipeline bỏ qua bước test khi lỗi (vd `|| true`). Trong môi trường tài chính, control compliance phải **fail-closed** — pipeline phải dừng (exit non-zero) khi policy vi phạm hoặc khi bản thân policy engine lỗi. Đồng thời evidence tự động phải bất biến (write-once, đẩy sang object lock / WORM storage) để auditor tin cậy.
+**Lưu ý bảo mật.** Policy-as-code có thể bị **fail-open** nếu pipeline bỏ qua bước test khi lỗi (vd `|| true`). Trong môi trường tài chính, control compliance phải **fail-closed** — pipeline phải dừng (exit non-zero) khi policy vi phạm hoặc khi bản thân policy engine lỗi. Đồng thời evidence tự động phải bất biến (write-once, đẩy sang object lock / WORM storage) để auditor tin cậy.
 
 ---
 

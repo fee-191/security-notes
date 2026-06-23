@@ -2,49 +2,20 @@
 
 ## Overview
 
-This chapter explains how data is transmitted between computers across a network, from the moment a byte leaves an application process until it reaches its destination. This is mandatory foundational knowledge for information security work: most attack techniques (eavesdropping, spoofing, interception, denial of service) take place at a specific layer of the network stack. Understanding how each layer operates is a prerequisite for identifying the attack surface and the points that need to be defended.
+This chapter explains how data is transmitted between computers across a network, from the moment a byte leaves an application process until it reaches its destination. This is foundational knowledge for information security work: most attack techniques (eavesdropping, spoofing, interception, denial of service) take place at a specific layer of the network stack. Understanding how each layer operates helps you identify the attack surface and the points that need to be defended.
 
-**Layered models (OSI & TCP/IP).** A network is organized into stacked **layers**: each layer provides services to the layer above it and uses the services of the layer below it through a fixed interface. Layering solves the problems of complexity and replaceability: you can change the technology of one layer (copper cable to fiber optic, Wi-Fi to Ethernet) without breaking the other layers. **OSI** is a 7-layer theoretical model used to standardize terminology; **TCP/IP** is the 4-layer model that actually operates on the Internet. You need to be fluent in both because security tools and documentation mix the naming conventions ("L2 attack", "L7 firewall").
+Here is a quick map of the concepts in this chapter; the full definitions and mechanics live in each section below.
 
-**Encapsulation / Decapsulation.** Data is wrapped sequentially through the layers; each layer adds a header (and sometimes a trailer) containing identifying information, then passes it down. The receiver unwraps each layer in reverse. Why it matters for security: each header contains information that both analysis tools and attackers can read — source/destination addresses, ports, protocols. Reading a packet is exactly reading these header layers in the correct order of wrapping/unwrapping.
+- **Layered models (OSI & TCP/IP)** — a network is organized into stacked layers, each serving the layer above through a fixed interface. OSI is the 7-layer theoretical model; TCP/IP is the 4-layer model that actually runs on the Internet.
+- **Encapsulation / Decapsulation** — data is wrapped sequentially through the layers, each layer adding a header before passing it down; the receiver unwraps in reverse. Each header carries information that both analysis tools and attackers can read.
+- **Layer 2 — Ethernet, MAC, VLAN, ARP, switch** — hardware identification and frame exchange within the same LAN.
+- **Layer 3 — IP, ICMP, routing, NAT** — logical identification and routing across multiple networks to a destination.
+- **Layer 4 — TCP and UDP** — transporting data and using ports to demultiplex to the correct application.
+- **Common ports** — a host has one IP but many services; ports distinguish each service and reflect the attack surface.
+- **Layer 7 — DNS, DHCP, HTTP, TLS** — the application protocols we meet every day.
+- **Firewalls, DMZ, packet analysis tools** — filtering packets by policy, isolating the Internet-facing zone, and capturing/reading packets with tcpdump/Wireshark.
 
-**Layer 2 — Ethernet, MAC, VLAN, ARP, switch.**
-
-- **MAC & Ethernet**: every NIC has a 48-bit **MAC address** that identifies the hardware. Within the same LAN, hosts exchange frames based on MAC addresses.
-- **Switch**: an L2 switching device that learns locations (MAC → port) to forward frames to the correct destination instead of flooding.
-- **VLAN**: logically separates multiple networks over the same physical infrastructure; used to isolate groups of hosts and reduce the attack surface.
-- **ARP**: maps IP to MAC within the same broadcast domain. **Security note:** ARP does not authenticate the source of a reply, which allows ARP spoofing to perform man-in-the-middle attacks.
-
-**Layer 3 — IP, ICMP, routing, NAT.**
-
-- **IP address**: the logical identifier of a host, used to route across multiple networks to a destination.
-- **Routing**: **routers** decide the next-hop for each packet. The TTL field limits the number of hops, preventing infinite routing loops.
-- **ICMP**: the control/error-reporting protocol of the network layer; the foundation of `ping` and `traceroute`.
-- **NAT**: translates private addresses to public addresses at the border router, allowing many private hosts to share a single public IP. **Note:** NAT hides internal addresses but is not a firewall.
-
-**Layer 4 — TCP and UDP.** The transport layer determines how data is transported and uses **ports** to demultiplex data to the correct application.
-
-- **TCP**: connection-oriented, established through a 3-way handshake, guarantees reliability and ordering, with retransmission and flow control. Used for web and email.
-- **UDP**: connectionless, no guarantee of reliability or ordering, low latency. Used for VoIP, gaming, DNS.
-
-Security significance: TCP's handshake and connection-teardown mechanisms are the basis for port-scanning techniques and are also the origin point of denial-of-service attacks (SYN flood).
-
-**Common ports.** A host has one IP but runs many services; **ports** distinguish each service (HTTP 80/443, SSH 22, DNS 53). The list of open ports reflects the running services and is the attack surface; knowing the common ports helps you read scan results and assess risk quickly.
-
-**Layer 7 — DNS, DHCP, HTTP, TLS.**
-
-- **DNS**: resolves domain names to IP addresses. **Security:** cache poisoning injects fake records to redirect victims.
-- **DHCP**: dynamically allocates IP, gateway, and DNS through the four-step DORA process. **Security:** a rogue DHCP server hands out fake configuration to perform MITM.
-- **HTTP**: the application-layer protocol for the web, a text-based format consisting of requests and responses.
-- **TLS**: the encryption and authentication layer wrapped around HTTP (creating `https`), protecting confidentiality/integrity and using **digital certificates** to authenticate the server's identity.
-
-**Firewalls, DMZ, and packet analysis tools.**
-
-- **Firewall**: filters packets according to policy. The **stateful** type tracks connection state and therefore automatically accepts valid return packets.
-- **DMZ**: a buffer network zone containing Internet-facing servers, separated from the internal LAN to limit the ability to pivot when a server is compromised.
-- **tcpdump / Wireshark**: tools to capture and analyze packets. tcpdump runs on the command line (suitable for headless servers), while Wireshark provides a graphical interface.
-
-> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each topic goes from *WHAT IT IS → INTERNAL MECHANICS (down to the bit/byte/step/parameter) → REAL-WORLD EXAMPLE → SECURITY NOTES*. Every data structure is described down to the individual field, exact size, and offset. Every tool comes with runnable commands/configuration/sample output.
+> This handbook is for people learning and doing information security (Blue Team / AppSec / DevSecOps). Each topic follows a familiar flow: what the concept is, the internal mechanics (down to the bit/byte/step/parameter), an example you can actually run, and then a few security notes. Data structures are described down to the individual field, its size, and offset; each tool comes with the commands, configuration, and sample output so you can type them out yourself.
 
 ---
 
@@ -52,7 +23,7 @@ Security significance: TCP's handshake and connection-teardown mechanisms are th
 
 ### 1.1.1. Why we need a layered model
 
-Computer networking is an extremely complex problem: representing bits on copper/fiber, addressing machines, routing through dozens of routers, ensuring reliability, encryption, and representing application data. If designed as a single monolithic block, it would be impossible to maintain and impossible to replace technology piece by piece (switching from copper to fiber, from IPv4 to IPv6) without breaking everything.
+Moving data across a network involves a lot of moving parts: representing bits on copper/fiber, addressing machines, routing through dozens of routers, ensuring reliability, encryption, and representing application data. Lump it all into a single monolithic block and it becomes nearly impossible to maintain — and impossible to swap out one piece of technology at a time (copper to fiber, IPv4 to IPv6) without breaking everything.
 
 The solution is **layering**: each layer provides services to the layer above and uses the services of the layer below, through a fixed **interface**. The core principles:
 
@@ -204,13 +175,13 @@ When you need to logically separate multiple networks over the same physical inf
 | VID (VLAN ID) | 12 bits | VLAN ID (0–4095; 0 and 4095 are reserved) | `100` |
 
 - A 12-bit VID → up to **4094 usable VLANs**. **Native VLAN**: on a trunk port, the untagged VLAN.
-- **Security note — VLAN hopping:**
+- **Note: VLAN hopping.**
   - *Double tagging*: the attacker attaches 2 tags; the switch strips the outer tag (native VLAN) and forwards across the trunk still carrying the inner tag → the frame jumps to another VLAN. Mitigation: set the native VLAN to a "dead" unused VLAN, or tag the native VLAN as well (`vlan dot1q tag native`).
   - *Switch spoofing*: the attacker forges DTP to turn an access port into a trunk. Mitigation: disable DTP (`switchport mode access`, `switchport nonegotiate`).
 
 ### 1.3.3. ARP — Address Resolution Protocol (RFC 826)
 
-**WHAT IT IS:** ARP maps an IP address (L3) to a MAC address (L2) within the same broadcast domain. Before sending an IP packet to a host on the same subnet, a machine must know that host's MAC.
+ARP maps an IP address (L3) to a MAC address (L2) within the same broadcast domain. Before sending an IP packet to a host on the same subnet, a machine must know that host's MAC.
 
 **ARP packet layout (28 bytes for IPv4-over-Ethernet), placed in the Ethernet payload with EtherType 0x0806:**
 
@@ -241,7 +212,7 @@ arping -I eth0 10.0.0.1        # Send an ARP request manually
 sudo tcpdump -i eth0 -nn arp  # Capture ARP packets
 ```
 
-**ARP spoofing/poisoning (SECURITY NOTE):** ARP has no authentication. The attacker continuously sends **fake ARP replies** (gratuitous ARP): "the gateway IP `10.0.0.1` has MAC = attacker's MAC". The victim overwrites its cache → all traffic destined for the gateway passes through the attacker's machine (Man-in-the-Middle).
+**ARP spoofing/poisoning.** **Note:** ARP has no authentication. The attacker continuously sends **fake ARP replies** (gratuitous ARP): "the gateway IP `10.0.0.1` has MAC = attacker's MAC". The victim overwrites its cache → all traffic destined for the gateway passes through the attacker's machine (Man-in-the-Middle).
 
 ```bash
 # Demonstration (only in an authorized lab):
@@ -257,7 +228,7 @@ A switch learns MACs by looking at the **Source MAC** of frames arriving on each
 - Present in the CAM → send to the correct port (unicast).
 - Absent (unknown unicast) or broadcast/multicast → flood out all ports except the ingress port.
 
-**CAM table overflow / MAC flooding (security):** the attacker pumps thousands of frames with random Source MACs (`macof`) to fill the CAM table. Once full, the switch floods all traffic like a hub → the attacker can sniff. Mitigation: **port security** limits the number of MACs per port.
+**Security — CAM table overflow / MAC flooding:** the attacker pumps thousands of frames with random Source MACs (`macof`) to fill the CAM table. Once full, the switch floods all traffic like a hub → the attacker can sniff. Mitigation: **port security** limits the number of MACs per port.
 
 ```
 Switch(config-if)# switchport port-security
@@ -334,10 +305,14 @@ All fragments use the **same Identification**. The receiver reassembles them by 
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |         Payload Length        |  Next Header  |   Hop Limit   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Source Address (128 bits)                    |
-+ ... (16 bytes) ...                                            +
-|                  Destination Address (128 bits)              |
-+ ... (16 bytes) ...                                            +
+|                                                               |
++                 Source Address (128 bits)                     +
+|                      ... (16 bytes) ...                       |
++                                                               +
+|                                                               |
++               Destination Address (128 bits)                  +
+|                      ... (16 bytes) ...                       |
++                                                               +
 ```
 
 | Field | Size | Meaning | Example |
@@ -737,7 +712,7 @@ example.com.    3600   IN   A   93.184.216.34
 
 **DNSSEC:** adds the `RRSIG` record (signature), `DNSKEY` (public key), `DS` (delegation signer), and `NSEC/NSEC3` (proof of non-existence). The `AD` bit (Authenticated Data) in the flags indicates the resolver has validated the signature. Goal: defend against cache poisoning/spoofing with digital signatures (it does not encrypt the content).
 
-**DNS tunneling (security):** encodes exfiltration data into the QNAME (`base64data.attacker.com`) or TXT records → bypasses firewalls because DNS is rarely blocked. Detection: unusually long QNAMEs with high entropy, a large volume of TXT queries.
+**Security — DNS tunneling:** encodes exfiltration data into the QNAME (`base64data.attacker.com`) or TXT records → bypasses firewalls because DNS is rarely blocked. Detection: unusually long QNAMEs with high entropy, a large volume of TXT queries.
 
 **Cache poisoning (Kaminsky):** guessing the Transaction ID (16 bits) + source port to inject a fake answer before the real one. Mitigation: random source ports (more entropy), DNSSEC, DNS-over-TLS/HTTPS.
 

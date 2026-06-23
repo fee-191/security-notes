@@ -7,7 +7,7 @@
 **Ba mục tiêu nền tảng (CIA, AAA, Non-repudiation):**
 
 - **CIA** — ba mục tiêu bảo mật: **Confidentiality** (bí mật — chỉ chủ thể được phép đọc), **Integrity** (toàn vẹn — dữ liệu không bị sửa trái phép), **Availability** (sẵn sàng — truy cập được khi cần). Mỗi lựa chọn công cụ phải xác định rõ thuộc tính nào đang được bảo vệ.
-- **AAA** — ba câu hỏi về chủ thể: **Authentication** (xác thực — "là ai"), **Authorization** (phân quyền — "được làm gì"), **Accounting** (ghi nhật ký — "đã làm gì").
+- **AAA** — ba câu hỏi về chủ thể: **Authentication** (xác thực — "là ai"), **Authorization** (cấp quyền — "được làm gì"), **Accounting** (ghi nhật ký — "đã làm gì").
 - **Non-repudiation (chống chối bỏ)** — chủ thể không thể phủ nhận hành vi đã thực hiện. Chỉ đạt được bằng chữ ký số với khóa riêng.
 
 **Phân biệt Encoding — Hashing — Encryption:**
@@ -16,11 +16,11 @@
 - **Hashing (băm)** — tạo dấu vân tay cố định, **một chiều không đảo ngược**. Dùng kiểm tra toàn vẹn và lưu mật khẩu.
 - **Encryption (mã hóa)** — khóa dữ liệu bằng khóa bí mật, đảo ngược được khi có khóa. Đây là nguyên thủy duy nhất bảo đảm bí mật.
 
-**Mã hóa đối xứng** — dùng **một khóa duy nhất** cho cả mã và giải. **AES** là chuẩn phổ biến nhất, nhanh, phù hợp khối lượng dữ liệu lớn. Mã hóa thuần không bảo đảm toàn vẹn; thực tế dùng **AEAD** (AES-GCM, ChaCha20-Poly1305) để gộp bí mật và toàn vẹn.
+**Mã hóa đối xứng** — một khóa cho cả mã và giải; **AES** + **AEAD** (xem 4.3).
 
-**Mã hóa bất đối xứng** — dùng **cặp khóa** công khai/riêng tư, giải bài toán trao khóa giữa các bên chưa từng chia sẻ bí mật. **RSA** dựa trên độ khó phân tích thừa số; **ECC** đạt cùng độ an toàn với khóa ngắn hơn; **Diffie-Hellman/ECDHE** cho phép thỏa thuận khóa chung qua kênh hở. Biến thể **ephemeral** (ECDHE) cung cấp **Forward Secrecy**: lộ khóa server về sau không giải được phiên cũ.
+**Mã hóa bất đối xứng** — **cặp khóa** công khai/riêng tư để trao khóa; **RSA**, **ECC**, **DH/ECDHE** (xem 4.4).
 
-**Hàm băm mật mã** — biến dữ liệu thành dấu vân tay cố định với hiệu ứng **avalanche** (đổi một bit input → đổi ~50% bit output) và không đảo ngược. **SHA-256** là khuyến nghị hiện hành; **SHA-3** là dự phòng kiến trúc. **MD5 và SHA-1 đã vỡ** — cấm dùng cho mục đích bảo mật.
+**Hàm băm mật mã** — dấu vân tay cố định, một chiều, **avalanche**; **SHA-256/SHA-3**, **MD5/SHA-1 đã vỡ** (xem 4.5).
 
 **Lưu trữ mật khẩu** — không lưu dạng rõ và không dùng hash thường (quá nhanh). Dùng hàm **chậm có chủ đích, tốn bộ nhớ** (**Argon2**, **bcrypt**, **scrypt**) kèm **salt** (ngẫu nhiên riêng mỗi user) và **pepper** (bí mật chung lưu tách biệt).
 
@@ -34,7 +34,7 @@
 
 **Nguyên tắc thiết kế** — gồm **Least Privilege**, **Defense in Depth**, **Zero Trust** và đặc biệt là **nguyên lý Kerckhoffs**: hệ thống phải an toàn ngay cả khi kẻ địch biết toàn bộ cơ chế, chỉ cần khóa được giữ kín. Đây là lý do AES, RSA, SHA-256 đều là chuẩn mở.
 
-> Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ KHÁI NIỆM → CƠ CHẾ BÊN TRONG (mức bit/byte/bước) → VÍ DỤ THỰC TẾ CHẠY ĐƯỢC → LƯU Ý BẢO MẬT. Các con số kỹ thuật bám theo NIST FIPS / RFC; chỗ nào cần kiểm chứng thêm sẽ ghi rõ.
+> Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ khái niệm → cơ chế bên trong (mức bit/byte/bước) → ví dụ thực tế chạy được → lưu ý bảo mật. Các con số kỹ thuật bám theo NIST FIPS / RFC; chỗ nào cần kiểm chứng thêm sẽ ghi rõ.
 
 ---
 
@@ -133,6 +133,8 @@ Mỗi vòng (trừ vòng cuối bỏ MixColumns) gồm 4 bước trên state 4×
 
 **1. SubBytes** — thay thế phi tuyến từng byte qua **S-box** (256 phần tử). S-box = nghịch đảo trong trường Galois GF(2⁸) (đa thức bất khả quy `0x11B`) rồi affine transform. Mục đích: tạo **confusion** (quan hệ key↔ciphertext phức tạp), chống tuyến tính/vi phân.
 
+Phần toán GF(2⁸) ở đây chỉ cần hiểu **ý tưởng**: mỗi byte được "trộn" qua một bảng tra cố định sao cho quan hệ vào–ra phi tuyến và khó phân tích. Trong thực tế S-box là bảng dựng sẵn nên không cần tự tính.
+
 ```
 byte 0x53 → S-box[0x53] = 0xED
 (tra hàng 0x5, cột 0x3 trong bảng 16×16)
@@ -157,7 +159,7 @@ b3 b7 b11 b15   b15 b3  b7  b11   (dịch 3)
 | 03 01 01 02 |   | s3 |
 ```
 
-Mục đích: **diffusion** — một byte input ảnh hưởng cả 4 byte output cột. (Vòng cuối bỏ bước này vì không thêm bảo mật, chỉ tốn chi phí và để decryption đối xứng.)
+Mục đích: **diffusion** — một byte input ảnh hưởng cả 4 byte output cột. (Vòng cuối bỏ bước này vì không thêm bảo mật, chỉ tốn chi phí và để decryption đối xứng.) Phép nhân ma trận trong GF(2⁸) nhìn nặng, nhưng nắm được **ý tưởng** "khuấy đều các byte trong cùng một cột" là đủ — chi tiết số học để dành cho người tự cài thuật toán.
 
 **4. AddRoundKey** — XOR state với round key 128-bit của vòng. Đây là bước duy nhất đưa khóa vào. Round key sinh từ **key schedule** (Rijndael key expansion) dùng RotWord, SubWord, Rcon.
 
@@ -391,6 +393,8 @@ Kẻ nghe lén thấy g, p, A, B nhưng không tính được g^(ab) (bài toán
                      ↑ chaining value đưa vào block sau
 ```
 
+Không cần thuộc từng hàm Σ/σ/Ch/Maj — nắm **ý tưởng** là đủ: chia message thành các block, lần lượt "nén" từng block vào một giá trị trạng thái mang sang block kế, block cuối cho ra digest.
+
 ```bash
 $ echo -n "abc" | sha256sum
 ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  -
@@ -409,7 +413,7 @@ SHA-3 (FIPS 202) dùng cấu trúc **sponge** khác hẳn Merkle–Damgård:
 - Giai đoạn **squeeze**: lấy output từ phần rate.
 - Miễn nhiễm length-extension. Cũng có biến thể SHAKE128/256 (XOF — output độ dài tùy ý).
 
-SHA-3 là dự phòng kiến trúc cho SHA-2, **không** thay thế vì SHA-2 yếu (SHA-2 vẫn an toàn). Khác biệt giúp đa dạng hóa rủi ro.
+SHA-3 là dự phòng kiến trúc cho SHA-2, **không phải** vì SHA-2 đã yếu — SHA-2 hiện vẫn an toàn. Việc có hai họ hàm với cấu trúc khác hẳn nhau giúp đa dạng hóa rủi ro: nếu một ngày Merkle–Damgård bị tấn công, ta vẫn còn sponge để chuyển sang.
 
 ### 4.5.4. Vì sao loại bỏ MD5 và SHA-1
 

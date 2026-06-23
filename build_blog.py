@@ -15,6 +15,7 @@ GROUPS_BASE = [
     ("D", ["11", "12"]),
     ("E", ["13", "14"]),
     ("F", ["15", "16", "17"]),
+    ("G", ["99"]),
 ]
 SLUGS = {
     "00": "Index", "01": "Networking", "02": "Linux", "03": "Windows-AD",
@@ -22,7 +23,7 @@ SLUGS = {
     "07": "CICD-GitOps", "08": "SIEM-Wazuh", "09": "ELK-Zabbix", "10": "SOC-IR",
     "11": "IDS-WAF-NetDef", "12": "Pentest-VulnScan", "13": "Cloud",
     "14": "Virtualization-Containers", "15": "ThreatIntel-Frameworks",
-    "16": "Compliance-GRC", "17": "Python-Security",
+    "16": "Compliance-GRC", "17": "Python-Security", "99": "Glossary",
 }
 
 LANGS = {
@@ -37,6 +38,7 @@ LANGS = {
             "A": "Phần A · Nền tảng", "B": "Phần B · An ninh ứng dụng & DevSecOps",
             "C": "Phần C · Giám sát, Phát hiện & Ứng phó", "D": "Phần D · Phòng thủ mạng & Kiểm thử",
             "E": "Phần E · Hạ tầng, Ảo hóa & Đám mây", "F": "Phần F · Tấn công, Tuân thủ & Tự động hóa",
+            "G": "Phụ lục",
         },
         "short": {
             "01": "Mạng máy tính", "02": "Hệ điều hành Linux", "03": "Windows & Active Directory",
@@ -46,6 +48,7 @@ LANGS = {
             "11": "Phòng thủ mạng (IDS/WAF/VPN)", "12": "Kiểm thử & Đánh giá lỗ hổng",
             "13": "Bảo mật Đám mây", "14": "Ảo hóa & Container", "15": "Threat Intel & Khung tấn công",
             "16": "Tuân thủ & Quản trị (GRC)", "17": "Lập trình & Tự động hóa",
+            "99": "Thuật ngữ & viết tắt",
         },
         "foot1": 'Ghi chép & chia sẻ bởi <span class="name">Lê Dương Phi</span> · tự do cho mục đích học tập.',
         "foot2": "Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.",
@@ -61,6 +64,7 @@ LANGS = {
             "A": "Part A · Fundamentals", "B": "Part B · Application Security & DevSecOps",
             "C": "Part C · Monitoring, Detection & Response", "D": "Part D · Network Defense & Testing",
             "E": "Part E · Infrastructure, Virtualization & Cloud", "F": "Part F · Offense, Compliance & Automation",
+            "G": "Appendix",
         },
         "short": {
             "01": "Networking", "02": "Linux", "03": "Windows & Active Directory",
@@ -70,6 +74,7 @@ LANGS = {
             "11": "Network Defense (IDS/WAF/VPN)", "12": "Pentest & Vuln Assessment",
             "13": "Cloud Security", "14": "Virtualization & Containers", "15": "Threat Intel & Frameworks",
             "16": "Compliance & Governance (GRC)", "17": "Programming & Automation",
+            "99": "Glossary & Abbreviations",
         },
         "foot1": 'Written & shared by <span class="name">Lê Dương Phi</span> · free for learning purposes.',
         "foot2": "Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.",

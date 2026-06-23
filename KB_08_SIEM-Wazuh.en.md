@@ -94,7 +94,7 @@ The different layers of defensive tooling differ in their scope of visibility an
 
 **Problem solved.** Tagging alerts with a MITRE code helps you quickly recognize the type of attack and measure detection coverage. Balancing FP/FN is the core skill that makes a SIEM useful instead of becoming a source of noisy alerts that get ignored.
 
-> An in-depth reference for Blue Team / AppSec / DevSecOps engineers. Each section proceeds from **WHAT IT IS → INTERNAL MECHANISM (down to the bit/byte/step/parameter) → REAL-WORLD EXAMPLE → SECURITY NOTES**.
+> An in-depth reference for Blue Team / AppSec / DevSecOps engineers. Each section proceeds from **what it is → internal mechanism (down to the bit/byte/step/parameter) → real-world example → security notes**.
 
 ---
 
@@ -112,7 +112,7 @@ This term unifies two older product lines:
 | SEM | Security Event Management | Real-time correlation, alerting, dashboards |
 | SIEM | Unification of SIM + SEM | Both: real-time correlation **and** long-term retention |
 
-**WHY it exists:** In a real system, an attack does not leave its traces in one place. A single SSH brute-force login leaves:
+**Why:** In a real system, an attack does not leave its traces in one place. A single SSH brute-force login leaves:
 - A log in `/var/log/auth.log` on the Linux host;
 - A Netflow/connection log on the firewall;
 - A log from the EDR recording an abnormal process after entry is gained;
@@ -147,14 +147,14 @@ Every SIEM (Splunk, Elastic SIEM, QRadar, Wazuh, Sentinel, etc.) executes the sa
 
 ### 8.2.1. COLLECT
 
-**WHAT IT IS:** Bringing an event from the source to the collector. Two models:
+**What it is:** Bringing an event from the source to the collector. Two models:
 
 | Model | Mechanism | Example protocol/port |
 |---------|--------|----------------------|
 | **Push (agent-based)** | An agent installed on the host reads files/events and pushes them to the manager | Wazuh agent → manager (UDP/TCP 1514); Filebeat → Logstash (5044) |
 | **Pull / agentless** | The server pulls logs from the source, or receives them via syslog | Syslog UDP/TCP 514; WMI; SNMP; API polling (cloud) |
 
-**INTERNAL MECHANISM — Syslog (RFC 5424) at the byte level.** Because syslog is the most common collection medium, let us dissect one record:
+**Mechanism — Syslog (RFC 5424) at the byte level.** Because syslog is the most common collection medium, let us dissect one record:
 
 ```
 <34>1 2026-06-19T10:22:41.003Z web01 sshd 2931 ID47 - Failed password...
@@ -195,15 +195,15 @@ Severity table (3 bits, RFC 5424 §6.2.1):
 | 6 | Informational | Information |
 | 7 | Debug | Debugging |
 
-> **Note:** RFC 3164 (the old BSD syslog) limits the message to ~1024 bytes and its timestamp has no year/timezone, which easily causes time skew during correlation. RFC 5424 allows longer messages (limited by the transport) and a full timestamp with timezone — this is WHY you should prefer 5424.
+> **Note:** RFC 3164 (the old BSD syslog) limits the message to ~1024 bytes and its timestamp has no year/timezone, which easily causes time skew during correlation. RFC 5424 allows longer messages (limited by the transport) and a full timestamp with timezone — this is why you should prefer 5424.
 
-**SECURITY NOTES when collecting:**
+**Warning (when collecting):**
 - Syslog UDP 514 does **not** authenticate, does **not** encrypt, and does **not** guarantee delivery → an attacker can spoof logs (log injection) or cause congestion to drop logs. Prefer TLS (RFC 5425, syslog over TLS, port 6514) or an encrypted agent channel.
 - Lost logs = blindness. You must measure latency and packet drop rate.
 
 ### 8.2.2. PARSE (extract / decode)
 
-**WHAT IT IS:** Turning the free-text string (MSG) into discrete fields. This is where regex/grok/decoders operate.
+**What it is:** Turning the free-text string (MSG) into discrete fields. This is where regex/grok/decoders operate.
 
 Example raw SSH MSG:
 ```
@@ -219,9 +219,9 @@ srcport = 51244
 
 ### 8.2.3. NORMALIZE
 
-**WHAT IT IS:** Mapping the freshly parsed fields to **a common schema** so that events from many different sources can be compared/correlated. This is the point that distinguishes a real SIEM from a log-grepping tool.
+**What it is:** Mapping the freshly parsed fields to **a common schema** so that events from many different sources can be compared/correlated. This is the point that distinguishes a real SIEM from a log-grepping tool.
 
-WHY it is needed: source A calls the source IP `src`, source B calls it `client_ip`, source C calls it `SourceAddress`. Without normalization you cannot write a single rule that "counts login failures by source IP" applicable to all three.
+Why: source A calls the source IP `src`, source B calls it `client_ip`, source C calls it `SourceAddress`. Without normalization you cannot write a single rule that "counts login failures by source IP" applicable to all three.
 
 Example fields before/after normalization (per ECS — the Elastic Common Schema, or Wazuh's standard fields):
 
@@ -233,7 +233,7 @@ Example fields before/after normalization (per ECS — the Elastic Common Schema
 
 ### 8.2.4. ENRICH
 
-**WHAT IT IS:** Adding context not present in the original log:
+**What it is:** Adding context not present in the original log:
 - **GeoIP:** `203.0.113.5` → country=US, ASN=AS64500. (Wazuh supports GeoIP through dashboard/indexer integration with the GeoLite2 mmdb.)
 - **Threat intel:** cross-referencing IPs/hashes against IoC feeds (for example AlienVault OTX, AbuseIPDB) → flagging as `malicious`.
 - **Asset context:** host `web01` belongs to the "production-dmz" group, owner = team-web.
@@ -241,7 +241,7 @@ Example fields before/after normalization (per ECS — the Elastic Common Schema
 
 ### 8.2.5. CORRELATE
 
-**WHAT IT IS:** The detection logic. Two kinds:
+**What it is:** The detection logic. Two kinds:
 
 | Kind | Description | Example |
 |------|-------|-------|
@@ -259,7 +259,7 @@ Stateful correlation is a **state machine** that counts events by key within a s
 
 ## 8.3. Classifying defensive tools: AV / EDR / SIEM / SOAR / XDR / NDR
 
-WHY you must distinguish them: these categories are often blended by marketing, but their position in the architecture and the data they see are different.
+Why distinguish them: these categories are often blended by marketing, but their position in the architecture and the data they see are different.
 
 | Tool | Scope of visibility | Unit of data | Primary action | Examples |
 |---------|------------------|----------------|-----------------|-------|
@@ -357,7 +357,7 @@ agent ─(1514)─▶ wazuh-remoted ─▶ (queue: /var/ossec/queue/sockets/queu
 
 ## 8.5. The agent → manager flow: enrollment and data transmission (byte/port level)
 
-### 8.5.1. The two ports and WHY they are separated
+### 8.5.1. The two ports and why they are separated
 
 | Port | Protocol | Listening daemon | Purpose |
 |------|-----------|-------------|----------|
@@ -366,7 +366,7 @@ agent ─(1514)─▶ wazuh-remoted ─▶ (queue: /var/ossec/queue/sockets/queu
 | **1516/TCP** | — | `wazuh-clusterd` | Communication between managers in a cluster |
 | **55000/TCP** | HTTPS | `wazuh-apid` | Management API (RBAC, JWT) |
 
-**WHY enrollment (1515) is separated from data (1514):** Enrollment is a sensitive operation (handing over a key). Separating the ports lets an administrator enable `authd` only during the registration window and then disable it, reducing the attack surface. The 1514 data channel uses the symmetric key that was already exchanged, optimized for high throughput and either stateless (UDP) or reliable (TCP).
+**Why enrollment (1515) is separated from data (1514):** Enrollment is a sensitive operation (handing over a key). Separating the ports lets an administrator enable `authd` only during the registration window and then disable it, reducing the attack surface. The 1514 data channel uses the symmetric key that was already exchanged, optimized for high throughput and either stateless (UDP) or reliable (TCP).
 
 ### 8.5.2. The enrollment process (state machine, step by step)
 
@@ -408,7 +408,7 @@ agent ─(1514)─▶ wazuh-remoted ─▶ (queue: /var/ossec/queue/sockets/queu
 | Allowed IP | string | IP/`any` allowed to connect with this ID | `192.0.2.10` |
 | Key | 64 hex (≈256-bit) | Shared key to encrypt/decrypt 1514 messages | `6b2c...` |
 
-**SECURITY NOTES:**
+**Warning:**
 - `client.keys` is a host-level secret — permissions `640 root:wazuh`. Leaking the key allows agent spoofing and injection of fake logs.
 - Enable `<use_password>yes</use_password>` for authd to prevent unauthorized registration. Better still: use certificates (CA verification) for both manager-verifies-agent and agent-verifies-manager to prevent MITM at the enroll step.
 - Duplicate agent name/ID causes "agent flapping" — assign unique, stable names.
@@ -442,7 +442,7 @@ The `location` part indicates where the log came from on the agent, for example 
   <global>
     <jsonout_output>yes</jsonout_output>     <!-- write alerts.json (for Filebeat/indexer) -->
     <alerts_log>yes</alerts_log>             <!-- write alerts.log in text form -->
-    <logall>no</logall>                       <!-- do NOT save every event to the archives -->
+    <logall>no</logall>                       <!-- do not save every event to the archives -->
     <logall_json>no</logall_json>
     <email_notification>no</email_notification>
   </global>
@@ -453,7 +453,7 @@ The `location` part indicates where the log came from on the agent, for example 
   </alerts>
 ```
 
-| Parameter | Example value | Meaning | WHY |
+| Parameter | Example value | Meaning | Why |
 |---------|---------------|---------|--------|
 | `jsonout_output` | yes | Generates `alerts.json` | Filebeat needs JSON to push to the indexer |
 | `logall` | no | Does not save *all* events to the archives | `logall=yes` generates a huge amount of data — enable it only when investigation/forensics is needed |
@@ -541,18 +541,18 @@ systemctl restart wazuh-manager
 /var/ossec/bin/wazuh-control restart
 ```
 
-> **NOTE:** Always run `wazuh-analysisd -t` before restarting in production. A syntax error in `local_rules.xml` prevents analysisd from starting → total blindness.
+> **Note:** Always run `wazuh-analysisd -t` before restarting in production. A syntax error in `local_rules.xml` prevents analysisd from starting → total blindness.
 
 ---
 
 ## 8.7. DECODER — extracting fields from real logs
 
-### 8.7.1. WHAT IT IS
+### 8.7.1. What it is
 
 A **decoder** is an XML rule that tells `wazuh-analysisd` how to extract fields (srcip, srcuser, ...) from a raw log line. The decoder does *not* generate an alert — it only prepares the data for rules.
 
 Paths:
-- Base decoders: `/var/ossec/ruleset/decoders/*.xml` (do NOT edit — overwritten on update).
+- Base decoders: `/var/ossec/ruleset/decoders/*.xml` (do not edit — overwritten on update).
 - Custom decoders: `/var/ossec/etc/decoders/local_decoder.xml`.
 
 ### 8.7.2. The two decoder types and their attributes
@@ -569,7 +569,7 @@ Paths:
 | `<regex>` | Regex that extracts values; capture groups `()` map to `<order>` | Field extraction |
 | `<order>` | The list of field names corresponding to the regex capture groups | Naming |
 
-### 8.7.3. REAL-WORLD EXAMPLE — the SSH decoder (already built into Wazuh, dissected here)
+### 8.7.3. Real-world example — the SSH decoder (already built into Wazuh, dissected here)
 
 Raw log:
 ```
@@ -603,7 +603,7 @@ log         = "Failed password for invalid user admin from 203.0.113.5 port 5124
 
 Explanation of each part:
 - `<parent>sshd</parent>`: runs only if the `sshd` parent matched.
-- `<prematch>`: requires the line to begin with `Failed password for invalid user`. If it does not match → skip, saving CPU (WHY: the full regex is expensive, the prematch is a cheap filter gate).
+- `<prematch>`: requires the line to begin with `Failed password for invalid user`. If it does not match → skip, saving CPU (why: the full regex is expensive, the prematch is a cheap filter gate).
 - `offset="after_prematch"`: starts the `<regex>` right after the prematched portion. This is an optimization to keep the regex short.
 - The capture groups `(\S+)`, `(\d+.\d+.\d+.\d+)`, `(\d+)` map respectively to `srcuser, srcip, srcport` via `<order>`.
 
@@ -619,7 +619,7 @@ Explanation of each part:
 }
 ```
 
-### 8.7.4. EXAMPLE — writing a custom decoder for a self-defined application log
+### 8.7.4. Example — writing a custom decoder for a self-defined application log
 
 Suppose an internal application produces the log:
 ```
@@ -663,13 +663,13 @@ Sample output:
         ... (no rule matched yet)
 ```
 
-**SECURITY NOTES:** A bad decoder (greedy regex, missing the `^` anchor) can extract the wrong field or slow analysisd under heavy load → an indirect DoS. Always anchor your regex and test with `wazuh-logtest` before deploying.
+**Warning:** A bad decoder (greedy regex, missing the `^` anchor) can extract the wrong field or slow analysisd under heavy load → an indirect DoS. Always anchor your regex and test with `wazuh-logtest` before deploying.
 
 ---
 
 ## 8.8. RULE — detection and classification
 
-### 8.8.1. WHAT IT IS
+### 8.8.1. What it is
 
 A **rule** decides which event becomes an alert, assigns a **level** (0–16), an `id`, groups, and (optionally) a MITRE mapping. Rules run *after* decoders, based on the extracted fields.
 
@@ -706,7 +706,7 @@ Paths:
 | 10–12 | High probability of attack (brute-force detected) |
 | 13–16 | Critical (successful intrusion, system) |
 
-### 8.8.4. EXAMPLE — a stateless rule mapped onto the paywall decoder from 8.7.4
+### 8.8.4. Example — a stateless rule mapped onto the paywall decoder from 8.7.4
 
 `local_rules.xml`:
 ```xml
@@ -731,7 +731,7 @@ Explanation:
 - `<field name="reason">bad_token</field>`: matches the decoded `reason` field.
 - `$(srcuser)`, `$(srcip)`: interpolate the fields into the alert description.
 
-### 8.8.5. KEY EXAMPLE — brute-force correlation (frequency + timeframe)
+### 8.8.5. Key example — brute-force correlation (frequency + timeframe)
 
 This is the classic stateful example: many login failures from the same IP within a time window → a single brute-force alert.
 
@@ -752,7 +752,7 @@ This is the classic stateful example: many login failures from the same IP withi
 </group>
 ```
 
-**INTERNAL MECHANISM (the analysisd state machine):**
+**Mechanism (the analysisd state machine):**
 
 ```
 Initialize, for each srcip, a counter + a window-start timestamp.
@@ -778,7 +778,7 @@ A table illustrating an event sequence (frequency=8, timeframe=120):
 | 40 | 203.0.113.5 | 8 | **count==8 ≤ 120s → ALERT 100110 level 10** |
 | 200 | 203.0.113.5 | 1 | the old t0 has expired (200-0>120) → reset |
 
-**WHY the `frequency`+`timeframe`+`same_source_ip` design:**
+**Why the `frequency`+`timeframe`+`same_source_ip` design:**
 - `same_source_ip` is the *group key*: without it, 8 failures from 8 different IPs (for example mild distributed password spraying) would be lumped together incorrectly. With it, we split the buckets by IP to correctly detect concentrated brute-force.
 - `timeframe` defines the "speed" — distinguishing brute-force (8 times in 2 minutes) from 8 failures scattered across the whole day (a user who forgot their password).
 
@@ -808,11 +808,11 @@ Or create a conditional exception:
 
 ## 8.9. FIM / Syscheck — file integrity monitoring
 
-### 8.9.1. WHAT IT IS
+### 8.9.1. What it is
 
 **FIM (File Integrity Monitoring)** — the `syscheckd` module — detects changes to files/directories/registry: creation, modification, deletion. It is used to catch webshells, binary tampering, and modifications to sensitive configuration files.
 
-### 8.9.2. INTERNAL MECHANISM
+### 8.9.2. Mechanism
 
 Syscheck maintains a **state database** (the FIM database, SQLite in Wazuh 4.x) storing for each file:
 
@@ -834,9 +834,9 @@ Two modes:
 | **Scheduled scan** | Periodic scan (`<frequency>`), comparing the new hash to the DB | Per cycle (seconds/hours) |
 | **Real-time** | Uses `inotify` (Linux) / `ReadDirectoryChangesW` (Windows) to receive kernel events instantly | Near-instant |
 
-**WHY use a hash and not just mtime:** An attacker can `touch` a file to restore the mtime after editing it. A content hash (SHA-256) catches content changes even when metadata is forged. SHA-256 is chosen because it is more collision-resistant than MD5/SHA-1.
+**Why use a hash and not just mtime:** An attacker can `touch` a file to restore the mtime after editing it. A content hash (SHA-256) catches content changes even when metadata is forged. SHA-256 is chosen because it is more collision-resistant than MD5/SHA-1.
 
-### 8.9.3. EXAMPLE — `<syscheck>` configuration in `ossec.conf`
+### 8.9.3. Example — `<syscheck>` configuration in `ossec.conf`
 
 ```xml
 <syscheck>
@@ -868,7 +868,7 @@ Two modes:
 | `report_changes="yes"` | Stores the *content diff* (for text files) so you can see exactly which line changed |
 | `whodata="yes"` | Uses auditd to know *who* (uid/process) made the change (more advanced than realtime) |
 
-### 8.9.4. EXAMPLE — a sample FIM alert (webshell)
+### 8.9.4. Example — a sample FIM alert (webshell)
 
 When an attacker drops `shell.php` into `/var/www/html`, syscheck (realtime) generates an event that matches a base FIM rule (the `syscheck` group, rules 550–554), and alerts.json:
 ```json
@@ -885,19 +885,19 @@ When an attacker drops `shell.php` into `/var/www/html`, syscheck (realtime) gen
 }
 ```
 
-**SECURITY NOTES:**
-- `report_changes`/`nodiff`: do NOT store the diff of files containing secrets (private keys, `/etc/shadow`) — the diff stored in the Wazuh DB could leak secrets. Use `<nodiff>` for sensitive paths.
+**Warning:**
+- `report_changes`/`nodiff`: do not store the diff of files containing secrets (private keys, `/etc/shadow`) — the diff stored in the Wazuh DB could leak secrets. Use `<nodiff>` for sensitive paths.
 - Realtime on an extremely large directory (e.g. `/`) exhausts the kernel's inotify watches (`fs.inotify.max_user_watches`) → silent loss of monitoring. Use realtime only where it is needed.
 
 ---
 
 ## 8.10. Active Response — automated response
 
-### 8.10.1. WHAT IT IS
+### 8.10.1. What it is
 
 **Active Response (AR)** allows Wazuh to automatically run a command (script) when a rule matches — for example, blocking an attacking IP with a firewall. This is the integrated "mini-SOAR" capability, executed by `wazuh-execd` on the agent or the manager.
 
-### 8.10.2. INTERNAL MECHANISM (flow + state)
+### 8.10.2. Mechanism (flow + state)
 
 ```
 Rule X matches (e.g. brute-force level >=10)
@@ -914,9 +914,9 @@ wazuh-execd on the agent calls a script in /var/ossec/active-response/bin/
         └─ after <timeout> seconds  → call back with action = "delete" → unblock
 ```
 
-The AR script receives parameters via **stdin (JSON)** in Wazuh 4.x: comprising `command` (`add`/`delete`) and `parameters.alert` (the entire alert, which contains `srcip`). WHY a timeout: blocking permanently risks a self-DoS (mistakenly blocking a legitimate IP, or a shared NAT IP) — the timeout allows automatic removal.
+The AR script receives parameters via **stdin (JSON)** in Wazuh 4.x: comprising `command` (`add`/`delete`) and `parameters.alert` (the entire alert, which contains `srcip`). Why a timeout: blocking permanently risks a self-DoS (mistakenly blocking a legitimate IP, or a shared NAT IP) — the timeout allows automatic removal.
 
-### 8.10.3. REAL-WORLD EXAMPLE — blocking a brute-force IP with firewall-drop
+### 8.10.3. Real-world example — blocking a brute-force IP with firewall-drop
 
 Step 1 — define the **command** and the **active-response** in `ossec.conf` (on the manager):
 ```xml
@@ -956,16 +956,16 @@ Step 3 — the AR alert is written in `active-responses.log` on the agent:
 2026-06-19 11:31:00 /var/ossec/active-response/bin/firewall-drop: add - 203.0.113.5 - 1718796660.123456 - 100110
 ```
 
-**SECURITY NOTES:**
-- **Anti self-DoS:** an attacker spoofs srcip = the IP of an internal gateway/DNS in the log to force Wazuh to block your own infrastructure. Always maintain an **allowlist** (the firewall-drop script has a mechanism to skip IPs on a whitelist); do NOT enable AR `all` for rules that are easily spoofed.
+**Warning:**
+- **Anti self-DoS:** an attacker spoofs srcip = the IP of an internal gateway/DNS in the log to force Wazuh to block your own infrastructure. Always maintain an **allowlist** (the firewall-drop script has a mechanism to skip IPs on a whitelist); do not enable AR `all` for rules that are easily spoofed.
 - AR runs with high privileges (iptables requires root) → the AR script is an attack surface; use only vetted scripts with tight file permissions.
 - Prefer AR `local` over `all` to limit the impact.
 
 ---
 
-## 8.11. Vulnerability Detection — vulnerability detection (CVE)
+## 8.11. Vulnerability Detection
 
-### 8.11.1. WHAT IT IS and the MECHANISM
+### 8.11.1. What it is and the mechanism
 
 The `wazuh-modulesd` module (Vulnerability Detector) cross-references the **list of installed packages** (sent by the agent via syscollector) against a **CVE feed** to report which host has which vulnerability.
 
@@ -980,7 +980,7 @@ Flow:
 
 > Version-specific architecture note: the configuration approach and feed sources of Vulnerability Detection **have changed significantly between 4.x minor versions** (the old feed model based directly on OVAL/NVD vs the new "Vulnerability Detection" model based on Wazuh's Content Manager/CTI). Verify the syntax of the configuration block against the documentation for the exact version you are running. The section below illustrates the old OVAL/NVD-style configuration to convey the principle.
 
-### 8.11.2. EXAMPLE — the old-style configuration (illustrating the principle)
+### 8.11.2. Example — the old-style configuration (illustrating the principle)
 
 ```xml
 <vulnerability-detector>
@@ -1002,7 +1002,7 @@ Flow:
 </vulnerability-detector>
 ```
 
-### 8.11.3. EXAMPLE — a sample CVE alert
+### 8.11.3. Example — a sample CVE alert
 
 ```json
 {
@@ -1020,17 +1020,17 @@ Flow:
 }
 ```
 
-**NOTE:** Vulnerability Detection reports a **potential vulnerability based on version**, it does NOT confirm actual exploitability (it does not always know whether the distro has backported a patch). You must cross-reference with reachability/exposure before prioritizing a patch — to avoid "CVE noise".
+**Note:** Vulnerability Detection reports a **potential vulnerability based on version**; it does not confirm actual exploitability (it does not always know whether the distro has backported a patch). You must cross-reference with reachability/exposure before prioritizing a patch — to avoid "CVE noise".
 
 ---
 
 ## 8.12. SCA — Security Configuration Assessment
 
-### 8.12.1. WHAT IT IS
+### 8.12.1. What it is
 
 **SCA** checks system configuration against a baseline (the CIS Benchmark, for example "SSH does not allow root login", "passwords must have a complexity requirement"). This module runs **policies** in YAML form on the agent and reports pass/fail for each check.
 
-### 8.12.2. MECHANISM — the structure of a policy check
+### 8.12.2. Mechanism — the structure of a policy check
 
 An SCA policy (a YAML file in `/var/ossec/ruleset/sca/`) comprises `checks`, each check having `rules` evaluated by logic.
 
@@ -1063,7 +1063,7 @@ checks:
 
 `condition`: `all` (every rule true), `any` (one rule true), `none` (no rule true).
 
-### 8.12.3. EXAMPLE — an SCA result on the dashboard / alert
+### 8.12.3. Example — an SCA result on the dashboard / alert
 
 ```json
 {
@@ -1082,13 +1082,13 @@ checks:
 }
 ```
 
-**NOTE:** SCA is *configuration drift detection* — it runs periodically. A host that "passed 90%" may still have a 10% failure that is a serious vulnerability; read it check by check, not just by the total score.
+**Note:** SCA is *configuration drift detection* — it runs periodically. A host that "passed 90%" may still have a 10% failure that is a serious vulnerability; read it check by check, not just by the total score.
 
 ---
 
 ## 8.13. MITRE ATT&CK integration
 
-### 8.13.1. WHAT IT IS
+### 8.13.1. What it is
 
 **MITRE ATT&CK** is a matrix that standardizes attacker techniques by Tactic (the objective) → Technique (the method). Wazuh attaches a technique code (`T####`, sub-technique `T####.###`) to rules, allowing the dashboard to display attacks by the matrix and to support threat hunting.
 
@@ -1098,7 +1098,7 @@ checks:
 | Technique | `T1110` Brute Force |
 | Sub-technique | `T1110.001` Password Guessing |
 
-### 8.13.2. EXAMPLE — attaching MITRE to a rule (as seen in 8.8.5)
+### 8.13.2. Example — attaching MITRE to a rule (as seen in 8.8.5)
 
 ```xml
 <rule id="100110" level="10" frequency="8" timeframe="120">
@@ -1113,7 +1113,7 @@ checks:
 
 On the dashboard, this alert appears in the **MITRE ATT&CK** module, grouped by the `Credential Access` Tactic, allowing you to answer "how many events belonging to Credential Access occurred in the past week, and on which hosts."
 
-**NOTE:** Attaching the correct MITRE technique is part of detection engineering — attaching the wrong one distorts the coverage report (you think you have covered technique X but the rule actually catches something else).
+**Note:** Attaching the correct MITRE technique is part of detection engineering — attaching the wrong one distorts the coverage report (you think you have covered technique X but the rule actually catches something else).
 
 ---
 
@@ -1123,8 +1123,8 @@ On the dashboard, this alert appears in the **MITRE ATT&CK** module, grouped by 
 
 | Concept | Definition | Consequence |
 |-----------|------------|---------|
-| **False Positive (FP)** | An alert fires but is NOT an attack | Analyst fatigue (alert fatigue), missing real alerts |
-| **False Negative (FN)** | A real attack but NO alert | Slips through — the most dangerous |
+| **False Positive (FP)** | An alert fires but is not an attack | Analyst fatigue (alert fatigue), missing real alerts |
+| **False Negative (FN)** | A real attack but no alert | Slips through — the most dangerous |
 | **True Positive (TP)** | A correct alert | Ideal |
 | **True Negative (TN)** | No alert, and it really is safe | Ideal |
 
@@ -1148,7 +1148,7 @@ Recall    = TP / (TP + FN)     (what fraction of real attacks are caught)
 7. Repeat periodically (the environment changes → rules become outdated).
 ```
 
-### 8.14.3. EXAMPLE — tuning the brute-force rule to reduce FP
+### 8.14.3. Example — tuning the brute-force rule to reduce FP
 
 The problem: rule 100110 fires when a proxy/NAT makes many real users fail from the same srcip. Tuning:
 
@@ -1173,7 +1173,7 @@ The problem: rule 100110 fires when a proxy/NAT makes many real users fail from 
 
 ### 8.14.4. Principles of writing good rules
 
-| Principle | WHY |
+| Principle | Why |
 |-----------|--------|
 | Anchor your regex (`^`, `$`), match fields rather than substrings when possible | Avoids mismatches, faster |
 | Place the `id` in 100000–120000 | Does not collide with base rules, not lost on update |
@@ -1184,7 +1184,7 @@ The problem: rule 100110 fires when a proxy/NAT makes many real users fail from 
 
 ---
 
-## 8.15. END-TO-END EXAMPLE: SSH brute-force from raw log to dashboard alert
+## 8.15. End-to-end example: SSH brute-force from raw log to dashboard alert
 
 Putting the whole chain together: **log → predecode → decode → stateless rule → correlation rule → alert → (active response) → indexer → dashboard.**
 

@@ -2,7 +2,7 @@
 
 ## Tổng quan
 
-Chương này trình bày cơ chế nội tại của hệ điều hành Linux dưới góc nhìn an toàn thông tin: phân quyền, vòng đời tiến trình, tổ chức filesystem, ghi log, và các biện pháp hardening. Phần lớn hạ tầng máy chủ (web server, database, container, cloud) chạy trên Linux; do đó cả tấn công lẫn phòng thủ đều diễn ra trực tiếp trên các cơ chế mô tả ở đây. Mục này tóm lược các khái niệm trọng tâm để định khung cho phần kỹ thuật chi tiết phía sau.
+Chương này nhìn vào cơ chế nội tại của Linux dưới góc nhìn an toàn thông tin: phân quyền, vòng đời tiến trình (process), tổ chức filesystem, ghi log và các biện pháp hardening. Phần lớn hạ tầng máy chủ — web server, database, container, cloud — chạy trên Linux. Vì vậy cả tấn công lẫn phòng thủ đều diễn ra ngay trên các cơ chế mô tả ở đây. Phần dưới đây là bản đồ ngắn của các khái niệm; định nghĩa đầy đủ nằm ở các mục kỹ thuật phía sau.
 
 ### User space và kernel space
 **Kernel** vận hành ở ring 0, độc quyền truy cập phần cứng và cấu trúc dữ liệu hệ thống. Tiến trình ứng dụng chạy ở **user space** (ring 3) và không truy cập trực tiếp phần cứng hay bộ nhớ tiến trình khác. Mọi yêu cầu tài nguyên (đọc file, mở socket) phải đi qua một **system call (syscall)**, tại đó kernel kiểm tra quyền. Ranh giới này là hàng rào bảo mật gốc: cô lập lỗi và mã độc khỏi phần cứng và khỏi không gian địa chỉ của tiến trình khác.
@@ -14,14 +14,14 @@ Chương này trình bày cơ chế nội tại của hệ điều hành Linux d
 Mỗi file mang ba bộ quyền **đọc / ghi / thực thi (rwx)** cho ba nhóm: **chủ sở hữu (owner), nhóm (group), và những người còn lại (other)**. Bổ sung ba bit đặc biệt: **SUID**, **SGID** và **sticky bit**; trong đó SUID cho phép tiến trình chạy với quyền của chủ file (có thể là root). Cấu hình quyền sai — đặc biệt là binary SUID-root viết kém — là một trong các vector leo thang đặc quyền phổ biến nhất.
 
 ### `/etc/passwd`, `/etc/shadow` và hash mật khẩu
-`/etc/passwd` là cơ sở dữ liệu tài khoản world-readable (tên, UID, shell). Mật khẩu không lưu ở đây mà được băm (**hash**) và đặt trong `/etc/shadow`, chỉ root đọc được. Hash là phép biến đổi một chiều: không thể tính ngược ra mật khẩu gốc. Việc tách hai file giữ cho bảng tài khoản công khai phục vụ ánh xạ UID↔tên, đồng thời cô lập dữ liệu nhạy cảm khỏi truy cập để bẻ khóa offline.
+`/etc/passwd` là cơ sở dữ liệu tài khoản world-readable (tên, UID, shell). Mật khẩu không lưu ở đây; thay vào đó nó được băm (**hash**) và đặt trong `/etc/shadow` — chỉ root đọc được. Hash là phép biến đổi một chiều: không thể tính ngược ra mật khẩu gốc. Việc tách hai file giữ cho bảng tài khoản công khai để ánh xạ UID↔tên, đồng thời cô lập dữ liệu nhạy cảm khỏi việc bị đọc về để bẻ khóa offline.
 
 ### `sudo`, PAM
 - **sudo**: cho phép user thực thi lệnh xác định với quyền của user khác (mặc định root) mà không cần chia sẻ mật khẩu root; mọi lần gọi đều được ghi log. So với `su`, sudo cung cấp phân quyền tối thiểu và khả năng truy vết.
 - **PAM (Pluggable Authentication Modules)**: tách logic xác thực khỏi ứng dụng. Thay vì mỗi dịch vụ (ssh, login, sudo) tự cài đặt kiểm tra credential, tất cả gọi chung PAM. Quy tắc bổ sung (khóa tài khoản sau N lần sai, ép độ phức tạp mật khẩu) được khai báo tập trung và áp dụng cho toàn hệ thống.
 
 ### Tiến trình (process)
-**Tiến trình** là một chương trình đang thực thi, định danh bằng PID và mang một danh tính bảo mật (UID/GID hiệu lực). Tiến trình mới được tạo qua `fork()` (nhân bản tiến trình cha) rồi `execve()` (nạp image chương trình mới). **Tín hiệu (signal)** là cơ chế điều khiển bất đồng bộ (yêu cầu dừng, kết thúc, reload). Khi điều tra, quan hệ cha-con, danh tính và chuỗi syscall của tiến trình là dữ kiện then chốt: web server sinh ra một shell là chỉ dấu xâm nhập điển hình.
+**Tiến trình** là một chương trình đang thực thi, định danh bằng PID và mang một danh tính bảo mật (UID/GID hiệu lực). Tiến trình mới được tạo qua `fork()` (nhân bản tiến trình cha) rồi `execve()` (nạp image chương trình mới). **Tín hiệu (signal)** là cơ chế điều khiển asynchronous (bất đồng bộ — yêu cầu dừng, kết thúc, reload). Khi điều tra, quan hệ cha-con, danh tính và chuỗi syscall của tiến trình là dữ kiện then chốt: web server sinh ra một shell là chỉ dấu xâm nhập điển hình.
 
 ### `/proc`, namespaces, cgroups
 - **`/proc`**: pseudo-filesystem phơi bày trạng thái kernel và từng tiến trình (binary đang chạy, file descriptor, kết nối mạng), là nguồn dữ liệu điều tra trọng yếu.
@@ -47,7 +47,7 @@ Mỗi tiến trình mở sẵn ba **file descriptor** chuẩn: stdin (0), stdout
 Bộ công cụ lọc và trích xuất văn bản: `grep` tìm dòng theo mẫu, `awk` xử lý theo cột/trường, `sed` thay thế dòng, `sort`/`uniq` sắp xếp và đếm. Trên log có thể dài hàng triệu dòng, các công cụ này cho phép truy vấn nhanh (ví dụ liệt kê các IP đăng nhập thất bại nhiều nhất) trong một dòng lệnh — kỹ năng điều tra thường nhật.
 
 ### Hardening (sshd, fail2ban, firewall, SELinux/AppArmor)
-**Hardening** là tập biện pháp thu hẹp bề mặt tấn công: cấu hình SSH an toàn, dùng `fail2ban` tự chặn IP dò mật khẩu, dùng firewall (netfilter) chỉ mở cổng cần thiết, và áp **Mandatory Access Control** (SELinux/AppArmor) để giới hạn hành vi của dịch vụ ngay cả khi nó bị chiếm quyền. Cấu hình mặc định thường mở rộng; hardening đưa hệ thống về nguyên tắc đặc quyền tối thiểu.
+**Hardening** là tập biện pháp thu hẹp bề mặt tấn công: cấu hình SSH an toàn, dùng `fail2ban` tự chặn IP dò mật khẩu, và dùng firewall (netfilter) chỉ mở cổng cần thiết. Ngoài ra còn có thể áp **Mandatory Access Control** (SELinux/AppArmor) để giới hạn hành vi của dịch vụ ngay cả khi nó đã bị chiếm quyền. Cấu hình mặc định thường khá mở; hardening đưa hệ thống về nguyên tắc đặc quyền tối thiểu.
 
 > Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mọi cấu trúc dữ liệu được mô tả tới mức trường/byte; mọi công cụ đều có ví dụ thực tế chạy được. Lệnh và output mẫu lấy trên môi trường Linux phổ biến (Debian/Ubuntu, RHEL/Rocky); một vài con số phụ thuộc phiên bản kernel/distro sẽ được ghi chú rõ.
 
@@ -469,7 +469,7 @@ Hậu tố trong `ps` (cột STAT): `s`=session leader, `+`=foreground group, `l
 
 ### 2.5.3. Bảng tín hiệu (signals)
 
-Tín hiệu là cơ chế thông báo bất đồng bộ. Số hiệu phổ biến (kiến trúc x86/ARM thông dụng — vài số khác trên alpha/mips, cần kiểm chứng theo `kill -l`):
+Tín hiệu là cơ chế thông báo asynchronous. Số hiệu phổ biến (kiến trúc x86/ARM thông dụng — vài số khác trên alpha/mips, cần kiểm chứng theo `kill -l`):
 
 | Số | Tên | Mặc định | Bắt/chặn được? | Mô tả |
 |---|---|---|---|---|
@@ -963,7 +963,7 @@ awk '/Accepted/ {for(i=1;i<=NF;i++) if($i=="for") print $(i+1)}' /var/log/auth.l
 awk '{sum[$1]+=$10} END {for(ip in sum) printf "%-16s %d\n", ip, sum[ip]}' access.log \
   | sort -k2 -rn | head
 ```
-`sum[$1]+=$10` dùng mảng kết hợp (associative array); khối `END` chạy sau khi đọc hết file.
+`sum[$1]+=$10` dùng associative array; khối `END` chạy sau khi đọc hết file.
 
 ### 2.11.3. sed — stream editor
 
@@ -1030,7 +1030,7 @@ Kết quả này nuôi trực tiếp vào allowlist/blocklist hoặc cảnh báo
 
 File `/etc/ssh/sshd_config`; áp dụng bằng `systemctl reload sshd`. Cấu hình hardening mẫu:
 
-```sshdconfig
+```ini
 Port 22
 Protocol 2
 AddressFamily inet

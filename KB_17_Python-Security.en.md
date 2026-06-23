@@ -24,7 +24,7 @@ This chapter covers the use of **Python as an automation language for cybersecur
 
 The following sections dive into the technical mechanics of each component.
 
-> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the structure: **WHAT IT IS → INTERNAL MECHANICS (down to the bit/byte/step/parameter level) → REAL-WORLD EXAMPLE → SECURITY NOTES**. All technical figures aim to follow official specs/RFCs/manuals; points that need verification are explicitly flagged.
+> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the structure: **What it is → Internal mechanics (down to the bit/byte/step/parameter level) → Real-world example → Security notes**. All technical figures aim to follow official specs/RFCs/manuals; points that need verification are explicitly flagged.
 
 ---
 
@@ -36,7 +36,7 @@ Python is chosen as the "glue language" of security for three specific technical
 2. **The object model + duck typing** allow tools to be written quickly and semi-structured data (logs, JSON, packets) to be parsed without rigid type declarations.
 3. **The packaging ecosystem** (`pip`, PyPI, wheel) allows tools to be distributed immediately, and `venv` isolates dependencies — important when a forensic analysis host must not be "contaminated."
 
-A security point to remember from the very start: the **GIL (Global Interpreter Lock)** in CPython means that multithreading (`threading`) does NOT run CPU-bound work in parallel, but it can still parallelize I/O-bound work (sockets, files, HTTP). Because most security tools are I/O-bound (waiting on the network, waiting on disk), `threading` and `asyncio` remain extremely useful; only when cracking hashes/brute-forcing (CPU-bound) do you need `multiprocessing`.
+A security point to remember from the very start: the **GIL (Global Interpreter Lock)** in CPython means that multithreading (`threading`) does not run CPU-bound work in parallel, but it can still parallelize I/O-bound work (sockets, files, HTTP). Because most security tools are I/O-bound (waiting on the network, waiting on disk), `threading` and `asyncio` remain extremely useful; only when cracking hashes/brute-forcing (CPU-bound) do you need `multiprocessing`.
 
 ---
 
@@ -54,13 +54,13 @@ Security engineers work with bytes constantly, so they must clearly distinguish 
 | `str` | Sequence of Unicode code points | Yes | Text, decoded logs |
 | `memoryview` | Zero-copy view over a buffer | — | Processing large buffers without copying |
 
-**Internal mechanics — why `str` ≠ `bytes`:** A Python 3 `str` is a sequence of Unicode *code points*; it has NO intrinsic "encoding" until you call `.encode()`. A network byte (for example the bytes `0xC3 0xA9`) only becomes the character `é` if you know the encoding is UTF-8. Mixing these two types when computing an HMAC will produce the wrong digest.
+**Internal mechanics — why `str` ≠ `bytes`:** A Python 3 `str` is a sequence of Unicode *code points*; it has no intrinsic "encoding" until you call `.encode()`. A network byte (for example the bytes `0xC3 0xA9`) only becomes the character `é` if you know the encoding is UTF-8. Mixing these two types when computing an HMAC will produce the wrong digest.
 
 ```python
-# Explicit conversion — ALWAYS specify the encoding
+# Explicit conversion — always specify the encoding
 s = "héllo"
 b = s.encode("utf-8")        # b'h\xc3\xa9llo'  -> 6 bytes (é = 2 bytes)
-print(len(s), len(b))        # 5 5? NO: 5 4 -> actually 5 characters, 6 bytes
+print(len(s), len(b))        # 5 6  -> 5 characters but 6 bytes (é takes 2 bytes)
 # Exact hex representation/length:
 print(b.hex())               # '68c3a96c6c6f'  (each byte = 2 hex digits)
 print(len(b))                # 6
@@ -74,7 +74,7 @@ print(mtu)                   # 1500
 print((1500).to_bytes(2, "big").hex())   # '05dc'
 ```
 
-**SECURITY NOTE:** When comparing tokens/MACs, do NOT use `==` on `str`/`bytes`, because it short-circuits (stops early on the first differing byte → timing leak). Use `hmac.compare_digest()` (see 17.13).
+**Note:** When comparing tokens/MACs, do not use `==` on `str`/`bytes`, because it short-circuits (stops early on the first differing byte → timing leak). Use `hmac.compare_digest()` (see 17.13).
 
 ### 17.2.2. struct — read/write binary data field by field
 
@@ -124,7 +124,7 @@ def scan_ports(host: str, ports: Iterable[int], timeout: float = 1.0) -> dict[in
     """Type hints make large tools easier to audit; they are not enforced at runtime."""
     ...
 ```
-Type hints are NOT checked by CPython at runtime — they serve `mypy`/IDEs and code auditing. For real runtime checking you need `pydantic` (to validate input from the network/API).
+Type hints are not checked by CPython at runtime — they serve `mypy`/IDEs and code auditing. For real runtime checking you need `pydantic` (to validate input from the network/API).
 
 ### 17.2.5. Exceptions and context managers
 
@@ -174,7 +174,7 @@ pip install pip-audit
 pip-audit -r requirements.txt      # looks up the OSV/PyPI advisory DB
 ```
 
-**SECURITY NOTE (supply chain):**
+**Note (supply chain):**
 - Always **pin versions** (`==`) in production environments; open ranges (`>=`) allow an attacker to push a malicious release via dependency confusion.
 - Consider **hash-pinning**: `pip install --require-hashes -r requirements.txt` with a file containing `--hash=sha256:...` → protects against artifact substitution on PyPI/mirrors.
 - Beware of **typosquatting** (`reqursts`, fake `python-requests`). Verify the exact package name.
@@ -183,10 +183,10 @@ pip-audit -r requirements.txt      # looks up the OSV/PyPI advisory DB
 
 ## 17.3. socket — A TCP port scanner from scratch
 
-### WHAT IT IS
+### What it is
 `socket` is a Python API that wraps the OS's BSD sockets directly. It allows creating TCP/UDP/raw connections and is the foundation of every network tool.
 
-### INTERNAL MECHANICS — the TCP 3-way handshake
+### Internal mechanics — the TCP 3-way handshake
 
 A successful TCP `connect()` means the OS has completed the handshake. At the segment level it proceeds as follows (the TCP flags are at byte offset 13 of the TCP header, in the low 6 bits: URG/ACK/PSH/RST/SYN/FIN):
 
@@ -203,7 +203,7 @@ Client                                   Server
 | Dest Port | 2 bytes | 2 | Destination port | 22 |
 | Sequence Number | 4 bytes | 4 | Sequence number of the first byte | 0xABCD1234 |
 | Ack Number | 4 bytes | 8 | Next expected seq | |
-| Data Offset (4 bits) + Reserved + Flags | 2 bytes | 12 | Header length + 9 flags | SYN=0x002 |
+| Data Offset (4 bits) + Reserved + Flags | 2 bytes | 12 | Header length + 9 flags | SYN=0x02 |
 | Window | 2 bytes | 14 | Receive window size | 65535 |
 | Checksum | 2 bytes | 16 | Checksum | |
 | Urgent Pointer | 2 bytes | 18 | | |
@@ -213,7 +213,7 @@ Client                                   Server
 - Receive **RST** → port is **CLOSED**.
 - No response (timeout) → **FILTERED** (a firewall dropped the packet).
 
-### REAL-WORLD EXAMPLE — multithreaded TCP connect scanner
+### Real-world example — multithreaded TCP connect scanner
 
 ```python
 #!/usr/bin/env python3
@@ -266,7 +266,7 @@ Sample output:
 - `connect_ex` does not raise an exception when the port is closed (it returns an errno), reducing overhead versus `connect` for wide scans.
 - `ThreadPoolExecutor(max_workers=200)` runs 200 probes in parallel; because this is I/O-bound, the GIL is not a barrier (threads blocked on `recv`/`connect` release the GIL).
 
-**SECURITY & LEGAL NOTE:**
+**Security & legal note:**
 - Scanning a host without authorization is conduct that can be prosecuted. Only scan assets you own or have written permission to test.
 - A `connect`-scan leaves complete logs (a full handshake) on the target side — unlike a SYN-scan (sends SYN, receives SYN/ACK, then RST, half-open). A SYN-scan requires a raw socket + root privileges and is done with `scapy` (see 17.8).
 - Set a reasonable timeout: too low → false "filtered"; too high → slow scan that is easily detected because connections are held open for a long time.
@@ -275,10 +275,10 @@ Sample output:
 
 ## 17.4. requests — HTTP automation, REST APIs, sessions & auth
 
-### WHAT IT IS
+### What it is
 `requests` is a high-level HTTP client library (wrapping `urllib3`). It is the backbone of any automation that calls REST APIs (Jira, Slack, SIEM, EDR).
 
-### MECHANICS — the lifecycle of an HTTP/1.1 request
+### Mechanics — the lifecycle of an HTTP/1.1 request
 
 An HTTP/1.1 request on the wire (the TCP payload after the handshake) takes the form of ASCII text:
 
@@ -302,7 +302,7 @@ User-Agent: python-requests/2.32.3\r\n
 
 Response: `HTTP/1.1 200 OK\r\n` + headers + `\r\n\r\n` + body.
 
-### REAL-WORLD EXAMPLE 1 — calling a SIEM/Jira-style REST API with a Session, retries, timeout
+### Real-world example 1 — calling a SIEM/Jira-style REST API with a Session, retries, timeout
 
 ```python
 import requests
@@ -341,8 +341,8 @@ def create_ticket(sess, project="SEC", summary="Suspicious login", desc=""):
     r = sess.post(
         "https://jira.example.com/rest/api/2/issue",
         json=payload,                  # auto-serializes JSON + sets Content-Type
-        timeout=(3.05, 10),            # (connect timeout, read timeout) - ALWAYS set
-        verify=True,                   # NEVER verify=False in production
+        timeout=(3.05, 10),            # (connect timeout, read timeout) - always set
+        verify=True,                   # never verify=False in production
     )
     r.raise_for_status()               # raise HTTPError on 4xx/5xx
     return r.json()["key"]             # e.g. "SEC-1234"
@@ -354,7 +354,7 @@ def create_ticket(sess, project="SEC", summary="Suspicious login", desc=""):
 - `json=payload` vs `data=payload`: `json=` automatically runs `json.dumps` and sets the `Content-Type: application/json` header; `data=` sends form-encoded data.
 - `raise_for_status()`: turns HTTP errors into exceptions so the IR pipeline does not "silently" swallow failures.
 
-### REAL-WORLD EXAMPLE 2 — the pattern of an automation / IR agent (sending an alert to a Slack webhook)
+### Real-world example 2 — the pattern of an automation / IR agent (sending an alert to a Slack webhook)
 
 ```python
 def notify_slack(webhook_url: str, text: str, severity: str):
@@ -366,7 +366,7 @@ def notify_slack(webhook_url: str, text: str, severity: str):
 
 Sample output when a "brute-force detected" alert is pushed: Slack displays a red attachment with text describing the IP and the number of attempts.
 
-**SECURITY NOTE:**
+**Note:**
 - **SSRF**: if the target URL comes from user input, an attacker can point it at `http://169.254.169.254/latest/meta-data/` (cloud metadata) to steal IAM credentials. Validate and whitelist the target host; block internal/link-local IP ranges.
 - **Secret in the URL**: do not embed tokens in the query string (they get written into access logs and history). Use the `Authorization` header.
 - **Header injection / CRLF**: do not concatenate unsanitized input into headers — the `\r\n` characters can inject forged headers. `requests` blocks most of this, but you must still validate.
@@ -375,10 +375,10 @@ Sample output when a "brute-force detected" alert is pushed: Slack displays a re
 
 ## 17.5. re — Regex log parsing in the field
 
-### WHAT IT IS
+### What it is
 The `re` module provides regular expressions (PCRE-like). It is used to extract fields from unstructured text logs.
 
-### MECHANICS — compile & the core constructs
+### Mechanics — compile & the core constructs
 
 `re.compile()` compiles a pattern into NFA bytecode once and reuses it many times (much faster when parsing millions of lines).
 
@@ -391,7 +391,7 @@ The `re` module provides regular expressions (PCRE-like). It is used to extract 
 | `^ $` | start/end of line (with `re.M`) | |
 | `\b` | word boundary | |
 
-### REAL-WORLD EXAMPLE — counting brute-force IPs in /var/log/auth.log
+### Real-world example — counting brute-force IPs in /var/log/auth.log
 
 A typical failed SSH `auth.log` line:
 ```
@@ -437,39 +437,39 @@ Sample output:
 }
 ```
 
-**Byte-level pattern analysis:** `\d{1,3}(?:\.\d{1,3}){3}` matches an octet of 1–3 digits, repeated 3 times with dots. Note that it does NOT check that octets are ≤ 255 — it accepts `999.999.999.999`. To validate correctly, use `ipaddress.ip_address()` after extracting.
+**Byte-level pattern analysis:** `\d{1,3}(?:\.\d{1,3}){3}` matches an octet of 1–3 digits, repeated 3 times with dots. Note that it does not check that octets are ≤ 255 — it accepts `999.999.999.999`. To validate correctly, use `ipaddress.ip_address()` after extracting.
 
-**SECURITY NOTE — ReDoS (Regex Denial of Service):**
+**Note — ReDoS (Regex Denial of Service):**
 - Patterns with **catastrophic backtracking** such as `(a+)+$` run with input `"aaaa...!"` have exponential complexity → CPU hang. When parsing attacker-controlled input (remote logs, HTTP headers), avoid nested quantifiers.
-- The standard `re` module has NO timeout. For untrusted input, consider the `regre`/`google-re2` libraries (RE2, no backtracking, guaranteed linear time) or limit input length before matching.
+- The standard `re` module has no timeout. For untrusted input, consider the `regre`/`google-re2` libraries (RE2, no backtracking, guaranteed linear time) or limit input length before matching.
 
 ---
 
 ## 17.6. subprocess & os — Running system commands safely
 
-### WHAT IT IS
+### What it is
 `subprocess` spawns child processes; `os`/`shutil` manipulate files/permissions/environment. This is the number-one hotspot for **command injection**.
 
-### MECHANICS — shell=False vs shell=True
+### Mechanics — shell=False vs shell=True
 
 ```
 shell=True  -> Python calls /bin/sh -c "command string"  -> sh parses metacharacters  ; | & $ ` > <
-shell=False -> Python calls execve(argv[0], argv[], env)  directly, NOT through a shell
+shell=False -> Python calls execve(argv[0], argv[], env)  directly, not through a shell
 ```
 
 When `shell=True`, the command string is interpreted by `/bin/sh`. If part of the string comes from user input (`"ping " + user_input`) and `user_input = "; rm -rf /"`, the shell executes both commands. With `shell=False`, the argument is one element in the `argv` list and is not interpreted by a shell → safe.
 
-### REAL-WORLD EXAMPLE — the RIGHT and WRONG way
+### Real-world example — the right and wrong way
 
 ```python
 import subprocess, shlex
 
 host = "8.8.8.8"   # assume this comes from input
 
-# WRONG — command injection:  host = "8.8.8.8; cat /etc/shadow"
-# subprocess.run(f"ping -c1 {host}", shell=True)   # DON'T DO THIS
+# Wrong — command injection:  host = "8.8.8.8; cat /etc/shadow"
+# subprocess.run(f"ping -c1 {host}", shell=True)   # don't do this
 
-# RIGHT — argv list, shell=False (the default)
+# Right — argv list, shell=False (the default)
 res = subprocess.run(
     ["ping", "-c", "1", host],        # each token is a separate element -> no injection
     capture_output=True,              # capture stdout/stderr
@@ -490,8 +490,8 @@ subprocess.run(f"ping -c1 {safe} | tee /tmp/out", shell=True, timeout=5)
 - `timeout=5` raises `TimeoutExpired` if exceeded — mandatory when calling network tools that may hang.
 - `check=True` raises `CalledProcessError` if the return code ≠ 0.
 
-**SECURITY NOTE:**
-- `shlex.quote()` is only safe for **POSIX sh**, NOT for Windows `cmd.exe` (the quoting rules differ). On Windows, avoid `shell=True` entirely.
+**Note:**
+- `shlex.quote()` is only safe for **POSIX sh**, not for Windows `cmd.exe` (the quoting rules differ). On Windows, avoid `shell=True` entirely.
 - Do not pass secrets via argv (`ps aux` exposes the entire command line to every user); pass them via stdin or env.
 - `os.system()` always uses a shell → avoid it entirely. Use `subprocess.run` with a list.
 
@@ -499,7 +499,7 @@ subprocess.run(f"ping -c1 {safe} | tee /tmp/out", shell=True, timeout=5)
 
 ## 17.7. json — Serializing & handling API/config data
 
-### MECHANICS — type mapping
+### Mechanics — type mapping
 
 | JSON | Python |
 |------|--------|
@@ -520,18 +520,18 @@ with open("rules.json", encoding="utf-8") as f:
     rules = json.load(f)          # load from a file object
 ```
 
-**SECURITY NOTE:**
-- Standard `json` is safe (it does not execute code), unlike the unsafe `pickle`/`yaml.load` (see below). **NEVER `pickle.loads()` untrusted data** — it can execute arbitrary code via `__reduce__`. For YAML, use `yaml.safe_load()`.
+**Note:**
+- Standard `json` is safe (it does not execute code), unlike the unsafe `pickle`/`yaml.load` (see below). **Never `pickle.loads()` untrusted data** — it can execute arbitrary code via `__reduce__`. For YAML, use `yaml.safe_load()`.
 - JSON from an untrusted source can be very deep/large → memory DoS. Limit the payload size before parsing.
 
 ---
 
 ## 17.8. scapy — Crafting, sending, and sniffing packets at the byte level
 
-### WHAT IT IS
+### What it is
 `scapy` lets you build packets layer by layer, send them, and sniff/decode them — controlling every header field.
 
-### MECHANICS — layer-by-layer encapsulation (byte-by-byte decapsulation)
+### Mechanics — layer-by-layer encapsulation (byte-by-byte decapsulation)
 
 An `Ethernet / IP / TCP / payload` packet is encapsulated from the top down. On the wire, the bytes are laid out as follows:
 
@@ -554,7 +554,7 @@ An `Ethernet / IP / TCP / payload` packet is encapsulated from the top down. On 
 | TCP | Src/Dst Port | 2+2 bytes | 0/2 | |
 | TCP | Flags | 6 bits (in byte 13) | 13 | SYN=0x02 |
 
-### REAL-WORLD EXAMPLE 1 — SYN scan (half-open), controlling TCP flags
+### Real-world example 1 — SYN scan (half-open), controlling TCP flags
 
 ```python
 from scapy.all import IP, TCP, sr1, conf
@@ -580,7 +580,7 @@ print(syn_scan("scanme.nmap.org", 80))   # 'open'
 
 `flags="S"` sets the TCP flags byte to `0x02`. `resp.flags == 0x12` means SYN(0x02)+ACK(0x10). This is a true SYN-scan and requires root privileges (a raw socket).
 
-### REAL-WORLD EXAMPLE 2 — sniff and detect ARP spoofing
+### Real-world example 2 — sniff and detect ARP spoofing
 
 ```python
 from scapy.all import sniff, ARP
@@ -600,23 +600,23 @@ sniff(iface="eth0", filter="arp", prn=on_packet, store=False)
 
 **Explanation:** `filter="arp"` is a BPF (Berkeley Packet Filter) — compiled down into the kernel, filtering before packets reach userspace (high performance). `store=False` does not keep packets in RAM (avoiding OOM during long sniffs). ARP op=1 is a request, op=2 is a reply; one IP mapping to multiple MACs in a short window is a sign of ARP poisoning (MITM).
 
-**SECURITY NOTE:** scapy needs `CAP_NET_RAW` (root). In Docker you must run with `--cap-add=NET_RAW` or `--privileged`. Sending raw packets onto a network you are not authorized to use is an attack.
+**Note:** scapy needs `CAP_NET_RAW` (root). In Docker you must run with `--cap-add=NET_RAW` or `--privileged`. Sending raw packets onto a network you are not authorized to use is an attack.
 
 ---
 
 ## 17.9. paramiko — Secure SSH automation
 
-### WHAT IT IS
+### What it is
 `paramiko` is a pure-Python implementation of SSHv2 (transport, auth, channels). It is used to automate configuration collection and run audit commands across a server fleet.
 
-### MECHANICS — the SSHv2 handshake (abridged per RFC 4253)
+### Mechanics — the SSHv2 handshake (abridged per RFC 4253)
 
 ```
 1. TCP connect to port 22
 2. Banner exchange:  "SSH-2.0-..."  (both sides send a version string ending in \r\n)
 3. KEXINIT: negotiate algorithms (KEX, host key, cipher, MAC, compression)
 4. Key exchange (e.g. curve25519-sha256 / diffie-hellman) -> create a shared secret
-5. Server sends its host key -> THE CLIENT MUST VERIFY IT (known_hosts) -> prevents MITM
+5. Server sends its host key -> the client must verify it (known_hosts) -> prevents MITM
 6. Derive session keys -> enable encryption
 7. Authentication: publickey / password / keyboard-interactive
 8. Open a channel -> exec a command or a shell
@@ -628,7 +628,7 @@ sniff(iface="eth0", filter="arp", prn=on_packet, store=False)
 | KEXINIT | algorithm list | negotiate the cipher suite |
 | Host key | server's public key | client checks known_hosts |
 
-### REAL-WORLD EXAMPLE — running an audit command, verifying the host key correctly
+### Real-world example — running an audit command, verifying the host key correctly
 
 ```python
 import paramiko
@@ -637,7 +637,7 @@ def audit_host(host, user, key_path):
     client = paramiko.SSHClient()
     # Load known_hosts -> VERIFY the host key, prevent MITM
     client.load_system_host_keys()
-    # RIGHT: reject unknown hosts. WRONG: AutoAddPolicy() skips the check -> easy MITM
+    # Right: reject unknown hosts. Wrong: AutoAddPolicy() skips the check -> easy MITM
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
     pkey = paramiko.Ed25519Key.from_private_key_file(key_path)
     client.connect(host, username=user, pkey=pkey, timeout=10,
@@ -658,8 +658,8 @@ def audit_host(host, user, key_path):
 - `recv_exit_status()`: retrieves the exit code of the remote command (distinct from being able to read its output).
 - The `*_timeout` values: avoid hanging when the server is slow/filtering packets.
 
-**SECURITY NOTE:**
-- Do NOT hardcode passwords/passphrases in code; load them from a secret manager or env.
+**Note:**
+- Do not hardcode passwords/passphrases in code; load them from a secret manager or env.
 - Store private keys with `0600` permissions. Use a passphrase for keys.
 - Pin host keys in a centrally managed known_hosts; alert if a host key changes (it could be MITM or a reinstall).
 
@@ -667,10 +667,10 @@ def audit_host(host, user, key_path):
 
 ## 17.10. boto3 — AWS automation (audit, cloud IR)
 
-### WHAT IT IS
+### What it is
 `boto3` is the official AWS SDK for Python. It is used to audit configuration (public S3, open security groups), collect logs, and respond to incidents in the cloud.
 
-### MECHANICS — the credential chain & SigV4 request signing
+### Mechanics — the credential chain & SigV4 request signing
 
 boto3 looks for credentials in order (the credential provider chain):
 1. Explicit code parameters (avoid — easy to leak).
@@ -680,7 +680,7 @@ boto3 looks for credentials in order (the credential provider chain):
 
 Each API call is signed with **AWS Signature Version 4 (SigV4)**: build a canonical request → SHA-256 hash → build a string-to-sign → HMAC-SHA256 applied multiple times with a key derived from the secret + date + region + service → an `Authorization: AWS4-HMAC-SHA256 Credential=... SignedHeaders=... Signature=...` header. As a result, the secret key never travels on the wire; only the signature does.
 
-### REAL-WORLD EXAMPLE — finding publicly exposed S3 buckets
+### Real-world example — finding publicly exposed S3 buckets
 
 ```python
 import boto3
@@ -727,7 +727,7 @@ Public buckets: ['legacy-backups-2019', 'marketing-assets']
 - Pagination: `list_buckets` returns everything, but APIs like `list_objects_v2` are paginated — use `paginator = s3.get_paginator("list_objects_v2")` to iterate through all results.
 - `ClientError` carries `e.response["Error"]["Code"]` — you need to distinguish permission errors (`AccessDenied`) from "does not exist" errors.
 
-**SECURITY NOTE:**
+**Note:**
 - **Least privilege**: attach an IAM policy with only the `s3:GetBucketAcl`, `s3:GetBucketPublicAccessBlock`, `s3:ListAllMyBuckets` permissions. Do not use an admin key for an audit tool.
 - **Do not hardcode keys**. Use an IAM role / SSO. If you must use a key, store it in Secrets Manager and rotate it.
 - Enable **CloudTrail** so that every API call your tool makes is logged — your audit tool itself must also be auditable.
@@ -736,10 +736,10 @@ Public buckets: ['legacy-backups-2019', 'marketing-assets']
 
 ## 17.11. hashlib & hmac — Hashing, integrity, message authentication
 
-### WHAT IT IS
+### What it is
 `hashlib` provides cryptographic hash functions (SHA-256, SHA-3, BLAKE2…). `hmac` creates a Message Authentication Code using a secret key.
 
-### MECHANICS — digest sizes and how HMAC defeats length-extension
+### Mechanics — digest sizes and how HMAC defeats length-extension
 
 | Algorithm | Block size | Digest size | Security note |
 |-----------|-----------|-------------|-----------------|
@@ -752,7 +752,7 @@ Public buckets: ['legacy-backups-2019', 'marketing-assets']
 
 **HMAC** = `H((K ⊕ opad) || H((K ⊕ ipad) || message))`. The two nested hashings with the key XORed against two constants (`ipad=0x36` repeated, `opad=0x5c` repeated) make HMAC immune to the **length-extension** attack that raw hashes (MD5/SHA-1/SHA-256 in Merkle–Damgård form) are vulnerable to. That is WHY you should never use `sha256(secret || message)` as a homemade MAC — it lets an attacker append data and compute a valid MAC.
 
-### REAL-WORLD EXAMPLE — hashing a forensic file & authenticating a webhook
+### Real-world example — hashing a forensic file & authenticating a webhook
 
 ```python
 import hashlib, hmac, os
@@ -768,7 +768,7 @@ def sha256_file(path: str, chunk=1 << 20) -> str:
 def verify_webhook(secret: bytes, payload: bytes, signature_hex: str) -> bool:
     mac = hmac.new(secret, payload, hashlib.sha256)
     expected = mac.hexdigest()
-    # CONSTANT-TIME COMPARISON -> prevents timing attacks
+    # constant-time comparison -> prevents timing attacks
     return hmac.compare_digest(expected, signature_hex)
 ```
 
@@ -777,21 +777,21 @@ def verify_webhook(secret: bytes, payload: bytes, signature_hex: str) -> bool:
 - `hexdigest()` for SHA-256 is always exactly 64 hex characters long (32 bytes × 2).
 - `hmac.compare_digest`: compares in a time that does not depend on the position of the differing byte → an attacker cannot guess the MAC byte by byte through timing measurements.
 
-**SECURITY NOTE:**
-- **Do NOT use `hashlib` to store passwords**. SHA-256 is too fast → easy to brute-force. Use **bcrypt / scrypt / Argon2** (via `argon2-cffi`, `bcrypt`) with a salt + a high cost factor.
+**Note:**
+- **Do not use `hashlib` to store passwords**. SHA-256 is too fast → easy to brute-force. Use **bcrypt / scrypt / Argon2** (via `argon2-cffi`, `bcrypt`) with a salt + a high cost factor.
 - MD5/SHA-1 are only acceptable for non-security dedup/checksums, not for attack-resistant integrity.
 
 ---
 
 ## 17.12. secrets — Generating tokens securely (do not use random)
 
-### MECHANICS — why `random` is dangerous
+### Mechanics — why `random` is dangerous
 
-The `random` module uses the **Mersenne Twister (MT19937)**: deterministic, with a state of 624 × 32-bit words. Observing 624 consecutive outputs is enough to **recover the entire state** and predict every future value. → It must NOT be used for tokens, session IDs, password resets, IVs, or salts.
+The `random` module uses the **Mersenne Twister (MT19937)**: deterministic, with a state of 624 × 32-bit words. Observing 624 consecutive outputs is enough to **recover the entire state** and predict every future value. → it must not be used for tokens, session IDs, password resets, IVs, or salts.
 
 `secrets` (Python 3.6+) draws entropy from the **OS CSPRNG** (`/dev/urandom` on Linux, `getrandom(2)`; `BCryptGenRandom` on Windows) — unpredictable.
 
-### REAL-WORLD EXAMPLE
+### Real-world example
 
 ```python
 import secrets
@@ -809,7 +809,7 @@ if secrets.compare_digest(provided, stored):
 | `token_hex(n)` | n bytes | 2n hex chars | readable tokens |
 | `token_urlsafe(n)` | n bytes | base64url | session tokens, reset links |
 
-**NOTE:** 256-bit entropy (32 bytes) is sufficient for every purpose. Do not manually use `os.urandom` and encode it yourself when `secrets` already standardizes this.
+**Note:** 256-bit entropy (32 bytes) is sufficient for every purpose. Do not manually use `os.urandom` and encode it yourself when `secrets` already standardizes this.
 
 ---
 
@@ -818,10 +818,10 @@ if secrets.compare_digest(provided, stored):
 ### 17.13.1. Avoid eval/exec — code injection
 
 ```python
-# WRONG — eval/exec on input -> RCE: user_input="__import__('os').system('rm -rf /')"
+# Wrong — eval/exec on input -> RCE: user_input="__import__('os').system('rm -rf /')"
 # eval(user_input)
 
-# RIGHT — limited parsing:
+# Right — limited parsing:
 import ast
 val = ast.literal_eval("[1, 2, {'a': 3}]")   # literals only, no function calls/imports
 ```
@@ -834,10 +834,10 @@ import sqlite3
 conn = sqlite3.connect("app.db")
 user = "admin' OR '1'='1"
 
-# WRONG -> SQLi:
+# Wrong -> SQLi:
 # conn.execute(f"SELECT * FROM users WHERE name = '{user}'")
 
-# RIGHT -> the driver binds the parameter, data is never mixed into the statement
+# Right -> the driver binds the parameter, data is never mixed into the statement
 cur = conn.execute("SELECT * FROM users WHERE name = ?", (user,))
 rows = cur.fetchall()
 ```
@@ -845,10 +845,10 @@ rows = cur.fetchall()
 With PostgreSQL (`psycopg2`/`psycopg`):
 ```python
 import psycopg2
-cur.execute("SELECT * FROM users WHERE email = %s", (email,))   # %s is a placeholder, NOT % formatting
+cur.execute("SELECT * FROM users WHERE email = %s", (email,))   # %s is a placeholder, not % formatting
 ```
 
-**Mechanics:** the placeholder (`?` for sqlite3, `%s` for psycopg2) causes the driver to send the statement and the data separately (a prepared statement). The DB parses the statement first, the data is treated purely as a value → it cannot alter the query structure. **Do NOT use f-strings/`%`/`.format()` to insert data into SQL.**
+**Mechanics:** the placeholder (`?` for sqlite3, `%s` for psycopg2) causes the driver to send the statement and the data separately (a prepared statement). The DB parses the statement first, the data is treated purely as a value → it cannot alter the query structure. **Do not use f-strings/`%`/`.format()` to insert data into SQL.**
 
 ### 17.13.3. shlex.quote for shell commands — already covered in 17.6.
 
@@ -873,7 +873,7 @@ if not target.is_relative_to(base):     # Python 3.9+
 ```python
 import os
 token = os.environ["API_TOKEN"]          # KeyError if missing -> fail loud, better than silently None
-# .env is for local dev only, DO NOT commit it; production uses a secret manager (Vault, AWS Secrets Manager)
+# .env is for local dev only, do not commit it; production uses a secret manager (Vault, AWS Secrets Manager)
 ```
 
 **Rules:**
@@ -984,10 +984,10 @@ This illustrates the automation/IR agent pattern: **collect → analyze → deci
 
 ## 17.16. Packaging & running with Docker
 
-### WHAT IT IS
+### What it is
 A container packages the tool + pinned dependencies into an immutable image → it runs consistently, isolated, without "contaminating" the analysis host.
 
-### REAL-WORLD EXAMPLE — a multi-stage, non-root, minimal Dockerfile
+### Real-world example — a multi-stage, non-root, minimal Dockerfile
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -1013,7 +1013,7 @@ ENTRYPOINT ["python", "-m", "src.ir_agent"]
 ```
 
 ```bash
-# Build & run, passing the secret via env (do NOT bake it into the image)
+# Build & run, passing the secret via env (do not bake it into the image)
 docker build -t ir-agent:1.0 .
 docker run --rm \
   -e SLACK_WEBHOOK="$SLACK_WEBHOOK" \
@@ -1034,7 +1034,7 @@ docker scout cves ir-agent:1.0     # or: trivy image ir-agent:1.0
 - `PYTHONDONTWRITEBYTECODE=1`: does not write `.pyc` (keeps the FS clean when read-only); `PYTHONUNBUFFERED=1`: logs appear immediately (important for real-time monitoring).
 - If the tool needs to sniff packets (scapy): add `--cap-add=NET_RAW` instead of `--privileged`.
 
-**SECURITY NOTE:**
+**Note:**
 - Pin the base image **digest** (`python:3.12-slim@sha256:...`), not just the tag → tags can be re-pushed.
 - Scan the image with `trivy`/`docker scout` in CI, failing if there is a Critical CVE.
 - Never `COPY .env` or a secret into an image layer (layers are stored permanently, and anyone who pulls the image can read them).
@@ -1046,7 +1046,7 @@ docker scout cves ir-agent:1.0     # or: trivy image ir-agent:1.0
 1. Distinguish `bytes` vs `str`; use `struct`/`int.from_bytes` to handle binary data accurately down to the byte.
 2. I/O-bound → `threading`/`asyncio`; CPU-bound → `multiprocessing` (because of the GIL).
 3. Every network call must have a **timeout**; every subprocess uses `shell=False`.
-4. Crypto: `secrets` for tokens, `hmac.compare_digest` for comparison, Argon2/bcrypt for passwords, NO MD5/SHA-1 for integrity.
+4. Crypto: `secrets` for tokens, `hmac.compare_digest` for comparison, Argon2/bcrypt for passwords, no MD5/SHA-1 for integrity.
 5. Untrusted input: validate (`ipaddress`/`pathlib`), parameterized queries, no `eval/exec/pickle`.
 6. Secrets from env/vault, pin dependencies, scan with `bandit`/`pip-audit`/`gitleaks`/`trivy`.
 7. Package with Docker as non-root, read-only, dropping capabilities, scanned before deploy.

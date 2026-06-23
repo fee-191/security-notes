@@ -4,31 +4,21 @@
 
 This chapter explains the internal mechanics of the Windows operating system and the mechanism for centrally managing thousands of machines through **Active Directory (AD)**. This is a core foundation for enterprise information security work: most enterprise environments run Windows, so Windows + AD is simultaneously the primary attack surface and the primary defensive terrain. A solid grasp of the components below is a prerequisite for detecting intrusions, investigating incidents, and preventing privilege escalation up to domain-wide administrative control.
 
-The chapter's key concepts and the problem each one solves:
+A quick map of the chapter's concepts (full definitions are in the body), each with its risk point:
 
-- **Kernel Mode and User Mode**: two CPU privilege rings. **Kernel mode (Ring 0)** runs the kernel and drivers and has full access to hardware and RAM; **user mode (Ring 3)** runs applications in isolated address spaces. Separating the two rings is the foundation of security isolation, preventing a faulty or compromised application from damaging the whole system or directly accessing hardware.
+- **Kernel Mode and User Mode** — two CPU privilege rings (Ring 0 runs the kernel/drivers, Ring 3 runs isolated applications). **Risk: a vulnerable Ring 0 driver is a privilege-escalation vector (BYOVD).**
+- **Registry and Hive** — the OS/software configuration database and the binary file that stores it on disk. **Risk: autostart keys are a favorite persistence foothold for malware.**
+- **Process, Thread and Access Token** — a resource container, the scheduled unit, and the security context (identity/groups/privileges + SID). **Risk: the target of token theft/impersonation used to escalate privileges.**
+- **Services and Scheduled Tasks** — a background process managed by the SCM and a program run on a schedule/event. **Risk: two common persistence and lateral movement mechanisms.**
+- **Windows Event Log** — the event log, where each type carries an **Event ID** (4624 successful logon, 4625 failed). **Role: the primary evidence source for incident investigation.**
+- **Sysmon** — a Sysinternals tool adding telemetry beyond native auditing (file hashes, ProcessGUID, network→process mapping). **Role: fills observability gaps to catch sophisticated attacker behavior.**
+- **Active Directory** — a centralized administration directory: **Domain** (administrative boundary), **Forest** (highest-level trust boundary), **OU**, **GPO**. **Risk: capturing AD means controlling almost the entire organization.**
+- **LDAP** — the protocol for querying AD directory data. **Risk: it is also a recon tool — anomalous queries are an early indicator.**
+- **Kerberos** — the default ticket-based authentication protocol; obtains a **TGT** once, then exchanges it for a **service ticket** per service. **Risk: the foundation for Kerberoasting and Golden/Silver Ticket.**
+- **NTLM** — the predecessor challenge/response protocol, left over for legacy cases. **Risk: design weaknesses lead to pass-the-hash and NTLM relay.**
+- **Active Directory attacks** — a compilation of real-world Windows/AD techniques with their Event ID traces, linking every concept above into a complete offense–defense chain.
 
-- **Registry and Hive**: the **Registry** is a hierarchical database storing OS and software configuration (programs that auto-start, service state, application settings); a **Hive** is the binary file on disk that stores the Registry's contents. It solves the problem of centralized configuration; it is also a favorite persistence foothold for malware via autostart keys.
-
-- **Process, Thread and Access Token**: a **Process** is a resource container (address space, handle table, token); a **Thread** is the unit scheduled for execution. An **Access Token** describes a process's security context (identity, groups, privileges); a **SID** is the unique binary identifier of each principal. This is Windows' access control mechanism and the target of token-theft/impersonation techniques used to escalate privileges.
-
-- **Services and Scheduled Tasks**: a **Service** is a background process managed by the **SCM**, typically auto-starting with the system; a **Scheduled Task** runs a program on a schedule or in response to an event (for example, at logon). They serve operational automation; they are also two common persistence and lateral movement mechanisms that require monitoring.
-
-- **Windows Event Log**: the system event log, where each event type carries an **Event ID** (for example, 4624 successful logon, 4625 failed logon). It is the primary evidence source for reconstructing the "who did what, when" sequence of behavior during incident investigation.
-
-- **Sysmon**: a Sysinternals tool that adds detailed telemetry beyond native auditing (file hashes, ProcessGUID to chain events, network→process mapping, access to sensitive memory regions). It fills observability gaps to detect sophisticated attacker behavior.
-
-- **Active Directory**: a directory service that centrally manages users, computers, groups, and policies. Its structure comprises **Domain** (administrative boundary), **Forest** (highest-level security boundary), **OU** (container for applying policy and delegation), and **GPO** (mechanism for automatically pushing configuration). It solves the problem of managing identity and policy at large scale; capturing AD means controlling almost the entire organization.
-
-- **LDAP**: the protocol for querying AD directory data. It serves lookups and administration; it is also an attacker reconnaissance (recon) tool, so anomalous LDAP queries are an early indicator.
-
-- **Kerberos**: AD's default ticket-based authentication protocol. The client obtains a **TGT** once from the KDC, then exchanges it for a **service ticket** for each service, avoiding repeated password transmission. This ticket mechanism is the foundation for the Kerberoasting and Golden/Silver Ticket attack techniques.
-
-- **NTLM**: the challenge/response authentication protocol predating Kerberos, still present for legacy cases (access by IP, machines outside the domain). Its design weaknesses lead to **pass-the-hash** and **NTLM relay**.
-
-- **Active Directory attacks**: a compilation of real-world techniques against Windows/AD environments, accompanied by the corresponding Event ID traces, linking all the concepts above into a complete offense–defense chain.
-
-> A technical reference document for security engineers (Blue Team / AppSec / DevSecOps). Each section proceeds from **WHAT IT IS → INTERNAL MECHANISM (down to the bit/byte/step/parameter level) → REAL-WORLD EXAMPLE → SECURITY NOTES**. The figures are taken from Microsoft Docs, the MS-* Open Specifications, RFC 4120/4178, and the public Sysinternals/Sysmon source; points that need verification are clearly noted.
+> A technical reference document for security engineers (Blue Team / AppSec / DevSecOps). Each section proceeds from **what it is → internal mechanism (down to the bit/byte/step/parameter level) → real-world example → security notes**. The figures are taken from Microsoft Docs, the MS-* Open Specifications, RFC 4120/4178, and the public Sysinternals/Sysmon source; points that need verification are clearly noted.
 
 ---
 
@@ -57,15 +47,15 @@ On Windows x64, the 64-bit virtual address space actually uses 48 bits (canonica
 
 ```asm
 ; ntdll!NtCreateFile (abbreviated) — the SSN changes per Windows build
-mov  r10, rcx          ; syscall quy ước dùng r10 thay cho rcx
-mov  eax, 0x55         ; SSN của NtCreateFile (VÍ DỤ — phải kiểm chứng theo build)
-syscall                ; chuyển CPL 3 -> 0, nhảy vào KiSystemCall64
+mov  r10, rcx          ; the syscall convention uses r10 in place of rcx
+mov  eax, 0x55         ; SSN of NtCreateFile (example — must be verified per build)
+syscall                ; switches CPL 3 -> 0, jumps into KiSystemCall64
 ret
 ```
 
 The CPU reads the `IA32_LSTAR` MSR to find the kernel entry point (`nt!KiSystemCall64`), saves RIP/RFLAGS, and sets CPL=0. The kernel uses the SSN as an index into the **SSDT (System Service Descriptor Table)** `KeServiceDescriptorTable` to call the correct `Nt*` function.
 
-> Design rationale: ring separation + controlled context switching prevents user-mode code from arbitrarily reading/writing kernel RAM or hardware — the foundation of all security isolation.
+> **Why:** ring separation + controlled context switching prevents user-mode code from arbitrarily reading/writing kernel RAM or hardware — the foundation of all security isolation.
 
 ### 3.1.3. Main kernel components
 
@@ -127,9 +117,9 @@ Each **hbin** is a multiple of 4096 bytes long, with an `hbin` signature header.
 
 ```
 +--------- HIVE FILE (regf) ----------+
-| Base block (4096 byte)              |  <- chữ ký "regf"
+| Base block (4096 bytes)             |  <- "regf" signature
 +-------------------------------------+
-| hbin #0 (4096 byte)                 |  <- chữ ký "hbin"
+| hbin #0 (4096 bytes)                |  <- "hbin" signature
 |   [cell: nk - ROOT KEY]             |
 |   [cell: sk - security descriptor]  |
 |   [cell: lh - subkey list]          |
@@ -143,21 +133,21 @@ Each **hbin** is a multiple of 4096 bytes long, with an `hbin` signature header.
 Read a service's startup value and export a hive offline for forensic analysis:
 
 ```cmd
-:: Xem cấu hình autostart của một service (Start=2 nghĩa là Automatic)
+:: View a service's autostart config (Start=2 means Automatic)
 reg query "HKLM\SYSTEM\CurrentControlSet\Services\Dnscache" /v Start
 ::  Start    REG_DWORD    0x2
 
-:: Liệt kê các chương trình tự chạy khi logon (persistence phổ biến)
+:: List the programs that auto-run at logon (a common persistence point)
 reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Run"
 
-:: Xuất hive SYSTEM offline để phân tích bằng công cụ forensic
+:: Export the SYSTEM hive offline for analysis with forensic tools
 reg save HKLM\SYSTEM C:\ir\SYSTEM.hiv
 ```
 
 Offline analysis with `RegRipper`/`reglookup` (Linux) or PowerShell:
 
 ```powershell
-# Liệt kê toàn bộ value Run với kiểu và dữ liệu
+# List all Run values with their type and data
 Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' |
   Format-List
 ```
@@ -189,7 +179,7 @@ A **process** is a container (address space + handle table + token), while a **t
 - `ETHREAD`/`KTHREAD`: the thread control block.
 - `PEB` (Process Environment Block, user-mode): contains `ImageBaseAddress`, the loaded module list (`Ldr`), command line, and environment variables.
 
-> The `InheritedFromUniqueProcessId` field in EPROCESS is exactly the PPID that Sysmon records in Event ID 1 — important for detecting anomalous parent-child relationships (for example, `winword.exe` spawning `cmd.exe`).
+> **Note:** the `InheritedFromUniqueProcessId` field in EPROCESS is exactly the PPID that Sysmon records in Event ID 1 — important for detecting anomalous parent-child relationships (for example, `winword.exe` spawning `cmd.exe`).
 
 ### 3.3.2. Access Token — the authorization mechanism
 
@@ -231,27 +221,27 @@ Important fixed (well-known) RIDs:
 | 500 | Administrator | Built-in administrator account |
 | 501 | Guest | Guest |
 | 512 | Domain Admins | Domain admin group |
-| 513 | Domain Users | |
+| 513 | Domain Users | - |
 | 519 | Enterprise Admins | Forest-wide admin |
 | `S-1-5-18` | LocalSystem | The SYSTEM account |
-| `S-1-5-32-544` | Builtin\Administrators | |
-| `S-1-1-0` | Everyone | |
+| `S-1-5-32-544` | Builtin\Administrators | - |
+| `S-1-1-0` | Everyone | - |
 
 ### 3.3.4. Real-world example
 
 ```powershell
-# Xem token của tiến trình hiện tại: SID, group, privilege
+# View the current process's token: SID, groups, privileges
 whoami /all
 
-# whoami /priv -> liệt kê privilege và trạng thái Enabled/Disabled
+# whoami /priv -> lists privileges and their Enabled/Disabled state
 #   SeDebugPrivilege   Debug programs   Disabled
 ```
 
 ```cmd
-:: Chuyển SID <-> tên (dùng để điều tra audit log)
-:: PsGetSid của Sysinternals
+:: Convert SID <-> name (used when investigating audit logs)
+:: PsGetSid from Sysinternals
 PsGetSid.exe \\dc01 username
-:: hoặc dùng PowerShell:
+:: or with PowerShell:
 ```
 
 ```powershell
@@ -282,15 +272,15 @@ The **Service Control Manager (SCM)** = `services.exe`, manages the service life
 | `ServiceDll` | REG_SZ (Parameters subkey) | The DLL for an svchost-style service |
 
 ```cmd
-:: Tạo service mới (kỹ thuật persistence/lateral movement phổ biến)
+:: Create a new service (a common persistence/lateral movement technique)
 sc create EvilSvc binPath= "C:\temp\beacon.exe" start= auto
 sc qc Dnscache           :: query config
-sc query Dnscache        :: trạng thái runtime
+sc query Dnscache        :: runtime state
 ```
 
-> The rationale for `svchost.exe -k netsvcs`: grouping several lightweight services into one process to conserve resources. The security side effect: many services run under a shared token → a large surface, and it is hard to tell which service is faulty.
+> **Why:** `svchost.exe -k netsvcs` groups several lightweight services into one process to conserve resources. The security side effect: many services run under a shared token → a large surface, and it is hard to tell which service is faulty.
 
-**Security note**: Event ID **7045** (System log) = "A new service was installed" — a strong signal of lateral movement (PsExec creates the `PSEXESVC` service). An **unquoted service path** + write access to the parent directory = a classic privilege escalation.
+**Note:** Event ID **7045** (System log) = "A new service was installed" — a strong signal of lateral movement (PsExec creates the `PSEXESVC` service). An **unquoted service path** + write access to the parent directory = a classic privilege escalation.
 
 ### 3.4.2. Scheduled Tasks
 
@@ -306,7 +296,7 @@ An example XML task that runs at logon:
   </Triggers>
   <Principals>
     <Principal id="Author">
-      <UserId>S-1-5-18</UserId>          <!-- chạy với quyền SYSTEM -->
+      <UserId>S-1-5-18</UserId>          <!-- runs with SYSTEM privileges -->
       <RunLevel>HighestAvailable</RunLevel>
     </Principal>
   </Principals>
@@ -317,11 +307,11 @@ An example XML task that runs at logon:
 ```
 
 ```cmd
-:: Tạo task chạy mỗi khi user logon
+:: Create a task that runs every time the user logs on
 schtasks /create /tn "Updater" /tr "C:\temp\beacon.exe" /sc onlogon /ru SYSTEM
 ```
 
-**Security note**: Event ID **4698** (task created), **4702** (updated) in the Security log; **106/200/201** in `Microsoft-Windows-TaskScheduler/Operational`. Running as `SYSTEM` + a logon trigger = persistence worth scrutinizing.
+**Note:** Event ID **4698** (task created), **4702** (updated) in the Security log; **106/200/201** in `Microsoft-Windows-TaskScheduler/Operational`. Running as `SYSTEM` + a logon trigger = persistence worth scrutinizing.
 
 ---
 
@@ -361,7 +351,7 @@ This is the most important event. The main `<EventData>` fields:
 | `WorkstationName` | The source machine (NTLM) | WS01 |
 | `IpAddress` | Source IP | 10.0.0.5 |
 | `LogonGuid` | GUID linking to 4769 (Kerberos) | {…} |
-| `ElevatedToken` | %%1842 (Yes) if the token is elevated | |
+| `ElevatedToken` | %%1842 (Yes) if the token is elevated | - |
 
 **Logon Type** — essential for understanding how access occurred:
 
@@ -377,7 +367,7 @@ This is the most important event. The main `<EventData>` fields:
 | 10 | RemoteInteractive | RDP / Terminal Services |
 | 11 | CachedInteractive | Logon using cached credentials (offline) |
 
-> **Logon Type 9** is highly suspicious: Mimikatz `sekurlsa::pth` creates a logon session of type 9 + a LogonProcessName of `seclogo`. Hunt: 4624 type 9 + an anomalous process such as `mimikatz`/`rundll32`.
+> **Warning:** Logon Type 9 is highly suspicious. Mimikatz `sekurlsa::pth` creates a logon session of type 9 + a LogonProcessName of `seclogo`. Hunt: 4624 type 9 + an anomalous process such as `mimikatz`/`rundll32`.
 
 ### 3.5.3. Event 4625 — Failed logon
 
@@ -392,18 +382,18 @@ Adds the `Status`/`SubStatus` fields (NTSTATUS codes) indicating the reason:
 | `0xC0000193` | Account has expired |
 | `0xC000006F` | Logon outside of permitted hours |
 
-> Hunting for brute-force/password spraying: many 4625 `0xC000006A` events from one IP against many TargetUserNames (spraying) or against one user repeatedly (brute force).
+> **Note:** hunt for brute-force/password spraying. Many 4625 `0xC000006A` events from one IP against many TargetUserNames is spraying; against one user repeatedly is brute force.
 
 ### 3.5.4. Other Security Event IDs
 
 | Event ID | Meaning | Important fields/notes |
 |----------|---------|---------------------------|
 | **4634** | Logoff | `LogonType`, `TargetLogonId` (matches 4624) |
-| **4647** | User-initiated logoff | |
+| **4647** | User-initiated logoff | - |
 | **4672** | Special privileges assigned to new logon | Generated with each admin logon; `PrivilegeList` contains SeDebug/SeBackup... → used to detect admin logons |
 | **4688** | A new process has been created | `NewProcessName`, `ProcessId`, `CommandLine` (requires enabling the "Include command line" audit), `ParentProcessName`, `TokenElevationType` |
 | **4720** | A user account was created | `TargetUserName`, `SubjectUserName` (who created it) |
-| **4722/4725/4726** | Account enabled / disabled / deleted | |
+| **4722/4725/4726** | Account enabled / disabled / deleted | - |
 | **4728/4732/4756** | Member added to a global/local/universal group | Track additions to Domain Admins |
 | **4768** | Kerberos TGT requested (AS-REQ) | `TicketEncryptionType`, `PreAuthType`, client IP |
 | **4769** | Kerberos service ticket requested (TGS-REQ) | `ServiceName`, `TicketEncryptionType` (0x17=RC4 → Kerberoasting!) |
@@ -417,12 +407,12 @@ Adds the `Status`/`SubStatus` fields (NTSTATUS codes) indicating the reason:
 By default, 4688 does **not** contain the command line. It must be enabled:
 
 ```cmd
-:: Bật ghi command line trong 4688 (GPO: Administrative Templates >
+:: Enable command-line capture in 4688 (GPO: Administrative Templates >
 ::   System > Audit Process Creation)
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" ^
   /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f
 
-:: Bật audit subcategory "Process Creation"
+:: Enable the "Process Creation" audit subcategory
 auditpol /set /subcategory:"Process Creation" /success:enable /failure:enable
 ```
 
@@ -453,7 +443,7 @@ After enabling, a sample 4688 event (abbreviated):
 </UserData>
 ```
 
-> **Security note**: 1102 (Security) and 104 (System, a different log being cleared) are anti-forensic indicators. Forwarding logs in real time (WEF/Sysmon→SIEM) before the attacker clears them is the countermeasure.
+> **Note:** 1102 (Security) and 104 (System, a different log being cleared) are anti-forensic indicators. Forwarding logs in real time (WEF/Sysmon→SIEM) before the attacker clears them is the countermeasure.
 
 ---
 
@@ -486,28 +476,28 @@ Sysmon uses an XML config file with schema versioning. An example of a minimal b
   <HashAlgorithms>SHA256,IMPHASH</HashAlgorithms>
   <EventFiltering>
 
-    <!-- EID 1: ghi mọi process, nhưng loại bớt nhiễu -->
+    <!-- EID 1: log every process, but filter out some noise -->
     <RuleGroup name="ProcCreate" groupRelation="or">
       <ProcessCreate onmatch="exclude">
         <Image condition="is">C:\Windows\System32\SearchIndexer.exe</Image>
       </ProcessCreate>
     </RuleGroup>
 
-    <!-- EID 10: cảnh báo truy cập LSASS -->
+    <!-- EID 10: alert on LSASS access -->
     <RuleGroup name="LsassAccess" groupRelation="or">
       <ProcessAccess onmatch="include">
         <TargetImage condition="image">lsass.exe</TargetImage>
       </ProcessAccess>
     </RuleGroup>
 
-    <!-- EID 22: log mọi DNS query trừ domain Microsoft tin cậy -->
+    <!-- EID 22: log every DNS query except trusted Microsoft domains -->
     <RuleGroup name="Dns" groupRelation="or">
       <DnsQuery onmatch="exclude">
         <QueryName condition="end with">.microsoft.com</QueryName>
       </DnsQuery>
     </RuleGroup>
 
-    <!-- EID 13: persistence registry -->
+    <!-- EID 13: registry persistence -->
     <RuleGroup name="RegPersist" groupRelation="or">
       <RegistryEvent onmatch="include">
         <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
@@ -519,15 +509,15 @@ Sysmon uses an XML config file with schema versioning. An example of a minimal b
 ```
 
 Parameter explanation:
-- `onmatch="include"`: only logs events that MATCH the rule (a whitelist). `onmatch="exclude"`: logs EVERY event EXCEPT those that match (a blacklist).
+- `onmatch="include"`: only logs events that match the rule (a whitelist). `onmatch="exclude"`: logs every event except those that match (a blacklist).
 - `groupRelation="or"`: only one rule in the group needs to match.
 - `condition`: `is`, `contains`, `begin with`, `end with`, `image` (matches the file name ignoring path), `regex`, ...
 
 ```cmd
-:: Cài đặt Sysmon với config
+:: Install Sysmon with a config
 Sysmon64.exe -accepteula -i sysmonconfig.xml
 
-:: Cập nhật config mà không cài lại
+:: Update the config without reinstalling
 Sysmon64.exe -c sysmonconfig.xml
 ```
 
@@ -548,7 +538,7 @@ A sample Event ID 1 (abbreviated):
 </EventData>
 ```
 
-> **Security note**: the ProcessGuid is durable (not reused like a PID) → it chains together the entire event sequence of one process. Events 8/10 with a GrantedAccess of `0x1410`/`0x1010` targeting `lsass.exe` are a strong credential-dumping indicator.
+> **Note:** the ProcessGuid is durable (not reused like a PID) → it chains together the entire event sequence of one process. Events 8/10 with a GrantedAccess of `0x1410`/`0x1010` targeting `lsass.exe` are a strong credential-dumping indicator.
 
 ---
 
@@ -560,29 +550,29 @@ A sample Event ID 1 (abbreviated):
 |-----------|-----------|
 | **Domain** | An administrative boundary + a replicated copy of the database (NTDS.dit). DCs sync the same namespace, for example `corp.example.com` |
 | **Tree** | A set of domains sharing a contiguous namespace (`corp.example.com` ↔ `sales.corp.example.com`) |
-| **Forest** | The highest-level security boundary. Shares a common schema + Global Catalog + Enterprise Admins. **The forest is the true trust boundary** |
+| **Forest** | The highest-level trust boundary. Shares a common schema + Global Catalog + Enterprise Admins. **The forest is the true trust boundary** |
 | **OU (Organizational Unit)** | A container for applying GPOs and delegating administration (delegation) |
 | **Site** | A physical structure by IP subnet — controls replication and selects the nearest DC |
 
-The logical hierarchy of AD: the **Forest** encompasses everything and is the highest-level security boundary; within it are one or more **Trees** (sharing a contiguous namespace), each Tree containing **Domains**; within a Domain, branches form **OUs** for applying GPOs and delegation, holding the leaf objects (user/computer/group).
+The logical hierarchy of AD: the **Forest** encompasses everything and is the highest-level trust boundary; within it are one or more **Trees** (sharing a contiguous namespace), each Tree containing **Domains**; within a Domain, branches form **OUs** for applying GPOs and delegation, holding the leaf objects (user/computer/group).
 
 ```
-FOREST  (ranh giới bảo mật cao nhất — schema + Global Catalog + Enterprise Admins)
+FOREST  (highest-level trust boundary — schema + Global Catalog + Enterprise Admins)
 └── TREE: example.com
-    ├── DOMAIN (root): corp.example.com          [NTDS.dit, các DC]
+    ├── DOMAIN (root): corp.example.com          [NTDS.dit, the DCs]
     │   ├── OU=Servers
     │   │   └── (computer objects)
     │   ├── OU=Workstations
     │   ├── OU=Users
     │   │   ├── CN=jdoe        (user)
-    │   │   └── CN=svc_sql     (service account, có SPN)
+    │   │   └── CN=svc_sql     (service account, has an SPN)
     │   └── OU=Groups
     │       └── CN=Domain Admins
-    └── DOMAIN (child): sales.corp.example.com    [parent-child trust, 2 chiều, transitive]
+    └── DOMAIN (child): sales.corp.example.com    [parent-child trust, two-way, transitive]
         └── OU=...
 ```
 
-Note on trust boundaries: an OU is **not** a security boundary (it is only a unit for applying policy/delegation); a Domain is an administrative boundary, but **the Forest is the true security boundary** — capturing one domain in a forest can bridge to another domain via a trust if SID filtering is not enabled.
+Note on trust boundaries: an OU is **not** a trust boundary (it is only a unit for applying policy/delegation); a Domain is an administrative boundary, but **the Forest is the true trust boundary** — capturing one domain in a forest can bridge to another domain via a trust if SID filtering is not enabled.
 
 ### 3.7.2. NTDS.dit and partitions
 
@@ -602,7 +592,7 @@ The schema defines **classSchema** (object classes) and **attributeSchema** (att
 - `attributeSyntax` + `oMSyntax`: the data type.
 - `isSingleValued`, `searchFlags` (bit 1 = indexed).
 
-> The reason the schema replicates forest-wide and is hard to change: a schema change is permanent (it can only be deactivated, never truly deleted) and affects every DC — which is why the forest is the schema boundary.
+> **Why:** the schema replicates forest-wide and is hard to change because a schema change is permanent (it can only be deactivated, never truly deleted) and affects every DC — which is why the forest is the schema boundary.
 
 ### 3.7.4. GPO — Group Policy Object
 
@@ -613,14 +603,14 @@ A GPO has 2 parts:
 The **LSDOU** application order: Local → Site → Domain → OU (later OUs override earlier ones, unless "Enforced"/"Block Inheritance" is set).
 
 ```powershell
-# Xem GPO áp lên user/máy hiện tại
+# View the GPOs applied to the current user/machine
 gpresult /h C:\report.html /f
 
-# Liệt kê GPO trong domain
+# List the GPOs in the domain
 Get-GPO -All | Select DisplayName, Id, GpoStatus
 ```
 
-> **Security note**: SYSVOL is readable by every Authenticated User. History: GPP (`Groups.xml`) once contained passwords encrypted with AES using a **public key** (CVE-2014-1812) → anyone could decrypt them. Hunt for `cpassword` files in SYSVOL.
+> **Note:** SYSVOL is readable by every Authenticated User. History: GPP (`Groups.xml`) once contained passwords encrypted with AES using a **public key** (CVE-2014-1812) → anyone could decrypt them. Hunt for `cpassword` files in SYSVOL.
 
 ### 3.7.5. Trust — trust relationships
 
@@ -630,7 +620,7 @@ Get-GPO -All | Select DisplayName, Id, GpoStatus
 | Tree-Root | Two-way | Yes | Between trees in a forest |
 | External | One-/two-way | No | To a domain outside the forest |
 | Forest | One-/two-way | Yes (within the partner forest) | Between two forests |
-| Realm | | | To a non-Windows Kerberos realm |
+| Realm | One-/two-way | No | To a non-Windows Kerberos realm |
 
 Trusts use a **trust key** (inter-realm key) so that a DC on one side issues a **referral TGT** for the other side. Related attack: **SID History** + a cross-domain golden ticket to escalate privileges across a trust if SID filtering is not enabled.
 
@@ -658,8 +648,8 @@ The search filter in RFC 4515 form:
 
 ```
 (&(objectClass=user)(sAMAccountName=jdoe))
-(&(objectClass=user)(servicePrincipalName=*))     # tìm tài khoản có SPN -> Kerberoast
-(userAccountControl:1.2.840.113556.1.4.803:=4194304)  # bit DONT_REQ_PREAUTH -> AS-REP roast
+(&(objectClass=user)(servicePrincipalName=*))     # find accounts with an SPN -> Kerberoast
+(userAccountControl:1.2.840.113556.1.4.803:=4194304)  # DONT_REQ_PREAUTH bit -> AS-REP roast
 ```
 
 `1.2.840.113556.1.4.803` is the **matching rule OID LDAP_MATCHING_RULE_BIT_AND** — filtering by the bits of `userAccountControl`.
@@ -669,27 +659,27 @@ Important `userAccountControl` (UAC) flags:
 | Bit (hex) | Name | Meaning |
 |-----------|-----|---------|
 | 0x0002 | ACCOUNTDISABLE | Account disabled |
-| 0x0200 | NORMAL_ACCOUNT | |
-| 0x10000 | DONT_EXPIRE_PASSWORD | |
+| 0x0200 | NORMAL_ACCOUNT | A normal user account |
+| 0x10000 | DONT_EXPIRE_PASSWORD | Password never expires |
 | 0x400000 (4194304) | DONT_REQ_PREAUTH | Enables AS-REP roasting |
 | 0x80000 | TRUSTED_FOR_DELEGATION | Unconstrained delegation (dangerous) |
 
 ### 3.8.2. Real-world example
 
 ```powershell
-# Tìm tài khoản có SPN (mục tiêu Kerberoasting) bằng PowerShell native
+# Find accounts with an SPN (Kerberoasting targets) using native PowerShell
 ([adsisearcher]"(&(objectClass=user)(servicePrincipalName=*))").FindAll() |
   ForEach-Object { $_.Properties.samaccountname }
 ```
 
 ```bash
-# ldapsearch (Linux) — bind đơn giản rồi truy vấn
+# ldapsearch (Linux) — a simple bind, then a query
 ldapsearch -x -H ldap://10.0.0.10 -D "CORP\jdoe" -w 'Passw0rd!' \
   -b "DC=corp,DC=example,DC=com" \
   "(&(objectClass=user)(servicePrincipalName=*))" sAMAccountName servicePrincipalName
 ```
 
-> **Security note**: cleartext LDAP on 389 exposes the bind credentials (simple bind). Microsoft recommends **LDAP signing + channel binding** (LDAPS) to prevent MITM/relay. Anomalous LDAP queries (enumerating all users/SPNs) are a sign of recon — detect them via the "Directory Service Access" audit (Event 4662) or network monitoring.
+> **Note:** cleartext LDAP on 389 exposes the bind credentials (simple bind). Microsoft recommends **LDAP signing + channel binding** (LDAPS) to prevent MITM/relay. Anomalous LDAP queries (enumerating all users/SPNs) are a sign of recon — detect them via the "Directory Service Access" audit (Event 4662) or network monitoring.
 
 ---
 
@@ -714,7 +704,7 @@ Port: TCP/UDP **88**.
      |   (3) TGS-REQ (TGT + SPN) ----->|                            |
      |   <----------- (4) TGS-REP (Service ticket + svc key)        |
      |   (5) AP-REQ (Service ticket + Authenticator) -------------->|
-     |   <-------------------- (6) AP-REP (optional mutual auth)     |
+     |   <-------------------- (6) AP-REP (optional mutual auth)    |
 ```
 
 **Phase 1 — AS-REQ (Authentication Service Request)**
@@ -745,16 +735,16 @@ The structure of a **Ticket** (KRB_TGT/service ticket, RFC 4120):
 Ticket ::= [APPLICATION 1] SEQUENCE {
    tkt-vno         [0] INTEGER (5),
    realm           [1] Realm,
-   sname           [2] PrincipalName,    -- krbtgt/REALM hoặc SPN
-   enc-part        [3] EncryptedData     -- mã hóa bằng key của service/krbtgt
+   sname           [2] PrincipalName,    -- krbtgt/REALM or an SPN
+   enc-part        [3] EncryptedData     -- encrypted with the service/krbtgt key
 }
 
-EncTicketPart (giải mã ra) ::= {
+EncTicketPart (decrypted) ::= {
    flags           -- forwardable, renewable, ...
    key             -- session key
-   crealm, cname   -- danh tính client
+   crealm, cname   -- the client identity
    authtime, starttime, endtime, renew-till
-   authorization-data -- chứa PAC (AD-WIN2K-PAC)
+   authorization-data -- contains the PAC (AD-WIN2K-PAC)
 }
 ```
 
@@ -792,21 +782,21 @@ The PAC (MS-PAC) is embedded in the ticket's `authorization-data` and contains a
 ### 3.9.4. Real-world example
 
 ```cmd
-:: Liệt kê vé Kerberos đang cache trong phiên
+:: List the Kerberos tickets cached in the session
 klist
 
-:: Xóa vé (buộc xin lại) — hữu ích khi debug
+:: Purge tickets (forcing a re-request) — useful when debugging
 klist purge
 ```
 
 ```powershell
-# Kerberoasting (Rubeus) — xin TGS cho mọi SPN, xuất hash để crack offline
+# Kerberoasting (Rubeus) — request a TGS for every SPN, export hashes to crack offline
 Rubeus.exe kerberoast /outfile:hashes.txt
-# Crack bằng hashcat mode 13100 (Kerberos 5 TGS-REP etype 23/RC4)
+# Crack with hashcat mode 13100 (Kerberos 5 TGS-REP etype 23/RC4)
 # hashcat -m 13100 hashes.txt wordlist.txt
 ```
 
-> **Detection**: Kerberoasting leaves an **Event 4769** with `TicketEncryptionType=0x17` (RC4) and a `ServiceName` that is a user-SPN account. Many RC4 4769 events in a short time from one account = an alert.
+> **Note:** Kerberoasting leaves an **Event 4769** with `TicketEncryptionType=0x17` (RC4) and a `ServiceName` that is a user-SPN account. Many RC4 4769 events in a short time from one account = an alert.
 
 ### 3.9.5. Consolidated Kerberos security notes
 
@@ -824,9 +814,9 @@ NTLM (NT LAN Manager) is the older protocol, used when Kerberos is unavailable (
 
 ```
 CLIENT                                   SERVER
-  | (1) NEGOTIATE_MESSAGE  ------------->|   (báo khả năng: flags)
-  | <----------- (2) CHALLENGE_MESSAGE   |   (server nonce 8 byte)
-  | (3) AUTHENTICATE_MESSAGE  ---------->|   (NTLM response = HMAC dựa trên NT hash + challenge)
+  | (1) NEGOTIATE_MESSAGE  ------------->|   (advertise capabilities: flags)
+  | <----------- (2) CHALLENGE_MESSAGE   |   (8-byte server nonce)
+  | (3) AUTHENTICATE_MESSAGE  ---------->|   (NTLM response = HMAC over NT hash + challenge)
 ```
 
 **Type 2 CHALLENGE_MESSAGE** — the fields:
@@ -838,14 +828,14 @@ CLIENT                                   SERVER
 | 0x0C | 8 bytes | TargetName fields | len/maxlen/offset |
 | 0x14 | 4 bytes | NegotiateFlags | The negotiation flags |
 | 0x18 | 8 bytes | **ServerChallenge** | A random 8-byte nonce |
-| 0x20 | 8 bytes | Reserved | |
+| 0x20 | 8 bytes | Reserved | - |
 | 0x28 | 8 bytes | TargetInfo fields | AV_PAIR (domain name, machine, ...) |
 
 **NTLMv2 response** (in AUTHENTICATE): the client computes
 `NTProofStr = HMAC-MD5(NTLMv2Hash, ServerChallenge || blob)`
 where `NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)`. The NT-Hash = `MD4(UTF-16LE(password))`.
 
-> **Important**: the server never sees the password, only the NT hash indirectly via the response. But if an attacker has the **NT hash**, they can compute the response without the password → this is exactly the basis of **pass-the-hash**.
+> **Note:** the server never sees the password, only the NT hash indirectly via the response. But if an attacker has the **NT hash**, they can compute the response without the password → this is exactly the basis of **pass-the-hash**.
 
 ### 3.10.2. NTLM vs Kerberos comparison
 
@@ -858,7 +848,7 @@ where `NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)`. The NT-Hash =
 | Replay | Weaker | Has timestamp + nonce |
 | Characteristic attacks | Pass-the-hash, NTLM relay | Pass-the-ticket, Kerberoast, golden ticket |
 
-> **Note**: NTLM authentication at the DC generates **Event 4776**. NTLM relay (forwarding the challenge/response to another machine) is a major attack — defend against it with SMB signing + EPA (Extended Protection for Authentication) + disabling NTLM where possible.
+> **Note:** NTLM authentication at the DC generates **Event 4776**. NTLM relay (forwarding the challenge/response to another machine) is a major attack — defend against it with SMB signing + EPA (Extended Protection for Authentication) + disabling NTLM where possible.
 
 ---
 
@@ -869,7 +859,7 @@ where `NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)`. The NT-Hash =
 **Mechanism**: use the NT hash directly (no plaintext needed) to complete NTLM authentication to a remote service (SMB, WMI).
 
 ```cmd
-:: Mimikatz: tạo logon session mới mang NT hash
+:: Mimikatz: create a new logon session carrying the NT hash
 sekurlsa::pth /user:Administrator /domain:CORP /ntlm:32ed87bdb5fdc5e9cba88547376818d4 /run:cmd.exe
 ```
 
@@ -880,7 +870,7 @@ sekurlsa::pth /user:Administrator /domain:CORP /ntlm:32ed87bdb5fdc5e9cba88547376
 **Mechanism**: extract a TGT/service ticket from memory, then inject it into another session.
 
 ```cmd
-:: Mimikatz: dump rồi nạp lại ticket
+:: Mimikatz: dump then re-inject the ticket
 sekurlsa::tickets /export
 kerberos::ptt [0;abc]-2-0-...-Administrator@krbtgt-CORP.kirbi
 ```
@@ -897,14 +887,14 @@ The mechanism was described in 3.9. Signature summary:
 | AS-REP roasting | 4768 | `PreAuthType=0`, the account has the UAC bit DONT_REQ_PREAUTH |
 
 ```powershell
-# AS-REP roasting (Rubeus): tìm account không yêu cầu pre-auth
+# AS-REP roasting (Rubeus): find accounts that do not require pre-auth
 Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
 # hashcat -m 18200 asrep.txt wordlist.txt
 ```
 
 ### 3.11.4. Golden Ticket and Silver Ticket
 
-| | Golden Ticket | Silver Ticket |
+| Criterion | Golden Ticket | Silver Ticket |
 |---|---------------|---------------|
 | Forges | TGT | Service ticket |
 | Key required | **krbtgt NT hash** | NT hash of the **service account** |
@@ -913,19 +903,19 @@ Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
 | Detection | Hard (a valid TGT); hunt for anomalous TGT lifetimes, no 4768 before 4769 | Similar but limited to 1 SPN |
 
 ```cmd
-:: Golden ticket (Mimikatz) — cần krbtgt hash + domain SID
+:: Golden ticket (Mimikatz) — needs the krbtgt hash + domain SID
 kerberos::golden /user:Administrator /domain:corp.example.com ^
   /sid:S-1-5-21-...-1107 /krbtgt:<krbtgt_NTLM_hash> /ptt
 ```
 
-> **Why the golden ticket is all-powerful**: the TGT is signed with the krbtgt key. If an attacker has the krbtgt hash, they can issue their own TGT with a PAC containing the Domain Admins SID and a 10-year lifetime. Only resetting krbtgt (twice) invalidates it.
+> **Why:** the golden ticket is all-powerful because the TGT is signed with the krbtgt key. If an attacker has the krbtgt hash, they can issue their own TGT with a PAC containing the Domain Admins SID and a 10-year lifetime. Only resetting krbtgt (twice) invalidates it.
 
 ### 3.11.5. DCSync
 
 **Mechanism**: impersonate a DC and call the **DRSUAPI** RPC `DRSGetNCChanges` (`IDL_DRSGetNCChanges`) to request replication of secret data (the hashes of all accounts, including krbtgt). This requires the **Replicating Directory Changes** (+ All) right on the domain head.
 
 ```cmd
-:: Mimikatz: kéo hash của krbtgt qua replication
+:: Mimikatz: pull the krbtgt hash via replication
 lsadump::dcsync /domain:corp.example.com /user:krbtgt
 ```
 
@@ -964,7 +954,7 @@ When the `AccessMask` contains these GUIDs from a principal that is **not a DC**
 ### 3.12.2. Enabling via GPO / Registry
 
 ```cmd
-:: Script Block Logging (mạnh nhất — ghi cả lệnh đã giải mã base64)
+:: Script Block Logging (the strongest — even records base64-decoded commands)
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" ^
   /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
 
@@ -972,12 +962,12 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging"
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" ^
   /v EnableModuleLogging /t REG_DWORD /d 1 /f
 
-:: Transcription ra file
+:: Transcription to a file
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription" ^
   /v EnableTranscripting /t REG_DWORD /d 1 /f
 ```
 
-> **Why 4104 is powerful**: attackers often use `powershell -enc <base64>` to hide commands. Script Block Logging records the content **after decoding**, so it reveals the real command. An Event 4104 with `Level=Warning` is automatically flagged by the engine when it detects a suspicious pattern (Invoke-Mimikatz, IEX, DownloadString, ...).
+> **Why:** 4104 is powerful because attackers often use `powershell -enc <base64>` to hide commands. Script Block Logging records the content **after decoding**, so it reveals the real command. An Event 4104 with `Level=Warning` is automatically flagged by the engine when it detects a suspicious pattern (Invoke-Mimikatz, IEX, DownloadString, ...).
 
 A sample Event 4104:
 
@@ -990,7 +980,7 @@ A sample Event 4104:
 </EventData>
 ```
 
-> **Security note**: attackers downgrade to PowerShell v2 (`powershell -version 2`) to evade script block logging (v2 does not support it). Defense: remove the .NET 2.0/PowerShell v2 engine. AMSI (Antimalware Scan Interface) adds runtime scanning of script content; attackers use AMSI bypasses → monitor for the characteristic bypass strings.
+> **Note:** attackers downgrade to PowerShell v2 (`powershell -version 2`) to evade script block logging (v2 does not support it). Defense: remove the .NET 2.0/PowerShell v2 engine. AMSI (Antimalware Scan Interface) adds runtime scanning of script content; attackers use AMSI bypasses → monitor for the characteristic bypass strings.
 
 ---
 
@@ -1009,12 +999,12 @@ A sample Event 4104:
 **Windows LAPS (new, 2023)**: built in, stores the `msLAPS-Password` attribute, supports **password encryption** (DPAPI-NG, decryptable only by the delegated group), and can also store into Entra ID.
 
 ```powershell
-# Đọc mật khẩu LAPS của một máy (cần quyền đã ủy quyền)
-Get-AdmPwdPassword -ComputerName WS01            # LAPS cổ điển
+# Read a machine's LAPS password (requires delegated permission)
+Get-AdmPwdPassword -ComputerName WS01            # classic LAPS
 Get-LapsADPassword -Identity WS01 -AsPlainText   # Windows LAPS
 ```
 
-> **Security note**: the `ms-Mcs-AdmPwd` attribute is protected by an ACL + usually marked "confidential". You must verify that read access is **not inadvertently granted** to a broad group. Audit LAPS reads (Event 4662 on that attribute).
+> **Note:** the `ms-Mcs-AdmPwd` attribute is protected by an ACL + usually marked "confidential". You must verify that read access is **not inadvertently granted** to a broad group. Audit LAPS reads (Event 4662 on that attribute).
 
 ### 3.13.2. The tiering model (Microsoft Tiering / Enterprise Access Model)
 
@@ -1032,15 +1022,15 @@ Rules:
 - Use **Authentication Policy Silos** + the **Protected Users group** (forbids NTLM, forbids delegation, forces Kerberos AES, does not cache credentials) for sensitive accounts.
 
 ```powershell
-# Thêm admin vào Protected Users (chống PtH/PtT cho tài khoản đó)
+# Add an admin to Protected Users (defends against PtH/PtT for that account)
 Add-ADGroupMember -Identity "Protected Users" -Members "tier0-admin"
 
-# Tạo Authentication Policy giới hạn TGT lifetime ngắn
+# Create an Authentication Policy limiting TGT lifetime to a short window
 New-ADAuthenticationPolicy -Name "T0-Policy" `
   -UserTGTLifetimeMins 240 -ProtectedFromAccidentalDeletion $true
 ```
 
-> **Why tiering is effective**: most AD attacks rely on **horizontal/vertical credential reuse** (taking an admin's hash from one compromised machine and using it against the DC). Isolating credentials by tier breaks this chain even when one machine is compromised. Protected Users + LSA Protection (`RunAsPPL`) + Credential Guard (isolating secrets in VBS/VTL1) are additional technical defensive layers against LSASS dumping.
+> **Why:** tiering is effective because most AD attacks rely on **horizontal/vertical credential reuse** (taking an admin's hash from one compromised machine and using it against the DC). Isolating credentials by tier breaks this chain even when one machine is compromised. Protected Users + LSA Protection (`RunAsPPL`) + Credential Guard (isolating secrets in VBS/VTL1) are additional technical defensive layers against LSASS dumping.
 
 ### 3.13.3. Credential Guard and LSA Protection
 
@@ -1050,7 +1040,7 @@ New-ADAuthenticationPolicy -Name "T0-Policy" `
   ```
 - **Credential Guard**: uses virtualization-based security (Hyper-V VTL1) to isolate NTLM hashes + Kerberos TGTs in **LSAIso**, which user-mode LSASS cannot access → PtH/PtT on that machine is neutralized.
 
-> **Detecting bypasses**: if Sysmon Event 10 still shows a PROCESS_VM_READ handle to lsass.exe while RunAsPPL is enabled, it means the attacker loaded a driver to strip the PPL protection (BYOVD) — a high-priority alert.
+> **Warning:** if Sysmon Event 10 still shows a PROCESS_VM_READ handle to lsass.exe while RunAsPPL is enabled, it means the attacker loaded a driver to strip the PPL protection (BYOVD) — a high-priority alert.
 
 ---
 

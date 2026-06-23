@@ -8,7 +8,7 @@ An ninh ứng dụng web là tập hợp các kỹ thuật bảo vệ website, A
 
 **OWASP Top 10.** Danh sách 10 nhóm rủi ro bảo mật ứng dụng web phổ biến và nghiêm trọng nhất, xếp hạng từ dữ liệu thực tế (tần suất phát hiện, mức khai thác, tác động). Đây là lộ trình ưu tiên để che phủ phần lớn rủi ro phổ biến, không phải danh mục đầy đủ mọi mối đe dọa.
 
-**Nhóm tấn công tiêm (Injection: SQLi, XSS, Command, SSTI).** Chung một gốc rễ: **lẫn lộn kênh dữ liệu với kênh điều khiển (code)**.
+**Nhóm tấn công tiêm (Injection: SQLi, XSS, Command, SSTI).** Chung một gốc rễ: **lẫn lộn kênh dữ liệu với kênh điều khiển (code)** (chi tiết ở 5.3, 5.4, 5.8, 5.9).
 
 - **SQL Injection (SQLi)** — dữ liệu người dùng được ghép vào câu lệnh SQL, cho phép thay đổi cấu trúc truy vấn và truy xuất dữ liệu ngoài ý muốn.
 - **Cross-Site Scripting (XSS)** — mã JavaScript được tiêm và thực thi trong trình duyệt nạn nhân, dưới origin của trang nạn nhân, dẫn tới trộm phiên hoặc hành động thay người dùng.
@@ -50,7 +50,7 @@ Biện pháp phòng thủ chung: tách bạch dữ liệu khỏi lệnh — tham
 
 **Logging & Monitoring.** Ghi log và giám sát là nền tảng phát hiện và điều tra tấn công: ghi lại ai làm gì, khi nào, kết quả ra sao, và phát cảnh báo khi có dấu hiệu bất thường. Thiếu log khiến tấn công không bị phát hiện và không thể điều tra hậu kỳ.
 
-> Tài liệu tham chiếu chuyên sâu dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ *LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT*. Các con số kỹ thuật bám theo RFC/spec; nơi nào cần kiểm chứng phiên bản cụ thể đều được ghi chú rõ.
+> Tài liệu tham chiếu chuyên sâu dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ *là gì → cơ chế bên trong (tới mức bit/byte/bước/tham số) → ví dụ thực tế → lưu ý bảo mật*. Các con số kỹ thuật bám theo RFC/spec; nơi nào cần kiểm chứng phiên bản cụ thể đều được ghi chú rõ.
 
 ---
 
@@ -87,9 +87,9 @@ https://app.example.com   vs  https://app.example.com:8443 → KHÁC (port)
 
 ### 5.1.2. Same-Origin Policy (SOP)
 
-**LÀ GÌ.** SOP là chính sách mặc định: script chạy trong ngữ cảnh của origin A bị giới hạn khả năng tương tác với tài nguyên thuộc origin B. SOP không phải một cơ chế đơn lẻ mà là một họ ràng buộc áp dụng khác nhau cho từng loại tài nguyên.
+**Là gì:** SOP là chính sách mặc định: script chạy trong ngữ cảnh của origin A bị giới hạn khả năng tương tác với tài nguyên thuộc origin B. SOP không phải một cơ chế đơn lẻ mà là một họ ràng buộc áp dụng khác nhau cho từng loại tài nguyên.
 
-**CƠ CHẾ — SOP áp dụng khác nhau theo loại truy cập:**
+**Cơ chế — SOP áp dụng khác nhau theo loại truy cập:**
 
 | Loại truy cập | SOP áp dụng thế nào | Ví dụ |
 |---------------|---------------------|-------|
@@ -114,7 +114,7 @@ Trang tại  https://evil.com  thực thi:
 
 ### 5.1.3. CORS — Cross-Origin Resource Sharing (WHATWG Fetch Standard)
 
-**LÀ GÌ.** CORS là cơ chế cho phép server **chủ động opt-in** để một origin khác được đọc response của nó. Server tuyên bố qua các header `Access-Control-*`; trình duyệt là bên thực thi quyết định.
+**Là gì:** CORS là cơ chế cho phép server **chủ động opt-in** để một origin khác được đọc response của nó. Server tuyên bố qua các header `Access-Control-*`; trình duyệt là bên thực thi quyết định.
 
 **Phân loại request — đây là điểm cốt lõi:**
 
@@ -130,7 +130,7 @@ CORS chia request thành hai nhóm:
 
 **Vì sao cần preflight?** Để bảo vệ các server cũ chưa biết đến CORS. Một request `DELETE` cross-origin có thể gây tác động phá hoại. Preflight đảm bảo server *biết về CORS và đồng ý* trước khi request thật được gửi. Các "simple request" không cần preflight vì chúng vốn đã có thể tạo được bằng HTML thuần (form, img) từ trước khi CORS ra đời — không nới rộng bề mặt tấn công.
 
-**CƠ CHẾ PREFLIGHT — từng bước, raw:**
+**Cơ chế preflight — từng bước, raw:**
 
 Bước 1: Trình duyệt gửi preflight `OPTIONS`:
 
@@ -181,7 +181,7 @@ Content-Type: application/json
 
 Response thật cũng phải lặp lại `Access-Control-Allow-Origin` (và `Allow-Credentials` nếu có), nếu không trình duyệt vẫn chặn việc đọc.
 
-**LƯU Ý BẢO MẬT — cấu hình CORS sai phổ biến:**
+**Lưu ý bảo mật — cấu hình CORS sai phổ biến:**
 
 ```javascript
 // ❌ SAI NGHIÊM TRỌNG: echo nguyên Origin + cho phép credentials
@@ -253,7 +253,7 @@ Lưu ý mapping: **XSS** chuyển vào A03 (Injection), **XXE** vào A05 (Miscon
 
 ## 5.3. A03 — Injection: SQL Injection (SQLi)
 
-**LÀ GÌ.** SQLi xảy ra khi dữ liệu do người dùng cung cấp được ghép trực tiếp vào câu lệnh SQL, khiến attacker thay đổi cấu trúc câu truy vấn thay vì chỉ cung cấp dữ liệu. Gốc rễ: **trộn lẫn kênh dữ liệu (data) và kênh điều khiển (code)**.
+**Là gì:** SQLi xảy ra khi dữ liệu do người dùng cung cấp được ghép trực tiếp vào câu lệnh SQL, khiến attacker thay đổi cấu trúc câu truy vấn thay vì chỉ cung cấp dữ liệu. Gốc rễ: **trộn lẫn kênh dữ liệu (data) và kênh điều khiển (code)**.
 
 ### 5.3.1. Cơ chế gốc
 
@@ -385,7 +385,7 @@ Lưu ý: prepared statement KHÔNG tham số hóa được tên bảng/cột hay
 
 ## 5.4. A03 — Cross-Site Scripting (XSS)
 
-**LÀ GÌ.** XSS là việc tiêm mã JavaScript thực thi trong ngữ cảnh trình duyệt nạn nhân, dưới origin của trang nạn nhân. Vì chạy trong origin đó, mã đọc được cookie (không `HttpOnly`), `localStorage`, thực hiện hành động thay người dùng, keylog... Gốc rễ: **dữ liệu không tin cậy được nhúng vào trang mà không encode đúng ngữ cảnh**.
+**Là gì:** XSS là việc tiêm mã JavaScript thực thi trong ngữ cảnh trình duyệt nạn nhân, dưới origin của trang nạn nhân. Vì chạy trong origin đó, mã đọc được cookie (không `HttpOnly`), `localStorage`, thực hiện hành động thay người dùng, keylog... Gốc rễ: **dữ liệu không tin cậy được nhúng vào trang mà không encode đúng ngữ cảnh**.
 
 ### 5.4.1. Ba loại XSS
 
@@ -463,7 +463,7 @@ const clean = DOMPurify.sanitize(userHtml, {
 
 ### 5.4.4. Phòng thủ tầng 2: Content Security Policy (CSP)
 
-**LÀ GÌ.** CSP là một header HTTP khai báo nguồn tài nguyên hợp lệ; trình duyệt từ chối thực thi/tải tài nguyên ngoài chính sách. CSP là **lớp phòng thủ chiều sâu** — giảm thiểu tác động khi encoding bị bỏ sót.
+**Là gì:** CSP là một header HTTP khai báo nguồn tài nguyên hợp lệ; trình duyệt từ chối thực thi/tải tài nguyên ngoài chính sách. CSP là **lớp phòng thủ chiều sâu** — giảm thiểu tác động khi encoding bị bỏ sót.
 
 ```http
 Content-Security-Policy: default-src 'self';
@@ -496,13 +496,13 @@ Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-report
 ```
 `Report-Only` không chặn, chỉ gửi báo cáo JSON về `/csp-report` — dùng để triển khai dần, dò false positive trước khi enforce.
 
-**LƯU Ý BẢO MẬT.** Cookie phiên nên đặt `HttpOnly` để JS (kể cả XSS) không đọc được `document.cookie`. Tuy nhiên XSS vẫn thực hiện được hành động trong phiên (gửi request thay người dùng), nên `HttpOnly` giảm chứ không xóa rủi ro.
+**Lưu ý bảo mật:** Cookie phiên nên đặt `HttpOnly` để JS (kể cả XSS) không đọc được `document.cookie`. Tuy nhiên XSS vẫn thực hiện được hành động trong phiên (gửi request thay người dùng), nên `HttpOnly` giảm chứ không xóa rủi ro.
 
 ---
 
 ## 5.5. CSRF — Cross-Site Request Forgery (liên quan A01)
 
-**LÀ GÌ.** CSRF lợi dụng việc trình duyệt **tự động đính kèm cookie** vào request tới một origin, bất kể request được khởi tạo từ đâu. Attacker dụ nạn nhân (đang đăng nhập) kích hoạt một request gây tác động tới site nạn nhân. Khác XSS: CSRF không cần đọc response, chỉ cần *gửi* request có hiệu lực.
+**Là gì:** CSRF lợi dụng việc trình duyệt **tự động đính kèm cookie** vào request tới một origin, bất kể request được khởi tạo từ đâu. Attacker dụ nạn nhân (đang đăng nhập) kích hoạt một request gây tác động tới site nạn nhân. Khác XSS: CSRF không cần đọc response, chỉ cần *gửi* request có hiệu lực.
 
 ### 5.5.1. Cơ chế
 
@@ -549,7 +549,7 @@ Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax; Path=/
 
 ## 5.6. A10 — Server-Side Request Forgery (SSRF)
 
-**LÀ GÌ.** SSRF là việc ép **server** gửi request HTTP/TCP tới đích do attacker chọn. Vì server thường nằm trong mạng nội bộ tin cậy, attacker dùng nó làm proxy để chạm tới dịch vụ nội bộ, metadata cloud, hoặc quét cổng nội mạng.
+**Là gì:** SSRF là việc ép **server** gửi request HTTP/TCP tới đích do attacker chọn. Vì server thường nằm trong mạng nội bộ tin cậy, attacker dùng nó làm proxy để chạm tới dịch vụ nội bộ, metadata cloud, hoặc quét cổng nội mạng.
 
 ### 5.6.1. Mục tiêu kinh điển: Cloud metadata
 
@@ -605,13 +605,13 @@ def safe_fetch(url):
 | Redirect 302 → IP nội bộ | `allow_redirects=False` rồi tự kiểm |
 | `gopher://`, `file://` | Allowlist scheme |
 
-**LƯU Ý BẢO MẬT.** Phòng thủ mạnh nhất là **allowlist đích cụ thể** (chỉ cho phép vài host đã biết) thay vì blocklist; kết hợp egress firewall chặn server gọi ra `169.254.169.254` và mạng nội bộ.
+**Lưu ý bảo mật:** Phòng thủ mạnh nhất là **allowlist đích cụ thể** (chỉ cho phép vài host đã biết) thay vì blocklist; kết hợp egress firewall chặn server gọi ra `169.254.169.254` và mạng nội bộ.
 
 ---
 
 ## 5.7. A01 — Broken Access Control & IDOR
 
-**LÀ GÌ.** Broken Access Control: ứng dụng không thực thi đúng việc người dùng chỉ được làm điều được phép. **IDOR (Insecure Direct Object Reference)** là biến thể: tham chiếu trực tiếp tới đối tượng (ID) mà không kiểm tra quyền sở hữu.
+**Là gì:** Broken Access Control: ứng dụng không thực thi đúng việc người dùng chỉ được làm điều được phép. **IDOR (Insecure Direct Object Reference)** là biến thể: tham chiếu trực tiếp tới đối tượng (ID) mà không kiểm tra quyền sở hữu.
 
 ### 5.7.1. Cơ chế IDOR
 
@@ -658,7 +658,7 @@ def get_invoice(iid):
 
 ## 5.8. A03 — Command Injection
 
-**LÀ GÌ.** Khi ứng dụng truyền dữ liệu người dùng vào lệnh hệ điều hành qua shell, attacker chèn metacharacter shell (`;`, `|`, `&&`, `` ` ``, `$()`) để thực thi lệnh tùy ý.
+**Là gì:** Khi ứng dụng truyền dữ liệu người dùng vào lệnh hệ điều hành qua shell, attacker chèn metacharacter shell (`;`, `|`, `&&`, `` ` ``, `$()`) để thực thi lệnh tùy ý.
 
 ```python
 # ❌ shell=True + nối chuỗi
@@ -689,7 +689,7 @@ subprocess.run(["ping", "-c", "1", host], shell=False, timeout=5)
 
 ## 5.9. A03 — Server-Side Template Injection (SSTI)
 
-**LÀ GÌ.** Khi input người dùng được nhúng vào template engine phía server và được engine *biên dịch* như mã template, attacker thực thi biểu thức của engine → thường dẫn tới RCE.
+**Là gì:** Khi input người dùng được nhúng vào template engine phía server và được engine *biên dịch* như mã template, attacker thực thi biểu thức của engine → thường dẫn tới RCE.
 
 ```python
 # ❌ Jinja2: nối input vào template string
@@ -720,7 +720,7 @@ Payload leo thang tới RCE (Jinja2/Python):
 
 ## 5.10. A08 — Insecure Deserialization
 
-**LÀ GÌ.** Deserialization biến dữ liệu (byte stream) thành object. Nếu dữ liệu không tin cậy được deserialize bằng cơ chế cho phép khôi phục kiểu/gọi method tùy ý, attacker dựng "gadget chain" dẫn tới RCE.
+**Là gì:** Deserialization biến dữ liệu (byte stream) thành object. Rủi ro nằm ở các cơ chế cho phép khôi phục kiểu tùy ý hoặc gọi method khi dựng lại object. Khi đó, nếu deserialize dữ liệu không tin cậy, attacker có thể dựng một "gadget chain" (chuỗi đối tượng móc nối nhau) dẫn tới RCE.
 
 ### 5.10.1. Java — `ObjectInputStream`
 
@@ -764,7 +764,7 @@ payload = pickle.dumps(E())     # gửi cho server unpickle
 
 ## 5.11. A05 — XML External Entity (XXE)
 
-**LÀ GÌ.** Parser XML cho phép định nghĩa **entity** trỏ tới tài nguyên ngoài; nếu bật, attacker đọc file nội bộ hoặc gây SSRF.
+**Là gì:** Parser XML cho phép định nghĩa **entity** trỏ tới tài nguyên ngoài; nếu bật, attacker đọc file nội bộ hoặc gây SSRF.
 
 ```xml
 <?xml version="1.0"?>
@@ -911,7 +911,7 @@ python3 jwt_tool.py <token> -X a          # thử tấn công alg:none
 python3 jwt_tool.py <token> -C -d wordlist.txt   # brute-force secret HS256
 ```
 
-**LƯU Ý.** JWT không thu hồi được dễ dàng (stateless). Dùng `exp` ngắn + refresh token, hoặc danh sách thu hồi (`jti` blacklist). Không để dữ liệu nhạy cảm trong payload (chỉ là base64, ai cũng đọc được).
+**Lưu ý:** JWT không thu hồi được dễ dàng (stateless). Dùng `exp` ngắn + refresh token, hoặc danh sách thu hồi (`jti` blacklist). Không để dữ liệu nhạy cảm trong payload (chỉ là base64, ai cũng đọc được).
 
 ### 5.14.4. OAuth2 — Authorization Code Flow (RFC 6749), kèm PKCE (RFC 7636)
 
@@ -1068,7 +1068,7 @@ Quy trình: (1) vẽ DFD, (2) xác định trust boundary, (3) với mỗi phầ
 
 ## 5.18. Zero Trust — NIST SP 800-207
 
-**LÀ GÌ.** Zero Trust (ZT) là mô hình bỏ giả định "tin cậy theo vị trí mạng" (trong LAN ≠ an toàn). Khẩu hiệu: *"never trust, always verify"*. NIST SP 800-207 định nghĩa kiến trúc và nguyên tắc (cần đối chiếu văn bản chính thức của NIST khi triển khai).
+**Là gì:** Zero Trust (ZT) là mô hình bỏ giả định "tin cậy theo vị trí mạng" — nằm trong LAN không có nghĩa là an toàn. Khẩu hiệu: *"never trust, always verify"*. NIST SP 800-207 định nghĩa kiến trúc và nguyên tắc (cần đối chiếu văn bản chính thức của NIST khi triển khai).
 
 **Bảy nguyên tắc cốt lõi (NIST SP 800-207, tóm lược — cần đối chiếu văn bản gốc):**
 1. Mọi nguồn dữ liệu và dịch vụ tính toán đều là resource.

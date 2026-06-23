@@ -73,7 +73,7 @@ Every defensive device acts at one (or more) OSI layers. Understanding precisely
 | L4 Transport | Segment (TCP) / Datagram (UDP) | Stateful firewall (pfSense/pf), L4 LB | Port, TCP flags, connection state |
 | L5-L7 App | Message (HTTP, DNS, TLS) | WAF (ModSecurity), L7 proxy, NGFW DPI | URI, header, body, application signature |
 
-The key design point (WHY): an L3/L4 firewall only sees `IP/port/flags`, so it can allow `tcp dst port 443` but has absolutely no idea whether that HTTPS flow contains `UNION SELECT`. That is why the WAF exists — it has to terminate TLS (TLS termination) to read the plaintext HTTP. Conversely, a WAF is ineffective at blocking a SYN flood, because that should be stopped at L3/L4 before resources are spent decrypting TLS.
+**Why:** an L3/L4 firewall only sees `IP/port/flags`, so it can allow `tcp dst port 443` but has absolutely no idea whether that HTTPS flow contains `UNION SELECT`. That is why the WAF exists — it has to terminate TLS (TLS termination) to read the plaintext HTTP. Conversely, a WAF is ineffective at blocking a SYN flood, because that should be stopped at L3/L4 before resources are spent decrypting TLS.
 
 ### 11.1.2. IDS vs IPS
 
@@ -86,7 +86,7 @@ The key design point (WHY): an L3/L4 firewall only sees `IP/port/flags`, so it c
 | Availability risk | No effect on the link if the IDS dies | Single point of failure; needs fail-open/fail-close |
 | Latency | 0 (in parallel) | Adds processing latency to every packet |
 
-WHY the distinction matters: an IPS sits on the data path, so a bad rule (a catastrophic regex, or a drop based on anomalies) can cause a loss of service. An IDS is safer for availability but is only useful when there is a response process (SOAR/SOC). In practice you typically deploy the IDS first (tuning rules in alert mode), and only after reducing false positives do you switch to IPS (inline-block).
+**Why:** the distinction matters because an IPS sits on the data path, so a bad rule (a catastrophic regex, or a drop based on anomalies) can cause a loss of service. An IDS is safer for availability but is only useful when there is a response process (SOAR/SOC). In practice you typically deploy the IDS first (tuning rules in alert mode), and only after reducing false positives do you switch to IPS (inline-block).
 
 ### 11.1.3. NIDS vs HIDS
 
@@ -104,10 +104,12 @@ SPAN (port mirroring):  Switch copies traffic from the ports → 1 monitor port 
 TAP (Test Access Point): a hardware device cut into the wire, copying 100% of the bits (including errors).
    Pro: full-fidelity, fail-safe.  Con: consumes ports (separate TX/RX in two directions needs aggregation), requires cutting the cable.
 
-INLINE (IPS): traffic passes THROUGH the device.  Can drop. But is a potential dead point.
+INLINE (IPS): traffic passes THROUGH the device.  Can drop. But is a potential point of failure / chokepoint.
 ```
 
-Security note: with full-duplex 10G traffic, a TAP splits RX/TX into two 10G flows; the NIDS needs a NIC that receives 20G in total, or a packet broker to aggregate. SPAN on the same switch can silently drop packets under high load → missing an attack without anyone knowing.
+**Note:**
+- With full-duplex 10G traffic, a TAP splits RX/TX into two 10G flows; the NIDS needs a NIC that receives 20G in total, or a packet broker to aggregate.
+- SPAN on the same switch can silently drop packets under high load, missing an attack without anyone knowing.
 
 ---
 
@@ -126,7 +128,7 @@ Both Snort (2.x/3.x) and Suricata divide the pipeline into stages:
 - Preprocessors (Snort) / app-layer (Suricata): reassemble the TCP stream (stream reassembly), defend against evasion via IP fragmentation (frag3), normalize HTTP (http_inspect), decode, and track flow state.
 - Detection engine: uses a multi-pattern algorithm (Aho-Corasick) to match the `content` of thousands of rules in parallel, and only then runs the expensive `pcre` on the rules that passed the fast content step.
 
-WHY put `content` before `pcre`: regex is CPU-intensive; the engine uses `content` (fixed-string matching via Aho-Corasick, O(n)) as a "fast pattern" to quickly eliminate the majority of packets, so only packets containing that string incur the regex cost. This is why every good rule should have at least one `content` to provide a fast pattern.
+**Why** put `content` before `pcre`: regex is CPU-intensive; the engine uses `content` (fixed-string matching via Aho-Corasick, O(n)) as a "fast pattern" to quickly eliminate the majority of packets, so only packets containing that string incur the regex cost. This is why every good rule should have at least one `content` to provide a fast pattern.
 
 Key difference: Suricata is multi-threaded by design, supports compatibility with most of the Snort rule syntax, adds `app-layer` keywords (http.uri, tls.sni, dns.query), and exports EVE JSON. Snort 3 has also been rewritten to be multi-threaded. The rule syntax below is compatible with both unless noted otherwise.
 
@@ -195,7 +197,7 @@ Explaining `offset`/`depth` and `distance`/`within` (very commonly confused):
 - `offset`/`depth` measure ABSOLUTELY from the start of the payload. `offset:4; depth:20;` = search within bytes 4..23.
 - `distance`/`within` measure RELATIVE to the end of the previous content's match. Use them to match several fragments close together without knowing the absolute position.
 
-WHY have both: a real payload has a fixed-length header portion (use offset/depth) and a variable portion that needs relative matching (use distance/within). Constraining the search region also reduces false positives and speeds things up.
+**Why** have both: a real payload has a fixed-length header portion (use offset/depth) and a variable portion that needs relative matching (use distance/within). Constraining the search region also reduces false positives and speeds things up.
 
 ### 11.2.3. A real rule example — explaining each parameter
 
@@ -244,7 +246,7 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (
     sid:1000020; rev:1;
 )
 ```
-Note: the rule relies on a default artifact; a threat actor can easily change their profile → this illustrates the mechanism, it is not a durable signature.
+**Note:** the rule relies on a default artifact; a threat actor can easily change their profile → this illustrates the mechanism, it is not a durable signature.
 
 Using `flowbits` to correlate across packets (only alert on exfil after a login has been observed):
 ```
@@ -309,13 +311,16 @@ Test the scan rule:
 nmap -sS -p1-1000 10.0.0.10    # generates many SYNs → triggers sid:1000010
 ```
 
-Security/operational note: always test a rule on a pcap before pushing it to an inline IPS. An unanchored `pcre` (with no `content` fast pattern) running on every packet can drive CPU to 100% → a DoS against the defense system itself (ReDoS). Set local `sid`s ≥ 1,000,000 so they do not collide with community rules (ET/Talos).
+**Note:**
+- Always test a rule on a pcap before pushing it to an inline IPS.
+- An unanchored `pcre` (with no `content` fast pattern) running on every packet can drive CPU to 100% — a DoS against the defense system itself (ReDoS).
+- Set local `sid`s ≥ 1,000,000 so they do not collide with community rules (ET/Talos).
 
 ---
 
 ## 11.3. ModSecurity + OWASP CRS — a layer-7 WAF
 
-### 11.3.1. What a WAF is and WHY it differs from an L3/L4 firewall
+### 11.3.1. What a WAF is and why it differs from an L3/L4 firewall
 
 A WAF (Web Application Firewall) operates at L7: it parses the HTTP request (method, URI, headers, body, cookies, params) after TLS has been terminated, then applies rules to the application CONTENT.
 
@@ -340,7 +345,7 @@ ModSecurity attaches rules to 5 phases along the lifecycle of an HTTP transactio
 | 4 | Response Body | Before sending the response body | the response content | data leaks, hiding SQL errors |
 | 5 | Logging | When writing the log | everything | decide whether to write the audit log |
 
-WHY split into phases: a body can be very large; blocking at phase 1 (headers only) is much cheaper. Phase 4 makes it possible to detect sensitive data leaking out (e.g., a MySQL error message revealing the schema).
+**Why** split into phases: a body can be very large; blocking at phase 1 (headers only) is much cheaper. Phase 4 makes it possible to detect sensitive data leaking out (e.g., a MySQL error message revealing the schema).
 
 ### 11.3.3. The SecRule directive — breaking down the syntax
 
@@ -372,7 +377,7 @@ The main operators:
 Transformations (`t:`) normalize before matching — anti-evasion:
 - `t:none` (clear inherited transforms), `t:urlDecodeUni` (decode `%XX` and `%uXXXX`), `t:htmlEntityDecode`, `t:lowercase`, `t:removeNulls`, `t:compressWhitespace`, `t:cmdLine`.
 
-WHY transform: an attacker sends `%27` instead of `'`, or `SeLeCt`. Without normalization, regex is easy to evade. The order of the transforms matters (they are applied in sequence).
+**Why** transform: an attacker sends `%27` instead of `'`, or `SeLeCt`. Without normalization, regex is easy to evade. The order of the transforms matters (they are applied in sequence).
 
 Disruptive actions (only ONE per rule chain): `deny`, `drop`, `block`, `pass`, `allow`, `redirect`. `block` delegates the decision to `SecDefaultAction`.
 
@@ -409,7 +414,7 @@ SecAuditLogParts ABIJDEFHZ            # A=audit header, B=req headers, C=req bod
 SecAuditLog /var/log/modsec_audit.log
 ```
 
-A safe deployment process (WHY): run `DetectionOnly` for a few days, read `modsec_audit.log` to find rules wrongly blocking legitimate traffic → create exclusions → only then switch to `SecRuleEngine On`. Switching straight to On easily causes an outage due to CRS false positives.
+**Why:** a safe deployment process is to run `DetectionOnly` for a few days, read `modsec_audit.log` to find rules wrongly blocking legitimate traffic → create exclusions → only then switch to `SecRuleEngine On`. Switching straight to On easily causes an outage due to CRS false positives.
 
 ### 11.3.5. OWASP CRS — anomaly scoring & paranoia level
 
@@ -421,7 +426,7 @@ Each matching rule → add a score by severity:
 Finally: if tx.anomaly_score >= tx.inbound_anomaly_score_threshold (default 5) → deny
 ```
 
-WHY scoring instead of block-on-first-match: it reduces false positives. A weak signal (e.g., the presence of a `'` character) is not enough to block; multiple signals must accumulate to cross the threshold. An administrator lowers the threshold to be stricter, raises it to loosen.
+**Why** scoring instead of block-on-first-match: it reduces false positives. A weak signal (e.g., the presence of a `'` character) is not enough to block; multiple signals must accumulate to cross the threshold. An administrator lowers the threshold to be stricter, raises it to loosen.
 
 Paranoia Level (PL1–PL4): the "suspicion" level.
 - PL1 (default): high-confidence rules, few false positives.
@@ -474,7 +479,11 @@ Action: Intercepted (phase 2)
 Apache-Error: ModSecurity: Access denied with code 403
 ```
 
-Security note: a WAF is a compensating control, it does NOT replace fixing the code (prepared statements, output encoding). WAF bypass is feasible (unusual encodings, HTTP parameter pollution, smuggling). Always use anomaly scoring + tuning for your specific application; enable response-body inspection to defend against data leaks, but weigh the RAM/latency cost.
+**Note:**
+- A WAF is a compensating control; it does NOT replace fixing the code (prepared statements, output encoding).
+- WAF bypass is feasible (unusual encodings, HTTP parameter pollution, request smuggling).
+- Always use anomaly scoring and tune for your specific application.
+- Enable response-body inspection to defend against data leaks, but weigh the RAM/latency cost.
 
 ---
 
@@ -506,7 +515,7 @@ A state table entry (the concept of each field):
 | expire | the remaining timeout |
 | packets/bytes | a counter for each direction |
 
-WHY stateful is better than stateless: stateless needs a rule for both directions and is easily fooled by a spoofed ACK packet slipping through. Stateful tracks the whole handshake sequence; only a packet matching a legitimate connection gets through. View the state: `pfctl -ss`. Count: `pfctl -si`.
+**Why** stateful is better than stateless: stateless needs a rule for both directions and is easily fooled by a spoofed ACK packet slipping through. Stateful tracks the whole handshake sequence; only a packet matching a legitimate connection gets through. View the state: `pfctl -ss`. Count: `pfctl -si`.
 
 ### 11.4.2. Firewall rules on pfSense — the fields
 
@@ -528,7 +537,7 @@ Each rule on an interface has:
 
 pf's evaluation order: native pf uses "LAST MATCH WINS" unless there is a `quick`. The pfSense GUI adds `quick`, so the FIRST matching rule (top to bottom) decides. Default block: pfSense has default-deny inbound on the WAN.
 
-Block vs Reject (WHY choose): Block = silent drop → a scanner has to wait for a timeout (slowing them down). Reject = returns a RST → closes quickly (good for internal UX) but helps an attacker map ports faster. Rule of thumb: Reject on the LAN, Block on the WAN.
+Block vs Reject — **why** choose one: Block = silent drop → a scanner has to wait for a timeout (slowing them down). Reject = returns a RST → closes quickly (good for internal UX) but helps an attacker map ports faster. Rule of thumb: Reject on the LAN, Block on the WAN.
 
 ### 11.4.3. Alias
 
@@ -538,7 +547,7 @@ Alias  WebServers     = 10.0.0.10, 10.0.0.11
 Alias  AdminPorts     = 22, 3389, 8443
 Rule:  Pass LAN → WebServers proto TCP dst AdminPorts  (source: AdminPCs)
 ```
-WHY: 1 rule instead of N×M rules; updating one alias applies to every rule. A URL alias (pfBlockerNG) can automatically load a list of malicious IPs.
+**Why:** 1 rule instead of N×M rules; updating one alias applies to every rule. A URL alias (pfBlockerNG) can automatically load a list of malicious IPs.
 
 ### 11.4.4. NAT — port forward and outbound
 
@@ -556,7 +565,7 @@ Outbound NAT (SNAT/masquerade): pfSense defaults to "Automatic outbound NAT" —
 ```
 1:1 NAT: maps a whole public IP ↔ a single internal IP (both in and out).
 
-WHY NAT + state go together: to translate a reply packet back, pf must remember the mapping (original port ↔ translated port) in the state table. This is also why PAT (port address translation) needs to track the source port.
+**Why** NAT + state go together: to translate a reply packet back, pf must remember the mapping (original port ↔ translated port) in the state table. This is also why PAT (port address translation) needs to track the source port.
 
 ### 11.4.5. VLAN
 
@@ -569,7 +578,7 @@ An 802.1Q VLAN inserts a 4-byte tag into the Ethernet frame (the structure):
 | DEI | 1 bit | Drop Eligible Indicator | 0 |
 | VID | 12 bit | VLAN ID (1–4094) | 20 |
 
-pfSense creates a VLAN interface on one physical NIC (router-on-a-stick): each VLAN = one subnet/interface with its own ruleset → network segmentation to defend against lateral movement. WHY 12-bit VID → at most 4094 usable VLANs (0 and 4095 are reserved).
+pfSense creates a VLAN interface on one physical NIC (router-on-a-stick): each VLAN = one subnet/interface with its own ruleset → network segmentation to defend against lateral movement. **Why** at most 4094 usable VLANs: the VID is 12 bits (0 and 4095 are reserved).
 
 ---
 
@@ -597,7 +606,7 @@ SA = ( SPI, destination IP, protocol[AH/ESP] )
 | NAT compatibility | POOR (the hash includes the IP header → NAT breaks it) | GOOD (with NAT-T, UDP 4500 encapsulation) |
 | Real-world use | Rare | Common (almost always uses ESP) |
 
-WHY ESP wins: AH authenticates the outer IP header → NAT changing the IP corrupts the ICV → it breaks. ESP only protects the payload, and NAT-T wraps an additional UDP/4500 layer so it can traverse NAT. Most VPNs use ESP with encryption + authentication (AES-GCM combines both).
+**Why** ESP wins: AH authenticates the outer IP header → NAT changing the IP corrupts the ICV → it breaks. ESP only protects the payload, and NAT-T wraps an additional UDP/4500 layer so it can traverse NAT. Most VPNs use ESP with encryption + authentication (AES-GCM combines both).
 
 #### Tunnel vs Transport mode
 
@@ -610,7 +619,7 @@ TRANSPORT mode (ESP):  [ IP_orig | ESP_hdr | TCP | Data | ESP_trailer | ESP_ICV 
 TUNNEL mode (ESP):     [ IP_new | ESP_hdr | IP_orig | TCP | Data | ESP_trailer | ESP_ICV ]
    → wraps the ENTIRE original packet in a new IP packet. Used gateway-to-gateway (site-to-site).
 ```
-WHY tunnel for site-to-site: the two gateways have public IPs; the original internal IP is hidden inside the encrypted payload → it conceals the internal topology and routes over the internet using the gateway IPs.
+**Why** tunnel for site-to-site: the two gateways have public IPs; the original internal IP is hidden inside the encrypted payload → it conceals the internal topology and routes over the internet using the gateway IPs.
 
 #### ESP header/trailer structure — each field (RFC 4303)
 
@@ -685,7 +694,10 @@ swanctl --load-all
 swanctl --initiate --child net-net
 swanctl --list-sas         # view the established SAs, SPI, algorithms, byte count
 ```
-Security note: a weak PSK is the break point (IKEv1 Aggressive mode leaks the PSK hash for offline cracking). Prefer digital certificates or EAP, AEAD (AES-GCM), DH groups ≥ ecp256/Group 19. Enable PFS (Perfect Forward Secrecy) so each CHILD_SA has its own DH → leaking one key does not leak past sessions.
+**Note:**
+- A weak PSK is the break point (IKEv1 Aggressive mode leaks the PSK hash for offline cracking).
+- Prefer digital certificates or EAP, AEAD (AES-GCM), and DH groups ≥ ecp256/Group 19.
+- Enable PFS (Perfect Forward Secrecy) so each CHILD_SA has its own DH; leaking one key then does not leak past sessions.
 
 ### 11.5.2. OpenVPN — a TLS-based VPN
 
@@ -739,7 +751,7 @@ openvpn --config server.conf      # start the server
 openvpn --config client.ovpn      # the client connects
 # Check: ip addr show tun0 ; ping 10.8.0.1
 ```
-WHY `tls-auth`/`tls-crypt`: adds an HMAC layer (or full encryption with tls-crypt) on the control channel → a packet without the correct HMAC is dropped before TLS is even processed → defends against port scans, DoS, and makes service fingerprinting harder. `remote-cert-tls server` prevents a client from being tricked into connecting to a rogue server.
+**Why** `tls-auth`/`tls-crypt`: adds an HMAC layer (or full encryption with tls-crypt) on the control channel → a packet without the correct HMAC is dropped before TLS is even processed → defends against port scans, DoS, and makes service fingerprinting harder. `remote-cert-tls server` prevents a client from being tricked into connecting to a rogue server.
 
 ### 11.5.3. WireGuard — a modern VPN, the Noise protocol
 
@@ -749,7 +761,7 @@ WireGuard is minimalist (~4000 lines of kernel code), runs in the kernel, and us
 - Hash: BLAKE2s
 - Handshake framework: the Noise Protocol Framework (Noise_IK)
 
-WHY no algorithm negotiation: it eliminates the "downgrade attack" and the complexity of IKE. To change an algorithm → bump the protocol version, not negotiate at runtime.
+**Why** no algorithm negotiation: it eliminates the "downgrade attack" and the complexity of IKE. To change an algorithm → bump the protocol version, not negotiate at runtime.
 
 #### The key model
 Each peer has a Curve25519 key pair (private 32 bytes, public 32 bytes). "Cryptokey routing": each peer declares an `AllowedIPs` — a list of IPs that peer is allowed to send/receive. Public key ↔ AllowedIPs is the entirety of "routing + authentication".
@@ -775,7 +787,7 @@ The structure of the handshake initiation message (per the whitepaper — cross-
 | mac1 | 16 byte | a MAC using the destination's public key (defends against junk packets) |
 | mac2 | 16 byte | a MAC using a cookie (defends against DoS under overload) |
 
-WHY mac1/mac2 + cookie: WireGuard is "silent" — it does not respond to invalid packets (stealth, anti-scanning). mac1 proves the sender knows the destination's public key (defends against random floods). When under load, the responder issues a cookie; the initiator must compute the correct mac2 → defending against DoS amplification.
+**Why** mac1/mac2 + cookie: WireGuard is "silent" — it does not respond to invalid packets (stealth, anti-scanning). mac1 proves the sender knows the destination's public key (defends against random floods). When under load, the responder issues a cookie; the initiator must compute the correct mac2 → defending against DoS amplification.
 
 #### A practical configuration
 Server (`/etc/wireguard/wg0.conf`):
@@ -809,7 +821,7 @@ wg-quick up wg0          # bring up the interface + route per AllowedIPs
 wg show                  # view peers, last handshake, transfer bytes
 wg-quick down wg0
 ```
-WHY `PersistentKeepalive`: WireGuard sends nothing while idle → a NAT/firewall in between expires the mapping, and the server cannot reach the client back. A 25s keepalive keeps the NAT "hole" open.
+**Why** `PersistentKeepalive`: WireGuard sends nothing while idle → a NAT/firewall in between expires the mapping, and the server cannot reach the client back. A 25s keepalive keeps the NAT "hole" open.
 
 A comparison of the three VPNs:
 
@@ -824,7 +836,10 @@ A comparison of the three VPNs:
 | Performance | high (kernel) | lower (user-space) | the highest |
 | Roaming (changing IP) | MOBIKE | reconnect | seamless (by public key) |
 
-General security note: protect the private key (file permission 600), enable PFS/rekey, pin the peer identity (cert/public key), and monitor for anomalous handshakes. WireGuard treats allowed-IPs as the trust boundary — a wrong AllowedIPs = a routing/spoofing hole.
+**Note** (common to all three VPNs):
+- Protect the private key (file permission 600), enable PFS/rekey.
+- Pin the peer identity (cert/public key) and monitor for anomalous handshakes.
+- WireGuard treats allowed-IPs as the trust boundary — a wrong AllowedIPs is a routing/spoofing hole.
 
 ---
 
@@ -859,7 +874,12 @@ server {
     }
 }
 ```
-WHY `X-Forwarded-For`: behind a reverse proxy, the backend sees the proxy's IP. This header carries the real client IP for logging/rate-limiting. Security note: the backend should only trust XFF when it comes from a trusted proxy (otherwise a client can set a fake XFF → bypassing an IP allowlist/rate-limit). A reverse proxy also helps hide the backend version (reducing the attack surface) and is the place to defend against HTTP request smuggling by strictly normalizing the `Content-Length`/`Transfer-Encoding` headers.
+**Why:** behind a reverse proxy, the backend sees the proxy's IP. The `X-Forwarded-For` header carries the real client IP for logging/rate-limiting.
+
+**Note:**
+- The backend should only trust XFF when it comes from a trusted proxy; otherwise a client can set a fake XFF and bypass an IP allowlist/rate-limit.
+- A reverse proxy also helps hide the backend version (reducing the attack surface).
+- It is also the place to defend against HTTP request smuggling, by strictly normalizing the `Content-Length`/`Transfer-Encoding` headers.
 
 ---
 
@@ -906,7 +926,7 @@ event connection_established(c: connection) {
                 $conn=c]);
 }
 ```
-WHY Zeek complements Suricata: Suricata answers "did a signature match?"; Zeek answers "what happened on the network" — enabling hunting for threats that have no signature yet (regular beaconing, DNS tunneling, anomalous TLS JA3 fingerprints). Combined: Suricata for fast alerts, Zeek for investigative context, feeding both into the SIEM.
+**Why** Zeek complements Suricata: Suricata answers "did a signature match?"; Zeek answers "what happened on the network" — enabling hunting for threats that have no signature yet (regular beaconing, DNS tunneling, anomalous TLS JA3 fingerprints). Combined: Suricata for fast alerts, Zeek for investigative context, feeding both into the SIEM.
 
 ---
 
@@ -928,7 +948,7 @@ The core operational principles:
 1. Tune first, enforce later: IDS alert-only and WAF DetectionOnly during the baseline phase; measure false positives before going inline/On.
 2. The right layer for the job: block L3/L4 at the firewall (cheap), L7 at the WAF; do not use a WAF to fight floods or a firewall to fight SQLi.
 3. Defense in depth: WAF/IDS are compensating controls; they do not replace secure code, patching, and least-privilege.
-4. The availability of the defensive device: an inline IPS/WAF is a potential dead point — design fail-open/fail-close deliberately, HA, and limit regex/ReDoS.
+4. The availability of the defensive device: an inline IPS/WAF is a potential point of failure / chokepoint — design fail-open/fail-close deliberately, HA, and limit regex/ReDoS.
 5. Encryption blinds the NIDS: consider TLS inspection at the reverse proxy (where the keys already are) instead of decrypting mid-path.
 6. Protect the VPN keys and peer identities: private key permission 600, PFS/rekey, pin the cert/public key, monitor handshakes.
 7. Correlate multiple sources: NIDS (Suricata) + NSM (Zeek) + HIDS (Wazuh) + WAF audit logs → SIEM to see the full attack chain instead of disjointed alerts.

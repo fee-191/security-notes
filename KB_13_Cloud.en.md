@@ -41,19 +41,19 @@ Cloud computing is layered by "who operates which layer" of the infrastructure s
 The core security point: **the attack surface and patching obligation shift along with the model**.
 
 ```
-            IaaS            PaaS            SaaS
-          +--------+      +--------+      +--------+
-   App    |  CUST  |      |  CUST  |      |  PROV  |
-   Data   |  CUST  |      |  CUST  |      |  CUST* |   *Customer still owns/configures data access
-   Runtime|  CUST  |      |  PROV  |      |  PROV  |
-   OS     |  CUST  |      |  PROV  |      |  PROV  |
-   Hypervisor|PROV |      |  PROV  |      |  PROV  |
-   Phys. net |PROV |      |  PROV  |      |  PROV  |
-          +--------+      +--------+      +--------+
+                 IaaS            PaaS            SaaS
+               +--------+      +--------+      +--------+
+   App         |  CUST  |      |  CUST  |      |  PROV  |
+   Data        |  CUST  |      |  CUST  |      |  CUST* |   *Customer still owns/configures data access
+   Runtime     |  CUST  |      |  PROV  |      |  PROV  |
+   OS          |  CUST  |      |  PROV  |      |  PROV  |
+   Hypervisor  |  PROV  |      |  PROV  |      |  PROV  |
+   Phys. net   |  PROV  |      |  PROV  |      |  PROV  |
+               +--------+      +--------+      +--------+
    CUST = Customer,  PROV = Provider
 ```
 
-WHY this matters: with IaaS, an unpatched kernel vulnerability in the guest OS is your responsibility; with PaaS such as Lambda, AWS patches the runtime but **a vulnerable npm library in your deployment package is still yours**. Misunderstanding this boundary is the root of most misconfiguration incidents.
+**Why:** with IaaS, an unpatched kernel vulnerability in the guest OS is your responsibility; with PaaS such as Lambda, AWS patches the runtime but **a vulnerable npm library in your deployment package is still yours**. Misunderstanding this boundary is the root of most misconfiguration incidents.
 
 ---
 
@@ -103,7 +103,7 @@ The boundary line shifts up or down depending on the service model (IaaS pushes 
 | Access configuration (IAM/policy) | Customer | Customer | Customer |
 | Data classification | Customer | Customer | Customer |
 
-SECURITY NOTE: nearly **every famous cloud data breach falls within the "IN the cloud" portion** — that is, a customer error (public bucket, key leaked in git, overly broad IAM). AWS/GCP are rarely breached at the layers they manage.
+**Note:** nearly **every famous cloud data breach falls within the "IN the cloud" portion** — that is, a customer error (public bucket, key leaked in git, overly broad IAM). AWS/GCP are rarely breached at the layers they manage.
 
 ---
 
@@ -183,7 +183,7 @@ Field-by-field description:
 | `Principal` | Only in resource-based/trust policies | Who is allowed (user/role/service) | `{"AWS": "...role/x"}` |
 | `Condition` | No | Additional conditions (operator keys) | `StringEquals`, `IpAddress`, `Bool` |
 
-WHY `Version` is a fixed date: it is not the date you wrote the policy but the **version of the policy language grammar**. AWS freezes this value; writing it incorrectly (e.g. today's date) will cause conditions/variables to malfunction.
+**Why** `Version` is a fixed date: it is not the date you wrote the policy but the **version of the policy language grammar**. AWS freezes this value; writing it incorrectly (e.g. today's date) will cause conditions/variables to malfunction.
 
 Commonly used Condition operator keys:
 
@@ -224,7 +224,7 @@ State machine diagram:
               [ALLOW]
 ```
 
-THE GOLDEN RULE: **An Explicit Deny always beats any Allow.** This is the foundation for "guarding" an account: even if someone accidentally grants `AdministratorAccess`, a Deny in an SCP/boundary still blocks it.
+**Note:** an Explicit Deny always beats any Allow. This is the foundation for guarding an account: even if someone accidentally grants `AdministratorAccess`, a Deny in an SCP/boundary still blocks it.
 
 ### 13.3.4. STS AssumeRole and Trust Policy
 
@@ -282,7 +282,7 @@ Distinguish them by the **AccessKeyId prefix** — this is a key identifier when
 | `AKIA` | Long-term (IAM user access key) | Permanent until deleted |
 | `ASIA` | Temporary (STS) | Has an Expiration |
 
-WHY ExternalId: it prevents the "confused deputy" attack. If a SaaS provider uses the same role ARN for multiple customers, an attacker who knows your role ARN could trick the SaaS into assuming your role. The ExternalId is a secret known only to you and the SaaS, attached in the condition to block this.
+**Why** ExternalId: it prevents the confused deputy attack. If a SaaS provider uses the same role ARN for multiple customers, an attacker who knows your role ARN could trick the SaaS into assuming your role. The ExternalId is a secret known only to you and the SaaS, attached in the condition to block this.
 
 ### 13.3.5. Permission Boundary
 
@@ -304,7 +304,7 @@ TOTP = HOTP(K, T)  where  T = floor((UnixTime - T0) / X)
    HOTP = Truncate( HMAC-SHA1(K, T) ) mod 10^6
 ```
 
-Enforce MFA with the `aws:MultiFactorAuthPresent` condition (as in section 13.3.2). NOTE: for the root user, enabling a hardware/virtual MFA device is the number-one priority.
+Enforce MFA with the `aws:MultiFactorAuthPresent` condition (as in section 13.3.2). **Note:** for the root user, enabling a hardware/virtual MFA device is the number-one priority.
 
 ---
 
@@ -385,7 +385,7 @@ Destination      Target            (private subnet)
 | Internet Gateway (IGW) | Bidirectional | Lets instances with a public IP receive/send Internet traffic, performing 1:1 NAT with an Elastic IP | No hourly charge |
 | NAT Gateway | One-way (outbound) | Private instances reach the Internet (updates, API calls) but the Internet CANNOT reach in | Charged per hour + per GB; placed in a public subnet |
 
-WHY the NAT GW must sit in a public subnet: the NAT GW itself needs an outbound route through the IGW; private instances route to the NAT GW, and the NAT GW routes to the IGW.
+**Why** the NAT GW must sit in a public subnet: the NAT GW itself needs an outbound route through the IGW; private instances route to the NAT GW, and the NAT GW routes to the IGW.
 
 ### 13.4.4. VPC Flow Logs — record format
 
@@ -405,7 +405,7 @@ version account-id interface-id srcaddr dstaddr srcport dstport protocol packets
 | `action` | `ACCEPT`/`REJECT` (per SG/NACL) | `ACCEPT` |
 | `log-status` | `OK`/`NODATA`/`SKIPDATA` | `OK` |
 
-NOTE: repeated `REJECT` to many ports from one IP = a sign of a port scan; use this as a source for GuardDuty and threat analysis.
+**Note:** repeated `REJECT` to many ports from one IP = a sign of a port scan; use this as a source for GuardDuty and threat analysis.
 
 ---
 
@@ -433,7 +433,7 @@ Inbound return: src 1.2.3.4:443 -> dst 10.0.1.5:51000
 - With a **SG (stateful)**: AWS keeps "connection tracking", so the return packet is automatically allowed — NO inbound rule is needed for ephemeral port 51000.
 - With a **NACL (stateless)**: the return packet to the ephemeral port (1024-65535) must have an **inbound rule allowing the ephemeral range**, otherwise it is blocked.
 
-WHY you must open the ephemeral port range on a NACL: the TCP client picks a random source port in the ephemeral range; the server's response goes to that exact port. Because the NACL keeps no state, this must be declared explicitly.
+**Why** you must open the ephemeral port range on a NACL: the TCP client picks a random source port in the ephemeral range; the server's response goes to that exact port. Because the NACL keeps no state, this must be declared explicitly.
 
 ### 13.5.3. NACL is ordered — example
 
@@ -445,7 +445,7 @@ Rule#   Type    Protocol  Port      Source           Allow/Deny
 *       ALL     ALL       ALL       0.0.0.0/0        DENY
 ```
 
-IMPORTANT: a NACL is evaluated **from the lowest number to the highest, stopping at the first match**. In the example above, an SSH packet from `203.0.113.5` matches rule 130 (DENY) BEFORE reaching rule 200 (ALLOW) => it is blocked. This is a classic rule-numbering mistake. Always give the specific rule (allowing the trusted IP) a SMALLER number than the broad deny rule.
+**Note:** a NACL is evaluated **from the lowest number to the highest, stopping at the first match**. In the example above, an SSH packet from `203.0.113.5` matches rule 130 (DENY) BEFORE reaching rule 200 (ALLOW) => it is blocked. This is a classic rule-numbering mistake. Always give the specific rule (allowing the trusted IP) a SMALLER number than the broad deny rule.
 
 ### 13.5.4. Practical example of creating a SG
 
@@ -463,7 +463,7 @@ aws ec2 authorize-security-group-ingress \
   --protocol tcp --port 5432 --source-group sg-app-888
 ```
 
-SECURITY NOTE: referencing **SG-to-SG** instead of CIDR is best practice — when an instance's IP changes, the rule still holds; and you do not accidentally open access to an unknown IP. Absolutely avoid `--cidr 0.0.0.0/0` for ports 22/3389/3306/5432.
+**Warning:** referencing **SG-to-SG** instead of CIDR is best practice — when an instance's IP changes, the rule still holds; and you do not accidentally open access to an unknown IP. Absolutely avoid `--cidr 0.0.0.0/0` for ports 22/3389/3306/5432.
 
 ---
 
@@ -488,7 +488,7 @@ aws s3api put-public-access-block --bucket company-reports \
   BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
 ```
 
-Since April 2023, AWS enables BPA by default for new buckets. WHY 4 separate flags: ACLs and policies are two historically independent mechanisms; you need to block both "public" sources.
+Since April 2023, AWS enables BPA by default for new buckets. **Why** 4 separate flags: ACLs and policies are two historically independent mechanisms; you need to block both "public" sources.
 
 ### 13.6.3. Bucket policy JSON — enforce in-transit encryption and block non-TLS
 
@@ -532,7 +532,7 @@ The first statement blocks any request not over HTTPS; the second rejects upload
 | SSE-C | Customer supplies the key on each request | sends the key in a header | You manage the key yourself |
 | DSSE-KMS | Dual-layer KMS encryption | `aws:kms:dsse` | For high-compliance requirements |
 
-Since early 2023, S3 applies SSE-S3 by default to every new object (the exact version per region needs verification). WHY choose SSE-KMS: you control who can use the key (via the KMS key policy) and **you get an audit trail for each decryption** — extremely valuable for investigations.
+Since early 2023, S3 applies SSE-S3 by default to every new object (the exact version per region needs verification). **Why** choose SSE-KMS: you control who can use the key (via the KMS key policy) and **you get an audit trail for each decryption** — extremely valuable for investigations.
 
 ### 13.6.5. Versioning
 
@@ -555,7 +555,7 @@ for b in $(aws s3api list-buckets --query 'Buckets[].Name' --output text); do
   echo "== $b =="
   aws s3api get-public-access-block --bucket "$b" \
     --query 'PublicAccessBlockConfiguration' 2>/dev/null \
-    || echo "  !! NO public-access-block (risk)"
+    || echo "  !! NO public-access-block (risk)"  # no Block Public Access
 done
 ```
 
@@ -601,7 +601,7 @@ Diagram:
    [Plaintext DEK]  --AES-256-GCM-->  [data]
 ```
 
-WHY the envelope design: (1) it reduces the number of KMS calls (encrypting data locally is fast); (2) the root CMK never leaves the KMS HSM; (3) revoking Decrypt permission on the CMK immediately invalidates every DEK.
+**Why** the envelope design: (1) it reduces the number of KMS calls (encrypting data locally is fast); (2) the root CMK never leaves the KMS HSM; (3) revoking Decrypt permission on the CMK immediately invalidates every DEK.
 
 Practical example:
 
@@ -629,7 +629,7 @@ Unlike IAM: KMS **always requires a key policy** (resource-based). A common key 
 }
 ```
 
-NOTE: deleting all statements that grant the root permissions can leave the key **unmanageable** (you would need to open an AWS Support ticket to recover it).
+**Note:** deleting all statements that grant the root permissions can leave the key **unmanageable** (you would need to open an AWS Support ticket to recover it).
 
 ---
 
@@ -679,7 +679,7 @@ It records every API call (management events) and, optionally, data events (S3 o
 | `sourceIPAddress` | source IP — cross-check against unknown IPs/countries |
 | `errorCode` (if present) | repeated `AccessDenied` = a sign of permission probing |
 
-NOTE: enable **log file integrity validation** (CloudTrail generates a SHA-256-signed digest) to detect tampered/deleted logs. Store logs in a dedicated bucket with Object Lock.
+**Note:** enable **log file integrity validation** (CloudTrail generates a SHA-256-signed digest) to detect tampered/deleted logs. Store logs in a dedicated bucket with Object Lock.
 
 ---
 
@@ -721,7 +721,7 @@ Finding names follow the structure `ThreatPurpose:ResourceType/ThreatFamilyName.
 | `Exfiltration:S3/ObjectRead.Unusual` | Unusual S3 reads |
 | `Policy:IAMUser/RootCredentialUsage` | Use of root credentials |
 
-WHY `InstanceCredentialExfiltration.OutsideAWS` is so powerful: it correlates location — an EC2 role's credentials *must* be used from inside AWS; if they appear from an external IP, they have almost certainly been extracted via SSRF/IMDS.
+**Why** `InstanceCredentialExfiltration.OutsideAWS` is so powerful: it correlates location — an EC2 role's credentials *must* be used from inside AWS; if they appear from an external IP, they have almost certainly been extracted via SSRF/IMDS.
 
 ---
 
@@ -797,7 +797,7 @@ aws ec2 modify-instance-metadata-options \
 
 `--http-tokens required` = require a token (disable v1). `--http-put-response-hop-limit 1` = the metadata response packet can travel only 1 hop (IP TTL), preventing a container on the instance or a reverse proxy from forwarding the metadata.
 
-NOTE: blocking IMDS at the network layer should also be added — for example, an iptables drop of traffic to `169.254.169.254` for the web application user that does not need metadata.
+**Note:** blocking IMDS at the network layer should also be added — for example, an iptables drop of traffic to `169.254.169.254` for the web application user that does not need metadata.
 
 ---
 
@@ -839,11 +839,32 @@ Root
 }
 ```
 
-WHY `NotAction` contains `iam`/`sts`: these services are global (implicitly region `us-east-1`); blocking by region could accidentally lock them out. An SCP applies even to the **root user of a member account** — this is the only way to restrict root.
+**Why** `NotAction` contains `iam`/`sts`: these services are global (implicitly region `us-east-1`); blocking by region could accidentally lock them out. An SCP applies even to the **root user of a member account** — this is the only way to restrict root.
 
 ---
 
 ## 13.13. GCP — AWS equivalents
+
+### 13.13.0. AWS ↔ GCP mapping table
+
+A quick reference before the details: learn one platform, then infer the other.
+
+| Concept | AWS | GCP |
+|---|---|---|
+| Human identity | IAM User | Google account / member |
+| Workload identity | IAM Role | Service Account |
+| Temporary token | STS | SA token via metadata / STS API |
+| Virtual network | VPC (per-region) | VPC (global), subnets per region |
+| Instance firewall | Security Group (stateful) | Firewall rule (stateful, with priority) |
+| Stateless ACL | NACL | (no direct equivalent; use firewall priority) |
+| Object storage | S3 | Cloud Storage |
+| Key management | KMS | Cloud KMS |
+| API audit | CloudTrail | Cloud Audit Logs |
+| Metrics/logs | CloudWatch | Cloud Monitoring / Logging |
+| Threat detection | GuardDuty | SCC / Event Threat Detection |
+| Organization guardrail | SCP | Organization Policy |
+| Secret management | Secrets Manager | Secret Manager |
+| Metadata service | IMDS 169.254.169.254 | metadata.google.internal (169.254.169.254) |
 
 ### 13.13.1. GCP IAM
 
@@ -890,7 +911,7 @@ Example IAM policy binding (the JSON format from `getIamPolicy`):
 | `condition.expression` | A CEL (Common Expression Language) expression | a condition based on resource/time |
 | `etag` | A key to prevent concurrent overwrites (optimistic locking) | base64 |
 
-DANGER NOTE: `allUsers` (anyone on the Internet) and `allAuthenticatedUsers` (any Google account) are the equivalent of "public" — the leading source of Cloud Storage leaks.
+**Warning:** `allUsers` (anyone on the Internet) and `allAuthenticatedUsers` (any Google account) are the equivalent of "public" — the leading source of Cloud Storage leaks.
 
 ### 13.13.2. Service Account & Service Account Key
 
@@ -920,7 +941,7 @@ Structure of an SA key JSON file:
 | `client_email` | the SA identifier (check this email's permissions) |
 | `token_uri` | the endpoint to exchange a JWT for an OAuth2 access token |
 
-NOTE: you should **disable creation of user-managed keys** via the Org Policy `iam.disableServiceAccountKeyCreation` and use Workload Identity Federation instead of key files.
+**Note:** you should **disable creation of user-managed keys** via the Org Policy `iam.disableServiceAccountKeyCreation` and use Workload Identity Federation instead of key files.
 
 ### 13.13.3. GCP VPC
 
@@ -974,7 +995,7 @@ A Cloud Audit Log entry (the `protoPayload` AuditLog format):
 }
 ```
 
-NOTE: Data Access logs are OFF by default — if you do not enable them, you have **no trail of who read which object** (unlike AWS, where you need to enable S3 data events). This is a common investigative blind spot.
+**Note:** Data Access logs are OFF by default — if you do not enable them, you have **no trail of who read which object** (unlike AWS, where you need to enable S3 data events). This is a common investigative blind spot.
 
 ### 13.13.6. Security Command Center (equivalent to GuardDuty + Security Hub + Config)
 
@@ -988,25 +1009,6 @@ SCC is GCP's security posture management platform: it detects misconfigurations,
 | Web Security Scanner | Scans web apps |
 
 Example findings: `PUBLIC_BUCKET_ACL`, `SERVICE_ACCOUNT_KEY_NOT_ROTATED`, `OPEN_FIREWALL`, `MFA_NOT_ENFORCED`.
-
-### 13.13.7. AWS ↔ GCP mapping table
-
-| Concept | AWS | GCP |
-|---|---|---|
-| Human identity | IAM User | Google account / member |
-| Workload identity | IAM Role | Service Account |
-| Temporary token | STS | SA token via metadata / STS API |
-| Virtual network | VPC (per-region) | VPC (global), subnets per region |
-| Instance firewall | Security Group (stateful) | Firewall rule (stateful, with priority) |
-| Stateless ACL | NACL | (no direct equivalent; use firewall priority) |
-| Object storage | S3 | Cloud Storage |
-| Key management | KMS | Cloud KMS |
-| API audit | CloudTrail | Cloud Audit Logs |
-| Metrics/logs | CloudWatch | Cloud Monitoring / Logging |
-| Threat detection | GuardDuty | SCC / Event Threat Detection |
-| Organization guardrail | SCP | Organization Policy |
-| Secret management | Secrets Manager | Secret Manager |
-| Metadata service | IMDS 169.254.169.254 | metadata.google.internal (169.254.169.254) |
 
 ---
 
@@ -1048,7 +1050,7 @@ Sample gitleaks output:
 }
 ```
 
-WHY scan the entire commit history: deleting a key in a new commit BUT leaving it in git history => an attacker can recover it with `git log -p`. You must both **revoke the key (disable it immediately)** and clean the history (or consider it permanently exposed).
+**Why** scan the entire commit history: deleting a key in a new commit but leaving it in git history => an attacker can recover it with `git log -p`. You must both **revoke the key (disable it immediately)** and clean the history (or consider it permanently exposed).
 
 GitHub Secret Scanning + push protection blocks it the moment you push; AWS has a mechanism that automatically attaches the `AWSCompromisedKeyQuarantine` policy when it detects a public key.
 
@@ -1056,7 +1058,7 @@ GitHub Secret Scanning + push protection blocks it the moment you push; AWS has 
 
 This is one of the most dangerous and common privilege-escalation paths.
 
-MECHANISM: `iam:PassRole` allows a principal to "hand" a role to a service (EC2, Lambda...). If an attacker has:
+**Mechanism:** `iam:PassRole` allows a principal to "hand" a role to a service (EC2, Lambda...). If an attacker has:
 - `iam:PassRole` for a high-privilege role (e.g. `AdminRole`), AND
 - permission to create a resource that attaches that role (e.g. `ec2:RunInstances` or `lambda:CreateFunction`),
 
@@ -1084,8 +1086,8 @@ aws ec2 run-instances --image-id ami-xxx --instance-type t3.micro \
 # Then SSH/SSM in and curl IMDS to obtain AdminRole's credentials.
 ```
 
-DEFENSE:
-- Restrict `iam:PassRole` to a specific role via `Resource` (do NOT use `"Resource":"*"`).
+**Defense:**
+- Restrict `iam:PassRole` to a specific role via `Resource` (do not use `"Resource":"*"`).
 - Use the `iam:PassedToService` condition to restrict the role to being passed only to the correct service.
 
 ```json
@@ -1097,7 +1099,7 @@ DEFENSE:
 }
 ```
 
-DETECTION: in CloudTrail, look for `RunInstances`/`CreateFunction` whose `requestParameters` contain a high-privilege role ARN, called by a non-admin principal. The Pacu tool (an AWS exploitation framework) has a module that enumerates escalation paths:
+**Detection:** in CloudTrail, look for `RunInstances`/`CreateFunction` whose `requestParameters` contain a high-privilege role ARN, called by a non-admin principal. The Pacu tool (an AWS exploitation framework) has a module that enumerates escalation paths:
 
 ```bash
 pacu
@@ -1185,7 +1187,7 @@ echo -n "S3cr3t!" | gcloud secrets create db-pass --data-file=-
 gcloud secrets versions access latest --secret=db-pass
 ```
 
-GENERAL SECURITY NOTE: (1) NEVER pass a secret through an environment variable that shows up in logs/`ps`; prefer fetching it at runtime; (2) grant read access to secrets per least privilege and enable an audit log on every access; (3) enable periodic rotation.
+**Warning** (general security): (1) never pass a secret through an environment variable that shows up in logs/`ps`; prefer fetching it at runtime; (2) grant read access to secrets per least privilege and enable an audit log on every access; (3) enable periodic rotation.
 
 ---
 

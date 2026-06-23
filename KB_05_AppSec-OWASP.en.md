@@ -8,7 +8,7 @@ Web application security is the set of techniques that protect websites, APIs, a
 
 **OWASP Top 10.** A list of the 10 most common and serious web application security risk categories, ranked from real-world data (detection frequency, exploitability, impact). It is a prioritization roadmap that covers most common risk, not an exhaustive catalog of every threat.
 
-**The injection family (Injection: SQLi, XSS, Command, SSTI).** They share a common root: **confusing the data channel with the control (code) channel**.
+**The injection family (Injection: SQLi, XSS, Command, SSTI).** They share a common root: **confusing the data channel with the control (code) channel** (details in 5.3, 5.4, 5.8, 5.9).
 
 - **SQL Injection (SQLi)** — user data is concatenated into a SQL statement, allowing the query structure to be altered and unintended data to be retrieved.
 - **Cross-Site Scripting (XSS)** — JavaScript code is injected and executed in the victim's browser, under the victim page's origin, leading to session theft or actions performed on the user's behalf.
@@ -50,7 +50,7 @@ Common defense: separate data from commands — parameterize queries, apply cont
 
 **Logging & Monitoring.** Logging and monitoring are the foundation for detecting and investigating attacks: recording who did what, when, and with what result, and raising alerts when there are signs of anomaly. Missing logs let attacks go undetected and make post-incident investigation impossible.
 
-> An in-depth reference document for security engineers (Blue Team / AppSec / DevSecOps). Each section moves from *WHAT IT IS → INTERNAL MECHANISM (down to the bit/byte/step/parameter level) → REAL-WORLD EXAMPLE → SECURITY NOTES*. The technical figures follow the relevant RFC/spec; wherever a specific version must be verified, it is explicitly noted.
+> An in-depth reference document for security engineers (Blue Team / AppSec / DevSecOps). Each section moves from *what it is → internal mechanism (down to the bit/byte/step/parameter level) → real-world example → security notes*. The technical figures follow the relevant RFC/spec; wherever a specific version must be verified, it is explicitly noted.
 
 ---
 
@@ -87,9 +87,9 @@ https://app.example.com   vs  https://app.example.com:8443 → DIFFERENT (port)
 
 ### 5.1.2. Same-Origin Policy (SOP)
 
-**WHAT IT IS.** SOP is the default policy: a script running in the context of origin A is restricted in its ability to interact with resources belonging to origin B. SOP is not a single mechanism but a family of constraints applied differently to each type of resource.
+**What it is:** SOP is the default policy: a script running in the context of origin A is restricted in its ability to interact with resources belonging to origin B. SOP is not a single mechanism but a family of constraints applied differently to each type of resource.
 
-**MECHANISM — SOP applies differently by access type:**
+**Mechanism — SOP applies differently by access type:**
 
 | Access type | How SOP applies | Example |
 |---------------|---------------------|-------|
@@ -112,9 +112,9 @@ The page at  https://evil.com  executes:
        ↑ JS cannot read the body, BUT the server ALREADY processed the transfer → CSRF
 ```
 
-### 5.1.3. CORS — Cross-Site Resource Sharing (WHATWG Fetch Standard)
+### 5.1.3. CORS — Cross-Origin Resource Sharing (WHATWG Fetch Standard)
 
-**WHAT IT IS.** CORS is a mechanism that lets a server **actively opt in** to let another origin read its response. The server declares this via the `Access-Control-*` headers; the browser is the party that enforces the decision.
+**What it is:** CORS is a mechanism that lets a server **actively opt in** to let another origin read its response. The server declares this via the `Access-Control-*` headers; the browser is the party that enforces the decision.
 
 **Request classification — this is the core point:**
 
@@ -130,7 +130,7 @@ CORS divides requests into two groups:
 
 **Why is a preflight needed?** To protect legacy servers that are unaware of CORS. A cross-origin `DELETE` request could cause destructive impact. The preflight ensures the server *knows about CORS and agrees* before the real request is sent. "Simple requests" do not need a preflight because they could already be created with plain HTML (forms, images) before CORS existed — they do not widen the attack surface.
 
-**PREFLIGHT MECHANISM — step by step, raw:**
+**Preflight mechanism — step by step, raw:**
 
 Step 1: The browser sends the `OPTIONS` preflight:
 
@@ -181,7 +181,7 @@ Content-Type: application/json
 
 The real response must also repeat `Access-Control-Allow-Origin` (and `Allow-Credentials` if applicable); otherwise the browser still blocks reading.
 
-**SECURITY NOTES — common CORS misconfigurations:**
+**Security notes — common CORS misconfigurations:**
 
 ```javascript
 // ❌ SERIOUSLY WRONG: echo the raw Origin + allow credentials
@@ -254,7 +254,7 @@ A note on mapping: **XSS** moved into A03 (Injection), **XXE** into A05 (Misconf
 
 ## 5.3. A03 — Injection: SQL Injection (SQLi)
 
-**WHAT IT IS.** SQLi occurs when user-supplied data is concatenated directly into a SQL statement, allowing the attacker to alter the query's structure rather than merely supplying data. The root cause: **mixing the data channel and the control (code) channel**.
+**What it is:** SQLi occurs when user-supplied data is concatenated directly into a SQL statement, allowing the attacker to alter the query's structure rather than merely supplying data. The root cause: **mixing the data channel and the control (code) channel**.
 
 ### 5.3.1. Core mechanism
 
@@ -386,7 +386,7 @@ Note: a prepared statement CANNOT parameterize table/column names or keywords (`
 
 ## 5.4. A03 — Cross-Site Scripting (XSS)
 
-**WHAT IT IS.** XSS is the injection of JavaScript code that executes in the victim's browser context, under the victim page's origin. Because it runs in that origin, the code can read cookies (those without `HttpOnly`), `localStorage`, perform actions on the user's behalf, keylog, etc. The root cause: **untrusted data is embedded into the page without context-appropriate encoding**.
+**What it is:** XSS is the injection of JavaScript code that executes in the victim's browser context, under the victim page's origin. Because it runs in that origin, the code can read cookies (those without `HttpOnly`), `localStorage`, perform actions on the user's behalf, keylog, etc. The root cause: **untrusted data is embedded into the page without context-appropriate encoding**.
 
 ### 5.4.1. Three types of XSS
 
@@ -464,7 +464,7 @@ const clean = DOMPurify.sanitize(userHtml, {
 
 ### 5.4.4. Defense layer 2: Content Security Policy (CSP)
 
-**WHAT IT IS.** CSP is an HTTP header that declares the valid resource sources; the browser refuses to execute/load resources outside the policy. CSP is a **defense-in-depth layer** — it mitigates impact when encoding is missed.
+**What it is:** CSP is an HTTP header that declares the valid resource sources; the browser refuses to execute/load resources outside the policy. CSP is a **defense-in-depth layer** — it mitigates impact when encoding is missed.
 
 ```http
 Content-Security-Policy: default-src 'self';
@@ -497,13 +497,13 @@ Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-report
 ```
 `Report-Only` does not block; it only sends JSON reports to `/csp-report` — used for gradual rollout, to find false positives before enforcing.
 
-**SECURITY NOTES.** Session cookies should be set `HttpOnly` so that JS (including XSS) cannot read `document.cookie`. However, XSS can still perform actions within the session (sending requests on the user's behalf), so `HttpOnly` reduces rather than eliminates the risk.
+**Security notes:** Session cookies should be set `HttpOnly` so that JS (including XSS) cannot read `document.cookie`. However, XSS can still perform actions within the session (sending requests on the user's behalf), so `HttpOnly` reduces rather than eliminates the risk.
 
 ---
 
 ## 5.5. CSRF — Cross-Site Request Forgery (related to A01)
 
-**WHAT IT IS.** CSRF exploits the browser's **automatic attachment of cookies** to requests bound for an origin, regardless of where the request was initiated. The attacker lures a logged-in victim into triggering an impactful request against the victim site. Unlike XSS: CSRF does not need to read the response, it only needs to *send* a valid request.
+**What it is:** CSRF exploits the browser's **automatic attachment of cookies** to requests bound for an origin, regardless of where the request was initiated. The attacker lures a logged-in victim into triggering an impactful request against the victim site. Unlike XSS: CSRF does not need to read the response, it only needs to *send* a valid request.
 
 ### 5.5.1. Mechanism
 
@@ -550,7 +550,7 @@ Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax; Path=/
 
 ## 5.6. A10 — Server-Side Request Forgery (SSRF)
 
-**WHAT IT IS.** SSRF is forcing the **server** to send an HTTP/TCP request to a destination of the attacker's choosing. Because the server usually sits in a trusted internal network, the attacker uses it as a proxy to reach internal services, cloud metadata, or to scan internal ports.
+**What it is:** SSRF is forcing the **server** to send an HTTP/TCP request to a destination of the attacker's choosing. Because the server usually sits in a trusted internal network, the attacker uses it as a proxy to reach internal services, cloud metadata, or to scan internal ports.
 
 ### 5.6.1. The classic target: Cloud metadata
 
@@ -606,13 +606,13 @@ def safe_fetch(url):
 | 302 redirect → internal IP | `allow_redirects=False` then check it yourself |
 | `gopher://`, `file://` | Scheme allowlist |
 
-**SECURITY NOTES.** The strongest defense is a **specific destination allowlist** (allow only a few known hosts) rather than a blocklist; combine it with an egress firewall that blocks the server from reaching out to `169.254.169.254` and the internal network.
+**Security notes:** The strongest defense is a **specific destination allowlist** (allow only a few known hosts) rather than a blocklist; combine it with an egress firewall that blocks the server from reaching out to `169.254.169.254` and the internal network.
 
 ---
 
 ## 5.7. A01 — Broken Access Control & IDOR
 
-**WHAT IT IS.** Broken Access Control: the application fails to properly enforce that a user may only do what they are allowed. **IDOR (Insecure Direct Object Reference)** is a variant: referencing an object directly (by ID) without checking ownership.
+**What it is:** Broken Access Control: the application fails to properly enforce that a user may only do what they are allowed. **IDOR (Insecure Direct Object Reference)** is a variant: referencing an object directly (by ID) without checking ownership.
 
 ### 5.7.1. The IDOR mechanism
 
@@ -659,7 +659,7 @@ def get_invoice(iid):
 
 ## 5.8. A03 — Command Injection
 
-**WHAT IT IS.** When an application passes user data into an operating-system command through a shell, the attacker injects shell metacharacters (`;`, `|`, `&&`, `` ` ``, `$()`) to execute arbitrary commands.
+**What it is:** When an application passes user data into an operating-system command through a shell, the attacker injects shell metacharacters (`;`, `|`, `&&`, `` ` ``, `$()`) to execute arbitrary commands.
 
 ```python
 # ❌ shell=True + string concatenation
@@ -690,7 +690,7 @@ subprocess.run(["ping", "-c", "1", host], shell=False, timeout=5)
 
 ## 5.9. A03 — Server-Side Template Injection (SSTI)
 
-**WHAT IT IS.** When user input is embedded into a server-side template engine and the engine *compiles* it as template code, the attacker can execute engine expressions → often leading to RCE.
+**What it is:** When user input is embedded into a server-side template engine and the engine *compiles* it as template code, the attacker can execute engine expressions → often leading to RCE.
 
 ```python
 # ❌ Jinja2: concatenate input into the template string
@@ -721,7 +721,7 @@ Escalation payload to RCE (Jinja2/Python):
 
 ## 5.10. A08 — Insecure Deserialization
 
-**WHAT IT IS.** Deserialization turns data (a byte stream) into an object. If untrusted data is deserialized using a mechanism that allows arbitrary type reconstruction / method invocation, the attacker can build a "gadget chain" that leads to RCE.
+**What it is:** Deserialization turns data (a byte stream) into an object. The risk lies in mechanisms that allow arbitrary type reconstruction or method invocation while rebuilding the object. With such a mechanism, if you deserialize untrusted data, the attacker can build a "gadget chain" (a sequence of linked objects) that leads to RCE.
 
 ### 5.10.1. Java — `ObjectInputStream`
 
@@ -765,7 +765,7 @@ payload = pickle.dumps(E())     # send it to a server to unpickle
 
 ## 5.11. A05 — XML External Entity (XXE)
 
-**WHAT IT IS.** An XML parser allows defining **entities** that point to external resources; if enabled, the attacker can read internal files or trigger SSRF.
+**What it is:** An XML parser allows defining **entities** that point to external resources; if enabled, the attacker can read internal files or trigger SSRF.
 
 ```xml
 <?xml version="1.0"?>
@@ -912,7 +912,7 @@ python3 jwt_tool.py <token> -X a          # try the alg:none attack
 python3 jwt_tool.py <token> -C -d wordlist.txt   # brute-force the HS256 secret
 ```
 
-**NOTE.** JWTs cannot be easily revoked (stateless). Use a short `exp` + refresh tokens, or a revocation list (`jti` blacklist). Do not put sensitive data in the payload (it is only base64; anyone can read it).
+**Note:** JWTs cannot be easily revoked (stateless). Use a short `exp` + refresh tokens, or a revocation list (`jti` blacklist). Do not put sensitive data in the payload (it is only base64; anyone can read it).
 
 ### 5.14.4. OAuth2 — Authorization Code Flow (RFC 6749), with PKCE (RFC 7636)
 
@@ -1069,7 +1069,7 @@ The process: (1) draw the DFD, (2) identify trust boundaries, (3) for each eleme
 
 ## 5.18. Zero Trust — NIST SP 800-207
 
-**WHAT IT IS.** Zero Trust (ZT) is a model that abandons the assumption of "trust based on network location" (being on the LAN ≠ safe). The slogan: *"never trust, always verify"*. NIST SP 800-207 defines the architecture and principles (consult the official NIST document when implementing).
+**What it is:** Zero Trust (ZT) is a model that abandons the assumption of "trust based on network location" — being on the LAN does not mean you are safe. The slogan: *"never trust, always verify"*. NIST SP 800-207 defines the architecture and principles (consult the official NIST document when implementing).
 
 **The seven core principles (NIST SP 800-207, summarized — consult the original document):**
 1. All data sources and computing services are resources.

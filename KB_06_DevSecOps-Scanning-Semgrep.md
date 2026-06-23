@@ -11,9 +11,11 @@ Các khái niệm và công cụ chính của chương:
 - **Các loại quét** (mỗi loại có vùng mù riêng, cần kết hợp):
   - **SAST** (Static Application Security Testing): phân tích mã nguồn không thực thi; bắt tốt injection, XSS, path traversal.
   - **DAST** (Dynamic Application Security Testing): chạy ứng dụng và tấn công qua HTTP; bắt lỗi runtime, misconfig, lỗi xác thực.
+  - **IAST** (Interactive Application Security Testing): gắn agent vào runtime, kết hợp data-flow runtime với vị trí code.
   - **SCA** (Software Composition Analysis): kiểm tra thư viện bên thứ ba so với CSDL CVE.
   - **Secret scanning**: tìm mật khẩu, khóa API, token bị commit vào code.
   - **IaC scanning**: kiểm tra cấu hình hạ tầng (Terraform, K8s) tìm sai cấu hình.
+  - **Container scanning**: quét layer image, tìm CVE trong package OS và dependency ứng dụng đóng gói trong image.
 - **Semgrep**: công cụ SAST mã nguồn mở ("semantic grep") so khớp theo cấu trúc AST thay vì văn bản thuần. Giải quyết vấn đề: regex báo nhầm và bỏ sót, còn Semgrep cân bằng tốc độ và độ chính xác. Trọng tâm chương: viết **rule** YAML, dùng **metavariable** (`$X`), và **taint mode** (theo dõi dữ liệu bẩn từ source tới sink).
 - **Gitleaks**: secret scanner quét cả nội dung file và lịch sử git, dùng hai phương pháp bổ sung — regex nhận dạng cấu trúc (ví dụ khóa AWS bắt đầu bằng `AKIA`) và Shannon entropy đo độ ngẫu nhiên.
 - **Trivy**: scanner đa năng cho container image, filesystem, cấu hình IaC và SBOM; liệt kê thành phần và đối chiếu CVE đã công bố.
@@ -106,7 +108,7 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 
 ### 6.2.5. SCA
 
-**Cơ chế**: đọc manifest/lockfile (`package-lock.json`, `pom.xml`, `go.sum`, `requirements.txt`), dựng cây phụ thuộc (kể cả transitive), so khớp với CSDL lỗ hổng (NVD, GitHub Advisory, OSV). Then map version → CVE qua dải version bị ảnh hưởng. Quan trọng vì >80% codebase hiện đại là code bên thứ ba.
+**Cơ chế**: đọc manifest/lockfile (`package-lock.json`, `pom.xml`, `go.sum`, `requirements.txt`), dựng cây phụ thuộc (kể cả transitive), so khớp với CSDL lỗ hổng (NVD, GitHub Advisory, OSV). Sau đó ánh xạ version → CVE qua dải version bị ảnh hưởng. Quan trọng vì >80% codebase hiện đại là code bên thứ ba.
 
 ---
 
@@ -503,7 +505,7 @@ Gitleaks quét **nội dung file VÀ lịch sử git** (mọi commit/blob qua `g
 H = -Σ p(x) · log2 p(x)        (bit/ký tự)
 ```
 
-Chuỗi tiếng Anh thường ~3.5–4.5 bit/ký tự; secret ngẫu nhiên base64 thường >4.5. Đặt ngưỡng entropy giúp bắt secret lạ nhưng dễ FP nếu để thấp.
+Chuỗi tiếng Anh thường ~3.5–4.5 bit/ký tự, còn secret ngẫu nhiên base64 thường >4.5. Đặt ngưỡng entropy giúp bắt secret lạ; nhưng nếu để ngưỡng thấp thì dễ báo nhầm (false positive).
 
 ### 6.7.2. Lệnh
 
@@ -583,12 +585,12 @@ Output mẫu (rút gọn):
 nginx:1.21.0 (debian 10.9)
 Total: 142 (HIGH: 130, CRITICAL: 12)
 
-┌──────────────┬────────────────┬──────────┬───────────────┬───────────────┐
-│   Library    │ Vulnerability  │ Severity │ Installed Ver │ Fixed Version │
-├──────────────┼────────────────┼──────────┼───────────────┼───────────────┤
-│ openssl      │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10│ 1.1.1d-0+deb10u7│
-│ libc6        │ CVE-2021-33574 │ CRITICAL │ 2.28-10       │ (won't fix)   │
-└──────────────┴────────────────┴──────────┴───────────────┴───────────────┘
+┌──────────┬────────────────┬──────────┬─────────────────┬──────────────────┐
+│ Library  │ Vulnerability  │ Severity │ Installed Ver   │ Fixed Version    │
+├──────────┼────────────────┼──────────┼─────────────────┼──────────────────┤
+│ openssl  │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10  │ 1.1.1d-0+deb10u7 │
+│ libc6    │ CVE-2021-33574 │ CRITICAL │ 2.28-10         │ (won't fix)      │
+└──────────┴────────────────┴──────────┴─────────────────┴──────────────────┘
 ```
 
 Tham số quan trọng:

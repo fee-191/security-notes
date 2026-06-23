@@ -11,9 +11,11 @@ The key concepts and tools in this chapter:
 - **Types of scanning** (each has its own blind spot, so they must be combined):
   - **SAST** (Static Application Security Testing): analyzes source code without executing it; good at catching injection, XSS, path traversal.
   - **DAST** (Dynamic Application Security Testing): runs the application and attacks it over HTTP; catches runtime bugs, misconfigurations, authentication flaws.
+  - **IAST** (Interactive Application Security Testing): attaches an agent to the runtime, combining runtime data flow with code location.
   - **SCA** (Software Composition Analysis): checks third-party libraries against the CVE database.
   - **Secret scanning**: looks for passwords, API keys, and tokens committed into the code.
   - **IaC scanning**: checks infrastructure configuration (Terraform, K8s) for misconfigurations.
+  - **Container scanning**: scans image layers for CVEs in OS packages and application dependencies packaged inside the image.
 - **Semgrep**: an open-source SAST tool ("semantic grep") that matches against AST structure rather than plain text. Problem it solves: regexes both false-alarm and miss things, whereas Semgrep balances speed and accuracy. Chapter focus: writing YAML **rules**, using **metavariables** (`$X`), and **taint mode** (tracking tainted data from source to sink).
 - **Gitleaks**: a secret scanner that scans both file contents and git history, using two complementary methods — regexes that recognize structure (for example, AWS keys starting with `AKIA`) and Shannon entropy that measures randomness.
 - **Trivy**: a versatile scanner for container images, filesystems, IaC configuration, and SBOMs; it enumerates components and cross-references them against published CVEs.
@@ -503,7 +505,7 @@ Gitleaks scans **file contents AND git history** (every commit/blob via `git log
 H = -Σ p(x) · log2 p(x)        (bits/character)
 ```
 
-English text is typically ~3.5–4.5 bits/character; random base64 secrets are typically >4.5. Setting an entropy threshold helps catch unusual secrets but easily produces FPs if set too low.
+English text is typically ~3.5–4.5 bits/character, whereas random base64 secrets are typically >4.5. Setting an entropy threshold helps catch unusual secrets; but if the threshold is set too low, it easily produces false positives.
 
 ### 6.7.2. Commands
 
@@ -583,12 +585,12 @@ Sample output (abridged):
 nginx:1.21.0 (debian 10.9)
 Total: 142 (HIGH: 130, CRITICAL: 12)
 
-┌──────────────┬────────────────┬──────────┬───────────────┬───────────────┐
-│   Library    │ Vulnerability  │ Severity │ Installed Ver │ Fixed Version │
-├──────────────┼────────────────┼──────────┼───────────────┼───────────────┤
-│ openssl      │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10│ 1.1.1d-0+deb10u7│
-│ libc6        │ CVE-2021-33574 │ CRITICAL │ 2.28-10       │ (won't fix)   │
-└──────────────┴────────────────┴──────────┴───────────────┴───────────────┘
+┌──────────┬────────────────┬──────────┬─────────────────┬──────────────────┐
+│ Library  │ Vulnerability  │ Severity │ Installed Ver   │ Fixed Version    │
+├──────────┼────────────────┼──────────┼─────────────────┼──────────────────┤
+│ openssl  │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10  │ 1.1.1d-0+deb10u7 │
+│ libc6    │ CVE-2021-33574 │ CRITICAL │ 2.28-10         │ (won't fix)      │
+└──────────┴────────────────┴──────────┴─────────────────┴──────────────────┘
 ```
 
 Important parameters:

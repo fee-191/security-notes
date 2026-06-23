@@ -19,11 +19,11 @@ Các cơ chế kernel nền tảng:
 
 **Container escape.** Kịch bản kẻ tấn công vượt khỏi cô lập namespace/cgroup để truy cập host và các container khác. Do container dùng chung kernel host, cấu hình lỏng lẻo (chế độ `--privileged`, mount nhầm `docker.sock`, cấp dư capability) mở đường escape. Nắm các con đường escape là điều kiện để bịt chúng.
 
-**Kubernetes (K8s).** Hệ điều phối container quy mô lớn trên nhiều node: lập lịch, tự phục hồi, scale theo tải, rolling update không gián đoạn. Các khái niệm bảo mật trọng yếu: **RBAC** (phân quyền theo subject/verb/resource), **NetworkPolicy** (firewall L3/L4 giữa các Pod), **Secret** (lưu khóa/mật khẩu — mặc định chỉ mã hóa base64, không phải mã hóa thật, cần bật encryption-at-rest), và **Pod Security Standards** (ràng buộc container chạy an toàn, ví dụ cấm chạy root).
+**Kubernetes (K8s).** Hệ điều phối container (orchestrator) quy mô lớn trên nhiều node: lập lịch, tự phục hồi, scale theo tải, rolling update không gián đoạn. Các khái niệm bảo mật trọng yếu: **RBAC** (phân quyền theo subject/verb/resource), **NetworkPolicy** (firewall L3/L4 giữa các Pod), **Secret** (lưu khóa/mật khẩu — mặc định chỉ mã hóa base64, không phải mã hóa thật, cần bật encryption-at-rest), và **Pod Security Standards** (ràng buộc container chạy an toàn, ví dụ cấm chạy root).
 
 **Falco.** Bộ phát hiện thời gian thực (runtime detection) cho container và Kubernetes: giám sát **syscall** và cảnh báo hành vi bất thường (mở shell trong container, đọc `/etc/shadow`...). Đây là lớp phát hiện bổ sung cho các biện pháp phòng ngừa (RBAC, firewall), thường chuyển cảnh báo về SIEM.
 
-> Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo trình tự: LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ → LƯU Ý BẢO MẬT.
+> Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo trình tự: *là gì* → *cơ chế bên trong* (tới mức bit/byte/bước/tham số) → *ví dụ thực tế* → *lưu ý bảo mật*.
 
 ---
 
@@ -57,6 +57,8 @@ Lưu ý KVM là trường hợp lai: KVM là một **module kernel Linux** (`kvm
 
 ### 14.1.3. Hardware-assisted virtualization: VT-x / AMD-V và VMCS
 
+> Lưu ý: phần này đào sâu xuống mức phần cứng. Nếu bạn chỉ cần bức tranh lớn, đọc lướt và chuyển sang 14.2.
+
 Intel VT-x thêm hai chế độ vận hành mới (không phải ring mới):
 
 - **VMX root mode**: nơi hypervisor (VMM) chạy. Có thêm các lệnh `VMXON`, `VMLAUNCH`, `VMRESUME`, `VMEXIT`, `VMREAD`, `VMWRITE`, `VMPTRLD`.
@@ -76,6 +78,8 @@ Trạng thái chuyển đổi được lưu trong cấu trúc **VMCS** (Virtual 
 Khi VM-exit xảy ra, CPU ghi mã lý do (Basic Exit Reason — 16 bit) vào VMCS. Ví dụ exit reason `0` = NMI, `1` = external interrupt, `12` = HLT, `30` = I/O instruction, `48` = EPT violation. Hypervisor đọc bằng `VMREAD` để dispatch xử lý.
 
 ### 14.1.4. Ảo hóa bộ nhớ: shadow page tables vs EPT/NPT
+
+> Lưu ý: phần này tiếp tục đào sâu xuống cơ chế MMU. Nếu chỉ cần bức tranh lớn, đọc lướt và chuyển sang 14.2.
 
 Guest có bảng phân trang riêng dịch **GVA → GPA** (Guest Virtual → Guest Physical). Nhưng GPA không phải địa chỉ RAM thật (HPA — Host Physical Address). Cần thêm một lớp dịch GPA → HPA.
 
@@ -110,6 +114,8 @@ Used Ring         ->  host đẩy index descriptor "đã xử lý xong"
 ```
 
 Cơ chế này giảm số VM-exit (gom nhiều I/O, "notify" theo lô), nên throughput gần native. Đây là lý do máy ảo Linux trên KVM/Proxmox nên dùng disk bus `virtio-scsi` và NIC model `virtio` thay vì giả lập `e1000`/`IDE`.
+
+Tới đây ta đã thấy ảo hóa dựng biên giới cô lập bằng phần cứng (VT-x/EPT) và một kernel riêng cho mỗi VM. Container chọn cách khác: chia sẻ kernel host. Phần 14.4 sẽ đặt hai mô hình cạnh nhau để thấy rõ đánh đổi cô lập; trước đó, 14.2–14.3 đi qua hai hypervisor thực tế là Proxmox và VMware.
 
 ---
 
@@ -225,20 +231,20 @@ VMFS là filesystem cụm có khóa phân tán (SCSI reservations / ATS - Atomic
 Sơ đồ stack hai mô hình cho thấy khác biệt cốt lõi: VM nhân bản cả kernel + OS cho mỗi workload (cô lập bằng hypervisor/phần cứng), còn container chia sẻ một kernel host (cô lập bằng namespaces/cgroups của chính kernel đó).
 
 ```
-        VIRTUAL MACHINES                          CONTAINERS
-  +------+ +------+ +------+              +------+ +------+ +------+
-  | App  | | App  | | App  |              | App  | | App  | | App  |
-  | Libs | | Libs | | Libs |              | Libs | | Libs | | Libs |
-  +------+ +------+ +------+              +------+ +------+ +------+
-  |Guest | |Guest | |Guest |  <- kernel   |  Container Runtime    |
-  |  OS  | |  OS  | |  OS  |     riêng     |  (containerd/CRI-O)   |
-  +------+-+------+-+------+    mỗi VM     +-----------------------+
-  |      Hypervisor       |               |   Kernel host (CHUNG)  | <- 1 kernel
-  +-----------------------+               +-----------------------+   cho tất cả
-  |  Host OS (Type 2) /   |               |       Host OS         |
-  |  none (Type 1)        |               +-----------------------+
-  +-----------------------+               |     Phần cứng vật lý   |
-  |   Phần cứng vật lý     |               +-----------------------+
+          VIRTUAL MACHINES                         CONTAINERS
+  +------+ +------+ +------+             +------+ +------+ +------+
+  | App  | | App  | | App  |            | App  | | App  | | App  |
+  | Libs | | Libs | | Libs |            | Libs | | Libs | | Libs |
+  +------+ +------+ +------+             +------+ +------+ +------+
+  |Guest | |Guest | |Guest | <- kernel   |   Container Runtime  |
+  |  OS  | |  OS  | |  OS  |    riêng    |   (containerd/CRI-O) |
+  +------+-+------+-+------+   mỗi VM    +----------------------+
+  |       Hypervisor      |             |  Kernel host (CHUNG) | <- 1 kernel
+  +-----------------------+             +----------------------+    cho tất cả
+  |  Host OS (Type 2) /   |             |        Host OS       |
+  |    none (Type 1)      |             +----------------------+
+  +-----------------------+             |   Phần cứng vật lý   |
+  |    Phần cứng vật lý   |             +----------------------+
   +-----------------------+
 ```
 

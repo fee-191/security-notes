@@ -1575,7 +1575,7 @@ gsutil iam get gs://prod-data | grep -E &quot;allUsers|allAuthenticatedUsers&quo
 <hr />
 <h2 id="ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</h2>
 <h3 id="ch13-13141-what-it-is-and-why-i-had-to-learn-it">13.14.1. What it is and why I had to learn it</h3>
-<p>I run two clouds in practice: prod on AWS, and dev (plus part of prod) on OCI (Oracle Cloud Infrastructure). Why I have to know OCI: it is <strong>not a renamed copy of AWS</strong> — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.</p>
+<p>Plenty of shops end up running two clouds side by side, and OCI often turns up as the second one because its compute is considerably cheaper. Why it is worth knowing: OCI is <strong>not a renamed copy of AWS</strong> — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.</p>
 <p>The biggest difference to grasp up front: <strong>AWS isolates with <em>accounts</em>, while OCI isolates with <em>compartments</em> inside a single <em>tenancy</em>.</strong> Getting this wrong means getting OCI's entire permission model wrong.</p>
 <h3 id="ch13-13142-tenancy-and-compartment-the-logical-permission-tree">13.14.2. Tenancy and Compartment — the logical permission tree</h3>
 <ul>

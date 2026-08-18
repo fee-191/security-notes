@@ -1575,7 +1575,7 @@ gsutil iam get gs://prod-data | grep -E &quot;allUsers|allAuthenticatedUsers&quo
 <hr />
 <h2 id="ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</h2>
 <h3 id="ch13-13141-la-gi-va-vi-sao-minh-phai-hoc-no">13.14.1. Là gì và vì sao mình phải học nó</h3>
-<p>Mình vận hành thực tế hai đám mây: prod chạy trên AWS, còn dev (và một phần prod) chạy trên OCI (Oracle Cloud Infrastructure). Lý do phải nắm OCI: nó <strong>không phải bản sao đổi tên của AWS</strong> — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.</p>
+<p>Nhiều nơi chạy song song hai đám mây, và OCI hay xuất hiện ở vế thứ hai vì giá compute rẻ hơn đáng kể. Lý do phải nắm nó: OCI <strong>không phải bản sao đổi tên của AWS</strong> — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.</p>
 <p>Điểm khác biệt lớn nhất phải nắm trước: <strong>AWS cô lập bằng <em>account</em> (tài khoản), còn OCI cô lập bằng <em>compartment</em> (ngăn) bên trong một <em>tenancy</em>.</strong> Hiểu sai chỗ này là hiểu sai toàn bộ mô hình phân quyền của OCI.</p>
 <h3 id="ch13-13142-tenancy-va-compartment-cay-phan-quyen-logic">13.14.2. Tenancy và Compartment — cây phân quyền logic</h3>
 <ul>

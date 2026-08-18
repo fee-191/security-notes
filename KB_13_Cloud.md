@@ -1004,7 +1004,7 @@ Finding ví dụ: `PUBLIC_BUCKET_ACL`, `SERVICE_ACCOUNT_KEY_NOT_ROTATED`, `OPEN_
 
 ### 13.14.1. Là gì và vì sao mình phải học nó
 
-Mình vận hành thực tế hai đám mây: prod chạy trên AWS, còn dev (và một phần prod) chạy trên OCI (Oracle Cloud Infrastructure). Lý do phải nắm OCI: nó **không phải bản sao đổi tên của AWS** — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.
+Nhiều nơi chạy song song hai đám mây, và OCI hay xuất hiện ở vế thứ hai vì giá compute rẻ hơn đáng kể. Lý do phải nắm nó: OCI **không phải bản sao đổi tên của AWS** — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.
 
 Điểm khác biệt lớn nhất phải nắm trước: **AWS cô lập bằng *account* (tài khoản), còn OCI cô lập bằng *compartment* (ngăn) bên trong một *tenancy*.** Hiểu sai chỗ này là hiểu sai toàn bộ mô hình phân quyền của OCI.
 

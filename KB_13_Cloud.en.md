@@ -1004,7 +1004,7 @@ Example findings: `PUBLIC_BUCKET_ACL`, `SERVICE_ACCOUNT_KEY_NOT_ROTATED`, `OPEN_
 
 ### 13.14.1. What it is and why I had to learn it
 
-I run two clouds in practice: prod on AWS, and dev (plus part of prod) on OCI (Oracle Cloud Infrastructure). Why I have to know OCI: it is **not a renamed copy of AWS** — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.
+Plenty of shops end up running two clouds side by side, and OCI often turns up as the second one because its compute is considerably cheaper. Why it is worth knowing: OCI is **not a renamed copy of AWS** — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.
 
 The biggest difference to grasp up front: **AWS isolates with *accounts*, while OCI isolates with *compartments* inside a single *tenancy*.** Getting this wrong means getting OCI's entire permission model wrong.
 

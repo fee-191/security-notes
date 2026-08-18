@@ -38,27 +38,54 @@ h1{font-family:var(--serif);font-size:clamp(26px,5vw,38px);margin:12px 0 8px;lin
 p{color:var(--muted);margin:0 auto;max-width:430px}
 img{width:100%;max-width:340px;height:auto;border-radius:14px;border:1px solid var(--line);
   margin:26px 0 22px;display:block;margin-left:auto;margin-right:auto}
-.links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:6px}
-.links a{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 20px;
+.langbtn{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:6px 14px;font-size:12.5px;color:var(--ink);cursor:pointer;font-family:inherit;
+  transition:border-color .18s,color .18s}
+.langbtn:hover{border-color:var(--accent);color:var(--accent)}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.row a{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 20px;
   color:var(--ink);text-decoration:none;font-size:14.5px;transition:transform .18s,border-color .18s,color .18s}
-.links a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.row a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
 .cursor{display:inline-block;width:.5em;height:1em;background:var(--accent);
   vertical-align:-.12em;margin-left:.25em;animation:blink 1.15s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-@media(prefers-reduced-motion:reduce){.cursor{animation:none}.links a:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){.cursor{animation:none}.row a:hover{transform:none}}
 </style>
 </head>
 <body>
   <div class="box">
     <div class="code">HTTP 404 — NOT FOUND</div>
-    <h1>Đường dẫn này không tồn tại<span class="cursor"></span></h1>
-    <p>Có thể link đã cũ, hoặc bạn vừa thử một path mà đám scanner ngoài kia cũng hay thử.</p>
+    <h1 id="h">Đường dẫn này không tồn tại<span class="cursor"></span></h1>
+    <p id="p">Có thể link đã cũ, hoặc bạn vừa thử một path mà đám scanner ngoài kia cũng hay thử.</p>
+    <button class="langbtn" id="lang" type="button">🌐 English</button>
     <img src="assets/404.jpg" alt="Meme: chuyên gia bảo mật và thời còn là hacker">
-    <div class="links">
-      <a href="/">Trang chủ</a>
-      <a href="/notes.html">Sổ tay</a>
-      <a href="/en/">English</a>
+    <div class="row">
+      <a id="a1" href="/">Trang chủ</a><a id="a2" href="/notes.html">Sổ tay</a>
     </div>
   </div>
+<script>
+var T={
+  vi:{t:"404 — Không có gì ở đây",h:"Đường dẫn này không tồn tại",
+      p:"Có thể link đã cũ, hoặc bạn vừa thử một path mà đám scanner ngoài kia cũng hay thử.",
+      a1:["Trang chủ","/"],a2:["Sổ tay","/notes.html"],btn:"🌐 English",alt:"Meme: chuyên gia bảo mật và thời còn là hacker"},
+  en:{t:"404 — Nothing here",h:"This page doesn't exist",
+      p:"The link may be outdated — or you just tried a path the scanners out there like to try too.",
+      a1:["Home","/en/"],a2:["Handbook","/en/notes.html"],btn:"🌐 Tiếng Việt",alt:"Meme: cybersecurity experts and their old days as hackers"},
+};
+var cur="vi";
+function setLang(L){
+  var d=T[L];cur=L;
+  document.documentElement.lang=L;
+  document.title=d.t;
+  document.getElementById("h").innerHTML=d.h+'<span class="cursor"></span>';
+  document.getElementById("p").textContent=d.p;
+  var a1=document.getElementById("a1"),a2=document.getElementById("a2");
+  a1.textContent=d.a1[0];a1.href=d.a1[1];
+  a2.textContent=d.a2[0];a2.href=d.a2[1];
+  document.querySelector("img").alt=d.alt;
+  document.getElementById("lang").textContent=d.btn;
+}
+document.getElementById("lang").addEventListener("click",function(){setLang(cur==="vi"?"en":"vi");});
+</script>
 </body>
 </html>

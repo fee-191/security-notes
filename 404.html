@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>404 — Không có gì ở đây</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<script>document.documentElement.className+=' js';(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c;
+  --grid:rgba(43,38,32,.055);
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --mono:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --grid:rgba(233,226,210,.05);
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --grid:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;padding:40px 24px;
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(circle at 50% 30%,#000 0,transparent 75%);
+  mask-image:radial-gradient(circle at 50% 30%,#000 0,transparent 75%)}
+.box{max-width:560px;text-align:center}
+.code{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;color:var(--accent2);font-weight:700}
+h1{font-family:var(--serif);font-size:clamp(26px,5vw,38px);margin:12px 0 8px;line-height:1.25}
+p{color:var(--muted);margin:0 auto;max-width:430px}
+img{width:100%;max-width:340px;height:auto;border-radius:14px;border:1px solid var(--line);
+  margin:26px 0 22px;display:block;margin-left:auto;margin-right:auto}
+.links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.links a{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 20px;
+  color:var(--ink);text-decoration:none;font-size:14.5px;transition:transform .18s,border-color .18s,color .18s}
+.links a:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.cursor{display:inline-block;width:.5em;height:1em;background:var(--accent);
+  vertical-align:-.12em;margin-left:.25em;animation:blink 1.15s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.cursor{animation:none}.links a:hover{transform:none}}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="code">HTTP 404 — NOT FOUND</div>
+    <h1>Đường dẫn này không tồn tại<span class="cursor"></span></h1>
+    <p>Có thể link đã cũ, hoặc bạn vừa thử một path mà đám scanner ngoài kia cũng hay thử.</p>
+    <img src="assets/404.jpg" alt="Meme: chuyên gia bảo mật và thời còn là hacker">
+    <div class="links">
+      <a href="/">Trang chủ</a>
+      <a href="/notes.html">Sổ tay</a>
+      <a href="/en/">English</a>
+    </div>
+  </div>
+</body>
+</html>

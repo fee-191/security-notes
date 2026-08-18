@@ -1,0 +1,1468 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 17 — Lập trình &amp;amp; Tự động hóa cho bảo mật — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 17 — Lập trình &amp;amp; Tự động hóa cho bảo mật — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch16.html"><link rel="next" href="ch99.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="17"><a class="nav-ch-title" href="#top"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"><a class="nav-sub" href="#ch17-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch17-171-vi-sao-python-thong-tri-an-ninh-mang-tu-đong-hoa">17.1. Vì sao Python thống trị an ninh mạng &amp;amp; tự động hóa</a><a class="nav-sub" href="#ch17-172-nen-tang-cu-phap-python-cho-bao-mat-on-nhanh-đao-sau-cho-hay-sai">17.2. Nền tảng cú pháp Python cho bảo mật (ôn nhanh, đào sâu chỗ hay sai)</a><a class="nav-sub" href="#ch17-173-socket-port-scanner-tcp-tu-con-so-0">17.3. socket — Port scanner TCP từ con số 0</a><a class="nav-sub" href="#ch17-174-requests-tu-đong-hoa-http-rest-api-session-auth">17.4. requests — Tự động hóa HTTP, REST API, session &amp;amp; auth</a><a class="nav-sub" href="#ch17-175-re-regex-parse-log-thuc-chien">17.5. re — Regex parse log thực chiến</a><a class="nav-sub" href="#ch17-176-subprocess-os-chay-lenh-he-thong-an-toan">17.6. subprocess &amp;amp; os — Chạy lệnh hệ thống an toàn</a><a class="nav-sub" href="#ch17-177-json-serialize-xu-ly-du-lieu-apicau-hinh">17.7. json — Serialize &amp;amp; xử lý dữ liệu API/cấu hình</a><a class="nav-sub" href="#ch17-178-scapy-tao-gui-sniff-goi-tin-toi-muc-byte">17.8. scapy — Tạo, gửi, sniff gói tin tới mức byte</a><a class="nav-sub" href="#ch17-179-paramiko-ssh-tu-đong-hoa-an-toan">17.9. paramiko — SSH tự động hóa an toàn</a><a class="nav-sub" href="#ch17-1710-boto3-tu-đong-hoa-aws-audit-ir-tren-cloud">17.10. boto3 — Tự động hóa AWS (audit, IR trên cloud)</a><a class="nav-sub" href="#ch17-1711-hashlib-hmac-hash-integrity-xac-thuc-thong-điep">17.11. hashlib &amp;amp; hmac — Hash, integrity, xác thực thông điệp</a><a class="nav-sub" href="#ch17-1712-secrets-sinh-token-an-toan-khong-dung-random">17.12. secrets — Sinh token an toàn (không dùng random)</a><a class="nav-sub" href="#ch17-1713-secure-coding-trong-python-tong-hop">17.13. Secure coding trong Python — tổng hợp</a><a class="nav-sub" href="#ch17-1714-kiem-thu-bao-mat-ma-python-sast">17.14. Kiểm thử bảo mật mã Python (SAST)</a><a class="nav-sub" href="#ch17-1715-ghep-noi-mot-ir-agent-mini-ket-hop-re-requests-json-secrets">17.15. Ghép nối — Một IR Agent mini (kết hợp re + requests + json + secrets)</a><a class="nav-sub" href="#ch17-1716-đong-goi-chay-bang-docker">17.16. Đóng gói &amp;amp; chạy bằng Docker</a><a class="nav-sub" href="#ch17-1717-tong-ket-cac-nguyen-tac-cot-loi">17.17. Tổng kết các nguyên tắc cốt lõi</a><a class="nav-sub" href="#ch17-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-17" data-ch="17">
+<h1 id="ch17-chuong-17-lap-trinh-tu-đong-hoa-cho-bao-mat">Chương 17 — Lập trình &amp; Tự động hóa cho bảo mật</h1>
+<h2 id="ch17-tong-quan">Tổng quan</h2>
+<p>Viết script rà log thủ công tới lần thứ ba thì mình bắt đầu tự hỏi: sao không để máy làm chuyện lặp lại này? Đó cơ bản là lý do chương này tồn tại — dùng <strong>Python làm ngôn ngữ tự động hóa cho an ninh mạng</strong>, thay các thao tác tay chân lặp đi lặp lại bằng script. Khối lượng dữ liệu bảo mật (log nhiều GB, hàng nghìn máy chủ, hàng triệu gói tin) đã vượt quá khả năng xử lý thủ công từ lâu, còn Python thì vừa phát triển nhanh vừa có thư viện cho gần như mọi việc cần làm — nó đóng vai trò <strong>glue language</strong>: logic viết bằng Python, phần tính toán nặng giao cho thư viện C đã được tối ưu và audit kỹ.</p>
+<p>Chương bắt đầu từ nền tảng dễ vấp nhất: phân biệt <code>str</code> (văn bản) với <code>bytes</code> (dữ liệu nhị phân thật sự chạy trên mạng và trong crypto) — hồi mới học mình từng coi hai thứ này là một, tới lúc parse packet sai mới hiểu ra vấn đề — và cách <code>struct</code> bóc gói tin thành từng trường. Từ đó là bộ công cụ mạng và web: <code>socket</code> để tự viết port scanner từ số 0, <code>scapy</code> để dựng và soi gói tin tới từng field khi socket không đủ (quét kín đáo, phát hiện ARP spoofing), <code>requests</code> để gọi REST API tự động hóa ticket và cảnh báo, <code>paramiko</code> để SSH vào cả một fleet chạy audit config.</p>
+<p>Phần giữa chương là các thư viện xử lý dữ liệu và hệ thống: <code>re</code> để lọc ra vài dòng đáng chú ý giữa hàng triệu dòng log, <code>json</code> làm ngôn ngữ chung với API và file cấu hình, <code>subprocess</code>/<code>os</code> để gọi chương trình ngoài và thao tác file — cũng chính là nơi command injection hay xảy ra nhất nên chương dành hẳn phần nói cách gọi an toàn, và <code>boto3</code> để audit cấu hình AWS (S3 public, security group hở) hay tự động phản ứng sự cố. Sau đó là crypto ứng dụng: <code>hashlib</code>/<code>hmac</code> cho toàn vẹn dữ liệu và xác thực nguồn gốc, <code>secrets</code> để sinh token không đoán được — tránh đúng cái bẫy kinh điển là dùng <code>random</code> (Mersenne Twister, đoán được) cho việc cần ngẫu nhiên thật. Chương khép lại bằng secure coding &amp; SAST (Bandit dò anti-pattern tự động) và một ví dụ tổng hợp — IR Agent đóng gói trong Docker — ghép mọi mảnh trên thành một luồng đọc log → phát hiện → cảnh báo → phản ứng hoàn chỉnh.</p>
+<blockquote>
+<p>Mỗi mục đi theo cấu trúc: là gì → cơ chế bên trong (tới mức bit/byte/tham số) → ví dụ chạy được → lưu ý bảo mật. Số liệu kỹ thuật bám theo spec/RFC/manual chính thức; chỗ nào chưa chắc sẽ ghi rõ.</p>
+</blockquote>
+<hr />
+<h2 id="ch17-171-vi-sao-python-thong-tri-an-ninh-mang-tu-đong-hoa">17.1. Vì sao Python thống trị an ninh mạng &amp; tự động hóa</h2>
+<p>Python được chọn làm "glue language" của bảo mật vì ba lý do kỹ thuật cụ thể, không phải vì "dễ học":</p>
+<ol>
+<li><strong>CPython có C-API ổn định</strong> → hầu hết thư viện crypto/network (OpenSSL qua <code>cryptography</code>, libpcap qua <code>scapy</code>, libssh2/openssh qua <code>paramiko</code>) đều có binding C tốc độ cao. Phần logic viết bằng Python, phần nặng chạy bằng C đã được tối ưu và audit.</li>
+<li><strong>Mô hình object + duck typing</strong> cho phép viết tool nhanh, parse dữ liệu bán cấu trúc (log, JSON, packet) mà không cần khai báo kiểu cứng nhắc.</li>
+<li><strong>Hệ sinh thái packaging</strong> (<code>pip</code>, PyPI, wheel) cho phép phân phối tool ngay, và <code>venv</code> cô lập dependency — quan trọng khi một host phân tích forensic không được "nhiễm bẩn".</li>
+</ol>
+<p>Điểm cần nhớ về mặt bảo mật ngay từ đầu: <strong>GIL (Global Interpreter Lock)</strong> trong CPython khiến đa luồng (<code>threading</code>) không chạy song song CPU-bound, nhưng vẫn song song được I/O-bound (socket, file, HTTP). Vì hầu hết tool bảo mật là I/O-bound (chờ mạng, chờ disk), <code>threading</code> và <code>asyncio</code> vẫn cực kỳ hữu ích; chỉ khi crack hash/bruteforce CPU-bound mới cần <code>multiprocessing</code>.</p>
+<hr />
+<h2 id="ch17-172-nen-tang-cu-phap-python-cho-bao-mat-on-nhanh-đao-sau-cho-hay-sai">17.2. Nền tảng cú pháp Python cho bảo mật (ôn nhanh, đào sâu chỗ hay sai)</h2>
+<h3 id="ch17-1721-kieu-du-lieu-va-bieu-dien-nhi-phan">17.2.1. Kiểu dữ liệu và biểu diễn nhị phân</h3>
+<p>Kỹ sư bảo mật làm việc với byte liên tục, nên phải phân biệt rạch ròi <code>str</code> và <code>bytes</code> — đây là nguồn bug số 1 khi parse packet/crypto.</p>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Bản chất</th>
+<th>Bất biến?</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int</code></td>
+<td>Số nguyên độ chính xác tùy ý (arbitrary precision)</td>
+<td>Có</td>
+<td>Đếm, offset, bitmask</td>
+</tr>
+<tr>
+<td><code>bytes</code></td>
+<td>Dãy byte 0–255, bất biến</td>
+<td>Có</td>
+<td>Dữ liệu mạng, hash, payload thô</td>
+</tr>
+<tr>
+<td><code>bytearray</code></td>
+<td>Dãy byte có thể sửa tại chỗ</td>
+<td>Không</td>
+<td>Build packet, sửa buffer</td>
+</tr>
+<tr>
+<td><code>str</code></td>
+<td>Dãy Unicode code point</td>
+<td>Có</td>
+<td>Văn bản, log đã decode</td>
+</tr>
+<tr>
+<td><code>memoryview</code></td>
+<td>View zero-copy (không sao chép) lên buffer</td>
+<td>—</td>
+<td>Xử lý buffer lớn không copy</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cơ chế bên trong — vì sao <code>str</code> ≠ <code>bytes</code>:</strong> Một <code>str</code> Python 3 là chuỗi <em>code point</em> Unicode; nó không có "encoding" nội tại cho tới khi <code>.encode()</code>. Một byte mạng (ví dụ byte <code>0xC3 0xA9</code>) chỉ trở thành ký tự <code>é</code> nếu bạn biết encoding là UTF-8. Trộn lẫn hai loại này khi tính HMAC sẽ ra digest sai.</p>
+<pre><code class="language-python"># Chuyển đổi tường minh — luôn chỉ định encoding
+s = &quot;héllo&quot;
+b = s.encode(&quot;utf-8&quot;)        # b'h\xc3\xa9llo'  -&gt; 6 byte (é = 2 byte)
+print(len(s), len(b))        # 5 6  -&gt; 5 ký tự nhưng 6 byte (é chiếm 2 byte)
+# Biểu diễn hex/độ dài chính xác:
+print(b.hex())               # '68c3a96c6c6f'  (mỗi byte = 2 hex digit)
+print(len(b))                # 6
+
+# Đọc 1 trường big-endian 4 byte từ packet:
+raw = b&quot;\x00\x00\x05\xdc&quot;    # 1500
+mtu = int.from_bytes(raw, byteorder=&quot;big&quot;, signed=False)
+print(mtu)                   # 1500
+
+# Đóng gói ngược lại:
+print((1500).to_bytes(2, &quot;big&quot;).hex())   # '05dc'
+</code></pre>
+<p><strong>Lưu ý:</strong> Khi so sánh token/MAC, đừng dùng <code>==</code> trên <code>str</code>/<code>bytes</code> vì nó short-circuit (dừng sớm khi gặp byte khác → timing leak). Dùng <code>hmac.compare_digest()</code> (xem 17.13).</p>
+<h3 id="ch17-1722-struct-đocghi-nhi-phan-theo-truong">17.2.2. struct — đọc/ghi nhị phân theo trường</h3>
+<p><code>struct</code> là cầu nối giữa byte mạng và kiểu Python. Format string điều khiển byte order và kích thước:</p>
+<table>
+<thead>
+<tr>
+<th>Ký tự</th>
+<th>Kiểu C</th>
+<th>Kích thước</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>B</code></td>
+<td>unsigned char</td>
+<td>1 byte</td>
+<td>0–255</td>
+</tr>
+<tr>
+<td><code>H</code></td>
+<td>unsigned short</td>
+<td>2 byte</td>
+<td>0–65535</td>
+</tr>
+<tr>
+<td><code>I</code></td>
+<td>unsigned int</td>
+<td>4 byte</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Q</code></td>
+<td>unsigned long long</td>
+<td>8 byte</td>
+<td></td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>char[]</td>
+<td>n byte</td>
+<td><code>4s</code> = 4 byte raw</td>
+</tr>
+<tr>
+<td><code>!</code> (prefix)</td>
+<td>—</td>
+<td>—</td>
+<td>network byte order = big-endian, no padding</td>
+</tr>
+<tr>
+<td><code>&lt;</code> / <code>&gt;</code></td>
+<td>—</td>
+<td>—</td>
+<td>little / big endian</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import struct
+# Đọc header IPv4 12 byte đầu: version+IHL(1B), TOS(1B), total_len(2B), id(2B), flags+frag(2B), ttl(1B), proto(1B), checksum(2B)
+ip_head = b&quot;\x45\x00\x00\x3c\x1c\x46\x40\x00\x40\x06\xb1\xe6&quot;
+ver_ihl, tos, tot_len, ident, flags_frag, ttl, proto, csum = struct.unpack(&quot;!BBHHHBBH&quot;, ip_head)
+version = ver_ihl &gt;&gt; 4          # 4
+ihl = (ver_ihl &amp; 0x0F) * 4      # 5*4 = 20 byte header length
+print(version, ihl, tot_len, ttl, proto)   # 4 20 60 64 6 (proto 6 = TCP)
+</code></pre>
+<h3 id="ch17-1723-listdictset-comprehension-generator">17.2.3. List/Dict/Set comprehension &amp; generator</h3>
+<pre><code class="language-python">logs = [&quot;ok&quot;, &quot;FAIL ip=10.0.0.1&quot;, &quot;FAIL ip=10.0.0.2&quot;, &quot;ok&quot;, &quot;FAIL ip=10.0.0.1&quot;]
+fails = [l for l in logs if l.startswith(&quot;FAIL&quot;)]                  # list comp
+ips   = {l.split(&quot;ip=&quot;)[1] for l in fails}                        # set comp -&gt; unique IP
+count = {ip: sum(ip in l for l in fails) for ip in ips}           # dict comp -&gt; đếm
+# Generator: lazy, không nạp hết file vào RAM — quan trọng cho log GB
+def read_lines(path):
+    with open(path, &quot;r&quot;, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:          # generator pattern, đọc từng dòng
+            yield line.rstrip(&quot;\n&quot;)
+</code></pre>
+<p><strong>Vì sao generator quan trọng cho bảo mật:</strong> file log <code>/var/log/auth.log</code> có thể vài GB. List comprehension <code>[l for l in open(...)]</code> nạp toàn bộ vào RAM → OOM. Generator giữ một dòng tại một thời điểm.</p>
+<h3 id="ch17-1724-ham-argskwargs-type-hint">17.2.4. Hàm, <em>args/</em>*kwargs, type hint</h3>
+<pre><code class="language-python">from typing import Iterable
+def scan_ports(host: str, ports: Iterable[int], timeout: float = 1.0) -&gt; dict[int, bool]:
+    &quot;&quot;&quot;Type hint giúp tool lớn dễ audit; không enforce lúc chạy.&quot;&quot;&quot;
+    ...
+</code></pre>
+<p>Type hint không được CPython kiểm tra lúc runtime — chúng phục vụ <code>mypy</code>/IDE và việc audit code. Để kiểm thật lúc runtime cần <code>pydantic</code> (validate input từ mạng/API).</p>
+<h3 id="ch17-1725-exception-va-context-manager">17.2.5. Exception và context manager</h3>
+<pre><code class="language-python">import socket
+try:
+    s = socket.create_connection((&quot;10.0.0.5&quot;, 22), timeout=2)
+except (socket.timeout, ConnectionRefusedError) as e:
+    print(&quot;closed/filtered:&quot;, e)
+except OSError as e:               # bắt nhóm rộng hơn cuối cùng
+    print(&quot;network error:&quot;, e)
+else:
+    print(&quot;open&quot;)
+    s.close()
+finally:
+    pass                           # cleanup luôn chạy
+</code></pre>
+<p><strong>Context manager</strong> đảm bảo tài nguyên (socket, file, lock) được giải phóng kể cả khi có exception — tránh leak file descriptor (một dạng DoS tự gây ra khi scan hàng nghìn host):</p>
+<pre><code class="language-python">from contextlib import contextmanager
+@contextmanager
+def timed_socket(addr, timeout):
+    s = socket.create_connection(addr, timeout=timeout)
+    try:
+        yield s
+    finally:
+        s.close()      # luôn đóng, kể cả lỗi giữa chừng
+</code></pre>
+<h3 id="ch17-1726-virtualenv-pip-co-lap-va-pin-dependency">17.2.6. virtualenv &amp; pip — cô lập và pin dependency</h3>
+<pre><code class="language-bash"># Tạo môi trường cô lập (Python 3.3+ có sẵn venv)
+python3 -m venv .venv
+source .venv/bin/activate          # Linux/mac;  .venv\Scripts\activate trên Windows
+pip install --upgrade pip
+pip install requests scapy paramiko boto3
+
+# Pin chính xác để build tái lập (reproducible) — quan trọng cho audit &amp; supply chain
+pip freeze &gt; requirements.txt      # ghi version chính xác: requests==2.32.3 ...
+pip install -r requirements.txt
+
+# Kiểm tra lỗ hổng đã biết trong dependency (supply-chain)
+pip install pip-audit
+pip-audit -r requirements.txt      # tra cứu OSV/PyPI advisory DB
+</code></pre>
+<p><strong>Lưu ý (supply chain):</strong>
+- Nên <strong>pin version</strong> (<code>==</code>) trong môi trường production; range mở (<code>&gt;=</code>) cho phép kẻ tấn công đẩy bản độc qua dependency confusion.
+- Cân nhắc <strong>hash-pinning</strong>: <code>pip install --require-hashes -r requirements.txt</code> với file chứa <code>--hash=sha256:...</code> → chống thay thế artifact trên PyPI/mirror.
+- Cẩn thận <strong>typosquatting</strong> (<code>reqursts</code>, <code>python-requests</code> giả). Kiểm tra tên package chính xác.</p>
+<hr />
+<h2 id="ch17-173-socket-port-scanner-tcp-tu-con-so-0">17.3. socket — Port scanner TCP từ con số 0</h2>
+<h3 id="ch17-la-gi">Là gì</h3>
+<p><code>socket</code> là API Python bọc trực tiếp socket BSD của OS. Nó cho phép tạo kết nối TCP/UDP/raw, là nền tảng của mọi tool mạng.</p>
+<h3 id="ch17-co-che-ben-trong-bat-tay-tcp-3-buoc-3-way-handshake">Cơ chế bên trong — bắt tay TCP 3 bước (3-way handshake)</h3>
+<p>Một <code>connect()</code> TCP thành công nghĩa là OS đã hoàn tất handshake. Diễn ra ở mức segment như sau (cờ TCP nằm ở byte offset 13 của TCP header, 6 bit thấp: URG/ACK/PSH/RST/SYN/FIN):</p>
+<pre><code>Client                                   Server
+  |  --- SYN  seq=x          -----------&gt;  |   (cờ SYN=1)
+  |  &lt;-- SYN/ACK seq=y ack=x+1 ----------  |   (SYN=1, ACK=1)
+  |  --- ACK  ack=y+1        -----------&gt;  |   (ACK=1)  -&gt; ESTABLISHED
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường TCP header</th>
+<th>Kích thước</th>
+<th>Offset</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>2 byte</td>
+<td>0</td>
+<td>Cổng nguồn</td>
+<td>49152</td>
+</tr>
+<tr>
+<td>Dest Port</td>
+<td>2 byte</td>
+<td>2</td>
+<td>Cổng đích</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>4 byte</td>
+<td>4</td>
+<td>Số thứ tự byte đầu</td>
+<td>0xABCD1234</td>
+</tr>
+<tr>
+<td>Ack Number</td>
+<td>4 byte</td>
+<td>8</td>
+<td>seq mong đợi tiếp theo</td>
+<td></td>
+</tr>
+<tr>
+<td>Data Offset (4 bit) + Reserved + Flags</td>
+<td>2 byte</td>
+<td>12</td>
+<td>Độ dài header + 9 cờ</td>
+<td>SYN=0x02</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>2 byte</td>
+<td>14</td>
+<td>Kích thước cửa sổ nhận</td>
+<td>65535</td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>2 byte</td>
+<td>16</td>
+<td>Checksum</td>
+<td></td>
+</tr>
+<tr>
+<td>Urgent Pointer</td>
+<td>2 byte</td>
+<td>18</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trạng thái cổng suy ra từ phản hồi:</strong>
+- Nhận <strong>SYN/ACK</strong> → cổng <strong>OPEN</strong> (sau đó client gửi RST nếu là connect-scan để đóng nhanh).
+- Nhận <strong>RST</strong> → cổng <strong>CLOSED</strong>.
+- Không phản hồi (timeout) → <strong>FILTERED</strong> (firewall drop gói).</p>
+<h3 id="ch17-vi-du-thuc-te-tcp-connect-scanner-đa-luong">Ví dụ thực tế — TCP connect scanner đa luồng</h3>
+<pre><code class="language-python">#!/usr/bin/env python3
+import socket
+import concurrent.futures as cf
+
+def probe(host: str, port: int, timeout: float = 1.0) -&gt; tuple[int, str]:
+    # AF_INET = IPv4, SOCK_STREAM = TCP
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(timeout)
+        try:
+            # connect_ex trả về 0 nếu OS hoàn tất handshake; số errno nếu lỗi
+            rc = s.connect_ex((host, port))
+        except socket.gaierror:
+            return port, &quot;dns-error&quot;
+        if rc == 0:
+            banner = &quot;&quot;
+            try:
+                s.settimeout(0.5)
+                banner = s.recv(64).decode(errors=&quot;replace&quot;).strip()  # grab banner
+            except OSError:
+                pass
+            return port, f&quot;open {banner}&quot;.strip()
+        elif rc == 111:                       # ECONNREFUSED (Linux)
+            return port, &quot;closed&quot;
+        return port, &quot;filtered&quot;
+
+def scan(host, ports, workers=200):
+    results = {}
+    with cf.ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(probe, host, p): p for p in ports}
+        for fut in cf.as_completed(futs):
+            port, state = fut.result()
+            if state.startswith(&quot;open&quot;):
+                results[port] = state
+    return dict(sorted(results.items()))
+
+if __name__ == &quot;__main__&quot;:
+    print(scan(&quot;scanme.nmap.org&quot;, range(1, 1025)))
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>{22: 'open SSH-2.0-OpenSSH_6.6.1p1 Ubuntu', 80: 'open'}
+</code></pre>
+<p><strong>Giải thích tham số:</strong>
+- <code>socket.AF_INET</code> chọn IPv4 (<code>AF_INET6</code> cho IPv6).
+- <code>SOCK_STREAM</code> = TCP; <code>SOCK_DGRAM</code> = UDP; <code>SOCK_RAW</code> cần root để tạo packet thô.
+- <code>connect_ex</code> không raise exception khi cổng đóng (trả errno), giảm overhead so với <code>connect</code> cho scan diện rộng.
+- <code>ThreadPoolExecutor(max_workers=200)</code> chạy 200 probe song song; vì là I/O-bound, GIL không cản (thread bị block ở <code>recv</code>/<code>connect</code> đều nhả GIL).</p>
+<p><strong>Lưu ý bảo mật &amp; pháp lý:</strong>
+- Quét host không được phép là hành vi có thể bị truy cứu pháp lý. Chỉ quét tài sản bạn sở hữu hoặc có văn bản cho phép.
+- <code>connect</code>-scan để lại log đầy đủ (handshake hoàn chỉnh) ở phía mục tiêu — khác với SYN-scan (gửi SYN, nhận SYN/ACK rồi RST, half-open). SYN-scan cần raw socket + quyền root, làm bằng <code>scapy</code> (xem 17.8).
+- Đặt timeout hợp lý: timeout quá thấp → false "filtered"; quá cao → scan chậm và dễ bị phát hiện do giữ kết nối lâu.</p>
+<hr />
+<h2 id="ch17-174-requests-tu-đong-hoa-http-rest-api-session-auth">17.4. requests — Tự động hóa HTTP, REST API, session &amp; auth</h2>
+<h3 id="ch17-la-gi_1">Là gì</h3>
+<p><code>requests</code> là thư viện HTTP client cấp cao (bọc <code>urllib3</code>). Là xương sống của mọi automation gọi REST API (Jira, Slack, SIEM, EDR).</p>
+<h3 id="ch17-co-che-vong-đoi-mot-request-http11">Cơ chế — vòng đời một request HTTP/1.1</h3>
+<p>Một request HTTP/1.1 trên dây (TCP payload sau handshake) có dạng văn bản ASCII:</p>
+<pre><code>GET /rest/api/2/issue/SEC-1 HTTP/1.1\r\n          &lt;- request line
+Host: jira.example.com\r\n                         &lt;- header (bắt buộc trong HTTP/1.1)
+Authorization: Bearer eyJ...\r\n
+Accept: application/json\r\n
+User-Agent: python-requests/2.32.3\r\n
+\r\n                                               &lt;- dòng trống = hết header
+&lt;body nếu có&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Method</td>
+<td>biến đổi</td>
+<td>Động từ HTTP</td>
+<td><code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code></td>
+</tr>
+<tr>
+<td>Request-URI</td>
+<td>biến đổi</td>
+<td>Đường dẫn + query</td>
+<td><code>/rest/api/2/issue</code></td>
+</tr>
+<tr>
+<td>Version</td>
+<td>8 byte</td>
+<td>Phiên bản</td>
+<td><code>HTTP/1.1</code></td>
+</tr>
+<tr>
+<td>Mỗi header</td>
+<td>biến đổi</td>
+<td><code>Name: Value</code> kết thúc <code>\r\n</code> (CRLF, 2 byte)</td>
+<td></td>
+</tr>
+<tr>
+<td>Phân tách header/body</td>
+<td>2 byte</td>
+<td><code>\r\n\r\n</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Response: <code>HTTP/1.1 200 OK\r\n</code> + header + <code>\r\n\r\n</code> + body.</p>
+<h3 id="ch17-vi-du-thuc-te-1-goi-rest-api-kieu-siemjira-voi-session-retry-timeout">Ví dụ thực tế 1 — gọi REST API kiểu SIEM/Jira với Session, retry, timeout</h3>
+<pre><code class="language-python">import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import os
+
+def build_session() -&gt; requests.Session:
+    s = requests.Session()
+    # Session tái dùng kết nối TCP (keep-alive) + cookie -&gt; nhanh hơn nhiều khi gọi N lần
+    retries = Retry(
+        total=3,                       # thử lại tối đa 3 lần
+        backoff_factor=0.5,            # chờ 0.5s, 1s, 2s (exponential)
+        status_forcelist=[429, 500, 502, 503, 504],  # retry khi rate-limit/lỗi server
+        allowed_methods=[&quot;GET&quot;, &quot;POST&quot;],
+    )
+    s.mount(&quot;https://&quot;, HTTPAdapter(max_retries=retries))
+    # Secret lấy từ biến môi trường, không hardcode
+    token = os.environ[&quot;JIRA_TOKEN&quot;]
+    s.headers.update({
+        &quot;Authorization&quot;: f&quot;Bearer {token}&quot;,
+        &quot;Accept&quot;: &quot;application/json&quot;,
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+    })
+    return s
+
+def create_ticket(sess, project=&quot;SEC&quot;, summary=&quot;Suspicious login&quot;, desc=&quot;&quot;):
+    payload = {
+        &quot;fields&quot;: {
+            &quot;project&quot;: {&quot;key&quot;: project},
+            &quot;summary&quot;: summary,
+            &quot;description&quot;: desc,
+            &quot;issuetype&quot;: {&quot;name&quot;: &quot;Incident&quot;},
+        }
+    }
+    r = sess.post(
+        &quot;https://jira.example.com/rest/api/2/issue&quot;,
+        json=payload,                  # tự serialize JSON + set Content-Type
+        timeout=(3.05, 10),            # (connect timeout, read timeout) - luôn nên đặt
+        verify=True,                   # đừng dùng verify=False trong production
+    )
+    r.raise_for_status()               # raise HTTPError nếu 4xx/5xx
+    return r.json()[&quot;key&quot;]             # ví dụ &quot;SEC-1234&quot;
+</code></pre>
+<p><strong>Giải thích tham số quan trọng:</strong>
+- <code>timeout=(3.05, 10)</code>: tuple (connect, read). Không đặt timeout → request có thể treo vĩnh viễn nếu server không phản hồi (treo cả pipeline IR). Giá trị <code>3.05</code> tránh trùng bội số của TCP retransmit timer 3s.
+- <code>verify=True</code>: xác thực chứng chỉ TLS theo CA store. <code>verify=False</code> mở cửa MITM — chỉ chấp nhận trong lab tách biệt, và sẽ in <code>InsecureRequestWarning</code>.
+- <code>json=payload</code> vs <code>data=payload</code>: <code>json=</code> tự <code>json.dumps</code> và set header <code>Content-Type: application/json</code>; <code>data=</code> gửi form-encoded.
+- <code>raise_for_status()</code>: biến lỗi HTTP thành exception để pipeline IR không "âm thầm" nuốt lỗi.</p>
+<h3 id="ch17-vi-du-thuc-te-2-pattern-cua-mot-automation-ir-agent-gui-alert-vao-slack-webhook">Ví dụ thực tế 2 — pattern của một automation / IR agent (gửi alert vào Slack webhook)</h3>
+<pre><code class="language-python">def notify_slack(webhook_url: str, text: str, severity: str):
+    color = {&quot;high&quot;: &quot;#cc0000&quot;, &quot;medium&quot;: &quot;#e69900&quot;, &quot;low&quot;: &quot;#36a64f&quot;}.get(severity, &quot;#888&quot;)
+    body = {&quot;attachments&quot;: [{&quot;color&quot;: color, &quot;text&quot;: text, &quot;footer&quot;: &quot;IR-Agent&quot;}]}
+    r = requests.post(webhook_url, json=body, timeout=(3, 5))
+    r.raise_for_status()
+</code></pre>
+<p>Output mẫu khi alert "phát hiện brute-force" được push: Slack hiển thị attachment màu đỏ với text mô tả IP và số lần thử.</p>
+<p><strong>Lưu ý:</strong>
+- <strong>SSRF</strong>: nếu URL đích lấy từ input người dùng, kẻ tấn công có thể trỏ tới <code>http://169.254.169.254/latest/meta-data/</code> (metadata cloud) để đánh cắp IAM credential. Validate và whitelist host đích; chặn dải IP nội bộ/link-local.
+- <strong>Secret trong URL</strong>: không nhúng token vào query string (bị ghi vào access log, history). Dùng header <code>Authorization</code>.
+- <strong>Header injection / CRLF</strong>: không nối input chưa lọc vào header — ký tự <code>\r\n</code> có thể chèn header giả. <code>requests</code> chặn phần lớn nhưng vẫn phải validate.</p>
+<hr />
+<h2 id="ch17-175-re-regex-parse-log-thuc-chien">17.5. re — Regex parse log thực chiến</h2>
+<h3 id="ch17-la-gi_2">Là gì</h3>
+<p>Module <code>re</code> cung cấp regex (PCRE-like). Dùng để trích trường từ log văn bản không cấu trúc.</p>
+<h3 id="ch17-co-che-compile-cac-cau-truc-cot-loi">Cơ chế — compile &amp; các cấu trúc cốt lõi</h3>
+<p><code>re.compile()</code> biên dịch pattern thành bytecode NFA một lần, tái dùng nhiều lần (nhanh hơn rất nhiều khi parse hàng triệu dòng).</p>
+<table>
+<thead>
+<tr>
+<th>Cấu trúc</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\d</code> <code>\w</code> <code>\s</code></td>
+<td>digit / word char / whitespace</td>
+<td></td>
+</tr>
+<tr>
+<td><code>(?P&lt;name&gt;...)</code></td>
+<td>nhóm bắt có tên</td>
+<td><code>(?P&lt;ip&gt;\d+\.\d+\.\d+\.\d+)</code></td>
+</tr>
+<tr>
+<td><code>(?:...)</code></td>
+<td>nhóm không bắt</td>
+<td>nhóm logic, không capture</td>
+</tr>
+<tr>
+<td><code>+ * ? {m,n}</code></td>
+<td>lượng từ</td>
+<td><code>\d{1,3}</code></td>
+</tr>
+<tr>
+<td><code>^ $</code></td>
+<td>đầu/cuối dòng (với <code>re.M</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>ranh giới từ</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-vi-du-thuc-te-đem-ip-brute-force-trong-varlogauthlog">Ví dụ thực tế — đếm IP brute-force trong /var/log/auth.log</h3>
+<p>Một dòng <code>auth.log</code> SSH thất bại điển hình:</p>
+<pre><code>Jun 19 10:21:45 host sshd[2931]: Failed password for invalid user admin from 203.0.113.7 port 51244 ssh2
+</code></pre>
+<pre><code class="language-python">import re
+from collections import Counter
+
+# Compile 1 lần; nhóm có tên giúp code đọc được
+PAT = re.compile(
+    r&quot;Failed password for (?:invalid user )?(?P&lt;user&gt;\S+) &quot;
+    r&quot;from (?P&lt;ip&gt;\d{1,3}(?:\.\d{1,3}){3}) port (?P&lt;port&gt;\d+)&quot;
+)
+
+def brute_force_offenders(path: str, threshold: int = 5) -&gt; dict:
+    by_ip = Counter()
+    users_by_ip: dict[str, set] = {}
+    with open(path, &quot;r&quot;, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:                         # generator: từng dòng, không nạp hết
+            m = PAT.search(line)
+            if m:
+                ip = m.group(&quot;ip&quot;)
+                by_ip[ip] += 1
+                users_by_ip.setdefault(ip, set()).add(m.group(&quot;user&quot;))
+    # Chỉ giữ IP vượt ngưỡng
+    return {
+        ip: {&quot;attempts&quot;: n, &quot;users_tried&quot;: sorted(users_by_ip[ip])}
+        for ip, n in by_ip.items() if n &gt;= threshold
+    }
+
+if __name__ == &quot;__main__&quot;:
+    import json
+    print(json.dumps(brute_force_offenders(&quot;/var/log/auth.log&quot;, 5), indent=2))
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code class="language-json">{
+  &quot;203.0.113.7&quot;: { &quot;attempts&quot;: 142, &quot;users_tried&quot;: [&quot;admin&quot;, &quot;root&quot;, &quot;test&quot;] },
+  &quot;198.51.100.9&quot;: { &quot;attempts&quot;: 31, &quot;users_tried&quot;: [&quot;oracle&quot;] }
+}
+</code></pre>
+<p><strong>Phân tích pattern byte-level:</strong> <code>\d{1,3}(?:\.\d{1,3}){3}</code> khớp octet 1–3 chữ số, lặp 3 lần với dấu chấm. Lưu ý nó không kiểm tra octet ≤ 255 — chấp nhận cả <code>999.999.999.999</code>. Để validate đúng nên dùng <code>ipaddress.ip_address()</code> sau khi trích.</p>
+<p><strong>Lưu ý — ReDoS (Regex Denial of Service):</strong>
+- Pattern có <strong>catastrophic backtracking</strong> như <code>(a+)+$</code> chạy với input <code>"aaaa...!"</code> có độ phức tạp mũ → treo CPU. Khi parse input do attacker kiểm soát (log từ xa, HTTP header), tránh nesting quantifier lồng nhau.
+- Module <code>re</code> chuẩn không có timeout. Với input không tin cậy, cân nhắc thư viện <code>regre</code>/<code>google-re2</code> (RE2, không backtracking, đảm bảo tuyến tính) hoặc giới hạn độ dài input trước khi match.</p>
+<hr />
+<h2 id="ch17-176-subprocess-os-chay-lenh-he-thong-an-toan">17.6. subprocess &amp; os — Chạy lệnh hệ thống an toàn</h2>
+<h3 id="ch17-la-gi_3">Là gì</h3>
+<p><code>subprocess</code> tạo tiến trình con; <code>os</code>/<code>shutil</code> thao tác file/quyền/môi trường. Đây là điểm nóng số 1 cho <strong>command injection</strong>.</p>
+<h3 id="ch17-co-che-shellfalse-vs-shelltrue">Cơ chế — shell=False vs shell=True</h3>
+<pre><code>shell=True  -&gt; Python gọi /bin/sh -c &quot;chuỗi lệnh&quot;  -&gt; sh phân tích metachar  ; | &amp; $ ` &gt; &lt;
+shell=False -&gt; Python gọi execve(argv[0], argv[], env)  trực tiếp, không qua shell
+</code></pre>
+<p>Khi <code>shell=True</code>, chuỗi lệnh được <code>/bin/sh</code> diễn giải. Nếu một phần chuỗi đến từ input người dùng (<code>"ping " + user_input</code>) và <code>user_input = "; rm -rf /"</code>, shell thực thi cả hai lệnh. Với <code>shell=False</code>, đối số là một phần tử trong list <code>argv</code>, không bị shell diễn giải → an toàn.</p>
+<h3 id="ch17-vi-du-thuc-te-cach-đung-va-cach-sai">Ví dụ thực tế — cách đúng và cách sai</h3>
+<pre><code class="language-python">import subprocess, shlex
+
+host = &quot;8.8.8.8&quot;   # giả sử đến từ input
+
+# Sai — command injection:  host = &quot;8.8.8.8; cat /etc/shadow&quot;
+# subprocess.run(f&quot;ping -c1 {host}&quot;, shell=True)   # đừng làm thế này
+
+# Đúng — argv list, shell=False (mặc định)
+res = subprocess.run(
+    [&quot;ping&quot;, &quot;-c&quot;, &quot;1&quot;, host],        # mỗi token là phần tử riêng -&gt; không injection
+    capture_output=True,              # bắt stdout/stderr
+    text=True,                        # decode bytes -&gt; str (theo locale)
+    timeout=5,                        # tránh treo vô hạn
+    check=False,                      # không raise; tự kiểm res.returncode
+)
+print(res.returncode, res.stdout[:80])
+
+# Nếu bắt buộc phải dùng shell (vd cần pipe), lọc bằng shlex.quote:
+safe = shlex.quote(host)             # &quot;'8.8.8.8; cat /etc/shadow'&quot; -&gt; bị bọc nháy, vô hại
+subprocess.run(f&quot;ping -c1 {safe} | tee /tmp/out&quot;, shell=True, timeout=5)
+</code></pre>
+<p><strong>Giải thích tham số:</strong>
+- <code>capture_output=True</code> ≡ <code>stdout=PIPE, stderr=PIPE</code>.
+- <code>text=True</code> (alias <code>universal_newlines</code>) decode output. Với dữ liệu nhị phân (pcap, binary) để mặc định <code>bytes</code>.
+- <code>timeout=5</code> raise <code>TimeoutExpired</code> nếu vượt — bắt buộc khi gọi tool mạng có thể treo.
+- <code>check=True</code> raise <code>CalledProcessError</code> nếu returncode ≠ 0.</p>
+<p><strong>Lưu ý:</strong>
+- <code>shlex.quote()</code> chỉ an toàn cho <strong>POSIX sh</strong>, không an toàn cho Windows <code>cmd.exe</code> (quy tắc quoting khác). Trên Windows tránh <code>shell=True</code> hoàn toàn.
+- Không truyền secret qua argv (<code>ps aux</code> lộ toàn bộ command line cho mọi user); truyền qua stdin hoặc env.
+- <code>os.system()</code> luôn dùng shell → tránh hoàn toàn. Dùng <code>subprocess.run</code> với list.</p>
+<hr />
+<h2 id="ch17-177-json-serialize-xu-ly-du-lieu-apicau-hinh">17.7. json — Serialize &amp; xử lý dữ liệu API/cấu hình</h2>
+<h3 id="ch17-co-che-anh-xa-kieu">Cơ chế — ánh xạ kiểu</h3>
+<table>
+<thead>
+<tr>
+<th>JSON</th>
+<th>Python</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>object <code>{}</code></td>
+<td><code>dict</code></td>
+</tr>
+<tr>
+<td>array <code>[]</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td>string</td>
+<td><code>str</code></td>
+</tr>
+<tr>
+<td>number (int)</td>
+<td><code>int</code></td>
+</tr>
+<tr>
+<td>number (real)</td>
+<td><code>float</code></td>
+</tr>
+<tr>
+<td><code>true</code>/<code>false</code></td>
+<td><code>True</code>/<code>False</code></td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import json
+data = json.loads('{&quot;alerts&quot;:[{&quot;sev&quot;:&quot;high&quot;,&quot;ip&quot;:&quot;1.2.3.4&quot;}]}')   # parse string
+text = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)  # serialize đẹp
+# Đọc/ghi file cấu hình:
+with open(&quot;rules.json&quot;, encoding=&quot;utf-8&quot;) as f:
+    rules = json.load(f)          # load từ file object
+</code></pre>
+<p><strong>Lưu ý:</strong>
+- <code>json</code> chuẩn an toàn (không thực thi code), khác với <code>pickle</code>/<code>yaml.load</code> không an toàn (xem dưới). <strong>Tuyệt đối không <code>pickle.loads()</code> dữ liệu không tin cậy</strong> — nó có thể thực thi mã tùy ý qua <code>__reduce__</code>. Với YAML dùng <code>yaml.safe_load()</code>.
+- JSON từ nguồn không tin cậy có thể rất sâu/lớn → DoS bộ nhớ. Giới hạn kích thước payload trước khi parse.</p>
+<hr />
+<h2 id="ch17-178-scapy-tao-gui-sniff-goi-tin-toi-muc-byte">17.8. scapy — Tạo, gửi, sniff gói tin tới mức byte</h2>
+<h3 id="ch17-la-gi_4">Là gì</h3>
+<p><code>scapy</code> cho phép dựng packet theo từng layer, gửi đi, và sniff/decode — kiểm soát từng trường header.</p>
+<h3 id="ch17-co-che-encapsulation-tung-tang-decapsulation-byte-by-byte">Cơ chế — encapsulation từng tầng (decapsulation byte-by-byte)</h3>
+<p>Một packet <code>Ethernet / IP / TCP / payload</code> được đóng gói (encapsulation) từ trên xuống. Trên dây, byte xếp như sau:</p>
+<pre><code>[ Ethernet header 14B ][ IPv4 header 20B ][ TCP header 20B ][ payload ]
+        ^                      ^                  ^
+   dst MAC(6) src MAC(6)   ver/ihl, len, ...   src/dst port, seq, flags
+   ethertype(2)=0x0800
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Trường chính</th>
+<th>Kích thước</th>
+<th>Offset trong tầng</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ethernet</td>
+<td>dst MAC</td>
+<td>6 byte</td>
+<td>0</td>
+<td>ff:ff:ff:ff:ff:ff</td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td>src MAC</td>
+<td>6 byte</td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td>EtherType</td>
+<td>2 byte</td>
+<td>12</td>
+<td>0x0800 = IPv4</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Version+IHL</td>
+<td>1 byte</td>
+<td>0</td>
+<td>0x45</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Total Length</td>
+<td>2 byte</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Protocol</td>
+<td>1 byte</td>
+<td>9</td>
+<td>6=TCP, 17=UDP, 1=ICMP</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Src/Dst IP</td>
+<td>4+4 byte</td>
+<td>12/16</td>
+<td></td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>Src/Dst Port</td>
+<td>2+2 byte</td>
+<td>0/2</td>
+<td></td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>Flags</td>
+<td>6 bit (trong byte 13)</td>
+<td>13</td>
+<td>SYN=0x02</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-vi-du-thuc-te-1-syn-scan-half-open-kiem-soat-co-tcp">Ví dụ thực tế 1 — SYN scan (half-open), kiểm soát cờ TCP</h3>
+<pre><code class="language-python">from scapy.all import IP, TCP, sr1, conf
+conf.verb = 0
+
+def syn_scan(target, port, timeout=2):
+    pkt = IP(dst=target) / TCP(dport=port, flags=&quot;S&quot;)   # flags=&quot;S&quot; -&gt; chỉ bật cờ SYN
+    resp = sr1(pkt, timeout=timeout)                    # gửi 1 gói, nhận 1 phản hồi
+    if resp is None:
+        return &quot;filtered&quot;                               # không trả lời -&gt; firewall drop
+    if resp.haslayer(TCP):
+        tcp = resp.getlayer(TCP)
+        if tcp.flags == 0x12:                           # SYN+ACK -&gt; open
+            # gửi RST để không hoàn tất handshake (half-open, ít log hơn)
+            sr1(IP(dst=target) / TCP(dport=port, flags=&quot;R&quot;), timeout=1)
+            return &quot;open&quot;
+        if tcp.flags == 0x14:                           # RST+ACK -&gt; closed
+            return &quot;closed&quot;
+    return &quot;unknown&quot;
+
+print(syn_scan(&quot;scanme.nmap.org&quot;, 80))   # 'open'
+</code></pre>
+<p><code>flags="S"</code> đặt byte cờ TCP = <code>0x02</code>. <code>resp.flags == 0x12</code> nghĩa SYN(0x02)+ACK(0x10). Đây là SYN-scan thật, cần quyền root (raw socket).</p>
+<h3 id="ch17-vi-du-thuc-te-2-sniff-va-phat-hien-arp-spoofing">Ví dụ thực tế 2 — sniff và phát hiện ARP spoofing</h3>
+<pre><code class="language-python">from scapy.all import sniff, ARP
+
+arp_table = {}   # ip -&gt; mac đã thấy
+
+def on_packet(pkt):
+    if pkt.haslayer(ARP) and pkt[ARP].op == 2:    # op=2 là ARP reply
+        ip, mac = pkt[ARP].psrc, pkt[ARP].hwsrc
+        if ip in arp_table and arp_table[ip] != mac:
+            print(f&quot;[!] ARP SPOOF nghi vấn: {ip} đổi từ {arp_table[ip]} sang {mac}&quot;)
+        arp_table[ip] = mac
+
+# Sniff trên interface, lọc BPF chỉ ARP để giảm tải
+sniff(iface=&quot;eth0&quot;, filter=&quot;arp&quot;, prn=on_packet, store=False)
+</code></pre>
+<p><strong>Giải thích:</strong> <code>filter="arp"</code> là BPF (Berkeley Packet Filter) — biên dịch xuống kernel, lọc trước khi gói lên userspace (hiệu năng cao). <code>store=False</code> không giữ gói trong RAM (tránh OOM khi sniff lâu). ARP op=1 là request, op=2 là reply; một IP map sang nhiều MAC trong thời gian ngắn là dấu hiệu ARP poisoning (MITM).</p>
+<p><strong>Lưu ý:</strong> scapy cần <code>CAP_NET_RAW</code> (root). Trong Docker phải chạy <code>--cap-add=NET_RAW</code> hoặc <code>--privileged</code>. Gửi packet thô tới mạng không được phép là tấn công.</p>
+<hr />
+<h2 id="ch17-179-paramiko-ssh-tu-đong-hoa-an-toan">17.9. paramiko — SSH tự động hóa an toàn</h2>
+<h3 id="ch17-la-gi_5">Là gì</h3>
+<p><code>paramiko</code> là implement thuần Python của SSHv2 (transport, auth, channel). Dùng để tự động hóa thu thập cấu hình, chạy lệnh audit trên fleet server.</p>
+<h3 id="ch17-co-che-bat-tay-sshv2-rut-gon-theo-rfc-4253">Cơ chế — bắt tay SSHv2 (rút gọn theo RFC 4253)</h3>
+<pre><code>1. TCP connect cổng 22
+2. Trao đổi banner:  &quot;SSH-2.0-...&quot;  (cả hai phía gửi version string, kết thúc \r\n)
+3. KEXINIT: thương lượng thuật toán (KEX, host key, cipher, MAC, compression)
+4. Key exchange (vd curve25519-sha256 / diffie-hellman) -&gt; tạo shared secret
+5. Server gửi host key -&gt; client phải xác thực (known_hosts) -&gt; chống MITM
+6. Derive session keys -&gt; bật mã hóa
+7. Authentication: publickey / password / keyboard-interactive
+8. Mở channel -&gt; exec lệnh hoặc shell
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Giai đoạn</th>
+<th>Gói/trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Banner</td>
+<td>chuỗi ASCII <code>SSH-2.0-OpenSSH_9.x\r\n</code></td>
+<td>xác định version</td>
+</tr>
+<tr>
+<td>KEXINIT</td>
+<td>danh sách thuật toán</td>
+<td>thương lượng cipher suite</td>
+</tr>
+<tr>
+<td>Host key</td>
+<td>public key của server</td>
+<td>client kiểm tra known_hosts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-vi-du-thuc-te-chay-lenh-audit-xac-thuc-host-key-đung-cach">Ví dụ thực tế — chạy lệnh audit, xác thực host key đúng cách</h3>
+<pre><code class="language-python">import paramiko
+
+def audit_host(host, user, key_path):
+    client = paramiko.SSHClient()
+    # Nạp known_hosts -&gt; xác thực host key, chống MITM
+    client.load_system_host_keys()
+    # Đúng: từ chối host lạ. Sai: AutoAddPolicy() bỏ qua kiểm tra -&gt; dễ bị MITM
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    pkey = paramiko.Ed25519Key.from_private_key_file(key_path)
+    client.connect(host, username=user, pkey=pkey, timeout=10,
+                   auth_timeout=10, banner_timeout=10)
+    try:
+        # exec_command mở channel, trả về (stdin, stdout, stderr)
+        stdin, stdout, stderr = client.exec_command(&quot;sshd -T | grep -i permitrootlogin&quot;, timeout=10)
+        out = stdout.read().decode().strip()
+        rc = stdout.channel.recv_exit_status()      # exit code của lệnh từ xa
+        return {&quot;host&quot;: host, &quot;permit_root&quot;: out, &quot;rc&quot;: rc}
+    finally:
+        client.close()
+</code></pre>
+<p><strong>Giải thích tham số:</strong>
+- <code>RejectPolicy()</code> vs <code>AutoAddPolicy()</code>: AutoAdd tự tin tưởng mọi host key mới → vô hiệu hóa chống MITM. Trong production dùng RejectPolicy + known_hosts đã quản lý.
+- <code>Ed25519Key</code>: dùng key hiện đại; tránh RSA-1024/DSA cũ.
+- <code>recv_exit_status()</code>: lấy exit code lệnh từ xa (khác với việc đọc được output).
+- Các <code>*_timeout</code>: tránh treo khi server chậm/lọc gói.</p>
+<p><strong>Lưu ý bảo mật:</strong>
+- Không hardcode password/passphrase trong code; nạp từ secret manager hoặc env.
+- Lưu private key với quyền <code>0600</code>. Dùng passphrase cho key.
+- Pin host key trong known_hosts được quản lý tập trung; cảnh báo nếu host key đổi (có thể là MITM hoặc reinstall).</p>
+<hr />
+<h2 id="ch17-1710-boto3-tu-đong-hoa-aws-audit-ir-tren-cloud">17.10. boto3 — Tự động hóa AWS (audit, IR trên cloud)</h2>
+<h3 id="ch17-la-gi_6">Là gì</h3>
+<p><code>boto3</code> là SDK AWS chính thức cho Python. Dùng để audit cấu hình (S3 public, security group mở), thu thập log, và phản ứng sự cố trên cloud.</p>
+<h3 id="ch17-co-che-credential-chain-ky-request-sigv4">Cơ chế — credential chain &amp; ký request SigV4</h3>
+<p>boto3 tìm credential theo thứ tự (credential provider chain):
+1. Tham số code tường minh (tránh — dễ leak).
+2. Biến môi trường <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SESSION_TOKEN</code>.
+3. File <code>~/.aws/credentials</code> (profile).
+4. <strong>IAM role</strong> qua instance metadata (EC2) / IRSA (EKS) / ECS task role — <strong>ưu tiên cao nhất về bảo mật</strong> vì credential ngắn hạn, tự xoay vòng.</p>
+<p>Mỗi API call được ký bằng <strong>AWS Signature Version 4 (SigV4)</strong>: tạo canonical request → hash SHA-256 → tạo string-to-sign → HMAC-SHA256 nhiều lần với key dẫn xuất từ secret + ngày + region + service → header <code>Authorization: AWS4-HMAC-SHA256 Credential=... SignedHeaders=... Signature=...</code>. Nhờ đó secret key không bao giờ đi trên dây; chỉ chữ ký đi.</p>
+<h3 id="ch17-vi-du-thuc-te-tim-s3-bucket-bi-public">Ví dụ thực tế — tìm S3 bucket bị public</h3>
+<pre><code class="language-python">import boto3
+from botocore.exceptions import ClientError
+
+def find_public_buckets():
+    s3 = boto3.client(&quot;s3&quot;)           # credential lấy theo chain ở trên
+    findings = []
+    for b in s3.list_buckets()[&quot;Buckets&quot;]:
+        name = b[&quot;Name&quot;]
+        public = False
+        # Kiểm tra Public Access Block
+        try:
+            pab = s3.get_public_access_block(Bucket=name)[&quot;PublicAccessBlockConfiguration&quot;]
+            if not all(pab.values()):     # nếu có bất kỳ cờ chặn nào tắt
+                public = True
+        except ClientError as e:
+            if e.response[&quot;Error&quot;][&quot;Code&quot;] == &quot;NoSuchPublicAccessBlockConfiguration&quot;:
+                public = True             # không có PAB -&gt; rủi ro
+        # Kiểm tra ACL có grant cho AllUsers không
+        try:
+            acl = s3.get_bucket_acl(Bucket=name)
+            for g in acl[&quot;Grants&quot;]:
+                uri = g.get(&quot;Grantee&quot;, {}).get(&quot;URI&quot;, &quot;&quot;)
+                if &quot;AllUsers&quot; in uri or &quot;AuthenticatedUsers&quot; in uri:
+                    public = True
+        except ClientError:
+            pass
+        if public:
+            findings.append(name)
+    return findings
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;Public buckets:&quot;, find_public_buckets())
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>Public buckets: ['legacy-backups-2019', 'marketing-assets']
+</code></pre>
+<p><strong>Giải thích:</strong>
+- <code>boto3.client("s3")</code> tạo client low-level (1:1 với API); <code>boto3.resource(...)</code> là abstraction cao hơn.
+- Phân trang: <code>list_buckets</code> trả tất cả, nhưng các API như <code>list_objects_v2</code> phân trang — dùng <code>paginator = s3.get_paginator("list_objects_v2")</code> để duyệt hết.
+- <code>ClientError</code> mang <code>e.response["Error"]["Code"]</code> — cần xử lý phân biệt lỗi quyền (<code>AccessDenied</code>) với lỗi "không tồn tại".</p>
+<p><strong>Lưu ý bảo mật:</strong>
+- <strong>Least privilege</strong>: gắn IAM policy chỉ với quyền <code>s3:GetBucketAcl</code>, <code>s3:GetBucketPublicAccessBlock</code>, <code>s3:ListAllMyBuckets</code>. Không dùng key admin cho tool audit.
+- <strong>Không hardcode key</strong>. Dùng IAM role / SSO. Nếu phải dùng key, lưu trong Secrets Manager và xoay vòng.
+- Bật <strong>CloudTrail</strong> để mọi API call của tool đều được log — chính tool audit của bạn cũng phải được audit.</p>
+<hr />
+<h2 id="ch17-1711-hashlib-hmac-hash-integrity-xac-thuc-thong-điep">17.11. hashlib &amp; hmac — Hash, integrity, xác thực thông điệp</h2>
+<h3 id="ch17-la-gi_7">Là gì</h3>
+<p><code>hashlib</code> cung cấp hàm băm mật mã (SHA-256, SHA-3, BLAKE2…). <code>hmac</code> tạo Message Authentication Code dùng khóa bí mật.</p>
+<h3 id="ch17-co-che-kich-thuoc-digest-va-cach-hmac-chong-length-extension">Cơ chế — kích thước digest và cách HMAC chống length-extension</h3>
+<table>
+<thead>
+<tr>
+<th>Thuật toán</th>
+<th>Block size</th>
+<th>Digest size</th>
+<th>Ghi chú bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MD5</td>
+<td>64 byte</td>
+<td>16 byte (128 bit)</td>
+<td><strong>Đã vỡ</strong> (collision). Chỉ dùng checksum không bảo mật</td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td>64 byte</td>
+<td>20 byte (160 bit)</td>
+<td><strong>Đã vỡ</strong> (SHAttered). Không dùng cho chữ ký</td>
+</tr>
+<tr>
+<td>SHA-256</td>
+<td>64 byte</td>
+<td>32 byte (256 bit)</td>
+<td>An toàn hiện tại</td>
+</tr>
+<tr>
+<td>SHA-512</td>
+<td>128 byte</td>
+<td>64 byte (512 bit)</td>
+<td>An toàn; nhanh hơn trên CPU 64-bit</td>
+</tr>
+<tr>
+<td>SHA3-256</td>
+<td>—</td>
+<td>32 byte</td>
+<td>Cấu trúc sponge, không bị length-extension</td>
+</tr>
+<tr>
+<td>BLAKE2b</td>
+<td>—</td>
+<td>tới 64 byte</td>
+<td>Nhanh, có keyed mode</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HMAC</strong> = <code>H((K ⊕ opad) || H((K ⊕ ipad) || message))</code>. Hai lần băm lồng nhau với khóa XOR hai hằng số (<code>ipad=0x36</code> lặp, <code>opad=0x5c</code> lặp) khiến HMAC miễn nhiễm tấn công <strong>length-extension</strong> mà hash thô (MD5/SHA-1/SHA-256 dạng Merkle–Damgård) mắc phải. Đó là VÌ SAO không bao giờ dùng <code>sha256(secret || message)</code> làm MAC tự chế — nó cho phép attacker nối thêm dữ liệu và tính được MAC hợp lệ.</p>
+<h3 id="ch17-vi-du-thuc-te-hash-file-forensic-xac-thuc-webhook">Ví dụ thực tế — hash file forensic &amp; xác thực webhook</h3>
+<pre><code class="language-python">import hashlib, hmac, os
+
+def sha256_file(path: str, chunk=1 &lt;&lt; 20) -&gt; str:
+    h = hashlib.sha256()
+    with open(path, &quot;rb&quot;) as f:
+        for block in iter(lambda: f.read(chunk), b&quot;&quot;):   # đọc 1MB/lần, file lớn không OOM
+            h.update(block)
+    return h.hexdigest()        # 64 hex char = 32 byte
+
+# Xác thực HMAC của webhook (vd GitHub/Slack ký payload)
+def verify_webhook(secret: bytes, payload: bytes, signature_hex: str) -&gt; bool:
+    mac = hmac.new(secret, payload, hashlib.sha256)
+    expected = mac.hexdigest()
+    # so sánh hằng thời gian (constant-time) -&gt; chống timing attack
+    return hmac.compare_digest(expected, signature_hex)
+</code></pre>
+<p><strong>Giải thích:</strong>
+- <code>iter(lambda: f.read(chunk), b"")</code>: gọi <code>read</code> tới khi trả <code>b""</code> (EOF) → stream file lớn.
+- <code>hexdigest()</code> cho SHA-256 luôn dài đúng 64 ký tự hex (32 byte × 2).
+- <code>hmac.compare_digest</code>: so sánh trong thời gian không phụ thuộc vị trí byte khác nhau → kẻ tấn công không đoán được MAC từng byte qua đo thời gian.</p>
+<p><strong>Lưu ý bảo mật:</strong>
+- <strong>Không dùng <code>hashlib</code> để lưu mật khẩu</strong>. SHA-256 quá nhanh → brute-force dễ. Dùng <strong>bcrypt / scrypt / Argon2</strong> (qua <code>argon2-cffi</code>, <code>bcrypt</code>) với salt + cost factor cao.
+- MD5/SHA-1 chỉ chấp nhận cho dedup/checksum không an ninh, không cho integrity chống tấn công.</p>
+<hr />
+<h2 id="ch17-1712-secrets-sinh-token-an-toan-khong-dung-random">17.12. secrets — Sinh token an toàn (không dùng random)</h2>
+<h3 id="ch17-co-che-vi-sao-random-nguy-hiem">Cơ chế — vì sao <code>random</code> nguy hiểm</h3>
+<p>Module <code>random</code> dùng <strong>Mersenne Twister (MT19937)</strong>: deterministic, state 624 × 32-bit. Quan sát đủ 624 output liên tiếp là <strong>khôi phục được toàn bộ state</strong> và dự đoán mọi giá trị tương lai. → không được dùng cho token, session ID, reset password, IV, salt.</p>
+<p><code>secrets</code> (Python 3.6+) lấy entropy từ <strong>CSPRNG của OS</strong> (<code>/dev/urandom</code> trên Linux, <code>getrandom(2)</code>; <code>BCryptGenRandom</code> trên Windows) — không dự đoán được.</p>
+<h3 id="ch17-vi-du-thuc-te">Ví dụ thực tế</h3>
+<pre><code class="language-python">import secrets
+token = secrets.token_urlsafe(32)     # 32 byte entropy -&gt; ~43 ký tự URL-safe
+hexer = secrets.token_hex(16)         # 16 byte -&gt; 32 hex char
+api_key = secrets.token_bytes(32)     # 32 byte thô
+# So sánh secret an toàn:
+if secrets.compare_digest(provided, stored):
+    ...
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Hàm</th>
+<th>Đầu vào</th>
+<th>Đầu ra</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token_bytes(n)</code></td>
+<td>n byte</td>
+<td>bytes</td>
+<td>khóa thô, salt</td>
+</tr>
+<tr>
+<td><code>token_hex(n)</code></td>
+<td>n byte</td>
+<td>2n hex char</td>
+<td>token đọc được</td>
+</tr>
+<tr>
+<td><code>token_urlsafe(n)</code></td>
+<td>n byte</td>
+<td>base64url</td>
+<td>session token, reset link</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> entropy 256-bit (32 byte) là đủ cho mọi mục đích. Đừng dùng <code>os.urandom</code> thủ công rồi tự encode khi <code>secrets</code> đã chuẩn hóa.</p>
+<hr />
+<h2 id="ch17-1713-secure-coding-trong-python-tong-hop">17.13. Secure coding trong Python — tổng hợp</h2>
+<h3 id="ch17-17131-tranh-evalexec-code-injection">17.13.1. Tránh eval/exec — code injection</h3>
+<pre><code class="language-python"># Sai — eval/exec trên input -&gt; RCE: user_input=&quot;__import__('os').system('rm -rf /')&quot;
+# eval(user_input)
+
+# Đúng — parse có giới hạn:
+import ast
+val = ast.literal_eval(&quot;[1, 2, {'a': 3}]&quot;)   # chỉ literal, không gọi hàm/import
+</code></pre>
+<p><code>eval</code>/<code>exec</code> thực thi mã Python tùy ý. Với dữ liệu từ mạng/người dùng đây là RCE trực tiếp. <code>ast.literal_eval</code> chỉ chấp nhận literal an toàn (số, chuỗi, list, dict, tuple, bool, None).</p>
+<h3 id="ch17-17132-parameterized-query-chong-sql-injection">17.13.2. Parameterized query — chống SQL injection</h3>
+<pre><code class="language-python">import sqlite3
+conn = sqlite3.connect(&quot;app.db&quot;)
+user = &quot;admin' OR '1'='1&quot;
+
+# Sai -&gt; SQLi:
+# conn.execute(f&quot;SELECT * FROM users WHERE name = '{user}'&quot;)
+
+# Đúng -&gt; driver bind tham số, dữ liệu không bao giờ trộn vào câu lệnh
+cur = conn.execute(&quot;SELECT * FROM users WHERE name = ?&quot;, (user,))
+rows = cur.fetchall()
+</code></pre>
+<p>Với PostgreSQL (<code>psycopg2</code>/<code>psycopg</code>):</p>
+<pre><code class="language-python">import psycopg2
+cur.execute(&quot;SELECT * FROM users WHERE email = %s&quot;, (email,))   # %s là placeholder, không phải % format
+</code></pre>
+<p><strong>Cơ chế:</strong> placeholder (<code>?</code> cho sqlite3, <code>%s</code> cho psycopg2) khiến driver gửi câu lệnh và dữ liệu riêng biệt (prepared statement). DB phân tích cú pháp câu lệnh trước, dữ liệu được xử lý thuần như giá trị → không thể đổi cấu trúc query. <strong>Không dùng f-string/<code>%</code>/<code>.format()</code> để chèn dữ liệu vào SQL.</strong></p>
+<h3 id="ch17-17133-shlexquote-cho-lenh-shell-đa-trinh-bay-o-176">17.13.3. shlex.quote cho lệnh shell — đã trình bày ở 17.6.</h3>
+<h3 id="ch17-17134-validate-input">17.13.4. Validate input</h3>
+<pre><code class="language-python">import ipaddress
+def parse_ip(s: str) -&gt; str:
+    return str(ipaddress.ip_address(s))   # raise ValueError nếu không hợp lệ -&gt; fail closed
+</code></pre>
+<p>Dùng <code>ipaddress</code>, <code>urllib.parse</code>, <code>pathlib</code> để validate IP/URL/path thay vì regex tự chế. Với path, chống <strong>path traversal</strong> (<code>../../etc/passwd</code>):</p>
+<pre><code class="language-python">from pathlib import Path
+base = Path(&quot;/srv/data&quot;).resolve()
+target = (base / user_supplied).resolve()
+if not target.is_relative_to(base):     # Python 3.9+
+    raise ValueError(&quot;path traversal&quot;)
+</code></pre>
+<h3 id="ch17-17135-quan-ly-secret-qua-bien-moi-truong-vault">17.13.5. Quản lý secret qua biến môi trường / vault</h3>
+<pre><code class="language-python">import os
+token = os.environ[&quot;API_TOKEN&quot;]          # KeyError nếu thiếu -&gt; fail loud, tốt hơn None âm thầm
+# .env chỉ cho dev cục bộ, không commit; production dùng secret manager (Vault, AWS Secrets Manager)
+</code></pre>
+<p><strong>Quy tắc:</strong>
+- Không hardcode secret trong source (bị lộ qua git history vĩnh viễn — phải rotate nếu lỡ commit).
+- Quét secret leak trong CI bằng <code>gitleaks</code> / <code>detect-secrets</code> (xem 17.14).
+- <code>.gitignore</code> chứa <code>.env</code>, <code>*.pem</code>, <code>*.key</code>.</p>
+<h3 id="ch17-17136-bang-tong-hop-lo-hong-bien-phap">17.13.6. Bảng tổng hợp lỗ hổng &amp; biện pháp</h3>
+<table>
+<thead>
+<tr>
+<th>Lỗ hổng</th>
+<th>API nguy hiểm</th>
+<th>Biện pháp đúng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code injection</td>
+<td><code>eval</code>, <code>exec</code>, <code>pickle.loads</code>, <code>yaml.load</code></td>
+<td><code>ast.literal_eval</code>, <code>json</code>, <code>yaml.safe_load</code></td>
+</tr>
+<tr>
+<td>Command injection</td>
+<td><code>os.system</code>, <code>subprocess(shell=True)</code></td>
+<td><code>subprocess([...], shell=False)</code>, <code>shlex.quote</code></td>
+</tr>
+<tr>
+<td>SQL injection</td>
+<td>f-string trong SQL</td>
+<td>parameterized query (<code>?</code>/<code>%s</code>)</td>
+</tr>
+<tr>
+<td>SSRF</td>
+<td><code>requests.get(user_url)</code></td>
+<td>whitelist host, chặn IP nội bộ</td>
+</tr>
+<tr>
+<td>Path traversal</td>
+<td>nối path thô</td>
+<td><code>Path.resolve()</code> + <code>is_relative_to</code></td>
+</tr>
+<tr>
+<td>Weak randomness</td>
+<td><code>random</code> cho token</td>
+<td><code>secrets</code></td>
+</tr>
+<tr>
+<td>Timing attack</td>
+<td><code>==</code> so sánh MAC</td>
+<td><code>hmac.compare_digest</code></td>
+</tr>
+<tr>
+<td>ReDoS</td>
+<td>quantifier lồng nhau</td>
+<td>RE2/giới hạn input</td>
+</tr>
+<tr>
+<td>Supply chain</td>
+<td>version range mở</td>
+<td>pin <code>==</code> + <code>--require-hashes</code> + <code>pip-audit</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch17-1714-kiem-thu-bao-mat-ma-python-sast">17.14. Kiểm thử bảo mật mã Python (SAST)</h2>
+<p>Bổ sung cho secure coding: tự động phát hiện anti-pattern.</p>
+<pre><code class="language-bash"># Bandit: SAST cho Python, bắt các pattern nguy hiểm (B602 shell=True, B307 eval, B501 verify=False...)
+pip install bandit
+bandit -r ./src -ll          # -r đệ quy, -ll chỉ báo mức medium trở lên
+
+# Quét dependency có CVE:
+pip-audit -r requirements.txt
+
+# Quét secret bị commit:
+pip install detect-secrets
+detect-secrets scan &gt; .secrets.baseline
+</code></pre>
+<p>Output bandit mẫu:</p>
+<pre><code>&gt;&gt; Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified.
+   Severity: High   Confidence: High
+   Location: ./src/runner.py:42
+</code></pre>
+<p>Giải thích: <code>-ll</code> lọc theo severity; mỗi mã <code>Bxxx</code> ứng với một test rule. Tích hợp vào CI để fail build khi xuất hiện High severity.</p>
+<hr />
+<h2 id="ch17-1715-ghep-noi-mot-ir-agent-mini-ket-hop-re-requests-json-secrets">17.15. Ghép nối — Một IR Agent mini (kết hợp re + requests + json + secrets)</h2>
+<p>Pattern thực tế: parser log → phát hiện brute-force → tạo ticket SIEM/Jira → notify Slack. Kết hợp các phần trên:</p>
+<pre><code>   NGUỒN DỮ LIỆU            PHÂN TÍCH              QUYẾT ĐỊNH             HÀNH ĐỘNG / API
+  +--------------+      +---------------+      +----------------+      +------------------+
+  | auth.log     | ---&gt; | re: trích IP  | ---&gt; | đếm &gt;= ngưỡng? |--no--&gt; (bỏ qua / log)
+  | (đọc dòng    |      | + đếm lần thử |      |  (Counter)     |
+  |  bằng        |      | (Counter)     |      +----------------+
+  |  generator)  |      +---------------+              | yes
+  +--------------+                                     v
+                                            +--------------------+      +----------------+
+                                            | json.dumps báo cáo | ---&gt; | requests.post  |
+                                            +--------------------+      | -&gt; Jira ticket |
+                                                                        | -&gt; Slack alert |
+                                                                        +----------------+
+                                                            (secret lấy từ env, timeout mọi call)
+</code></pre>
+<p>Luồng một script tự động hóa luôn đi theo bốn chặng: <strong>nhận dữ liệu → phân tích → ra quyết định theo ngưỡng → gọi API để hành động/cảnh báo</strong>. Mỗi chặng dùng một module ở các mục trên, và secret luôn nạp từ biến môi trường, mọi call mạng đều đặt timeout.</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;IR Agent mini: phát hiện SSH brute-force và phản ứng.&quot;&quot;&quot;
+import os, re, json, requests
+from collections import Counter
+
+PAT = re.compile(r&quot;Failed password for (?:invalid user )?\S+ &quot;
+                 r&quot;from (?P&lt;ip&gt;\d{1,3}(?:\.\d{1,3}){3})&quot;)
+
+def detect(path, threshold=10):
+    c = Counter()
+    with open(path, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:
+            m = PAT.search(line)
+            if m:
+                c[m.group(&quot;ip&quot;)] += 1
+    return {ip: n for ip, n in c.items() if n &gt;= threshold}
+
+def respond(offenders, slack_url):
+    if not offenders:
+        return
+    text = &quot;Brute-force phát hiện:\n&quot; + &quot;\n&quot;.join(
+        f&quot;- {ip}: {n} lần thử&quot; for ip, n in offenders.items())
+    requests.post(slack_url, json={&quot;text&quot;: text}, timeout=(3, 5)).raise_for_status()
+
+if __name__ == &quot;__main__&quot;:
+    off = detect(&quot;/var/log/auth.log&quot;, threshold=10)
+    print(json.dumps(off, indent=2))
+    respond(off, os.environ[&quot;SLACK_WEBHOOK&quot;])   # secret từ env
+</code></pre>
+<p>Đây minh họa pattern automation/IR agent: <strong>thu thập → phân tích → quyết định theo ngưỡng → hành động qua API → thông báo</strong>, với secret lấy từ env và timeout trên mọi call mạng.</p>
+<hr />
+<h2 id="ch17-1716-đong-goi-chay-bang-docker">17.16. Đóng gói &amp; chạy bằng Docker</h2>
+<h3 id="ch17-la-gi_8">Là gì</h3>
+<p>Container đóng gói tool + dependency pinned vào image bất biến → chạy nhất quán, cô lập, không "nhiễm bẩn" host phân tích.</p>
+<h3 id="ch17-vi-du-thuc-te-dockerfile-multi-stage-non-root-toi-thieu">Ví dụ thực tế — Dockerfile multi-stage, non-root, tối thiểu</h3>
+<pre><code class="language-dockerfile"># syntax=docker/dockerfile:1
+# ---- Stage build: cài dependency vào virtualenv ----
+FROM python:3.12-slim AS build
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /opt/venv \
+ &amp;&amp; /opt/venv/bin/pip install --no-cache-dir --require-hashes -r requirements.txt
+
+# ---- Stage runtime: image gọn, không chứa toolchain build ----
+FROM python:3.12-slim AS runtime
+# Tạo user không đặc quyền -&gt; không chạy bằng root (giảm tác hại nếu RCE)
+RUN useradd --create-home --uid 10001 appuser
+COPY --from=build /opt/venv /opt/venv
+COPY src/ /app/src/
+WORKDIR /app
+ENV PATH=&quot;/opt/venv/bin:$PATH&quot; \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+USER appuser                       # drop privilege
+ENTRYPOINT [&quot;python&quot;, &quot;-m&quot;, &quot;src.ir_agent&quot;]
+</code></pre>
+<pre><code class="language-bash"># Build &amp; chạy, truyền secret qua env (không bake vào image)
+docker build -t ir-agent:1.0 .
+docker run --rm \
+  -e SLACK_WEBHOOK=&quot;$SLACK_WEBHOOK&quot; \
+  -v /var/log/auth.log:/var/log/auth.log:ro \   # mount log read-only
+  --read-only --cap-drop=ALL --security-opt no-new-privileges \
+  ir-agent:1.0
+
+# Quét lỗ hổng image trước khi deploy:
+docker scout cves ir-agent:1.0     # hoặc: trivy image ir-agent:1.0
+</code></pre>
+<p><strong>Giải thích từng directive bảo mật:</strong>
+- <strong>Multi-stage</strong>: stage <code>build</code> chứa compiler/header; stage <code>runtime</code> chỉ copy venv đã cài → image nhỏ, ít attack surface.
+- <code>--require-hashes</code>: chỉ cài đúng artifact đã hash → chống supply-chain.
+- <code>USER appuser</code> (uid ≠ 0): nếu tool bị khai thác RCE, attacker không có root trong container.
+- <code>--read-only</code> + <code>--cap-drop=ALL</code> + <code>no-new-privileges</code>: filesystem chỉ đọc, bỏ mọi Linux capability, cấm leo thang qua setuid → hardening runtime.
+- <code>:ro</code> trên volume: tool audit chỉ đọc log, không sửa được (chống tamper).
+- <code>PYTHONDONTWRITEBYTECODE=1</code>: không ghi <code>.pyc</code> (giữ FS sạch khi read-only); <code>PYTHONUNBUFFERED=1</code>: log ra ngay (quan trọng để giám sát realtime).
+- Nếu tool cần sniff packet (scapy): thêm <code>--cap-add=NET_RAW</code> thay vì <code>--privileged</code>.</p>
+<p><strong>Lưu ý bảo mật:</strong>
+- Pin <strong>digest</strong> của base image (<code>python:3.12-slim@sha256:...</code>) không chỉ tag → tag có thể bị đẩy lại.
+- Quét image bằng <code>trivy</code>/<code>docker scout</code> trong CI, fail nếu có CVE Critical.
+- Không bao giờ <code>COPY .env</code> hay secret vào layer image (layer lưu vĩnh viễn, ai pull image cũng đọc được).</p>
+<hr />
+<h2 id="ch17-1717-tong-ket-cac-nguyen-tac-cot-loi">17.17. Tổng kết các nguyên tắc cốt lõi</h2>
+<ol>
+<li>Phân biệt <code>bytes</code> vs <code>str</code>; dùng <code>struct</code>/<code>int.from_bytes</code> để xử lý nhị phân chính xác tới từng byte.</li>
+<li>I/O-bound → <code>threading</code>/<code>asyncio</code>; CPU-bound → <code>multiprocessing</code> (vì GIL).</li>
+<li>Mọi call mạng phải có <strong>timeout</strong>; mọi subprocess dùng <code>shell=False</code>.</li>
+<li>Crypto: <code>secrets</code> cho token, <code>hmac.compare_digest</code> để so sánh, Argon2/bcrypt cho mật khẩu, không dùng MD5/SHA-1 cho integrity.</li>
+<li>Input không tin cậy: validate (<code>ipaddress</code>/<code>pathlib</code>), parameterized query, không <code>eval/exec/pickle</code>.</li>
+<li>Secret từ env/vault, pin dependency, quét bằng <code>bandit</code>/<code>pip-audit</code>/<code>gitleaks</code>/<code>trivy</code>.</li>
+<li>Đóng gói Docker non-root, read-only, drop capability, scan trước deploy.</li>
+</ol>
+<hr />
+<h2 id="ch17-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch16.html"><span>← Chương trước</span><b>16 · Tuân thủ &amp; Quản trị (GRC)</b></a><a class="pg next" href="ch99.html"><span>Chương sau →</span><b>99 · Thuật ngữ &amp; viết tắt</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -2,40 +2,32 @@
 
 ## Tổng quan
 
-Chương trình bày hai họ công cụ nền tảng của **observability** và **giám sát hạ tầng**: **ELK/Elastic Stack** (thu thập, lưu trữ và truy vấn log) và **Zabbix** (giám sát trạng thái và hiệu năng hạ tầng theo mô hình metric/threshold). Hai họ này trả lời hai câu hỏi vận hành khác nhau và bổ sung cho nhau:
+Mình bắt đầu để ý mảng này sau vài lần bị hỏi "server load cao từ lúc nào vậy" mà chẳng có gì để tra ngoài cảm giác — không log, không biểu đồ, chỉ đoán. Theo dõi hạ tầng nghiêm túc cần tách bạch hai thứ: log kể lại chuyện gì đã xảy ra, còn metric cho biết hệ thống có đang khỏe không tại một thời điểm. Chương này đi qua bốn công cụ trả lời cho hai câu hỏi đó — dấu vết tấn công nằm trong log, còn sự cố hạ tầng thường khởi đầu từ một chỉ số bất thường, nên cả hai đều thiết yếu với an toàn thông tin.
 
-- **ELK** trả lời "chuyện gì đã xảy ra, ai làm gì, lúc nào" — dựa trên log/event.
-- **Zabbix** trả lời "hệ thống có khỏe không, chỉ số nào vượt ngưỡng" — dựa trên metric theo thời gian.
+Nửa đầu chương là **ELK Stack** — Elasticsearch, Logstash, Kibana, cộng họ agent **Beats** (Filebeat, Metricbeat, Winlogbeat...) thu log tại nguồn. Log tự nó chỉ là bản ghi sự kiện rời rạc trên từng máy; ELK giải bài toán gom log phân tán về một chỗ rồi làm cho nó tìm được: Elasticsearch dùng inverted index để tra full-text ở quy mô tỷ bản ghi mà RDBMS không kham nổi, Logstash đứng giữa parse và chuẩn hóa log thô thành dữ liệu sạch, còn Kibana biến dữ liệu đã lập chỉ mục đó thành biểu đồ và dashboard — nhìn ra bất thường nhanh hơn đọc log tay nhiều.
 
-Cả hai đều thiết yếu với an toàn thông tin: dấu vết tấn công nằm trong log, còn sự cố hạ tầng thường khởi đầu từ một chỉ số bất thường.
+Nửa sau là mảng metric, đại diện bởi hai công cụ giải cùng bài toán nhưng khác triết lý. **Zabbix** đo liên tục CPU, RAM, đĩa, tình trạng dịch vụ và tự cảnh báo qua cơ chế trigger khi vượt ngưỡng — kiểu monitoring truyền thống, cấu hình qua GUI/template. **Prometheus** là thế hệ cloud-native: server chủ động kéo (scrape) số liệu qua endpoint `/metrics` mà mỗi **exporter** phơi ra trên host, lưu vào TSDB riêng, truy vấn bằng PromQL, cảnh báo giao cho Alertmanager. **Grafana** đứng trên cả hai, không tự thu thập gì — chỉ vẽ dashboard từ nhiều datasource (Prometheus, Elasticsearch/OpenSearch...) lại một chỗ, thay vì mỗi công cụ một giao diện riêng.
 
-**Các khái niệm cốt lõi và vấn đề mà chúng giải quyết:**
-
-- **Log**: bản ghi tuần tự các sự kiện do hệ thống sinh ra (truy cập, đăng nhập thất bại, lỗi phần mềm). Là nguồn bằng chứng chính khi điều tra sự cố bảo mật, nhưng chỉ hữu dụng khi được tập trung và cho phép tìm kiếm.
-- **ELK Stack**: bộ ba **E**lasticsearch + **L**ogstash + **K**ibana (thường kèm Beats). Giải quyết bài toán log phân tán trên nhiều máy: gom về một nơi, đánh chỉ mục để tìm kiếm full-text và trực quan hóa phục vụ điều tra.
-- **Elasticsearch**: **search engine** dựa trên Lucene, dùng **inverted index** để tra cứu full-text ở quy mô tỷ bản ghi với độ trễ mili-giây — điều RDBMS (CSDL quan hệ) không đáp ứng được.
-- **Logstash**: pipeline xử lý đặt giữa nguồn log và Elasticsearch; nhận log thô, parse, làm sạch và chuẩn hóa thành dữ liệu có cấu trúc. Dữ liệu sạch là điều kiện để tìm kiếm và thống kê chính xác.
-- **Kibana**: lớp trực quan hóa và truy vấn trên Elasticsearch; biến dữ liệu thô thành biểu đồ, bảng và dashboard, giúp phát hiện bất thường nhanh hơn đọc log thô.
-- **Beats**: họ agent nhẹ trên host nguồn — Filebeat (log file), Metricbeat (CPU/RAM), Winlogbeat (Windows Event Log). Thu thập dữ liệu tại chỗ và đẩy về Logstash/Elasticsearch.
-- **Zabbix**: **monitoring system** đo liên tục các chỉ số hạ tầng (CPU, RAM, đĩa, tình trạng dịch vụ) và tự động cảnh báo khi vượt ngưỡng, giúp xử lý sự cố trước khi hệ thống sập.
-- **Metric** và **Trigger**: **Metric** là giá trị đo tại một thời điểm (ví dụ CPU 87%); chuỗi metric theo thời gian cho thấy xu hướng. **Trigger** là biểu thức điều kiện ("nếu CPU trung bình 5 phút vượt 90% thì cảnh báo") — cơ chế giám sát tự động thay cho việc trực màn hình thủ công.
-- **SIEM** (Wazuh, Splunk): hệ phát hiện tấn công, đọc log và tương quan sự kiện để nhận diện mẫu hành vi đáng ngờ. Phân định cốt lõi: **Zabbix giám sát sức khỏe hạ tầng, SIEM phát hiện an ninh** — hai hệ bổ sung, không thay thế nhau.
+Cuối chương có nhắc tới SIEM để phân định rạch ròi: Zabbix và Prometheus lo sức khỏe hạ tầng, còn phát hiện tấn công qua tương quan sự kiện là việc của SIEM — hai lớp bổ trợ, không thay nhau.
 
 ## 9.0 Bảng định vị công cụ
 
-Phần Tổng quan ở trên đã giới thiệu từng công cụ. Mục này không lặp lại các định nghĩa đó, mà đặt ba họ công cụ cạnh nhau để thấy rõ chúng khác nhau ở đâu — trước khi đi sâu vào từng phần. Cách trình bày của chương cũng đi tới mức **định dạng dữ liệu trên dây (wire format), cấu trúc bản ghi trên đĩa, từng trường cấu hình và từng bước xử lý** — đủ để một kỹ sư Blue Team/AppSec/DevSecOps vận hành, gỡ lỗi và đánh giá rủi ro trong thực tế.
+Phần Tổng quan ở trên đã giới thiệu từng công cụ. Mục này không lặp lại các định nghĩa đó, mà đặt các họ công cụ cạnh nhau để thấy rõ chúng khác nhau ở đâu — trước khi đi sâu vào từng phần. Cách trình bày của chương cũng đi tới mức **định dạng dữ liệu trên dây (wire format), cấu trúc bản ghi trên đĩa, từng trường cấu hình và từng bước xử lý** — đủ để một kỹ sư Blue Team/AppSec/DevSecOps vận hành, gỡ lỗi và đánh giá rủi ro trong thực tế.
 
 Một điểm phân định bản chất nên ghi nhớ trước khi đọc tiếp:
 
-| Khía cạnh | ELK Stack | Zabbix | SIEM (vd Wazuh, Splunk ES) |
-|---|---|---|---|
-| Đơn vị dữ liệu | Document JSON (full-text + structured) | Metric (giá trị số/chuỗi theo thời gian) | Security event đã chuẩn hóa + rule correlation |
-| Mô hình lưu trữ | Inverted index + doc values (Lucene) | Time-series trong RDBMS/TSDB | Index + alert store |
-| Câu hỏi điển hình | "Tìm mọi request 5xx chứa chuỗi X trong 15 phút" | "CPU host A có vượt 90% trong 5 phút không?" | "Có chuỗi hành vi nào khớp MITRE T1110 không?" |
-| Cơ chế cảnh báo | Watcher/ElastAlert/Detection rules (bổ sung) | Trigger expression (lõi) | Correlation rules + decoder (lõi) |
-| Bản chất | Search engine | Monitoring system | Detection & response |
+| Khía cạnh | ELK Stack | Zabbix | Prometheus | SIEM (vd Wazuh, Splunk ES) |
+|---|---|---|---|---|
+| Đơn vị dữ liệu | Document JSON (full-text + structured) | Metric (giá trị số/chuỗi theo thời gian) | Metric time-series (tên + label, giá trị float) | Security event đã chuẩn hóa + rule correlation |
+| Mô hình lưu trữ | Inverted index + doc values (Lucene) | Time-series trong RDBMS/TSDB | TSDB cục bộ (block + WAL) | Index + alert store |
+| Cách thu thập | Agent (Beats) đẩy về pipeline | Agent passive/active, SNMP, proxy | Server **pull** (scrape) endpoint `/metrics` của exporter | Agent đẩy event về manager |
+| Câu hỏi điển hình | "Tìm mọi request 5xx chứa chuỗi X trong 15 phút" | "CPU host A có vượt 90% trong 5 phút không?" | "rate CPU theo mode của cả fleet 5 phút qua là bao nhiêu?" | "Có chuỗi hành vi nào khớp MITRE T1110 không?" |
+| Cơ chế cảnh báo | Watcher/Kibana alerting/ElastAlert (bổ sung) | Trigger expression (lõi) | Alerting rule + Alertmanager (tách riêng) | Correlation rules + decoder (lõi) |
+| Bản chất | Search engine | Monitoring system | Monitoring system (TSDB + query engine) | Detection & response |
 
-Ghi nhớ: Elasticsearch **là một search engine** chứ không phải RDBMS (CSDL quan hệ); Zabbix **là một monitoring system** chứ không phải log store. Phần lớn các quyết định thiết kế bên dưới đều có thể truy ngược về hai bản chất này.
+**Grafana** cố tình không có mặt trong bảng: nó không phải nơi lưu dữ liệu mà là **lớp hiển thị** đứng trên các hệ ở trên — một dashboard Grafana có thể vẽ đồng thời panel từ Prometheus (hiệu năng) và panel từ Elasticsearch/OpenSearch (log/an ninh).
+
+Ghi nhớ: Elasticsearch **là một search engine** chứ không phải RDBMS (CSDL quan hệ); Zabbix và Prometheus **là monitoring system** chứ không phải log store; Grafana **là mặt kính** chứ không phải kho dữ liệu. Phần lớn các quyết định thiết kế bên dưới đều có thể truy ngược về các bản chất này.
 
 ---
 
@@ -676,7 +668,7 @@ output.elasticsearch:
   ssl.certificate_authorities: ["/etc/metricbeat/certs/ca.crt"]
 ```
 
-`system.cpu.utilization` (Metricbeat) tương tự khái niệm `system.cpu.util` bên Zabbix — nhưng đây là metric phục vụ phân tích, không có trigger/threshold engine như Zabbix.
+`system.cpu.utilization` (Metricbeat) tương tự khái niệm `system.cpu.util` bên Zabbix — nhưng đây là metric phục vụ phân tích, không có trigger/threshold engine như Zabbix. Vai trò của Metricbeat cũng tương đương **node_exporter** bên hệ Prometheus (xem 9.6) — khác ở chiều dữ liệu: Metricbeat **đẩy** về Elasticsearch, còn node_exporter chỉ **phơi** metric ra để Prometheus kéo.
 
 ### 9.4.3 Winlogbeat
 
@@ -986,46 +978,367 @@ return resp;
 
 ---
 
-## 9.6 Zabbix vs SIEM — Phân định bản chất
+## 9.6 Prometheus — Giám sát metric theo mô hình pull
 
-Đây là điểm hay bị nhầm. **Zabbix giám sát "trạng thái/hiệu năng hạ tầng"**, **SIEM phân tích "sự kiện bảo mật"**. Khác nhau ở mô hình dữ liệu và động cơ phát hiện.
+### 9.6.1 Prometheus là gì, giải quyết vấn đề gì
 
-| Tiêu chí | Zabbix (Monitoring) | SIEM (Wazuh / Elastic Security / Splunk ES) |
+**Prometheus** là hệ giám sát metric mã nguồn mở, khởi nguồn từ SoundCloud và là dự án thứ hai "tốt nghiệp" CNCF (sau Kubernetes). Nó giải quyết cùng bài toán với Zabbix — "hệ thống có khỏe không, chỉ số nào vượt ngưỡng" — nhưng theo triết lý khác:
+
+- **Pull model**: Prometheus server **chủ động kéo** (scrape) metric từ endpoint HTTP `/metrics` của từng target, theo chu kỳ cấu hình. Target không đẩy gì cả — nó chỉ *phơi* trạng thái hiện tại ra dạng text.
+- **Metric là time-series có label**: mỗi chuỗi được định danh bằng tên metric + tập cặp key=value (label). Cắt lát dữ liệu theo label là thao tác hạng nhất, không cần khai báo trước từng "item" như Zabbix.
+- **Cấu hình bằng file** (YAML + rule file): toàn bộ scrape config và alert rule nằm trong file text → đưa vào Git, review như code (khớp tinh thần GitOps ở chương 7). Zabbix ngược lại: cấu hình sống trong DB, thao tác qua GUI.
+- **TSDB cục bộ**: Prometheus tự lưu dữ liệu trên đĩa của chính nó (block 2 giờ + WAL), không cần DB ngoài. Mặc định giữ 15 ngày (`--storage.tsdb.retention.time`) — lưu dài hạn cần giải pháp bổ sung (Thanos, Mimir, VictoriaMetrics — cần kiểm chứng lựa chọn theo thời điểm).
+
+**Vì sao pull thay vì push?** Ba lý do thực dụng: (1) server kiểm soát nhịp thu — thêm 100 target không sợ server bị dội dữ liệu ngoài ý muốn; (2) biết ngay target chết — scrape thất bại thì metric `up == 0`, có ngay alert "host mất tích" mà không cần cơ chế heartbeat riêng (tương đương `nodata()` của Zabbix nhưng tự nhiên hơn); (3) debug dễ — mở trình duyệt vào `http://target:9100/metrics` là thấy đúng thứ server thấy. Nhược điểm: server phải *tới được* target (mạng NAT/firewall chiều vào là bài toán); job ngắn hạn (batch/cron) chạy xong đã chết trước khi bị scrape — giải bằng **Pushgateway** (job đẩy kết quả lên đó, Prometheus scrape Pushgateway).
+
+### 9.6.2 Kiến trúc: server, exporter, scrape
+
+```
+   ┌─────────────────────────────────────────────────────────┐
+   │                  PROMETHEUS SERVER                       │
+   │  Retrieval (scrape) ──▶ TSDB (block + WAL trên đĩa)      │
+   │        │                    │                            │
+   │        │              HTTP API /api/v1/query  ◀── Grafana│
+   │        ▼                    │                            │
+   │  Rule evaluation ───────────┼──▶ alert đang FIRING       │
+   └────────┬────────────────────┼────────────┬───────────────┘
+            │ HTTP GET /metrics  │            │ HTTP POST
+            ▼ (chu kỳ 15-60s)    │            ▼
+   ┌────────────────┐   ┌────────────────┐  ┌──────────────┐
+   │ node_exporter  │   │ app tự phơi    │  │ ALERTMANAGER │
+   │ :9100 (host)   │   │ /metrics (SDK) │  │ group/route/ │
+   └────────────────┘   └────────────────┘  │ notify       │
+                                            └──────────────┘
+```
+
+| Thành phần | Cổng mặc định | Vai trò |
 |---|---|---|
-| Dữ liệu | Metric số theo thời gian (CPU, RAM, disk, up/down) | Log/event đa nguồn đã chuẩn hóa |
-| Phát hiện | Trigger ngưỡng trên metric | Decoder + rule + correlation theo hành vi |
-| Câu hỏi | "Hệ thống có khỏe không?" | "Có ai đang tấn công không?" |
-| Tương quan đa nguồn | Hạn chế (chủ yếu theo host/item) | Mạnh (correlation across logs, MITRE ATT&CK) |
-| Lưu trữ | RDBMS/TSDB, history+trends | Index full-text (Elasticsearch/Lucene) |
-| Lý tưởng cho | Ops/SRE, availability, capacity | SOC, threat detection, IR, compliance |
+| Prometheus server | 9090 | Scrape, lưu TSDB, chạy PromQL, đánh giá alerting rule |
+| node_exporter | 9100 | Phơi metric hệ điều hành Linux của host |
+| Alertmanager | 9093 | Nhận alert từ server, gom nhóm, định tuyến, gửi thông báo |
+| Pushgateway | 9091 | Trung gian cho batch job ngắn hạn |
+| Exporter khác | 9xxx | blackbox (probe HTTP/ICMP), mysqld, nginx, redis... mỗi dịch vụ một exporter |
 
-Một sự cố "đĩa đầy" là việc của Zabbix. Một chuỗi "1000 lần đăng nhập thất bại rồi 1 lần thành công từ IP lạ" là việc của SIEM. Hai hệ này **bổ sung** chứ không thay thế nhau.
+**Exporter** là điểm khác biệt kiến trúc so với Zabbix agent: thay vì một agent vạn năng trả lời mọi item key, hệ Prometheus dùng nhiều exporter nhỏ — mỗi exporter dịch trạng thái của một hệ (kernel, MySQL, nginx) thành định dạng text `/metrics`. Ứng dụng tự viết thì nhúng client library (Go/Python/Java...) để phơi metric nghiệp vụ trực tiếp.
+
+`prometheus.yml` tối thiểu chạy được:
+
+```yaml
+global:
+  scrape_interval: 15s          # chu kỳ kéo mặc định
+  evaluation_interval: 15s      # chu kỳ đánh giá rule
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  - job_name: "prometheus"      # tự giám sát chính nó
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node"
+    static_configs:
+      - targets:
+          - "10.0.0.20:9100"
+          - "10.0.0.21:9100"
+        labels:
+          env: "prod"
+```
+
+Mỗi target scrape được tự gắn hai label định danh: `job` (tên job) và `instance` (host:port). Môi trường động (Kubernetes, cloud) thay `static_configs` bằng **service discovery** (`kubernetes_sd_configs`, `ec2_sd_configs`...) — target sinh/chết tự được phát hiện, không ai phải "khai host" thủ công.
+
+Định dạng text mà exporter phơi ra (mở `curl http://10.0.0.20:9100/metrics` là thấy):
+
+```
+# HELP node_cpu_seconds_total Seconds the CPUs spent in each mode.
+# TYPE node_cpu_seconds_total counter
+node_cpu_seconds_total{cpu="0",mode="idle"} 8.5230889e+06
+node_cpu_seconds_total{cpu="0",mode="iowait"} 12043.02
+node_cpu_seconds_total{cpu="0",mode="steal"} 3894.77
+node_cpu_seconds_total{cpu="0",mode="user"} 118920.31
+node_memory_MemAvailable_bytes 6.442450944e+09
+```
+
+### 9.6.3 Data model — tên metric, label và 4 kiểu metric
+
+Một time-series = **tên metric + tập label**; mỗi mẫu (sample) = (timestamp mili-giây, giá trị float64). Ví dụ `node_cpu_seconds_total{cpu="0",mode="idle",instance="10.0.0.20:9100",job="node"}` là *một* chuỗi; đổi bất kỳ label nào là *một chuỗi khác*. Hệ quả quan trọng: **label cardinality** quyết định chi phí — label nhận giá trị không chặn (user ID, URL đầy đủ, IP client) sẽ sinh hàng triệu chuỗi và giết server (tương tự mapping explosion bên Elasticsearch, xem 9.1.2).
+
+Bốn kiểu metric:
+
+| Kiểu | Bản chất | Ví dụ | Cách dùng đúng |
+|---|---|---|---|
+| **Counter** | Chỉ tăng (reset về 0 khi process restart) | `node_cpu_seconds_total`, `http_requests_total` | Không đọc giá trị thô; luôn qua `rate()`/`increase()` |
+| **Gauge** | Lên xuống tự do | `node_memory_MemAvailable_bytes`, `node_load1` | Đọc trực tiếp, `avg_over_time()` |
+| **Histogram** | Đếm quan sát vào các bucket `le` (kèm `_sum`, `_count`) | `http_request_duration_seconds_bucket` | `histogram_quantile(0.95, ...)` tính percentile phía server |
+| **Summary** | Percentile tính sẵn phía client | `..._{quantile="0.99"}` | Đọc trực tiếp nhưng không aggregate được giữa các instance |
+
+**Vì sao counter chỉ tăng?** Để chịu được mất mẫu: giữa hai lần scrape, dù mất vài mẫu, hiệu số hai giá trị counter vẫn cho biết chính xác lượng tăng trong khoảng đó. `rate()` còn tự xử lý counter reset (giá trị tụt xuống = process restart → nó cộng bù). Đây là lý do quy ước đặt tên `_total` và câu thần chú "counter thô vô nghĩa, rate của counter mới có nghĩa" — tương đương preprocessing "Change per second" bên Zabbix (9.5.3).
+
+**Histogram vs Summary**: histogram tính percentile lúc *truy vấn* nên aggregate được toàn fleet ("p95 của cả cụm"); summary tính sẵn ở *client* nên chính xác hơn cho một instance nhưng không gộp được. Thực tế đa số chọn histogram.
+
+### 9.6.4 node_exporter — các metric hệ thống đáng nhìn nhất
+
+node_exporter đọc `/proc`, `/sys` và phơi ra vài nghìn chuỗi. Những nhóm mình dùng hằng ngày:
+
+| Nhóm | Metric | Kiểu | Ý nghĩa vận hành |
+|---|---|---|---|
+| CPU | `node_cpu_seconds_total{mode=...}` | counter | Giây CPU theo mode: `user`, `system`, `iowait`, `steal`, `idle`... Đọc theo *mode* mới chẩn đoán được: `iowait` cao = nghẽn đĩa chứ không phải thiếu CPU; `steal` cao = hypervisor bóp VM (noisy neighbor trên cloud) |
+| Memory | `node_memory_MemAvailable_bytes`, `node_memory_MemTotal_bytes` | gauge | Nhìn **available**, đừng nhìn "used" — Linux tận dụng RAM trống làm page cache nên used luôn cao |
+| PSI | `node_pressure_memory_waiting_seconds_total`, `node_pressure_cpu_waiting_seconds_total`, `node_pressure_io_waiting_seconds_total` | counter | **Pressure Stall Information** (kernel ≥ 4.20): tổng thời gian có process phải *dừng chờ* tài nguyên. `rate()` của nó = tỉ lệ thời gian bị nghẽn — tín hiệu "thiếu thật" trung thực hơn mọi con số % used |
+| Filesystem | `node_filesystem_avail_bytes`, `node_filesystem_files_free` | gauge | Dung lượng còn trống và **inode** còn trống (hết inode cũng "đầy đĩa" dù còn GB) |
+| Disk I/O | `node_disk_io_time_seconds_total`, `node_disk_read_bytes_total`, `node_disk_written_bytes_total` | counter | `rate(io_time)` ≈ %util của `iostat`; throughput đọc/ghi |
+| Network | `node_network_receive_bytes_total`, `node_network_receive_drop_total`, `node_network_receive_errs_total` | counter | Cảnh báo mạng nên nhìn **drop/error**, không phải % băng thông |
+| Load/Procs | `node_load1`, `node_procs_blocked` | gauge | `procs_blocked` = số process trạng thái D (kẹt I/O) — load cao + blocked cao = nghẽn đĩa, không phải thiếu CPU |
+
+Cách đọc mấy chỉ số này bằng *lệnh* ngay trên máy (mpstat, PSI, iostat, ss...) nằm ở chương 2 (Linux) — dashboard và lệnh là hai nửa của cùng một runbook.
+
+### 9.6.5 PromQL cơ bản — các truy vấn dùng thật
+
+PromQL thao tác trên hai loại giá trị chính: **instant vector** (mỗi chuỗi một giá trị tại một thời điểm — `node_load1`) và **range vector** (mỗi chuỗi một dãy mẫu trong cửa sổ thời gian — `node_cpu_seconds_total[5m]`). Hàm như `rate()` nhận range vector, trả instant vector.
+
+```promql
+# 1. CPU usage % từng máy (mẹo kinh điển: 100% trừ đi phần idle)
+100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))
+
+# 2. CPU tách theo mode — panel "CPU by mode" chính là truy vấn này
+sum by (mode) (rate(node_cpu_seconds_total{instance="10.0.0.20:9100"}[5m]))
+
+# 3. % RAM available (nhìn available, không nhìn used)
+100 * node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+
+# 4. Áp lực RAM thật (PSI) — tỉ lệ thời gian có process phải chờ vì thiếu RAM
+rate(node_pressure_memory_waiting_seconds_total[5m])
+
+# 5. % đĩa còn trống của mount /
+100 * node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}
+
+# 6. Dự báo: với đà 6 giờ qua, 24 giờ nữa / có đầy không? (âm = sẽ đầy)
+predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[6h], 24*3600) < 0
+
+# 7. Packet drop trên mọi interface (bỏ loopback)
+rate(node_network_receive_drop_total{device!="lo"}[5m])
+
+# 8. Máy nào mất tích (scrape thất bại)
+up == 0
+```
+
+Mấy điểm hay vấp:
+
+- `rate()` cần cửa sổ ≥ 2 lần `scrape_interval` (thường quy ước ≥ 4×, ví dụ interval 15s → cửa sổ tối thiểu 1m) — cửa sổ quá ngắn sẽ ra đồ thị lỗ chỗ.
+- `sum(node_cpu_seconds_total)` không có `rate()` là vô nghĩa (cộng các counter tích lũy từ lúc boot).
+- `by (label)` giữ label để nhóm, `without (label)` bỏ label — `sum by (mode)` gộp mọi CPU/instance nhưng giữ mode.
+- `predict_linear` là hồi quy tuyến tính trên range vector — câu "đĩa *sẽ* đầy trong 24h" đáng giá hơn nhiều câu "đĩa *đang* trên 90%": cảnh báo khi còn thời gian xử lý, và không kêu oan máy có đĩa 91% nhưng ổn định.
+
+### 9.6.6 Alerting rule và Alertmanager
+
+Prometheus tách đôi việc cảnh báo: **server** đánh giá rule và bắn alert; **Alertmanager** nhận alert rồi gom nhóm, khử trùng lặp, định tuyến, gửi đi. Vì sao tách? Để nhiều Prometheus server dùng chung một chỗ quản lý thông báo, và để logic "gửi cho ai, khi nào, gom thế nào" không trộn vào logic "cái gì là bất thường".
+
+Rule file (`rules/node.yml`):
+
+```yaml
+groups:
+  - name: node-health
+    rules:
+      - alert: HostDiskWillFillIn24h
+        expr: predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[6h], 24*3600) < 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Đĩa / của {{ $labels.instance }} sẽ đầy trong ~24h"
+
+      - alert: HostHighCpu
+        expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) > 90
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU {{ $labels.instance }} > 90% suốt 15 phút"
+
+      - alert: HostDown
+        expr: up{job="node"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} không scrape được 3 phút"
+```
+
+Trường **`for`** là chốt chống nhiễu: biểu thức phải đúng *liên tục* trong khoảng đó thì alert mới chuyển từ `pending` sang `firing` — vai trò tương tự hysteresis của Zabbix trigger (9.5.5): một cú spike CPU 30 giây không đáng đánh thức ai.
+
+`alertmanager.yml` — route dạng cây, receiver là đích gửi:
+
+```yaml
+route:
+  receiver: ops-default            # nhánh mặc định
+  group_by: [alertname, instance]  # gom alert cùng loại thành 1 thông báo
+  group_wait: 30s                  # đợi gom thêm alert cùng nhóm
+  repeat_interval: 4h              # nhắc lại nếu chưa ai xử lý
+  routes:
+    - matchers: [ severity="critical" ]
+      receiver: ops-oncall         # critical đi đường riêng
+
+receivers:
+  - name: ops-default
+    webhook_configs:
+      - url: "https://hooks.example/ops-channel"
+  - name: ops-oncall
+    webhook_configs:
+      - url: "https://hooks.example/oncall"
+```
+
+Ngoài route, Alertmanager có **silence** (tắt tiếng theo matcher trong thời gian bảo trì, tạo qua UI/API) và **inhibition** (alert to đè alert nhỏ: host đã `HostDown` thì đừng gửi thêm 15 alert CPU/RAM của chính host đó).
+
+**Lưu ý bảo mật Prometheus**:
+
+- `/metrics` lộ nhiều thông tin trinh sát (phiên bản kernel, mount point, tên interface, đôi khi cả path ứng dụng). node_exporter **không có xác thực** — chỉ bind mạng nội bộ, chặn firewall cổng 9100/9090/9093 khỏi Internet.
+- Bản thân Prometheus/Alertmanager hỗ trợ TLS + basic auth cho web/API (từ Prometheus 2.24 — cần kiểm chứng); trước đó và cả nay nhiều nơi vẫn đặt sau reverse proxy để kiểm soát truy cập.
+- UI Prometheus cho chạy PromQL tùy ý trên toàn bộ dữ liệu — coi nó như công cụ quản trị, không phơi công khai.
+
+### 9.6.7 Prometheus vs Zabbix — khi nào chọn gì
+
+| Tiêu chí | Zabbix | Prometheus |
+|---|---|---|
+| Mô hình thu thập | Push (active) / poll từng item (passive), SNMP/IPMI | Pull scrape endpoint HTTP |
+| Cấu hình | GUI + template, lưu trong DB | File YAML + rule file → Git/review được |
+| Data model | Item key phẳng theo host | Metric + label đa chiều, cắt lát tùy ý |
+| Ngôn ngữ truy vấn | Hàm trigger trên từng item | PromQL — tính toán trên cả fleet trong một biểu thức |
+| Target động (container, autoscaling) | Yếu hơn (đăng ký host, LLD) | Rất mạnh (service discovery) |
+| Thiết bị mạng (SNMP), server vật lý | Rất mạnh, có sẵn template | Phải qua snmp_exporter, cực hơn |
+| Lưu dài hạn | History/Trends trong DB, giữ nhiều năm | TSDB cục bộ ~tuần; dài hạn cần Thanos/Mimir/remote write |
+| Alert | Trigger + action + escalation trong một hệ | Rule (server) + Alertmanager (route) tách đôi |
+
+Kinh nghiệm chọn: hạ tầng **tĩnh, nhiều thiết bị mạng, cần SNMP và escalation trực ca bài bản** → Zabbix vẫn rất tốt. Hạ tầng **cloud/container, target sinh diệt liên tục, đội đã quen IaC** → Prometheus + Grafana là mặc định của hệ sinh thái (Kubernetes phơi metric sẵn theo định dạng Prometheus). Ở hệ thống mình vận hành, mình dùng Prometheus + node_exporter + Grafana cho toàn bộ metric máy chủ; Zabbix mình học để hiểu mô hình monitoring truyền thống và vì nhiều doanh nghiệp Việt Nam vẫn chạy nó.
 
 ---
 
-## 9.7 Khi nào dùng ELK vs Wazuh vs Zabbix
+## 9.7 Grafana — Một mặt kính cho nhiều nguồn dữ liệu
+
+### 9.7.1 Grafana là gì, giải quyết vấn đề gì
+
+**Grafana** là nền tảng dashboard mã nguồn mở. Nó **không lưu metric hay log nào cả** — mỗi lần vẽ, nó cầm câu truy vấn đi hỏi **datasource** (Prometheus, Elasticsearch/OpenSearch, Loki, MySQL, CloudWatch...) rồi hiển thị kết quả. Vấn đề nó giải quyết rất đời thường: mỗi công cụ có UI riêng (Prometheus có UI thô, Kibana chỉ nhìn được Elasticsearch, Zabbix có frontend riêng) — vận hành thật thì không ai muốn mở 4 tab để trả lời câu "hệ thống có ổn không". Grafana cho phép **một dashboard trộn panel từ nhiều nguồn**: panel CPU đọc từ Prometheus nằm ngay cạnh panel đếm alert đọc từ index Wazuh.
+
+Với người làm bảo mật, đây là điểm ăn tiền: **dashboard an ninh và dashboard hiệu năng cùng một chỗ**. Wazuh indexer bản chất là OpenSearch (xem 9.9), nên Grafana trỏ datasource vào đó là truy vấn được `wazuh-alerts-*` như dữ liệu thường — mình dựng dashboard SOC trên Grafana mà không đụng tới Wazuh dashboard.
+
+### 9.7.2 Datasource
+
+| Datasource | Kiểu dữ liệu | Ngôn ngữ truy vấn trong panel |
+|---|---|---|
+| Prometheus | Metric time-series | PromQL |
+| Elasticsearch / OpenSearch | Document/log | Lucene query string + aggregation cấu hình trong panel |
+| Loki | Log (label như Prometheus) | LogQL |
+| MySQL/PostgreSQL | Bảng quan hệ | SQL |
+| CloudWatch, Azure Monitor... | Metric cloud | Query builder riêng |
+
+Mỗi datasource khai báo URL + credential (lưu phía server Grafana, mã hóa trong DB của nó). Nguyên tắc quyền tối thiểu áp dụng y như 9.1.5: user mà Grafana dùng để đọc Elasticsearch/OpenSearch chỉ cần quyền `read` trên đúng index cần vẽ (`wazuh-alerts-*`, `logs-*`), tuyệt đối không cấp admin.
+
+### 9.7.3 Dashboard, Panel, Variable
+
+- **Panel**: một ô hiển thị = một (hoặc vài) truy vấn + một kiểu vẽ (time series, gauge, stat, table, bar chart, heatmap). Ngưỡng màu (xanh/vàng/đỏ) đặt ngay trong panel — "panel chuyển đỏ" là ngôn ngữ chung của cả team.
+- **Dashboard**: lưới các panel, chia sẻ chung time range và bộ lọc. Toàn bộ dashboard là **một file JSON** — export/import được, commit vào Git được (lại GitOps).
+- **Variable**: biến dropdown ở đầu dashboard, ví dụ `instance` lấy giá trị động bằng `label_values(node_uname_info, instance)` — mọi panel dùng `$instance` trong truy vấn. Nhờ đó **một** dashboard phục vụ cả fleet thay vì mỗi máy một bản sao.
+- **Dashboard cộng đồng**: grafana.com có kho dashboard đánh số ID để import thẳng (ví dụ "Node Exporter Full" cho node_exporter). Kinh nghiệm của mình: import để học cách người ta viết truy vấn, rồi **tự dựng bản gọn hơn** — dashboard 40 panel nhìn mọi thứ nhưng không nói được điều gì; dashboard tự dựng 7-8 panel đúng thứ mình cần lại dùng được hằng ngày.
+
+### 9.7.4 Grafana alerting vs Alertmanager
+
+Grafana có hệ alerting riêng (unified alerting, từ Grafana 8): định nghĩa rule trên bất kỳ datasource nào, đánh giá theo chu kỳ, gửi qua contact point (email/webhook/chat), có thể trỏ tới Alertmanager ngoài. Vậy trùng với Alertmanager của Prometheus? Cách mình phân vai:
+
+| | Prometheus rule + Alertmanager | Grafana alerting |
+|---|---|---|
+| Rule sống ở đâu | File YAML cạnh server, review qua Git | DB của Grafana, tạo qua UI |
+| Gần dữ liệu | Sát TSDB, không thêm hop nào | Thêm một lớp (Grafana query datasource) |
+| Đa datasource | Chỉ Prometheus | Bất kỳ datasource nào (kể cả Elasticsearch) |
+| Hợp với | Alert hạ tầng chuẩn hóa, fleet lớn | Alert cần trộn nguồn, hoặc team muốn thao tác UI |
+
+Nguyên tắc mình theo: **alert hạ tầng cốt lõi đặt ở tầng thấp nhất có thể** (Prometheus rule + Alertmanager) — nó vẫn chạy kể cả khi Grafana chết; Grafana alerting dùng cho những cảnh báo tiện-thì-làm trên dữ liệu mà Alertmanager không với tới (ví dụ ngưỡng đếm trên index log).
+
+### 9.7.5 Kinh nghiệm thực tế: hai dashboard mình dùng hằng ngày
+
+**Dashboard "SOC Analyst View"** — tự dựng, datasource là index `wazuh-alerts-*` trên Wazuh indexer (OpenSearch):
+
+| Panel | Truy vấn/aggregation | Trả lời câu gì |
+|---|---|---|
+| Alerts theo thời gian, tách severity | date histogram + terms theo `rule.level` | Hôm nay có "bão" alert không, bắt đầu từ lúc nào |
+| Top rule kích hoạt | terms theo `rule.id` / `rule.description` | Loại sự kiện nào đang trội |
+| **Top source IPs** | terms theo `data.srcip` | IP nào đang "chăm" hệ thống nhất |
+| Top agent bị nhắm | terms theo `agent.name` | Máy nào đang hứng nhiều nhất |
+| Bảng alert level cao mới nhất | filter `rule.level >= 10`, sort theo thời gian | Cái gì cần mở Wazuh xem ngay |
+
+Panel Top source IPs là panel có "công" nhất: một lần liếc buổi sáng, mình thấy một IP lạ vọt lên đầu bảng với hàng trăm alert trong vài giờ — kéo ra là một VPS nước ngoài đang quét path traversal có bài bản trên một máy dev. Không có panel đó, từng alert riêng lẻ mức trung bình sẽ trôi qua như nhiễu nền; gom theo IP thì *chiến dịch* mới hiện hình. Phần điều tra sâu (query aggregation trực tiếp trên index, đọc `full_log`) nằm ở chương 8 (Wazuh); phản ứng phía nginx (rate limit, chặn tên tệp nhạy cảm) ở chương 11.
+
+**Dashboard node metrics** — mỗi hàng một nhóm tài nguyên, biến `$instance` chọn máy:
+
+- **CPU by mode** (truy vấn số 2 ở 9.6.5): nhìn màu là biết bệnh — `iowait` phình = đĩa, `steal` phình = hypervisor, `user` phình = app.
+- **Memory available + Memory PSI**: hai panel cạnh nhau, và PSI mới là panel quyết định (xem Ghi chú cuối chương).
+- **Root FS** + kết quả `predict_linear`: còn bao nhiêu, bao lâu nữa đầy.
+- **Disk I/O** (`rate(node_disk_io_time_seconds_total)`) + **I/O PSI**.
+- **Network** (throughput + drop/error).
+- **Procs blocked** (`node_procs_blocked`): chỉ số bị bỏ quên nhưng cực nhạy với nghẽn I/O.
+
+Triết lý dùng: **dashboard cho biết cao ở đâu, SSH + lệnh cho biết con nào gây ra.** Panel chỉ trả lời "CPU cao", "PSI memory dương kéo dài" — còn *process nào* thì phải vào máy chạy `htop`, `mpstat -P ALL`, `ps aux --sort=-%mem`, đọc `/proc/pressure/*`... Bộ lệnh theo từng panel mình để ở chương 2 (Linux) dạng runbook "panel đỏ → chạy gì trước". Hai thứ này là một cặp: dashboard không có runbook thì chỉ để ngắm, runbook không có dashboard thì không biết bắt đầu từ đâu.
+
+**Lưu ý bảo mật Grafana**:
+
+- Đổi ngay tài khoản mặc định `admin/admin`; bật HTTPS; đặt sau reverse proxy nếu phơi ra ngoài.
+- Grafana từng có CVE nghiêm trọng bị khai thác thực tế (điển hình path traversal CVE-2021-43798 đọc file tùy ý qua URL plugin) — cập nhật như một ứng dụng web công khai thực thụ.
+- Phân quyền theo org/team/folder: viewer chỉ xem dashboard, không sửa datasource. Nhớ rằng ai sửa được panel là *chạy được truy vấn tùy ý* bằng credential datasource của server — quyền editor cũng là một dạng quyền đọc dữ liệu.
+- Không nhúng secret vào truy vấn/annotation; dashboard JSON hay được chia sẻ công khai, soát trước khi đăng (tên host nội bộ, IP, tên index).
+
+---
+
+## 9.8 Zabbix/Prometheus vs SIEM — Phân định bản chất
+
+Đây là điểm hay bị nhầm. **Monitoring (Zabbix, Prometheus) giám sát "trạng thái/hiệu năng hạ tầng"**, **SIEM phân tích "sự kiện bảo mật"**. Khác nhau ở mô hình dữ liệu và động cơ phát hiện.
+
+| Tiêu chí | Monitoring (Zabbix / Prometheus) | SIEM (Wazuh / Elastic Security / Splunk ES) |
+|---|---|---|
+| Dữ liệu | Metric số theo thời gian (CPU, RAM, disk, up/down) | Log/event đa nguồn đã chuẩn hóa |
+| Phát hiện | Trigger/alerting rule ngưỡng trên metric | Decoder + rule + correlation theo hành vi |
+| Câu hỏi | "Hệ thống có khỏe không?" | "Có ai đang tấn công không?" |
+| Tương quan đa nguồn | Hạn chế (chủ yếu theo host/metric) | Mạnh (correlation across logs, MITRE ATT&CK) |
+| Lưu trữ | RDBMS/TSDB, history+trends | Index full-text (Elasticsearch/Lucene) |
+| Lý tưởng cho | Ops/SRE, availability, capacity | SOC, threat detection, IR, compliance |
+
+Một sự cố "đĩa đầy" là việc của Zabbix/Prometheus. Một chuỗi "1000 lần đăng nhập thất bại rồi 1 lần thành công từ IP lạ" là việc của SIEM. Hai miền này **bổ sung** chứ không thay thế nhau. Dù vậy, metric vẫn có giá trị an ninh gián tiếp: CPU vọt bất thường lúc 3 giờ sáng (cryptominer), network egress tăng đột biến (exfiltration) — dashboard hiệu năng đôi khi là người báo tin đầu tiên, còn xác nhận thì phải quay về log/SIEM.
+
+---
+
+## 9.9 Khi nào dùng ELK vs Wazuh vs Zabbix vs Prometheus/Grafana
 
 | Nhu cầu | Công cụ phù hợp | Lý do |
 |---|---|---|
 | Tập trung, tìm kiếm full-text log khối lượng lớn, tự xây dashboard điều tra | **ELK** | Search engine mạnh, linh hoạt mapping/query DSL |
 | Threat detection sẵn sàng dùng: HIDS, FIM, rootcheck, rule MITRE, compliance (PCI, CIS), agent đa nền tảng | **Wazuh** | Là SIEM/XDR mã nguồn mở, có decoder+rule sẵn, thường dựng trên chính Elasticsearch/OpenSearch để lưu/hiển thị |
-| Giám sát hạ tầng/hiệu năng, alert ngưỡng (CPU, RAM, disk, service up/down), SNMP thiết bị mạng | **Zabbix** | Trigger engine + template + proxy phân tán, agentless SNMP/IPMI |
+| Giám sát hạ tầng truyền thống, thiết bị mạng SNMP/IPMI, quy trình trực ca escalation bài bản | **Zabbix** | Trigger engine + template + proxy phân tán, agentless SNMP/IPMI |
+| Giám sát metric hạ tầng cloud/container, target động, alert as code | **Prometheus** | Pull model + service discovery + PromQL + Alertmanager; cấu hình dạng file hợp GitOps |
+| Một dashboard chung cho cả metric lẫn log/an ninh, nhiều nguồn dữ liệu | **Grafana** | Datasource đa hệ (Prometheus, Elasticsearch/OpenSearch...), panel/variable/alerting hợp nhất một mặt kính |
 
 Mối quan hệ kỹ thuật cần nắm:
 - **Wazuh dùng nền lưu trữ/hiển thị của Elastic Stack/OpenSearch** (Wazuh indexer dựa trên OpenSearch ~ Elasticsearch; Wazuh dashboard ~ Kibana). Tức ELK là **nền hạ tầng dữ liệu**, Wazuh thêm **lớp phát hiện bảo mật** (decoder, rule, agent, FIM) lên trên.
 - **ELK thuần** cũng có thể làm SIEM nếu dùng Elastic Security (detection rules, ECS schema), nhưng phải tự dựng/áp rule; Wazuh cho sẵn nhiều hơn out-of-the-box.
-- **Zabbix** đứng riêng ở miền monitoring; không cạnh tranh trực tiếp với ELK/Wazuh mà chạy song song.
+- **Zabbix và Prometheus** cùng đứng ở miền monitoring; không cạnh tranh với ELK/Wazuh mà chạy song song. Giữa hai công cụ này, chọn theo bài toán (xem 9.6.7) — hiếm khi cần cả hai.
+- **Grafana đọc được cả hai miền**: trỏ datasource vào Prometheus là có dashboard hiệu năng, trỏ vào Wazuh indexer (OpenSearch) là có dashboard an ninh — cùng một chỗ. Kibana/Wazuh dashboard vẫn mạnh hơn cho *điều tra tương tác* (Discover, Dev Tools); Grafana thắng ở *màn hình theo dõi hằng ngày*.
 
-Kiến trúc tham chiếu trong một tổ chức:
+Kiến trúc tham chiếu trong một tổ chức (stack mình vận hành):
 ```
-   Hạ tầng/hiệu năng ──▶ Zabbix (alert ops, capacity)
-   Log & security event ──▶ Beats/Logstash ──▶ Elasticsearch ──▶ {Kibana hiển thị,
-                                                                   Wazuh/Elastic Security phát hiện}
+   Hạ tầng/hiệu năng ──▶ node_exporter ──▶ Prometheus ──▶ Alertmanager (alert ops)
+                                              │
+   Log & security event ──▶ agent ──▶ Wazuh ──┼──▶ Wazuh indexer (OpenSearch)
+                                              │            │
+                                              └────────────┴──▶ GRAFANA (một mặt kính:
+                                                                dashboard node metrics
+                                                                + dashboard SOC)
+   Biến thể truyền thống: Zabbix thay Prometheus; Beats/Logstash ──▶ Elasticsearch ──▶ Kibana
 ```
 
 ---
 
-## 9.8 Tóm tắt các quyết định thiết kế cốt lõi
+## 9.10 Tóm tắt các quyết định thiết kế cốt lõi
 
 | Quyết định | Vì sao |
 |---|---|
@@ -1036,10 +1349,15 @@ Kiến trúc tham chiếu trong một tổ chức:
 | `dynamic: strict` mapping | Chống mapping explosion (DoS heap) |
 | Filebeat at-least-once + registry inode | Không mất log qua logrotate/crash |
 | Zabbix History vs Trends | History phình nhanh → giữ ngắn; Trends gộp giờ → giữ lâu |
-| Trigger hysteresis | Chống flapping cảnh báo |
+| Trigger hysteresis / `for` trong alerting rule | Chống flapping cảnh báo; spike ngắn không đáng đánh thức ai |
 | Magic "ZBXD" + length header | Tách message trên TCP stream |
-| TLS/PSK Zabbix, xpack.security ES | Mặc định không mã hóa = lộ dữ liệu/giả mạo |
-| Zabbix ≠ SIEM | Metric/threshold vs event/correlation — bổ sung nhau |
+| Prometheus pull model | Server kiểm soát nhịp thu; `up == 0` phát hiện target chết miễn phí; debug bằng trình duyệt |
+| Counter chỉ tăng + `rate()` | Chịu mất mẫu, tự xử lý reset; giá trị thô vô nghĩa, tốc độ thay đổi mới có nghĩa |
+| Metric name + label thay item key phẳng | Cắt lát đa chiều (`sum by (mode)`) — nhưng phải kiểm soát cardinality |
+| Tách Alertmanager khỏi Prometheus server | "Cái gì bất thường" (rule) tách khỏi "báo cho ai, gom thế nào" (route) |
+| Grafana không lưu dữ liệu | Mặt kính đa datasource: metric + log/an ninh cùng một dashboard |
+| TLS/PSK Zabbix, xpack.security ES, bind nội bộ /metrics | Mặc định không mã hóa/không xác thực = lộ dữ liệu/giả mạo |
+| Monitoring ≠ SIEM | Metric/threshold vs event/correlation — bổ sung nhau |
 
 
 ---
@@ -1047,3 +1365,10 @@ Kiến trúc tham chiếu trong một tổ chức:
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- **Học Zabbix, vận hành Prometheus** — mình học Zabbix khá kỹ (trigger, template, protocol) nhưng hệ thống mình vận hành thật lại chạy Prometheus + Grafana, và cảm nhận hai bên khác hẳn. Zabbix cho mình cảm giác "phần mềm quản trị": mọi thứ qua GUI, cấu hình sống trong DB, làm xong không nhớ mình đã bấm gì. Prometheus thì mọi thứ là file — sửa một alert rule là một commit, đọc lại diff là hiểu ai đổi gì vì sao. Học Zabbix không phí: nhờ nó mình hiểu trigger/hysteresis/escalation là gì trước khi gặp `for`/route/inhibition, và nhiều công ty ở đây vẫn chạy Zabbix thật.
+- **PSI đáng tin hơn %RAM used** — bài học mình phải trả bằng vài lần hết hồn. Panel memory used đỏ rực, SSH vào thì máy chạy êm ru: RAM "used" cao vì Linux tận dụng page cache và app (nhất là mấy con chạy JVM/heap lớn) giữ chỗ sẵn. Từ ngày thêm panel PSI (`rate(node_pressure_memory_waiting_seconds_total[5m])`), mình gần như không nhìn % used nữa: PSI bằng 0 thì kệ used bao nhiêu; PSI dương kéo dài mới là thiếu RAM thật — và lúc đó `vmstat` sẽ thấy si/so, `dmesg` lảng vảng OOM.
+- **%steal — chỉ số mình từng không biết tồn tại.** Một máy ở hệ thống mình vận hành có lúc CPU panel cao mà `htop` không thấy process nào ăn. Hóa ra là `steal`: VM cloud bị hypervisor bóp (noisy neighbor). Từ đó panel CPU của mình luôn tách theo mode chứ không vẽ một đường "CPU %" duy nhất — cùng là "CPU cao" nhưng `user`/`iowait`/`steal` là ba bệnh khác nhau, ba cách xử khác nhau (và riêng steal thì... không phải lỗi máy mình).
+- **Panel Top source IPs là panel rẻ nhất mà được việc nhất.** Chỉ là một terms aggregation theo IP nguồn trên index alert của Wazuh, nhưng chính nó giúp mình phát hiện sớm một chiến dịch quét path traversal: một IP lạ đứng đầu bảng với hàng trăm alert dồn trong vài giờ. Từng alert lẻ mức trung bình sẽ chìm trong nhiễu; gom theo IP thì hành vi *có chủ đích* nổi lên ngay. Bài học lớn hơn: dashboard an ninh không cần hoành tráng, cần đúng vài câu hỏi mình thật sự muốn hỏi mỗi sáng.
+- **Dashboard cho biết cao ở đâu, lệnh cho biết con nào gây ra.** Hồi đầu mình cứ ngồi nhìn Grafana đợi nó "nói" thủ phạm — nó không nói được, vì node_exporter không phơi metric theo process. Sau mình viết hẳn một runbook: panel nào đỏ thì SSH vào chạy bộ lệnh nào trước (để ở chương 2). Từ lúc có cặp dashboard + runbook, thời gian từ "thấy đỏ" đến "biết tại sao" ngắn hơn hẳn.
+- **Đang tìm hiểu tiếp**: recording rules (tính sẵn truy vấn nặng), lưu metric dài hạn (Thanos/Mimir — mới đọc, chưa dựng), và Loki để log nhẹ đi cạnh Prometheus xem có thay được một phần use case ELK cho hệ nhỏ không.

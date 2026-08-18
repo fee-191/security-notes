@@ -2,20 +2,11 @@
 
 ## Overview
 
-This chapter explains how data is transmitted between computers across a network, from the moment a byte leaves an application process until it reaches its destination. This is foundational knowledge for information security work: most attack techniques (eavesdropping, spoofing, interception, denial of service) take place at a specific layer of the network stack. Understanding how each layer operates helps you identify the attack surface and the points that need to be defended.
+Open Wireshark without a working model of each layer and it is just numbers scrolling past: the packet got dropped, but where and why is anyone’s guess. This chapter follows that exact question: how does a byte travel from an application process out onto the wire, and at every hop along the way, where can an attacker step in — by eavesdropping, spoofing, intercepting, or just flooding it.
 
-Here is a quick map of the concepts in this chapter; the full definitions and mechanics live in each section below.
+The chapter opens with the two reference models, **OSI** and **TCP/IP** — the vocabulary for naming each layer — then moves to **encapsulation/decapsulation**, where every layer tacks on a header that both analysis tools and attackers can read. From there it works its way down the stack: **Layer 2** with Ethernet, MAC, VLAN, ARP, and switches; **Layer 3** with IP, ICMP, routing, and NAT; then **Layer 4** with TCP/UDP and service ports — each layer opening up its own slice of attack surface. The last stretch comes back to what you touch every day: application-layer protocols like DNS, DHCP, HTTP, and TLS, plus the defensive and observability side — firewalls, DMZs, and tcpdump/Wireshark.
 
-- **Layered models (OSI & TCP/IP)** — a network is organized into stacked layers, each serving the layer above through a fixed interface. OSI is the 7-layer theoretical model; TCP/IP is the 4-layer model that actually runs on the Internet.
-- **Encapsulation / Decapsulation** — data is wrapped sequentially through the layers, each layer adding a header before passing it down; the receiver unwraps in reverse. Each header carries information that both analysis tools and attackers can read.
-- **Layer 2 — Ethernet, MAC, VLAN, ARP, switch** — hardware identification and frame exchange within the same LAN.
-- **Layer 3 — IP, ICMP, routing, NAT** — logical identification and routing across multiple networks to a destination.
-- **Layer 4 — TCP and UDP** — transporting data and using ports to demultiplex to the correct application.
-- **Common ports** — a host has one IP but many services; ports distinguish each service and reflect the attack surface.
-- **Layer 7 — DNS, DHCP, HTTP, TLS** — the application protocols we meet every day.
-- **Firewalls, DMZ, packet analysis tools** — filtering packets by policy, isolating the Internet-facing zone, and capturing/reading packets with tcpdump/Wireshark.
-
-> This handbook is for people learning and doing information security (Blue Team / AppSec / DevSecOps). Each topic follows a familiar flow: what the concept is, the internal mechanics (down to the bit/byte/step/parameter), an example you can actually run, and then a few security notes. Data structures are described down to the individual field, its size, and offset; each tool comes with the commands, configuration, and sample output so you can type them out yourself.
+> Each section moves from concept to bit-level mechanics to a runnable example — written for anyone doing Blue Team, AppSec, or DevSecOps who needs to actually read a packet, not just recite its definition.
 
 ---
 
@@ -92,14 +83,14 @@ L7   : web server parses "GET / HTTP/1.1"
 
 ```bash
 # -X prints hex+ASCII, -e prints the Ethernet header too, -nn skips name/port resolution
-sudo tcpdump -i eth0 -e -nn -X 'tcp port 80 and host 93.184.216.34' -c 1
+sudo tcpdump -i eth0 -e -nn -X 'tcp port 80 and host 192.0.2.10' -c 1
 ```
 
 Sample output (abbreviated and annotated):
 
 ```
 14:02:11.123456 aa:bb:cc:11:22:33 > de:ad:be:ef:00:01, ethertype IPv4 (0x0800), length 74:
-    10.0.0.5.54321 > 93.184.216.34.80: Flags [S], seq 1001, win 64240,
+    10.0.0.5.54321 > 192.0.2.10.80: Flags [S], seq 1001, win 64240,
     options [mss 1460,sackOK,TS val 1 ecr 0,nop,wscale 7], length 0
     0x0000:  dead beef 0001 aabb cc11 2233 0800 4500   <- Eth(14) + IP starts (45=Ver4,IHL5)
     0x0010:  003c 1c46 4000 4006 ...                    <- TotalLen 0x3c=60, Flags+FragOff, TTL=0x40=64, Proto=0x06=TCP
@@ -275,7 +266,7 @@ Switch(config-if)# switchport port-security mac-address sticky
 | Protocol | 8 bits | 9 | Payload protocol: 1=ICMP,6=TCP,17=UDP | `6` |
 | Header Checksum | 16 bits | 10 | Checksum of the header only | `0xb1e6` |
 | Source IP | 32 bits | 12 | Source IP | `10.0.0.5` |
-| Destination IP | 32 bits | 16 | Destination IP | `93.184.216.34` |
+| Destination IP | 32 bits | 16 | Destination IP | `192.0.2.10` |
 | Options | 0–40 bytes | 20 | Options (record route, timestamp…) | — |
 
 **Why TTL?** It prevents a packet from circling forever during a routing loop. `traceroute` exploits the TTL: it sends packets with TTL=1,2,3…; each router that drops the packet at TTL=0 returns an ICMP Time Exceeded, revealing its IP.
@@ -414,7 +405,7 @@ sipcalc 192.168.1.0/24 -s 26
 
 | Inside Local | Inside Global | Outside | Protocol |
 |--------------|---------------|---------|----------|
-| 10.0.0.5:54321 | 203.0.113.10:40001 | 93.184.216.34:80 | TCP |
+| 10.0.0.5:54321 | 203.0.113.10:40001 | 192.0.2.10:80 | TCP |
 | 10.0.0.6:51000 | 203.0.113.10:40002 | 1.1.1.1:443 | TCP |
 
 The router replaces the Source `10.0.0.5:54321` → `203.0.113.10:40001` on the way out, and does the reverse for the return packet based on port 40001.
@@ -698,7 +689,7 @@ Port ranges: **0–1023 well-known** (requires root privileges to bind on Linux)
 ```bash
 dig +trace example.com A      # view the entire iterative chain from root
 dig @1.1.1.1 example.com MX
-dig -x 93.184.216.34          # reverse (PTR)
+dig -x 192.0.2.10          # reverse (PTR)
 sudo tcpdump -i eth0 -nn 'udp port 53'
 ```
 
@@ -707,7 +698,7 @@ Sample `dig` output (annotated):
 ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6789
 ;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
 ;; ANSWER SECTION:
-example.com.    3600   IN   A   93.184.216.34
+example.com.    3600   IN   A   192.0.2.10
 ```
 
 **DNSSEC:** adds the `RRSIG` record (signature), `DNSKEY` (public key), `DS` (delegation signer), and `NSEC/NSEC3` (proof of non-existence). The `AD` bit (Authenticated Data) in the flags indicates the resolver has validated the signature. Goal: defend against cache poisoning/spoofing with digital signatures (it does not encrypt the content).
@@ -834,7 +825,7 @@ Differences in TLS 1.3: weak ciphersuites removed (static RSA key exchange, RC4,
 | Version | v3 | `2` (=v3) |
 | Serial Number | a unique identifier from the CA | `0x0a1b...` |
 | Signature Algorithm | the signing algorithm | `sha256WithRSAEncryption` |
-| Issuer | the DN of the issuing CA | `CN=R3, O=Let's Encrypt` |
+| Issuer | the DN of the issuing CA | `CN=R11, O=Let's Encrypt` |
 | Validity | notBefore / notAfter | `2026-01-01 .. 2026-04-01` |
 | Subject | the subject's DN | `CN=example.com` |
 | Subject Public Key Info | the algorithm + public key | `RSA 2048` / `EC P-256` |
@@ -945,3 +936,7 @@ A typical investigation workflow: capture with tcpdump on a headless server (`-w
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- **Reading the access log is the fastest way to spot a scanner.** On a web box I operate, just skimming access.log paints the portrait of an automated scanner: hundreds of requests over a few minutes from one IP, paths all like `/.env`, `/.git/config`, `/wp-login.php`, `/.ssh/id_rsa`, plus path-traversal variants `../`, `....//`, and even `%252e%252e` (double-encoding — it encodes the `.` twice to dodge naive filters). The user-agent rotates constantly, occasionally faking a Bing/Google referer to look like a legit bot. Real human traffic almost never has this shape.
+- **Look at the status code to know "breached or not".** A practical trick I use: filter the log for the suspect IP's requests that the server answered with **2xx** — if it's all `301/400/404`, it was scanned but got nothing; a `200` on a sensitive path is when to raise the alarm. A high request count by itself isn't an incident; the *outcome* is.
+- **Something I used to get wrong:** I once thought blocking the `../` pattern at the reverse proxy was enough to stop traversal. In reality nginx **normalizes the URI before matching a location**, so blocking on the `../`/`%2e%2e` string is unreliable; blocking by *sensitive filename* (`\.env`, `id_rsa`, `\.git`) catches most scans, while thorough traversal defense needs a WAF (ModSecurity + OWASP CRS). I keep the operational details of this in the infrastructure/hardening chapter.

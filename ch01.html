@@ -1,0 +1,2101 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 1 — Mạng máy tính (TCP/IP, OSI) — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 1 — Mạng máy tính (TCP/IP, OSI) — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="notes.html"><link rel="next" href="ch02.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter open active" data-ch="01"><a class="nav-ch-title" href="#top"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"><a class="nav-sub" href="#ch01-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch01-11-hai-mo-hinh-tham-chieu-osi-7-tang-va-tcpip">1.1. Hai mô hình tham chiếu: OSI 7 tầng và TCP/IP</a><a class="nav-sub" href="#ch01-12-encapsulation-decapsulation-byte-by-byte">1.2. Encapsulation / Decapsulation byte-by-byte</a><a class="nav-sub" href="#ch01-13-tang-2-ethernet-mac-vlan-arp-switch">1.3. Tầng 2 — Ethernet, MAC, VLAN, ARP, switch</a><a class="nav-sub" href="#ch01-14-tang-3-ipv4-ipv6-icmp-đinh-tuyen-nat">1.4. Tầng 3 — IPv4, IPv6, ICMP, định tuyến, NAT</a><a class="nav-sub" href="#ch01-15-tang-4-tcp-va-udp">1.5. Tầng 4 — TCP và UDP</a><a class="nav-sub" href="#ch01-16-cong-port-pho-bien">1.6. Cổng (port) phổ biến</a><a class="nav-sub" href="#ch01-17-tang-7-dns-dhcp-http-tls">1.7. Tầng 7 — DNS, DHCP, HTTP, TLS</a><a class="nav-sub" href="#ch01-18-firewall-dmz-cong-cu-phan-tich-goi">1.8. Firewall, DMZ, công cụ phân tích gói</a><a class="nav-sub" href="#ch01-19-tong-ket-cac-con-so-can-thuoc">1.9. Tổng kết các con số cần thuộc</a><a class="nav-sub" href="#ch01-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-01" data-ch="01">
+<h1 id="ch01-chuong-1-mang-may-tinh-tcpip-osi">Chương 1 — Mạng máy tính (TCP/IP, OSI)</h1>
+<h2 id="ch01-tong-quan">Tổng quan</h2>
+<p>Mở Wireshark lên mà không nắm cơ chế từng tầng thì cũng chỉ là nhìn một đống số chạy qua: gói này bị drop, nhưng drop ở đâu và vì cái gì thì chịu. Chương này bám theo đúng câu hỏi đó: một byte đi từ tiến trình ứng dụng ra tới dây mạng như thế nào, và ở mỗi chặng trên đường đi, kẻ tấn công có thể chen vào bằng cách nào — nghe lén, giả mạo, chặn bắt hay làm nghẽn.</p>
+<p>Chương mở đầu bằng hai mô hình tham chiếu <strong>OSI</strong> và <strong>TCP/IP</strong> — khung để gọi tên từng tầng — rồi tới cơ chế <strong>encapsulation/decapsulation</strong>, nơi mỗi tầng gắn thêm một header mà cả công cụ phân tích lẫn kẻ tấn công đều đọc được. Từ đó mạch chương đi xuống dần: <strong>tầng 2</strong> với Ethernet, MAC, VLAN, ARP và switch; <strong>tầng 3</strong> với IP, ICMP, định tuyến và NAT; rồi <strong>tầng 4</strong> với TCP/UDP và cổng dịch vụ — mỗi tầng mở ra một lớp bề mặt tấn công riêng. Phần cuối quay về những thứ chạm hằng ngày: các giao thức tầng ứng dụng như DNS, DHCP, HTTP, TLS, và bộ đôi phòng thủ/quan sát là tường lửa, DMZ cùng tcpdump/Wireshark.</p>
+<blockquote>
+<p>Mỗi mục đi từ khái niệm tới cơ chế bit/byte rồi một ví dụ gõ lại được ngay — viết cho ai đang làm Blue Team, AppSec hay DevSecOps và cần đọc được gói tin chứ không chỉ thuộc định nghĩa.</p>
+</blockquote>
+<hr />
+<h2 id="ch01-11-hai-mo-hinh-tham-chieu-osi-7-tang-va-tcpip">1.1. Hai mô hình tham chiếu: OSI 7 tầng và TCP/IP</h2>
+<h3 id="ch01-111-vi-sao-can-mo-hinh-phan-tang">1.1.1. Vì sao cần mô hình phân tầng</h3>
+<p>Truyền dữ liệu qua mạng là một bài toán rất nhiều việc: biểu diễn bit trên dây đồng/sợi quang, định địa chỉ máy, định tuyến qua hàng chục router, đảm bảo độ tin cậy, mã hóa, biểu diễn dữ liệu ứng dụng. Gom tất cả vào một khối nguyên (monolith) thì gần như không thể bảo trì, cũng không thể thay từng phần công nghệ (đổi cáp đồng sang quang, đổi IPv4 sang IPv6) mà không phá vỡ toàn bộ.</p>
+<p>Giải pháp là <strong>phân tầng (layering)</strong>: mỗi tầng cung cấp dịch vụ cho tầng trên và sử dụng dịch vụ của tầng dưới, qua một <strong>interface</strong> cố định. Nguyên tắc cốt lõi:</p>
+<ul>
+<li><strong>Encapsulation</strong>: dữ liệu của tầng trên được tầng dưới đối xử như payload mờ (opaque), bọc thêm header (và đôi khi trailer) của tầng dưới.</li>
+<li><strong>Tách biệt mối quan tâm (separation of concerns)</strong>: TCP không cần biết gói tin đi qua Ethernet hay Wi-Fi; IP không cần biết payload là TCP hay UDP.</li>
+<li><strong>Khả năng thay thế (interchangeability)</strong>: có thể thay tầng vật lý mà không đổi tầng IP.</li>
+</ul>
+<h3 id="ch01-112-mo-hinh-osi-isoiec-7498-1">1.1.2. Mô hình OSI (ISO/IEC 7498-1)</h3>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Tên</th>
+<th>PDU</th>
+<th>Chức năng cốt lõi</th>
+<th>Ví dụ giao thức/thiết bị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>Application</td>
+<td>Data</td>
+<td>Giao diện cho ứng dụng</td>
+<td>HTTP, DNS, SMTP, FTP</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Presentation</td>
+<td>Data</td>
+<td>Mã hóa, nén, biểu diễn dữ liệu</td>
+<td>TLS, ASCII/UTF-8, JPEG</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Session</td>
+<td>Data</td>
+<td>Thiết lập/duy trì/kết thúc phiên</td>
+<td>RPC, NetBIOS, SOCKS</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Transport</td>
+<td>Segment (TCP) / Datagram (UDP)</td>
+<td>Port, độ tin cậy, kiểm soát luồng</td>
+<td>TCP, UDP, SCTP, QUIC</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network</td>
+<td>Packet</td>
+<td>Định địa chỉ logic, định tuyến</td>
+<td>IPv4, IPv6, ICMP, IPsec</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Data Link</td>
+<td>Frame</td>
+<td>Địa chỉ vật lý (MAC), truy nhập môi trường</td>
+<td>Ethernet, 802.11, ARP, VLAN</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Physical</td>
+<td>Bit/Symbol</td>
+<td>Biểu diễn bit thành tín hiệu</td>
+<td>Cáp đồng, quang, RF, NIC PHY</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Lưu ý PDU — tầng 4 TCP gọi là <em>segment</em>, UDP gọi là <em>datagram</em>; tầng 3 là <em>packet</em>; tầng 2 là <em>frame</em>; tầng 1 là <em>bit/symbol</em>.</p>
+</blockquote>
+<h3 id="ch01-113-mo-hinh-tcpip-rfc-1122">1.1.3. Mô hình TCP/IP (RFC 1122)</h3>
+<p>TCP/IP là mô hình thực tế (de facto) của Internet. RFC 1122 chia thành 4 tầng:</p>
+<table>
+<thead>
+<tr>
+<th>Tầng TCP/IP</th>
+<th>Ánh xạ OSI</th>
+<th>Giao thức tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Application</td>
+<td>7 + 6 + 5</td>
+<td>HTTP, DNS, TLS (thường gộp ở đây), SMTP</td>
+</tr>
+<tr>
+<td>Transport</td>
+<td>4</td>
+<td>TCP, UDP</td>
+</tr>
+<tr>
+<td>Internet</td>
+<td>3</td>
+<td>IPv4, IPv6, ICMP, ARP (ranh giới mờ với L2)</td>
+</tr>
+<tr>
+<td>Link / Network Access</td>
+<td>2 + 1</td>
+<td>Ethernet, Wi-Fi, PPP</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao có hai mô hình?</strong> OSI là mô hình lý thuyết (đặc tả 1984) đầy đủ và dùng để giảng dạy/chuẩn hóa thuật ngữ. TCP/IP ra đời từ ARPANET, đơn giản hơn, là cái thật sự chạy trên Internet. Kỹ sư bảo mật phải thông thạo cả hai vì công cụ và tài liệu trộn lẫn cách dùng (ví dụ "L7 firewall", "L2 attack", "L3/L4 ACL").</p>
+<hr />
+<h2 id="ch01-12-encapsulation-decapsulation-byte-by-byte">1.2. Encapsulation / Decapsulation byte-by-byte</h2>
+<h3 id="ch01-121-qua-trinh-boc-du-lieu-khi-gui">1.2.1. Quá trình bọc dữ liệu khi gửi</h3>
+<p>Giả sử trình duyệt gửi một request HTTP <code>GET /</code> tới một web server trong cùng mạng LAN qua HTTP (không TLS để đơn giản hóa).</p>
+<pre><code>Tầng 7 (HTTP)   : [ &quot;GET / HTTP/1.1\r\nHost: x\r\n\r\n&quot; ]               &lt;- App data (D)
+Tầng 4 (TCP)    : [ TCP header 20B | D ]                                &lt;- Segment
+Tầng 3 (IP)     : [ IPv4 header 20B | TCP header 20B | D ]              &lt;- Packet
+Tầng 2 (Eth)    : [ Eth header 14B | IPv4 20B | TCP 20B | D | FCS 4B ]  &lt;- Frame
+Tầng 1 (PHY)    : [ Preamble 7B | SFD 1B | &lt;Frame trên dây&gt; ]           &lt;- Bit stream
+</code></pre>
+<p>Mỗi tầng <strong>chỉ thêm header của mình</strong> và coi tất cả những gì nhận từ tầng trên là payload mờ. Đây là lý do mỗi header phải có trường "protocol/next header" để bên nhận biết payload thuộc giao thức nào (xem <code>EtherType</code>, <code>Protocol</code> của IPv4, port của TCP).</p>
+<h3 id="ch01-122-qua-trinh-thao-du-lieu-khi-nhan-decapsulation">1.2.2. Quá trình tháo dữ liệu khi nhận (decapsulation)</h3>
+<p>Bên nhận làm ngược lại, mỗi tầng đọc header của mình, kiểm tra (checksum/FCS), bóc ra, rồi đẩy payload lên tầng trên dựa vào trường "next protocol":</p>
+<pre><code>PHY  : nhận bit -&gt; dò Preamble/SFD đồng bộ clock -&gt; lấy frame
+L2   : kiểm FCS (CRC32). EtherType=0x0800 -&gt; đẩy lên IPv4
+L3   : kiểm IP checksum, kiểm Dst IP là của mình, Protocol=6 -&gt; TCP
+L4   : kiểm TCP checksum, dùng Dst Port=80 -&gt; đẩy lên process nghe cổng 80
+L7   : web server parse &quot;GET / HTTP/1.1&quot;
+</code></pre>
+<h3 id="ch01-123-vi-du-thuc-te-xem-tung-tang-bang-tcpdump">1.2.3. Ví dụ thực tế: xem từng tầng bằng tcpdump</h3>
+<pre><code class="language-bash"># -X in hex+ASCII, -e in cả Ethernet header, -nn không phân giải tên/cổng
+sudo tcpdump -i eth0 -e -nn -X 'tcp port 80 and host 192.0.2.10' -c 1
+</code></pre>
+<p>Output mẫu (rút gọn, đã chú thích):</p>
+<pre><code>14:02:11.123456 aa:bb:cc:11:22:33 &gt; de:ad:be:ef:00:01, ethertype IPv4 (0x0800), length 74:
+    10.0.0.5.54321 &gt; 192.0.2.10.80: Flags [S], seq 1001, win 64240,
+    options [mss 1460,sackOK,TS val 1 ecr 0,nop,wscale 7], length 0
+    0x0000:  dead beef 0001 aabb cc11 2233 0800 4500   &lt;- Eth(14) + IP bắt đầu (45=Ver4,IHL5)
+    0x0010:  003c 1c46 4000 4006 ...                    &lt;- TotalLen 0x3c=60, Flags+FragOff, TTL=0x40=64, Proto=0x06=TCP
+    ...
+</code></pre>
+<ul>
+<li><code>dead beef 0001</code> = Dst MAC; <code>aabb cc11 2233</code> = Src MAC; <code>0800</code> = EtherType IPv4.</li>
+<li><code>45</code> = <code>0100 0101</code> -&gt; Version 4, IHL 5 (5×4=20 byte).</li>
+<li><code>40</code> (ở offset TTL) = TTL 64; <code>06</code> = Protocol 6 = TCP.</li>
+</ul>
+<hr />
+<h2 id="ch01-13-tang-2-ethernet-mac-vlan-arp-switch">1.3. Tầng 2 — Ethernet, MAC, VLAN, ARP, switch</h2>
+<h3 id="ch01-131-khung-ethernet-ii-layout-tung-truong">1.3.1. Khung Ethernet II — layout từng trường</h3>
+<p>Ethernet II (DIX) là định dạng phổ biến nhất hiện nay (khác với IEEE 802.3 dùng trường Length thay EtherType).</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Offset (trong frame trên dây)</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preamble</td>
+<td>7 byte</td>
+<td>0</td>
+<td>7 byte <code>0xAA</code> (<code>10101010…</code>) đồng bộ clock</td>
+<td><code>AA AA AA AA AA AA AA</code></td>
+</tr>
+<tr>
+<td>SFD (Start Frame Delimiter)</td>
+<td>1 byte</td>
+<td>7</td>
+<td><code>0xAB</code> (<code>10101011</code>), bit cuối =1 báo bắt đầu frame</td>
+<td><code>AB</code></td>
+</tr>
+<tr>
+<td>Destination MAC</td>
+<td>6 byte</td>
+<td>8</td>
+<td>MAC đích</td>
+<td><code>de:ad:be:ef:00:01</code></td>
+</tr>
+<tr>
+<td>Source MAC</td>
+<td>6 byte</td>
+<td>14</td>
+<td>MAC nguồn</td>
+<td><code>aa:bb:cc:11:22:33</code></td>
+</tr>
+<tr>
+<td>EtherType / Length</td>
+<td>2 byte</td>
+<td>20</td>
+<td>≥0x0600 = EtherType; &lt;0x0600 = Length (802.3)</td>
+<td><code>0x0800</code> (IPv4)</td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>46–1500 byte</td>
+<td>22</td>
+<td>Dữ liệu tầng trên (IP packet)</td>
+<td>…</td>
+</tr>
+<tr>
+<td>FCS (Frame Check Sequence)</td>
+<td>4 byte</td>
+<td>cuối</td>
+<td>CRC-32 trên Dst..Payload</td>
+<td><code>0x1c2d3e4f</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Preamble + SFD (8 byte) không được tính vào frame</strong> khi bắt bằng tcpdump/Wireshark (NIC bóc trước). Chúng cũng không thuộc MTU.</p>
+</blockquote>
+<p><strong>EtherType phổ biến:</strong></p>
+<table>
+<thead>
+<tr>
+<th>EtherType</th>
+<th>Giao thức</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0800</td>
+<td>IPv4</td>
+</tr>
+<tr>
+<td>0x0806</td>
+<td>ARP</td>
+</tr>
+<tr>
+<td>0x86DD</td>
+<td>IPv6</td>
+</tr>
+<tr>
+<td>0x8100</td>
+<td>VLAN tag 802.1Q</td>
+</tr>
+<tr>
+<td>0x8847</td>
+<td>MPLS unicast</td>
+</tr>
+</tbody>
+</table>
+<p><strong>MTU và kích thước:</strong>
+- <strong>MTU mặc định Ethernet = 1500 byte</strong> (payload tối đa). Frame tối đa (không tính preamble/SFD) = 14 (header) + 1500 + 4 (FCS) = <strong>1518 byte</strong>. Với VLAN tag thêm 4 byte → 1522.
+- <strong>Payload tối thiểu 46 byte</strong>: nếu nhỏ hơn, phải <strong>padding</strong> thêm số 0 cho đủ. Vì sao? Để frame tối thiểu đạt 64 byte (đảm bảo phát hiện collision trong Ethernet half-duplex cũ — slot time).
+- <strong>Jumbo frame</strong>: MTU 9000 (không chuẩn IEEE nhưng phổ biến trong datacenter/SAN).</p>
+<p><strong>Cấu trúc địa chỉ MAC (48 bit):</strong></p>
+<pre><code>AA:BB:CC:DD:EE:FF
+└── OUI (24 bit) ──┘└── NIC-specific (24 bit) ──┘
+Byte đầu (AA): bit 0 (I/G) = 1 -&gt; multicast; =0 -&gt; unicast
+               bit 1 (U/L) = 1 -&gt; locally administered; =0 -&gt; universal (OUI thật)
+Broadcast = FF:FF:FF:FF:FF:FF
+</code></pre>
+<h3 id="ch01-132-vlan-ieee-8021q-tag-4-byte">1.3.2. VLAN — IEEE 802.1Q tag (4 byte)</h3>
+<p>Khi cần phân tách logic nhiều mạng trên cùng hạ tầng vật lý, switch chèn <strong>tag 802.1Q 4 byte</strong> vào frame, ngay sau Source MAC.</p>
+<pre><code>[ Dst MAC 6B | Src MAC 6B | 802.1Q TAG 4B | EtherType 2B | Payload | FCS 4B ]
+                                   │
+                                   ▼
+              ┌──────────────────────────────────────────┐
+              │ TPID 16b | PCP 3b | DEI 1b | VID 12b       │
+              └──────────────────────────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TPID (Tag Protocol ID)</td>
+<td>16 bit</td>
+<td><code>0x8100</code> báo đây là 802.1Q</td>
+<td><code>0x8100</code></td>
+</tr>
+<tr>
+<td>PCP (Priority Code Point)</td>
+<td>3 bit</td>
+<td>Ưu tiên QoS (0–7)</td>
+<td><code>5</code> (voice)</td>
+</tr>
+<tr>
+<td>DEI (Drop Eligible Indicator)</td>
+<td>1 bit</td>
+<td>Cho phép drop khi nghẽn</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>VID (VLAN ID)</td>
+<td>12 bit</td>
+<td>ID VLAN (0–4095; 0 và 4095 dành riêng)</td>
+<td><code>100</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>VID 12 bit → tối đa <strong>4094 VLAN</strong> dùng được. <strong>Native VLAN</strong>: trên trunk port, VLAN không tag.</li>
+<li><strong>Lưu ý: VLAN hopping.</strong></li>
+<li><em>Double tagging</em>: kẻ tấn công gắn 2 tag; switch bóc tag ngoài (native VLAN), forward sang trunk còn tag trong → frame nhảy sang VLAN khác. Phòng: đặt native VLAN là một VLAN "chết" không dùng, hoặc tag cả native VLAN (<code>vlan dot1q tag native</code>).</li>
+<li><em>Switch spoofing</em>: kẻ tấn công giả DTP để biến port access thành trunk. Phòng: tắt DTP (<code>switchport mode access</code>, <code>switchport nonegotiate</code>).</li>
+</ul>
+<h3 id="ch01-133-arp-address-resolution-protocol-rfc-826">1.3.3. ARP — Address Resolution Protocol (RFC 826)</h3>
+<p>ARP ánh xạ địa chỉ IP (L3) sang địa chỉ MAC (L2) trong cùng broadcast domain. Trước khi gửi IP packet tới một host cùng subnet, máy phải biết MAC của host đó.</p>
+<p><strong>Layout gói ARP (28 byte cho IPv4-over-Ethernet), đặt trong payload Ethernet EtherType 0x0806:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hardware Type (HTYPE)</td>
+<td>2 byte</td>
+<td>Loại L2; Ethernet = 1</td>
+<td><code>0x0001</code></td>
+</tr>
+<tr>
+<td>Protocol Type (PTYPE)</td>
+<td>2 byte</td>
+<td>Loại L3; IPv4 = 0x0800</td>
+<td><code>0x0800</code></td>
+</tr>
+<tr>
+<td>Hardware Addr Len (HLEN)</td>
+<td>1 byte</td>
+<td>Độ dài MAC = 6</td>
+<td><code>0x06</code></td>
+</tr>
+<tr>
+<td>Protocol Addr Len (PLEN)</td>
+<td>1 byte</td>
+<td>Độ dài IP = 4</td>
+<td><code>0x04</code></td>
+</tr>
+<tr>
+<td>Operation (OPER)</td>
+<td>2 byte</td>
+<td>1=request, 2=reply</td>
+<td><code>0x0001</code></td>
+</tr>
+<tr>
+<td>Sender Hardware Addr (SHA)</td>
+<td>6 byte</td>
+<td>MAC người gửi</td>
+<td><code>aa:bb:cc:11:22:33</code></td>
+</tr>
+<tr>
+<td>Sender Protocol Addr (SPA)</td>
+<td>4 byte</td>
+<td>IP người gửi</td>
+<td><code>10.0.0.5</code></td>
+</tr>
+<tr>
+<td>Target Hardware Addr (THA)</td>
+<td>6 byte</td>
+<td>MAC đích (0 trong request)</td>
+<td><code>00:00:00:00:00:00</code></td>
+</tr>
+<tr>
+<td>Target Protocol Addr (TPA)</td>
+<td>4 byte</td>
+<td>IP cần hỏi</td>
+<td><code>10.0.0.1</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quy trình request/reply:</strong>
+1. Host A (<code>10.0.0.5</code>) muốn gửi tới <code>10.0.0.1</code>, không có trong ARP cache.
+2. A broadcast ARP request: Eth Dst = <code>ff:ff:ff:ff:ff:ff</code>, OPER=1, TPA=<code>10.0.0.1</code>, THA=0.
+3. Mọi host trong broadcast domain nhận; chỉ <code>10.0.0.1</code> trả lời.
+4. B unicast ARP reply về A: OPER=2, SHA = MAC của B, SPA=<code>10.0.0.1</code>.
+5. A lưu cặp <code>10.0.0.1 → MAC_B</code> vào ARP cache (timeout vài chục giây–vài phút).</p>
+<p><strong>Ví dụ thực tế:</strong></p>
+<pre><code class="language-bash">ip neigh show                 # Xem ARP cache (Linux hiện đại)
+# 10.0.0.1 dev eth0 lladdr de:ad:be:ef:00:01 REACHABLE
+arping -I eth0 10.0.0.1        # Gửi ARP request thủ công
+sudo tcpdump -i eth0 -nn arp  # Bắt gói ARP
+</code></pre>
+<p><strong>ARP spoofing/poisoning.</strong> <strong>Lưu ý:</strong> ARP không có xác thực. Kẻ tấn công gửi <strong>ARP reply giả</strong> (gratuitous ARP) liên tục: "IP gateway <code>10.0.0.1</code> có MAC = MAC_kẻ_tấn_công". Nạn nhân ghi đè cache → mọi traffic ra gateway đi qua máy attacker (Man-in-the-Middle).</p>
+<pre><code class="language-bash"># Minh họa (chỉ trong lab được phép):
+sudo arpspoof -i eth0 -t 10.0.0.5 10.0.0.1   # nói với .5 rằng .1 là tôi
+# Kết hợp bật ip_forward để traffic không đứt:
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+</code></pre>
+<p>Phòng thủ: <strong>Dynamic ARP Inspection (DAI)</strong> trên switch (kiểm ARP với DHCP snooping binding), static ARP cho gateway quan trọng, port security, giám sát thay đổi mapping (arpwatch).</p>
+<h3 id="ch01-134-switch-cam-table-mac-address-table">1.3.4. Switch CAM table (MAC address table)</h3>
+<p>Switch học MAC bằng cách xem <strong>Source MAC</strong> của frame đến trên mỗi port, lưu vào bảng CAM: <code>MAC → port</code>. Khi forward, tra Dst MAC:
+- Có trong CAM → gửi đúng port (unicast).
+- Không có (unknown unicast) hoặc broadcast/multicast → flood ra tất cả port trừ port đến.</p>
+<p><strong>Bảo mật — CAM table overflow / MAC flooding:</strong> attacker bơm hàng nghìn frame với Source MAC ngẫu nhiên (<code>macof</code>) làm đầy CAM table. Khi đầy, switch flood mọi traffic như hub → attacker sniff được. Phòng: <strong>port security</strong> giới hạn số MAC/port.</p>
+<pre><code>Switch(config-if)# switchport port-security
+Switch(config-if)# switchport port-security maximum 2
+Switch(config-if)# switchport port-security violation shutdown
+Switch(config-if)# switchport port-security mac-address sticky
+</code></pre>
+<hr />
+<h2 id="ch01-14-tang-3-ipv4-ipv6-icmp-đinh-tuyen-nat">1.4. Tầng 3 — IPv4, IPv6, ICMP, định tuyến, NAT</h2>
+<h3 id="ch01-141-ipv4-header-layout-20-byte-khong-options">1.4.1. IPv4 header — layout 20 byte (không Options)</h3>
+<pre><code> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |DSCP   |ECN|         Total Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|    Fragment Offset      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  TTL          |   Protocol    |        Header Checksum        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source IP Address                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination IP Address                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Options (nếu IHL&gt;5)            |   Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Offset (byte)</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>4 bit</td>
+<td>0</td>
+<td>Phiên bản IP = 4</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td>IHL (Internet Header Length)</td>
+<td>4 bit</td>
+<td>0</td>
+<td>Độ dài header theo đơn vị 4 byte; min 5 (=20B), max 15 (=60B)</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td>DSCP</td>
+<td>6 bit</td>
+<td>1</td>
+<td>Differentiated Services (QoS)</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>ECN</td>
+<td>2 bit</td>
+<td>1</td>
+<td>Explicit Congestion Notification</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Total Length</td>
+<td>16 bit</td>
+<td>2</td>
+<td>Tổng độ dài header+payload (byte); max 65535</td>
+<td><code>60</code></td>
+</tr>
+<tr>
+<td>Identification</td>
+<td>16 bit</td>
+<td>4</td>
+<td>ID datagram, dùng ráp mảnh</td>
+<td><code>0x1c46</code></td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>3 bit</td>
+<td>6</td>
+<td>bit0=reserved(0), bit1=DF (Don't Fragment), bit2=MF (More Fragments)</td>
+<td><code>010</code> (DF)</td>
+</tr>
+<tr>
+<td>Fragment Offset</td>
+<td>13 bit</td>
+<td>6</td>
+<td>Vị trí mảnh (đơn vị 8 byte)</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>TTL (Time To Live)</td>
+<td>8 bit</td>
+<td>8</td>
+<td>Số hop còn lại; mỗi router −1; =0 thì drop + ICMP</td>
+<td><code>64</code></td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>8 bit</td>
+<td>9</td>
+<td>Giao thức payload: 1=ICMP,6=TCP,17=UDP</td>
+<td><code>6</code></td>
+</tr>
+<tr>
+<td>Header Checksum</td>
+<td>16 bit</td>
+<td>10</td>
+<td>Checksum chỉ của header</td>
+<td><code>0xb1e6</code></td>
+</tr>
+<tr>
+<td>Source IP</td>
+<td>32 bit</td>
+<td>12</td>
+<td>IP nguồn</td>
+<td><code>10.0.0.5</code></td>
+</tr>
+<tr>
+<td>Destination IP</td>
+<td>32 bit</td>
+<td>16</td>
+<td>IP đích</td>
+<td><code>192.0.2.10</code></td>
+</tr>
+<tr>
+<td>Options</td>
+<td>0–40 byte</td>
+<td>20</td>
+<td>Tùy chọn (record route, timestamp…)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao TTL?</strong> Ngăn packet quay vòng vô hạn khi routing loop. <code>traceroute</code> lợi dụng TTL: gửi gói TTL=1,2,3… mỗi router làm TTL=0 sẽ trả về ICMP Time Exceeded, lộ IP của nó.</p>
+<p><strong>Header Checksum</strong> dùng one's complement sum của các half-word 16 bit của header. Vì TTL đổi mỗi hop nên router phải tính lại checksum mỗi hop (lý do IPv6 bỏ checksum này để giảm tải).</p>
+<h3 id="ch01-142-fragmentation-phan-manh-ipv4">1.4.2. Fragmentation (phân mảnh IPv4)</h3>
+<p>Khi packet lớn hơn MTU của link kế tiếp và không có cờ DF, router chia thành nhiều mảnh.</p>
+<p>Ví dụ: datagram payload 4000 byte qua link MTU 1500 (payload IP tối đa = 1500−20 = 1480, phải bội số 8 → dùng 1480).</p>
+<table>
+<thead>
+<tr>
+<th>Mảnh</th>
+<th>Bytes data</th>
+<th>Fragment Offset (đơn vị 8B)</th>
+<th>MF</th>
+<th>Total Length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0–1479</td>
+<td>0</td>
+<td>1</td>
+<td>1500</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1480–2959</td>
+<td>185 (=1480/8)</td>
+<td>1</td>
+<td>1500</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2960–3999</td>
+<td>370 (=2960/8)</td>
+<td>0</td>
+<td>1060</td>
+</tr>
+</tbody>
+</table>
+<p>Tất cả mảnh dùng <strong>cùng Identification</strong>. Bên nhận ráp lại theo offset. <strong>Bảo mật:</strong> tấn công overlapping fragment (Teardrop), tiny fragment vượt firewall, fragment-based IDS evasion. Phòng: firewall ráp mảnh trước khi inspect (virtual reassembly).</p>
+<h3 id="ch01-143-ipv6-header-layout-40-byte-co-đinh">1.4.3. IPv6 header — layout 40 byte cố định</h3>
+<pre><code> 0                   1                   2                   3
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version| Traffic Class |           Flow Label                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Payload Length        |  Next Header  |   Hop Limit   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                  Source Address (128 bit)                     +
+|                       ... (16 byte) ...                       |
++                                                               +
+|                                                               |
++                Destination Address (128 bit)                  +
+|                       ... (16 byte) ...                       |
++                                                               +
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>4 bit</td>
+<td>= 6</td>
+<td><code>6</code></td>
+</tr>
+<tr>
+<td>Traffic Class</td>
+<td>8 bit</td>
+<td>DSCP+ECN tương tự IPv4</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Flow Label</td>
+<td>20 bit</td>
+<td>Đánh dấu luồng cho QoS</td>
+<td><code>0x12345</code></td>
+</tr>
+<tr>
+<td>Payload Length</td>
+<td>16 bit</td>
+<td>Độ dài payload (không gồm 40B header)</td>
+<td><code>1280</code></td>
+</tr>
+<tr>
+<td>Next Header</td>
+<td>8 bit</td>
+<td>Như Protocol IPv4; cũng trỏ extension header</td>
+<td><code>6</code> (TCP)</td>
+</tr>
+<tr>
+<td>Hop Limit</td>
+<td>8 bit</td>
+<td>Như TTL</td>
+<td><code>64</code></td>
+</tr>
+<tr>
+<td>Source Address</td>
+<td>128 bit</td>
+<td>IPv6 nguồn</td>
+<td><code>2001:db8::1</code></td>
+</tr>
+<tr>
+<td>Destination Address</td>
+<td>128 bit</td>
+<td>IPv6 đích</td>
+<td><code>2001:db8::2</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Khác biệt thiết kế quan trọng:</strong> header cố định 40B (không IHL/Options trong header chính — dùng <em>extension headers</em> nối chuỗi qua Next Header); không checksum (giao cho L2 FCS và L4 checksum); router không phân mảnh (host tự dùng Path MTU Discovery); MTU tối thiểu 1280B. IPv6 không dùng ARP mà dùng <strong>NDP (Neighbor Discovery Protocol)</strong> qua ICMPv6.</p>
+<h3 id="ch01-144-icmp-rfc-792">1.4.4. ICMP (RFC 792)</h3>
+<p>Đặt trong payload IP với Protocol=1. Header chung 8 byte:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>1 byte</td>
+<td>Loại thông điệp</td>
+<td><code>8</code> (Echo Request)</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>1 byte</td>
+<td>Mã con</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>2 byte</td>
+<td>Checksum ICMP</td>
+<td><code>0xf7ff</code></td>
+</tr>
+<tr>
+<td>Rest of Header</td>
+<td>4 byte</td>
+<td>Tùy Type (Echo: Identifier 2B + Sequence 2B)</td>
+<td>id=0x1234 seq=1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Type/Code quan trọng:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Code</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>Echo Reply (ping trả lời)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0–15</td>
+<td>Destination Unreachable (3=port unreachable, 4=frag needed+DF)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0–3</td>
+<td>Redirect</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>Echo Request (ping)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0</td>
+<td>Time Exceeded (TTL=0, dùng cho traceroute)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">ping -c 3 8.8.8.8
+sudo tcpdump -i eth0 -nn icmp
+# ICMP type 8 = request; type 0 = reply; type 11 = traceroute hops
+</code></pre>
+<p><strong>Bảo mật:</strong> ICMP tunneling (đẩy data trong payload Echo để bypass firewall — <code>ptunnel</code>), ICMP redirect spoofing, smurf attack (broadcast amplification). Nhiều nơi rate-limit/filter ICMP nhưng KHÔNG nên chặn <code>Type 3 Code 4</code> vì sẽ phá PMTUD.</p>
+<h3 id="ch01-145-rfc-1918-cidr-va-chia-subnet-thu-cong">1.4.5. RFC 1918, CIDR và chia subnet thủ công</h3>
+<p><strong>RFC 1918 — dải IP riêng (private):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Dải</th>
+<th>CIDR</th>
+<th>Số địa chỉ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10.0.0.0 – 10.255.255.255</td>
+<td>10.0.0.0/8</td>
+<td>16.777.216</td>
+</tr>
+<tr>
+<td>172.16.0.0 – 172.31.255.255</td>
+<td>172.16.0.0/12</td>
+<td>1.048.576</td>
+</tr>
+<tr>
+<td>192.168.0.0 – 192.168.255.255</td>
+<td>192.168.0.0/16</td>
+<td>65.536</td>
+</tr>
+</tbody>
+</table>
+<p>Khác: <code>127.0.0.0/8</code> loopback; <code>169.254.0.0/16</code> link-local (APIPA); <code>100.64.0.0/10</code> CGNAT (RFC 6598).</p>
+<p><strong>CIDR (Classless Inter-Domain Routing):</strong> ký hiệu <code>/n</code> = n bit đầu là phần network (netmask). Ví dụ <code>/24</code> → mask <code>255.255.255.0</code>, 8 bit host → <code>2^8 = 256</code> địa chỉ, dùng được <code>256 − 2 = 254</code> host (trừ network address và broadcast).</p>
+<p><strong>Chia subnet thủ công — ví dụ từng bước:</strong> chia <code>192.168.1.0/24</code> thành 4 subnet đều nhau.</p>
+<ol>
+<li>Cần 4 subnet → cần <code>log2(4) = 2</code> bit mượn từ phần host. Prefix mới: <code>/24 + 2 = /26</code>.</li>
+<li>Mask <code>/26</code> = <code>255.255.255.192</code> (byte cuối <code>11000000</code> = 192).</li>
+<li>Block size (bước nhảy) = <code>256 − 192 = 64</code>.</li>
+<li>Liệt kê:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Subnet</th>
+<th>Network</th>
+<th>Dải host dùng được</th>
+<th>Broadcast</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>192.168.1.0/26</td>
+<td>.1 – .62</td>
+<td>192.168.1.63</td>
+</tr>
+<tr>
+<td>2</td>
+<td>192.168.1.64/26</td>
+<td>.65 – .126</td>
+<td>192.168.1.127</td>
+</tr>
+<tr>
+<td>3</td>
+<td>192.168.1.128/26</td>
+<td>.129 – .190</td>
+<td>192.168.1.191</td>
+</tr>
+<tr>
+<td>4</td>
+<td>192.168.1.192/26</td>
+<td>.193 – .254</td>
+<td>192.168.1.255</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi subnet: <code>2^(32−26) = 64</code> địa chỉ, dùng được <code>64 − 2 = 62</code> host.</p>
+<p><strong>Xác định IP có thuộc subnet không (AND bitwise):</strong> IP <code>192.168.1.130</code> với mask <code>/26</code>:</p>
+<pre><code>IP:    11000000.10101000.00000001.10000010
+Mask:  11111111.11111111.11111111.11000000
+AND:   11000000.10101000.00000001.10000000  = 192.168.1.128  -&gt; Subnet 3
+</code></pre>
+<pre><code class="language-bash">ipcalc 192.168.1.130/26     # công cụ tính nhanh
+sipcalc 192.168.1.0/24 -s 26
+</code></pre>
+<h3 id="ch01-146-nat-pat-snat-dnat">1.4.6. NAT / PAT / SNAT / DNAT</h3>
+<p><strong>NAT (Network Address Translation):</strong> dịch IP (và port) khi packet đi qua router biên. Lý do tồn tại: IPv4 cạn kiệt; nhiều host private chia sẻ một public IP.</p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Dịch gì</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static NAT (1:1)</td>
+<td>1 private ↔ 1 public cố định</td>
+<td>Server cần địa chỉ public ổn định</td>
+</tr>
+<tr>
+<td>Dynamic NAT</td>
+<td>private ↔ public từ pool</td>
+<td>Nhiều host, pool public</td>
+</tr>
+<tr>
+<td><strong>PAT / NAPT / Overload</strong></td>
+<td>nhiều private → 1 public, phân biệt bằng <strong>port</strong></td>
+<td>Trường hợp phổ biến nhất ở nhà/cty</td>
+</tr>
+<tr>
+<td><strong>SNAT</strong> (Source NAT)</td>
+<td>đổi Source IP (outbound)</td>
+<td>LAN → Internet</td>
+</tr>
+<tr>
+<td><strong>DNAT</strong> (Destination NAT)</td>
+<td>đổi Dst IP (inbound)</td>
+<td>Port forwarding tới server nội bộ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bảng dịch PAT (translation table):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Inside Local</th>
+<th>Inside Global</th>
+<th>Outside</th>
+<th>Protocol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10.0.0.5:54321</td>
+<td>203.0.113.10:40001</td>
+<td>192.0.2.10:80</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>10.0.0.6:51000</td>
+<td>203.0.113.10:40002</td>
+<td>1.1.1.1:443</td>
+<td>TCP</td>
+</tr>
+</tbody>
+</table>
+<p>Router thay Source <code>10.0.0.5:54321</code> → <code>203.0.113.10:40001</code> khi ra, và làm ngược khi gói trả về dựa vào port 40001.</p>
+<p><strong>Ví dụ thực tế — iptables/nftables:</strong></p>
+<pre><code class="language-bash"># SNAT/MASQUERADE: LAN 10.0.0.0/24 ra ngoài qua eth0
+sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE
+
+# DNAT: forward public:8080 -&gt; server nội bộ 10.0.0.50:80
+sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 8080 \
+  -j DNAT --to-destination 10.0.0.50:80
+sudo iptables -A FORWARD -p tcp -d 10.0.0.50 --dport 80 -j ACCEPT
+
+# Xem bảng NAT đang hoạt động
+sudo conntrack -L
+</code></pre>
+<p><strong>Bảo mật:</strong> NAT không phải firewall (nhiều người nhầm). NAT slipstreaming, hairpin NAT, và việc DNAT mở cổng ra Internet là bề mặt tấn công lớn.</p>
+<h3 id="ch01-147-đinh-tuyen-routing-co-ban">1.4.7. Định tuyến (routing) cơ bản</h3>
+<p>Router quyết định next-hop bằng <strong>longest prefix match</strong> trong routing table.</p>
+<pre><code class="language-bash">ip route show
+# default via 10.0.0.1 dev eth0
+# 10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.5
+ip route get 8.8.8.8     # xem packet sẽ đi route nào
+</code></pre>
+<p>Default route <code>0.0.0.0/0</code> là "khớp mọi đích" với prefix ngắn nhất (chỉ dùng khi không có route cụ thể hơn).</p>
+<hr />
+<h2 id="ch01-15-tang-4-tcp-va-udp">1.5. Tầng 4 — TCP và UDP</h2>
+<h3 id="ch01-151-udp-header-layout-8-byte-rfc-768">1.5.1. UDP header — layout 8 byte (RFC 768)</h3>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Offset</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>16 bit</td>
+<td>0</td>
+<td>Cổng nguồn</td>
+<td><code>54321</code></td>
+</tr>
+<tr>
+<td>Destination Port</td>
+<td>16 bit</td>
+<td>2</td>
+<td>Cổng đích</td>
+<td><code>53</code></td>
+</tr>
+<tr>
+<td>Length</td>
+<td>16 bit</td>
+<td>4</td>
+<td>Độ dài header+data (≥8)</td>
+<td><code>40</code></td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>16 bit</td>
+<td>6</td>
+<td>Checksum (tùy chọn IPv4, bắt buộc IPv6)</td>
+<td><code>0x1a2b</code></td>
+</tr>
+</tbody>
+</table>
+<p>UDP không bắt tay, không đảm bảo thứ tự/độ tin cậy, không kiểm soát luồng. Dùng cho DNS, DHCP, VoIP, QUIC. <strong>Checksum của UDP/TCP</strong> tính trên một <strong>pseudo-header</strong> gồm Src IP, Dst IP, Protocol, Length của tầng IP — để phát hiện packet bị giao nhầm địa chỉ.</p>
+<h3 id="ch01-152-tcp-header-layout-20-byte-khong-options-rfc-9293">1.5.2. TCP header — layout 20 byte (không Options), RFC 9293</h3>
+<pre><code> 0                   1                   2                   3
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Source Port          |       Destination Port        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sequence Number                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DOff  |Rsv|N|C|E|U|A|P|R|S|F|         Window Size              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |        Urgent Pointer         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options (nếu DOff&gt;5)         |   Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Offset</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>16 bit</td>
+<td>0</td>
+<td>Cổng nguồn</td>
+<td><code>54321</code></td>
+</tr>
+<tr>
+<td>Destination Port</td>
+<td>16 bit</td>
+<td>2</td>
+<td>Cổng đích</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>32 bit</td>
+<td>4</td>
+<td>Số thứ tự byte đầu của segment (hoặc ISN khi SYN)</td>
+<td><code>1001</code></td>
+</tr>
+<tr>
+<td>Acknowledgment Number</td>
+<td>32 bit</td>
+<td>8</td>
+<td>Số byte kế tiếp mong nhận (hợp lệ khi ACK=1)</td>
+<td><code>2001</code></td>
+</tr>
+<tr>
+<td>Data Offset (DOff)</td>
+<td>4 bit</td>
+<td>12</td>
+<td>Độ dài header TCP theo đơn vị 4 byte (min 5=20B)</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td>Reserved</td>
+<td>3 bit</td>
+<td>12</td>
+<td>=0</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Flags (9 bit)</td>
+<td>9 bit</td>
+<td>12–13</td>
+<td>Xem dưới</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Window Size</td>
+<td>16 bit</td>
+<td>14</td>
+<td>Số byte cửa sổ nhận (receive window)</td>
+<td><code>64240</code></td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>16 bit</td>
+<td>16</td>
+<td>Checksum (gồm pseudo-header)</td>
+<td><code>0x4a8c</code></td>
+</tr>
+<tr>
+<td>Urgent Pointer</td>
+<td>16 bit</td>
+<td>18</td>
+<td>Offset dữ liệu khẩn (khi URG=1)</td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>9 cờ TCP (từ bit cao xuống thấp):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cờ</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NS</td>
+<td>Nonce Sum</td>
+<td>ECN nonce (RFC 3540, hiếm dùng)</td>
+</tr>
+<tr>
+<td>CWR</td>
+<td>Congestion Window Reduced</td>
+<td>Báo đã giảm cwnd do nghẽn</td>
+</tr>
+<tr>
+<td>ECE</td>
+<td>ECN-Echo</td>
+<td>Báo nhận được dấu hiệu nghẽn</td>
+</tr>
+<tr>
+<td>URG</td>
+<td>Urgent</td>
+<td>Urgent Pointer hợp lệ</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>Acknowledgment</td>
+<td>Ack Number hợp lệ</td>
+</tr>
+<tr>
+<td>PSH</td>
+<td>Push</td>
+<td>Đẩy data lên app ngay, không buffer</td>
+</tr>
+<tr>
+<td>RST</td>
+<td>Reset</td>
+<td>Hủy kết nối đột ngột</td>
+</tr>
+<tr>
+<td>SYN</td>
+<td>Synchronize</td>
+<td>Khởi tạo kết nối, đồng bộ seq</td>
+</tr>
+<tr>
+<td>FIN</td>
+<td>Finish</td>
+<td>Kết thúc gửi dữ liệu một chiều</td>
+</tr>
+</tbody>
+</table>
+<p><strong>TCP Options thường gặp (trong vùng Options):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Kind</th>
+<th>Độ dài</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>End of Option List</td>
+<td>0</td>
+<td>1B</td>
+<td>Kết thúc options</td>
+</tr>
+<tr>
+<td>No-Operation (NOP)</td>
+<td>1</td>
+<td>1B</td>
+<td>Padding căn 4 byte</td>
+</tr>
+<tr>
+<td>MSS (Maximum Segment Size)</td>
+<td>2</td>
+<td>4B</td>
+<td>Kích thước segment tối đa, thường 1460 (1500−40)</td>
+</tr>
+<tr>
+<td>Window Scale</td>
+<td>3</td>
+<td>3B</td>
+<td>Nhân hệ số window (dịch trái), tối đa ×2^14</td>
+</tr>
+<tr>
+<td>SACK Permitted</td>
+<td>4</td>
+<td>2B</td>
+<td>Cho phép Selective ACK</td>
+</tr>
+<tr>
+<td>SACK</td>
+<td>5</td>
+<td>thay đổi</td>
+<td>Báo các block đã nhận rời rạc</td>
+</tr>
+<tr>
+<td>Timestamps</td>
+<td>8</td>
+<td>10B</td>
+<td>TSval/TSecr đo RTT, chống wrap (PAWS)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch01-153-bat-tay-3-buoc-3-way-handshake-gia-tri-seqack-tung-buoc">1.5.3. Bắt tay 3 bước (3-way handshake) — giá trị seq/ack từng bước</h3>
+<pre><code>Client (10.0.0.5)                                  Server (1.2.3.4:443)
+        |                                                  |
+        |  1. SYN  seq=x (ISN_c=1000), ack=0               |
+        |-------------------------------------------------&gt;|   Flags=[S]
+        |                                                  |
+        |  2. SYN-ACK  seq=y (ISN_s=5000), ack=x+1=1001    |
+        |&lt;-------------------------------------------------|   Flags=[S.]
+        |                                                  |
+        |  3. ACK  seq=x+1=1001, ack=y+1=5001              |
+        |-------------------------------------------------&gt;|   Flags=[.]
+        |                                                  |
+   (kết nối ESTABLISHED, data bắt đầu từ seq=1001/5001)
+</code></pre>
+<p>Giải thích chi tiết:
+1. Client chọn <strong>ISN (Initial Sequence Number)</strong> ngẫu nhiên (=1000), gửi SYN với seq=1000. SYN tiêu tốn 1 số seq (dù không chở data).
+2. Server chọn ISN riêng (=5000), gửi SYN-ACK: seq=5000, ack=1001 (xác nhận đã nhận seq 1000, mong byte tiếp theo là 1001).
+3. Client gửi ACK: seq=1001, ack=5001. Kết nối thành ESTABLISHED.</p>
+<p><strong>Vì sao ISN ngẫu nhiên?</strong> Chống TCP sequence prediction attack (kẻ ngoài đoán seq để chèn/spoof). RFC 6528 yêu cầu ISN = hàm băm bí mật.</p>
+<p><strong>Bảo mật — SYN flood:</strong> attacker gửi loạt SYN với Source IP giả, không gửi ACK bước 3. Server giữ nhiều <strong>half-open connection</strong> trong backlog queue → cạn tài nguyên. Phòng: <strong>SYN cookies</strong> (server mã hóa state vào ISN, không lưu queue cho tới khi nhận ACK hợp lệ).</p>
+<pre><code class="language-bash">sysctl net.ipv4.tcp_syncookies=1
+sysctl net.ipv4.tcp_max_syn_backlog=4096
+</code></pre>
+<h3 id="ch01-154-đong-ket-noi-4-buoc-4-way-close">1.5.4. Đóng kết nối 4 bước (4-way close)</h3>
+<pre><code>Client                                Server
+  |  FIN seq=u                          |   (Client hết data gửi)
+  |------------------------------------&gt;|
+  |  ACK ack=u+1                        |
+  |&lt;------------------------------------|
+  |              ... (server có thể còn gửi data) ...
+  |  FIN seq=v                          |
+  |&lt;------------------------------------|
+  |  ACK ack=v+1                        |
+  |------------------------------------&gt;|
+  |  (Client vào TIME_WAIT ~2*MSL)      |
+</code></pre>
+<p>TCP là full-duplex nên mỗi chiều đóng độc lập (half-close). <strong>TIME_WAIT</strong> (2×MSL, MSL thường 30–120s tùy OS) đảm bảo: (1) ACK cuối tới được server, (2) các segment cũ trễ trong mạng hết hạn trước khi tái dùng cặp port. Quá nhiều TIME_WAIT trên server tải cao là vấn đề thực tế (tinh chỉnh <code>tcp_tw_reuse</code>).</p>
+<h3 id="ch01-155-state-machine-tcp-đay-đu-rfc-9293">1.5.5. State machine TCP đầy đủ (RFC 9293)</h3>
+<pre><code>                              CLOSED
+                                | (passive open: LISTEN) | (active open: gửi SYN)
+                                v                         v
+                             LISTEN                  SYN_SENT
+                          recv SYN |                   | recv SYN-ACK / send ACK
+                          send SYN-ACK                 v
+                                v                  ESTABLISHED
+                           SYN_RCVD --recv ACK------&gt;  |
+                                                       | (close: send FIN)
+                        ┌──────────────────────────────┤
+       recv FIN/send ACK│                              │ send FIN
+                        v                              v
+                   CLOSE_WAIT                       FIN_WAIT_1
+                        | app close/send FIN     recv ACK | recv FIN+ACK
+                        v                              v        \
+                   LAST_ACK                       FIN_WAIT_2     CLOSING
+                        | recv ACK                  | recv FIN       | recv ACK
+                        v                           v send ACK       v
+                     CLOSED                     TIME_WAIT  &lt;----------
+                                                    | (2*MSL timeout)
+                                                    v
+                                                 CLOSED
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LISTEN</td>
+<td>Server chờ kết nối</td>
+</tr>
+<tr>
+<td>SYN_SENT</td>
+<td>Client đã gửi SYN</td>
+</tr>
+<tr>
+<td>SYN_RCVD</td>
+<td>Đã nhận SYN, gửi SYN-ACK</td>
+</tr>
+<tr>
+<td>ESTABLISHED</td>
+<td>Kết nối hoạt động, truyền data</td>
+</tr>
+<tr>
+<td>FIN_WAIT_1/2</td>
+<td>Phía chủ động đóng đã gửi FIN</td>
+</tr>
+<tr>
+<td>CLOSE_WAIT</td>
+<td>Phía bị động nhận FIN, app chưa đóng</td>
+</tr>
+<tr>
+<td>LAST_ACK</td>
+<td>Phía bị động đã gửi FIN, chờ ACK cuối</td>
+</tr>
+<tr>
+<td>TIME_WAIT</td>
+<td>Chờ 2×MSL trước khi đóng hẳn</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">ss -tan          # xem state TCP (ESTAB, TIME-WAIT, CLOSE-WAIT...)
+ss -tanp state syn-recv   # phát hiện SYN flood
+</code></pre>
+<p><strong>Bảo mật quét cổng (nmap) dựa vào state machine:</strong>
+- <em>SYN scan</em> (<code>-sS</code>): gửi SYN; nhận SYN-ACK → open (rồi gửi RST hủy); nhận RST → closed.
+- <em>NULL/FIN/Xmas scan</em>: gửi cờ bất thường; theo RFC, port closed trả RST, open im lặng → suy ra trạng thái (bypass một số firewall stateless).</p>
+<h3 id="ch01-156-sliding-window-flow-control-congestion-control">1.5.6. Sliding window, flow control, congestion control</h3>
+<p><strong>Flow control (kiểm soát luồng):</strong> bên nhận quảng bá <strong>Window Size</strong> (kết hợp Window Scale) = lượng byte còn chỗ trong buffer. Bên gửi không gửi quá <code>Window</code>. Nếu buffer đầy → quảng bá window=0 → bên gửi dừng, định kỳ gửi <em>window probe</em>.</p>
+<p><strong>Sliding window:</strong> byte stream chia 4 vùng: (1) đã gửi &amp; ack, (2) đã gửi chưa ack, (3) chưa gửi nhưng trong window, (4) ngoài window. Khi ack tới, "cửa sổ" trượt sang phải.</p>
+<p><strong>Congestion control (kiểm soát tắc nghẽn) — thuật toán cổ điển:</strong>
+- <em>Slow start</em>: cwnd bắt đầu = 1–10 MSS, tăng gấp đôi mỗi RTT cho tới <code>ssthresh</code>.
+- <em>Congestion avoidance</em>: sau ssthresh, tăng tuyến tính (+1 MSS/RTT).
+- <em>Fast retransmit</em>: nhận 3 duplicate ACK → gửi lại ngay không chờ timeout.
+- <em>Fast recovery</em>: giảm cwnd nửa thay vì về 1.
+- Hiện đại: <strong>CUBIC</strong> (mặc định Linux), <strong>BBR</strong> (Google, đo bandwidth×RTT).</p>
+<pre><code class="language-bash">sysctl net.ipv4.tcp_congestion_control   # xem thuật toán
+ss -ti                                    # xem cwnd, rtt, retrans per-socket
+</code></pre>
+<p><strong>Retransmission:</strong> dựa <strong>RTO (Retransmission Timeout)</strong> tính từ RTT đo được (Jacobson/Karels: <code>RTO = SRTT + 4*RTTVAR</code>). Hết RTO mà chưa ack → gửi lại, RTO nhân đôi (exponential backoff).</p>
+<hr />
+<h2 id="ch01-16-cong-port-pho-bien">1.6. Cổng (port) phổ biến</h2>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Dịch vụ</th>
+<th>Ghi chú bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20/21</td>
+<td>TCP</td>
+<td>FTP data/control</td>
+<td>Plaintext, dùng FTPS/SFTP</td>
+</tr>
+<tr>
+<td>22</td>
+<td>TCP</td>
+<td>SSH</td>
+<td>Quản trị từ xa mã hóa</td>
+</tr>
+<tr>
+<td>23</td>
+<td>TCP</td>
+<td>Telnet</td>
+<td>Plaintext — không dùng</td>
+</tr>
+<tr>
+<td>25</td>
+<td>TCP</td>
+<td>SMTP</td>
+<td>Mail, kiểm relay mở</td>
+</tr>
+<tr>
+<td>53</td>
+<td>TCP/UDP</td>
+<td>DNS</td>
+<td>UDP cho query, TCP cho zone transfer/lớn</td>
+</tr>
+<tr>
+<td>67/68</td>
+<td>UDP</td>
+<td>DHCP server/client</td>
+<td>DORA</td>
+</tr>
+<tr>
+<td>80</td>
+<td>TCP</td>
+<td>HTTP</td>
+<td>Plaintext</td>
+</tr>
+<tr>
+<td>110/143</td>
+<td>TCP</td>
+<td>POP3/IMAP</td>
+<td>Mail client</td>
+</tr>
+<tr>
+<td>123</td>
+<td>UDP</td>
+<td>NTP</td>
+<td>Amplification DDoS</td>
+</tr>
+<tr>
+<td>161/162</td>
+<td>UDP</td>
+<td>SNMP</td>
+<td>Community string mặc định nguy hiểm</td>
+</tr>
+<tr>
+<td>389/636</td>
+<td>TCP</td>
+<td>LDAP/LDAPS</td>
+<td>Directory</td>
+</tr>
+<tr>
+<td>443</td>
+<td>TCP/UDP</td>
+<td>HTTPS / QUIC(UDP)</td>
+<td>TLS</td>
+</tr>
+<tr>
+<td>445</td>
+<td>TCP</td>
+<td>SMB</td>
+<td>EternalBlue, không expose ra Internet</td>
+</tr>
+<tr>
+<td>3306</td>
+<td>TCP</td>
+<td>MySQL</td>
+<td>DB không nên public</td>
+</tr>
+<tr>
+<td>3389</td>
+<td>TCP</td>
+<td>RDP</td>
+<td>Brute-force, BlueKeep</td>
+</tr>
+<tr>
+<td>5432</td>
+<td>TCP</td>
+<td>PostgreSQL</td>
+<td>DB</td>
+</tr>
+<tr>
+<td>6379</td>
+<td>TCP</td>
+<td>Redis</td>
+<td>Không auth mặc định — nguy hiểm</td>
+</tr>
+</tbody>
+</table>
+<p>Dải port: <strong>0–1023 well-known</strong> (cần quyền root để bind trên Linux), <strong>1024–49151 registered</strong>, <strong>49152–65535 ephemeral/dynamic</strong> (client tự cấp).</p>
+<hr />
+<h2 id="ch01-17-tang-7-dns-dhcp-http-tls">1.7. Tầng 7 — DNS, DHCP, HTTP, TLS</h2>
+<h3 id="ch01-171-dns-domain-name-system-rfc-1035">1.7.1. DNS — Domain Name System (RFC 1035)</h3>
+<p><strong>Message header DNS — 12 byte:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transaction ID</td>
+<td>16 bit</td>
+<td>Khớp query/response</td>
+<td><code>0x1a2b</code></td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>16 bit</td>
+<td>QR(1b),Opcode(4b),AA,TC,RD,RA,Z,RCODE(4b)</td>
+<td>xem dưới</td>
+</tr>
+<tr>
+<td>QDCOUNT</td>
+<td>16 bit</td>
+<td>Số câu hỏi</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>ANCOUNT</td>
+<td>16 bit</td>
+<td>Số bản ghi answer</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td>NSCOUNT</td>
+<td>16 bit</td>
+<td>Số bản ghi authority</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>ARCOUNT</td>
+<td>16 bit</td>
+<td>Số bản ghi additional</td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trường Flags (16 bit) chi tiết:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QR (1)</td>
+<td>Query/Response</td>
+<td>0=query, 1=response</td>
+</tr>
+<tr>
+<td>Opcode (4)</td>
+<td></td>
+<td>0=standard query</td>
+</tr>
+<tr>
+<td>AA (1)</td>
+<td>Authoritative Answer</td>
+<td>server có thẩm quyền</td>
+</tr>
+<tr>
+<td>TC (1)</td>
+<td>Truncated</td>
+<td>response bị cắt (chuyển TCP)</td>
+</tr>
+<tr>
+<td>RD (1)</td>
+<td>Recursion Desired</td>
+<td>client muốn đệ quy</td>
+</tr>
+<tr>
+<td>RA (1)</td>
+<td>Recursion Available</td>
+<td>server hỗ trợ đệ quy</td>
+</tr>
+<tr>
+<td>Z (3)</td>
+<td>reserved/AD/CD</td>
+<td>trong DNSSEC: AD=Authenticated Data, CD=Checking Disabled</td>
+</tr>
+<tr>
+<td>RCODE (4)</td>
+<td>Response code</td>
+<td>0=NOERROR,2=SERVFAIL,3=NXDOMAIN</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Question section:</strong> <code>QNAME</code> (chuỗi label dạng <code>[len][label]...0</code>, ví dụ <code>3www7example3com0</code>), <code>QTYPE</code> (2B, A=1, AAAA=28, MX=15, CNAME=5, NS=2, TXT=16, SOA=6, PTR=12), <code>QCLASS</code> (2B, IN=1).</p>
+<p><strong>Resource Record (answer):</strong> <code>NAME</code>(thường con trỏ nén 2B <code>0xc00c</code>), <code>TYPE</code>(2B), <code>CLASS</code>(2B), <code>TTL</code>(4B), <code>RDLENGTH</code>(2B), <code>RDATA</code>(thay đổi — với A là 4 byte IPv4).</p>
+<p><strong>Recursive vs iterative:</strong>
+- <em>Recursive resolver</em> (8.8.8.8): client hỏi một lần, resolver tự đi hỏi hộ và trả kết quả cuối.
+- <em>Iterative</em>: resolver hỏi root → TLD (<code>.com</code>) → authoritative, mỗi bước nhận referral tới server tiếp theo.</p>
+<pre><code class="language-bash">dig +trace example.com A      # xem toàn bộ chuỗi iterative từ root
+dig @1.1.1.1 example.com MX
+dig -x 192.0.2.10          # reverse (PTR)
+sudo tcpdump -i eth0 -nn 'udp port 53'
+</code></pre>
+<p>Output <code>dig</code> mẫu (đã chú thích):</p>
+<pre><code>;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 6789
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+;; ANSWER SECTION:
+example.com.    3600   IN   A   192.0.2.10
+</code></pre>
+<p><strong>DNSSEC:</strong> thêm bản ghi <code>RRSIG</code> (chữ ký), <code>DNSKEY</code> (khóa công khai), <code>DS</code> (delegation signer), <code>NSEC/NSEC3</code> (chứng minh không tồn tại). Bit <code>AD</code> (Authenticated Data) trong flags báo resolver đã xác thực chữ ký. Mục tiêu: chống cache poisoning/spoofing bằng chữ ký số (không mã hóa nội dung).</p>
+<p><strong>Bảo mật — DNS tunneling:</strong> mã hóa dữ liệu exfil vào QNAME (<code>base64data.attacker.com</code>) hoặc TXT records → vượt firewall vì DNS hiếm khi bị chặn. Phát hiện: QNAME bất thường dài/entropy cao, lượng query TXT lớn.</p>
+<p><strong>Cache poisoning (Kaminsky):</strong> đoán Transaction ID (16 bit) + source port để chèn answer giả trước answer thật. Phòng: random source port (entropy lớn hơn), DNSSEC, DNS-over-TLS/HTTPS.</p>
+<h3 id="ch01-172-dhcp-dora-rfc-2131">1.7.2. DHCP — DORA (RFC 2131)</h3>
+<p>Bốn bước cấp IP động (UDP, server 67, client 68):</p>
+<pre><code>Client (0.0.0.0)                         DHCP Server
+   | 1. DISCOVER (broadcast ff:ff..)        |   &quot;Có server nào không?&quot;
+   |---------------------------------------&gt;|
+   | 2. OFFER (đề nghị IP, lease, gateway)   |
+   |&lt;---------------------------------------|
+   | 3. REQUEST (xin chính IP được offer)    |
+   |---------------------------------------&gt;|
+   | 4. ACK (xác nhận, đóng dấu lease)       |
+   |&lt;---------------------------------------|
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Loại</th>
+<th>Src IP</th>
+<th>Dst IP</th>
+<th>Mục đích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D</td>
+<td>DISCOVER</td>
+<td>0.0.0.0</td>
+<td>255.255.255.255</td>
+<td>Client tìm server (chưa có IP)</td>
+</tr>
+<tr>
+<td>O</td>
+<td>OFFER</td>
+<td>server IP</td>
+<td>broadcast/unicast</td>
+<td>Server đề nghị IP</td>
+</tr>
+<tr>
+<td>R</td>
+<td>REQUEST</td>
+<td>0.0.0.0</td>
+<td>255.255.255.255</td>
+<td>Client chấp nhận (broadcast để các server khác biết)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>ACK</td>
+<td>server IP</td>
+<td>client</td>
+<td>Xác nhận, cấp lease + options (DNS, gateway, mask)</td>
+</tr>
+</tbody>
+</table>
+<p>Các option quan trọng (DHCP options trong packet BOOTP): Option 53 (message type), 51 (lease time), 1 (subnet mask), 3 (router/gateway), 6 (DNS), 50 (requested IP).</p>
+<pre><code class="language-bash">sudo dhclient -v eth0
+sudo tcpdump -i eth0 -nn 'udp port 67 or udp port 68'
+</code></pre>
+<p><strong>Bảo mật:</strong> <em>Rogue DHCP server</em> cấp gateway/DNS giả → MITM. <em>DHCP starvation</em> (<code>yersinia</code>) bơm DISCOVER cạn pool. Phòng: <strong>DHCP snooping</strong> trên switch (chỉ trust port nối server hợp lệ).</p>
+<h3 id="ch01-173-http-requestresponse-raw">1.7.3. HTTP — request/response raw</h3>
+<p><strong>Request (HTTP/1.1):</strong></p>
+<pre><code class="language-http">GET /index.html HTTP/1.1\r\n
+Host: example.com\r\n
+User-Agent: curl/8.0\r\n
+Accept: */*\r\n
+\r\n
+</code></pre>
+<p>Cấu trúc: <code>Method SP Request-URI SP HTTP-Version CRLF</code>, sau đó các header <code>Name: Value CRLF</code>, một dòng trống <code>CRLF</code>, rồi body (nếu có). CRLF = <code>\r\n</code> (0x0D 0x0A).</p>
+<p><strong>Response:</strong></p>
+<pre><code class="language-http">HTTP/1.1 200 OK\r\n
+Content-Type: text/html; charset=UTF-8\r\n
+Content-Length: 138\r\n
+Connection: keep-alive\r\n
+\r\n
+&lt;html&gt;...&lt;/html&gt;
+</code></pre>
+<p><code>Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase</code>. Mã: 1xx info, 2xx success, 3xx redirect, 4xx client error, 5xx server error.</p>
+<pre><code class="language-bash"># Gửi raw request không che giấu chi tiết:
+printf 'GET / HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n' \
+  | ncat example.com 80
+curl -v http://example.com/      # -v in cả request/response headers
+</code></pre>
+<p><strong>Bảo mật:</strong> header an toàn — <code>Strict-Transport-Security</code>, <code>Content-Security-Policy</code>, <code>X-Content-Type-Options: nosniff</code>. Tấn công: request smuggling (mâu thuẫn <code>Content-Length</code> vs <code>Transfer-Encoding</code>), host header injection.</p>
+<h3 id="ch01-174-tls-12-va-13">1.7.4. TLS — 1.2 và 1.3</h3>
+<p>Phần nền tảng mật mã đứng sau TLS/PKI (trao đổi khóa, AEAD, chứng chỉ X.509) được trình bày tại <a href="ch04.html">Chương 4 — Mật mã &amp; Nền tảng bảo mật</a>.</p>
+<p><strong>TLS Record layer — header 5 byte (bọc mọi message TLS):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Content Type</td>
+<td>1 byte</td>
+<td>20=ChangeCipherSpec,21=Alert,22=Handshake,23=Application Data</td>
+<td><code>22</code></td>
+</tr>
+<tr>
+<td>Version</td>
+<td>2 byte</td>
+<td><code>0x0303</code>=TLS1.2 (1.3 giả là 1.2 ở record để tương thích)</td>
+<td><code>0x0303</code></td>
+</tr>
+<tr>
+<td>Length</td>
+<td>2 byte</td>
+<td>Độ dài payload (≤16384)</td>
+<td><code>0x0200</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>TLS 1.2 handshake — từng message:</strong></p>
+<pre><code>Client                                       Server
+  | 1. ClientHello (random_c, cipher list, SNI, sessionID)
+  |-------------------------------------------------&gt;|
+  | 2. ServerHello (random_s, cipher chosen)         |
+  |    Certificate (chuỗi X.509)                     |
+  |    ServerKeyExchange (params ECDHE)              |
+  |    ServerHelloDone                               |
+  |&lt;-------------------------------------------------|
+  | 3. ClientKeyExchange (ECDHE public)              |
+  |    ChangeCipherSpec                              |
+  |    Finished (mã hóa)                             |
+  |-------------------------------------------------&gt;|
+  | 4. ChangeCipherSpec                              |
+  |    Finished (mã hóa)                             |
+  |&lt;-------------------------------------------------|
+  (2 RTT trước khi gửi application data)
+</code></pre>
+<p><strong>TLS 1.3 handshake — rút gọn còn 1 RTT (RFC 8446):</strong></p>
+<pre><code>Client                                       Server
+  | ClientHello (+ key_share, supported_versions, SNI)
+  |-------------------------------------------------&gt;|
+  |          ServerHello (+ key_share)               |
+  |          {EncryptedExtensions}                   |
+  |          {Certificate}{CertificateVerify}        |
+  |          {Finished}                              |
+  |&lt;-------------------------------------------------|
+  | {Finished}                                       |
+  |-------------------------------------------------&gt;|
+  (1 RTT; 0-RTT nếu dùng PSK/resumption)
+</code></pre>
+<p>Khác biệt TLS 1.3: bỏ ciphersuite yếu (RSA key exchange tĩnh, RC4, CBC, SHA-1), bắt buộc <strong>forward secrecy</strong> (ECDHE), mã hóa cả phần lớn handshake (Certificate được mã hóa), chỉ còn các ciphersuite AEAD (vd <code>TLS_AES_128_GCM_SHA256</code>).</p>
+<p><strong>X.509 certificate — các trường chính:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>v3</td>
+<td><code>2</code> (=v3)</td>
+</tr>
+<tr>
+<td>Serial Number</td>
+<td>định danh duy nhất từ CA</td>
+<td><code>0x0a1b...</code></td>
+</tr>
+<tr>
+<td>Signature Algorithm</td>
+<td>thuật toán ký</td>
+<td><code>sha256WithRSAEncryption</code></td>
+</tr>
+<tr>
+<td>Issuer</td>
+<td>DN của CA cấp</td>
+<td><code>CN=R11, O=Let's Encrypt</code></td>
+</tr>
+<tr>
+<td>Validity</td>
+<td>notBefore / notAfter</td>
+<td><code>2026-01-01 .. 2026-04-01</code></td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>DN chủ thể</td>
+<td><code>CN=example.com</code></td>
+</tr>
+<tr>
+<td>Subject Public Key Info</td>
+<td>thuật toán + khóa công khai</td>
+<td><code>RSA 2048</code> / <code>EC P-256</code></td>
+</tr>
+<tr>
+<td>Extensions</td>
+<td>SAN, Key Usage, EKU, Basic Constraints, AIA, CRL/OCSP</td>
+<td>SAN: <code>example.com, www.example.com</code></td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>chữ ký của CA trên TBS</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># Xem handshake và cert thật:
+openssl s_client -connect example.com:443 -servername example.com -showcerts &lt;/dev/null
+echo | openssl s_client -connect example.com:443 2&gt;/dev/null \
+  | openssl x509 -noout -text -dates -subject -issuer -ext subjectAltName
+
+# Wireshark filter cho handshake:
+#   tls.handshake.type == 1   (ClientHello)
+#   tls.handshake.type == 2   (ServerHello)
+#   tls.handshake.extensions_server_name == &quot;example.com&quot;
+</code></pre>
+<p><strong>Bảo mật:</strong> SNI (Server Name Indication) lộ tên miền dù mã hóa → ECH (Encrypted Client Hello) khắc phục. Kiểm chain trust, revocation (OCSP stapling), cipher downgrade, Heartbleed (CVE-2014-0160 — đọc bộ nhớ qua heartbeat).</p>
+<hr />
+<h2 id="ch01-18-firewall-dmz-cong-cu-phan-tich-goi">1.8. Firewall, DMZ, công cụ phân tích gói</h2>
+<h3 id="ch01-181-firewall-stateless-vs-stateful">1.8.1. Firewall stateless vs stateful</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Stateless (packet filter)</th>
+<th>Stateful</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quyết định dựa trên</td>
+<td>Từng packet riêng lẻ (IP/port/flags)</td>
+<td>Trạng thái kết nối (conntrack)</td>
+</tr>
+<tr>
+<td>Cho phép gói trả về</td>
+<td>Phải mở rule cả hai chiều thủ công</td>
+<td>Tự động (RELATED,ESTABLISHED)</td>
+</tr>
+<tr>
+<td>Chống spoof flags</td>
+<td>Yếu</td>
+<td>Tốt (chỉ chấp nhận packet hợp state)</td>
+</tr>
+<tr>
+<td>Tải bộ nhớ</td>
+<td>Thấp</td>
+<td>Cao (giữ bảng kết nối)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ stateful với iptables:</strong></p>
+<pre><code class="language-bash"># Mặc định DROP, chỉ cho SSH inbound và mọi outbound đã thiết lập
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
+iptables -P OUTPUT ACCEPT
+</code></pre>
+<p><code>-m conntrack --ctstate ESTABLISHED,RELATED</code> chính là điểm "stateful": kernel theo dõi kết nối nên gói trả về (vd response của SSH) tự được chấp nhận mà không cần rule riêng.</p>
+<h3 id="ch01-182-dmz-demilitarized-zone">1.8.2. DMZ (Demilitarized Zone)</h3>
+<p>DMZ là vùng mạng đệm giữa Internet và LAN nội bộ, chứa server cần truy cập từ ngoài (web, mail). Kiến trúc hai firewall:</p>
+<pre><code>Internet --[FW ngoài]-- DMZ (web, mail) --[FW trong]-- LAN nội bộ
+</code></pre>
+<p>Nguyên tắc: Internet → DMZ được phép (cổng cụ thể); DMZ → LAN bị hạn chế tối đa; nếu server DMZ bị chiếm, attacker vẫn khó pivot vào LAN.</p>
+<h3 id="ch01-183-tcpdump-wireshark-bo-loc-thuc-te">1.8.3. tcpdump / Wireshark — bộ lọc thực tế</h3>
+<p><strong>tcpdump (BPF filter — capture filter):</strong></p>
+<pre><code class="language-bash"># Bắt SYN-only (phát hiện scan): cờ SYN bật, ACK tắt
+sudo tcpdump -i eth0 'tcp[tcpflags] &amp; (tcp-syn|tcp-ack) == tcp-syn'
+
+# Bắt HTTP GET (byte đầu payload = 'G','E','T',' ')
+sudo tcpdump -i eth0 'tcp port 80 and tcp[((tcp[12:1] &amp; 0xf0) &gt;&gt; 2):4] = 0x47455420'
+
+# DNS query tới một domain, ghi ra file pcap để mở bằng Wireshark
+sudo tcpdump -i eth0 -nn -w /tmp/dns.pcap 'udp port 53'
+
+# Một host, không phân giải tên, in payload hex/ascii, 100 gói
+sudo tcpdump -i eth0 -nn -X host 10.0.0.50 -c 100
+</code></pre>
+<p>Tham số: <code>-i</code> interface, <code>-nn</code> không phân giải tên/cổng, <code>-e</code> in L2 header, <code>-X</code> hex+ascii, <code>-w</code> ghi pcap, <code>-c</code> số gói, <code>-s 0</code> capture full packet.</p>
+<p><strong>Wireshark (display filter — khác cú pháp BPF):</strong></p>
+<pre><code>ip.addr == 10.0.0.50
+tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0      # SYN scan
+tcp.analysis.retransmission                   # phát hiện mất gói
+http.request.method == &quot;POST&quot;
+dns.qry.name contains &quot;example&quot;
+tls.handshake.type == 1                       # ClientHello
+tcp.port == 443 &amp;&amp; tls.record.content_type == 23   # app data đã mã hóa
+ip.ttl &lt; 5                                    # traceroute / hop thấp bất thường
+</code></pre>
+<p>Quy trình điều tra điển hình: bắt bằng tcpdump trên server không có GUI (<code>-w file.pcap</code>), chuyển về máy phân tích, mở Wireshark, dùng "Follow TCP Stream" để ráp lại phiên, "Statistics → Conversations" để thấy top talker.</p>
+<hr />
+<h2 id="ch01-19-tong-ket-cac-con-so-can-thuoc">1.9. Tổng kết các con số cần thuộc</h2>
+<table>
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ethernet header / FCS / MTU / frame max</td>
+<td>14B / 4B / 1500B / 1518B (1522 với VLAN)</td>
+</tr>
+<tr>
+<td>Payload Ethernet min/max</td>
+<td>46B / 1500B</td>
+</tr>
+<tr>
+<td>802.1Q tag</td>
+<td>4B (TPID 16b + PCP 3b + DEI 1b + VID 12b)</td>
+</tr>
+<tr>
+<td>ARP packet (IPv4)</td>
+<td>28B</td>
+</tr>
+<tr>
+<td>IPv4 header min/max</td>
+<td>20B / 60B</td>
+</tr>
+<tr>
+<td>IPv6 header</td>
+<td>40B cố định, MTU min 1280B</td>
+</tr>
+<tr>
+<td>TCP header min / UDP header</td>
+<td>20B / 8B</td>
+</tr>
+<tr>
+<td>ICMP header</td>
+<td>8B</td>
+</tr>
+<tr>
+<td>DNS header</td>
+<td>12B</td>
+</tr>
+<tr>
+<td>TLS record header</td>
+<td>5B</td>
+</tr>
+<tr>
+<td>IPv4 Total Length max</td>
+<td>65535B</td>
+</tr>
+<tr>
+<td>Port ranges</td>
+<td>0–1023 / 1024–49151 / 49152–65535</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Các con số RFC trên là chuẩn ổn định. Với các chi tiết phụ thuộc cài đặt (MSL, kích thước backlog, thuật toán congestion mặc định) hãy kiểm chứng trên hệ thống cụ thể bằng <code>sysctl</code>/<code>ss</code> vì giá trị thay đổi theo OS và phiên bản kernel.</p>
+</blockquote>
+<hr />
+<h2 id="ch01-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li><strong>Đọc access log là cách nhanh nhất nhận diện scanner.</strong> Ở một máy web mình vận hành, chỉ cần lướt access.log là thấy chân dung một con scanner tự động: hàng trăm request/vài phút từ một IP, path toàn <code>/.env</code>, <code>/.git/config</code>, <code>/wp-login.php</code>, <code>/.ssh/id_rsa</code>, kèm biến thể path traversal <code>../</code>, <code>....//</code>, và cả <code>%252e%252e</code> (double-encoding — nó encode dấu <code>.</code> hai lần để né bộ lọc naïve). User-agent xoay liên tục, thỉnh thoảng giả referer của Bing/Google cho giống bot hợp lệ. Traffic người thật gần như không bao giờ có hình dạng này.</li>
+<li><strong>Nhìn status code để biết "thủng hay chưa".</strong> Mẹo thực dụng mình hay dùng: lọc log lấy đúng những request của IP nghi ngờ mà server trả <strong>2xx</strong> — nếu toàn <code>301/400/404</code> thì bị quét nhưng chưa lấy được gì; xuất hiện <code>200</code> ở một path nhạy cảm mới là lúc phải báo động. Số lượng request lớn tự nó chưa phải sự cố; <em>kết quả</em> mới là.</li>
+<li><strong>Một điểm từng hiểu nhầm:</strong> mình từng tưởng chặn pattern <code>../</code> ngay ở reverse proxy là đủ chống traversal. Thực tế nginx <strong>chuẩn hoá URI trước khi match location</strong>, nên chặn theo chuỗi <code>../</code>/<code>%2e%2e</code> không đáng tin; chặn theo <em>tên tệp nhạy cảm</em> (<code>\.env</code>, <code>id_rsa</code>, <code>\.git</code>) mới bắt được đa số scan, còn traversal triệt để thì cần WAF (ModSecurity + OWASP CRS). Chi tiết vận hành phần này mình để ở chương về hạ tầng/hardening.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="notes.html"><span>← Chương trước</span><b>Giới thiệu &amp; Mục lục</b></a><a class="pg next" href="ch02.html"><span>Chương sau →</span><b>02 · Hệ điều hành Linux</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

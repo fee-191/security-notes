@@ -2,94 +2,15 @@
 
 ## Tổng quan
 
-Chương này trình bày cách một tổ chức **giám sát, phát hiện và ứng phó sự cố an toàn thông tin** — phần vận hành "thực chiến" bổ sung cho lớp phòng thủ tĩnh (firewall, kiểm soát truy cập, mật khẩu). Mục tiêu của chương: nắm được luồng dữ liệu (log sinh ra từ đâu, được chuẩn hoá và phân tích thế nào), vai trò con người (ai đọc, ai xử lý), và trình tự thao tác khi sự cố xảy ra. Các thuật ngữ nền tảng được định nghĩa dưới đây trước khi đi vào chi tiết kỹ thuật ở các mục sau.
+Thứ gây choáng trong những ca trực đầu tiên không phải là bị tấn công, mà là số lượng alert dội về mỗi ngày — hàng nghìn cảnh báo, tuyệt đại đa số vô hại, và ai đó phải quyết định trong vài giây cái nào đáng lo. Chương này ghi lại những gì mình học được về cách một **SOC** (Security Operations Center — đội con người, quy trình và công nghệ trực 24/7) tổ chức việc lọc tín hiệu ra khỏi nhiễu đó một cách có hệ thống, thay vì dựa cảm tính từng người.
 
-### SOC (Security Operations Center)
+Mọi thứ bắt đầu từ **log** — bản ghi sự kiện mà mỗi máy chủ, thiết bị, ứng dụng tự sinh ra, nhưng mỗi nền tảng lại dùng một định dạng riêng (Syslog trên Linux, Event Log trên Windows, CEF trên thiết bị bảo mật), nên phải chuẩn hoá về chung một schema mới phân tích được. SOC không xử lý dàn trải: việc chia theo **Tier 1/2/3** — từ triage nhanh true/false positive ở tuyến đầu, tới điều tra sâu và threat hunting chủ động ở Tier 3 — là cách tránh để chuyên gia đắt tiền ngồi làm việc đơn giản, còn việc khó thì dồn cho người đủ năng lực. Và **triage** tự nó là một quy trình cần chuẩn hoá, vì không thể đối xử mọi cảnh báo như nhau mà không bỏ sót thứ nguỵ trang dưới vẻ bình thường.
 
-**Định nghĩa.** SOC là đơn vị gồm **con người + quy trình + công nghệ**, vận hành liên tục (thường 24/7), chịu trách nhiệm giám sát, phát hiện, phân tích và ứng phó với sự kiện an ninh trên toàn hạ tầng.
+Khi sự cố thật sự xảy ra, thao tác tuỳ tiện — kiểu tắt máy ngay lúc thấy dấu hiệu lạ — có thể phá huỷ bằng chứng và làm nó lan rộng. Đây là lý do có hai khung xử lý chuẩn gần như tương đương nhau, **NIST SP 800-61** (4 pha: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-Incident Activity) và **SANS PICERL** (6 bước, tách riêng Containment/Eradication/Recovery), cùng ép một trình tự: cô lập trước, bảo toàn bằng chứng, rồi mới loại bỏ và khôi phục. **Playbook** vạch quy trình cấp cao cho từng loại sự cố; **runbook** cụ thể hoá thành từng lệnh, từng truy vấn để analyst ít kinh nghiệm cũng làm đúng giữa lúc khẩn cấp. Còn **MTTD** và **MTTR** là hai con số đo lại cả bộ máy này nhanh tới đâu — thời gian kẻ tấn công tồn tại trong mạng (dwell time) càng dài, thiệt hại càng lớn, nên rút ngắn hai chỉ số này là rút ngắn thiệt hại.
 
-**Vấn đề giải quyết.** Hệ thống sinh ra hàng tỷ event log mỗi ngày nhưng chỉ một phần cực nhỏ là tấn công thật. SOC là cơ chế tổ chức để **lọc tín hiệu (signal) ra khỏi nhiễu (noise)** một cách hệ thống, lặp lại được và đo lường được.
+Phần còn lại của chương đi vào công cụ và kỹ thuật cụ thể, vì con người không thể xử lý thủ công hàng tỷ log hay từng gói tin — các nền tảng phát hiện và điều tra (**SIEM** gom log tập trung để truy vấn và sinh alert; **Sigma** viết detection rule một lần dịch được sang nhiều SIEM; **Suricata** phân tích gói tin theo signature; **YARA** nhận diện mã độc theo pattern trong file; **Splunk/SPL**, **osquery/Velociraptor** truy vấn trạng thái endpoint; **TheHive/SOAR** tự động hoá các bước lặp lại) mở rộng năng lực đó ở quy mô lớn. **Threat hunting** đi xa hơn phát hiện tự động: chủ động săn dấu vết kẻ tấn công từ một giả thuyết, dựa trên khung **MITRE ATT&CK** phân loại kỹ thuật tấn công — vì kẻ tấn công tinh vi biết né rule có sẵn. Trong forensics, nguyên tắc **chain of custody** ghi rõ ai giữ bằng chứng khi nào để đảm bảo tính pháp lý, còn dữ liệu dễ bay hơi như RAM phải thu thập theo **order of volatility** trước khi nó mất lúc tắt máy — lý do nhiều playbook yêu cầu cô lập mạng nhưng giữ máy chạy. Và vì kẻ tấn công có thể ẩn mình hàng tháng trước khi lộ diện, chính sách **log retention** (thường phân tầng hot/warm/cold) quyết định điều tra có còn dấu vết để lần lại hay không.
 
-### Log và định dạng log
-
-**Định nghĩa.** Log là **bản ghi sự kiện** mà mỗi máy chủ, thiết bị mạng, ứng dụng tự sinh ra (ví dụ: thời điểm, chủ thể, hành động, kết quả của một lần đăng nhập). Định dạng log là quy ước cấu trúc của bản ghi đó.
-
-**Vấn đề giải quyết.** Mỗi nền tảng dùng một định dạng riêng — Linux dùng **Syslog**, Windows dùng **Event Log**, thiết bị bảo mật thường dùng **CEF**. Để phân tích nhất quán, log phải được chuẩn hoá về một schema chung. Đọc đúng từng trường (field) là kỹ năng nền tảng của vận hành SOC.
-
-### Phân tầng SOC (Tier 1/2/3)
-
-**Định nghĩa.** SOC phân công theo độ sâu điều tra, không theo chức vụ:
-- **Tier 1** — tuyến đầu nhận alert, triage nhanh true positive/false positive.
-- **Tier 2** — điều tra sâu, containment, dựng timeline, tinh chỉnh rule.
-- **Tier 3** — threat hunting chủ động, forensics chuyên sâu, phân tích mã độc, xử lý sự cố lớn/APT.
-
-**Vấn đề giải quyết.** Alert đến với khối lượng lớn nhưng phần lớn đơn giản hoặc là FP. Để chuyên gia chi phí cao xử lý việc đơn giản gây lãng phí và burnout. Phân tầng đảm bảo việc dễ được xử lý nhanh-rẻ, việc khó dồn cho người đủ năng lực.
-
-### Triage alert
-
-**Định nghĩa.** Triage là quy trình đánh giá một cảnh báo: thật hay giả (TP/FP), thuộc loại nào, mức nghiêm trọng ra sao, xử lý tại chỗ hay escalate. Thuật ngữ mượn từ y khoa, chỉ việc **phân loại ưu tiên xử lý**.
-
-**Vấn đề giải quyết.** Không thể đối xử mọi cảnh báo như nhau. Triage chuẩn đảm bảo việc quan trọng được xử lý trước và không bỏ sót mối đe doạ nguỵ trang dưới vẻ bình thường.
-
-### Vòng đời ứng phó sự cố (NIST & SANS PICERL)
-
-**Định nghĩa.** Hai khung quy trình ứng phó sự cố chuẩn:
-- **NIST SP 800-61** — 4 pha: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-Incident Activity.
-- **SANS PICERL** — 6 bước: Preparation, Identification, Containment, Eradication, Recovery, Lessons Learned.
-
-Hai mô hình tương đương về bản chất; SANS tách Containment/Eradication/Recovery thành các bước riêng.
-
-**Vấn đề giải quyết.** Trong sự cố, thao tác tuỳ tiện (ví dụ tắt máy ngay) có thể phá huỷ bằng chứng và làm sự cố lan rộng. Quy trình chuẩn áp đặt trình tự đúng: cô lập trước, bảo toàn bằng chứng, rồi mới loại bỏ và khôi phục.
-
-### Playbook / Runbook
-
-**Định nghĩa.**
-- **Playbook** — quy trình cấp cao cho một loại sự cố (các giai đoạn, vai trò, điểm ra quyết định).
-- **Runbook** — các bước thao tác chi tiết (lệnh, truy vấn) thực thi một phần playbook.
-
-**Vấn đề giải quyết.** Tình huống khẩn cấp không phải lúc để ứng biến. Kịch bản định sẵn đảm bảo xử lý nhanh, nhất quán, không bỏ sót bước, kể cả với analyst ít kinh nghiệm.
-
-### MTTD và MTTR
-
-**Định nghĩa.**
-- **MTTD** (Mean Time To Detect) — thời gian trung bình từ khi sự cố bắt đầu đến khi được phát hiện.
-- **MTTR** (Mean Time To Respond/Recover) — thời gian trung bình từ khi phát hiện đến khi xử lý/khôi phục xong.
-
-**Vấn đề giải quyết.** Hai chỉ số định lượng tốc độ phòng thủ và hiệu quả cải tiến. Thời gian kẻ tấn công tồn tại trong mạng (dwell time) càng dài, thiệt hại càng lớn; rút ngắn MTTD/MTTR trực tiếp giảm thiệt hại.
-
-### Công cụ thực hành (Sigma, Suricata, YARA, Splunk, osquery, SOAR)
-
-- **Sigma** — định dạng mô tả detection rule generic (YAML), dịch tự động sang query của từng SIEM. Viết một lần, dùng cho nhiều nền tảng.
-- **SIEM** — nền tảng gom log tập trung, đánh chỉ mục để truy vấn nhanh và sinh alert theo rule. Là nơi analyst làm việc.
-- **Suricata** — engine IDS/IPS phân tích gói tin theo signature, cảnh báo hoặc chặn lưu lượng độc hại.
-- **YARA** — công cụ nhận diện mã độc theo pattern (chuỗi, byte, regex) trong file.
-- **Splunk (SPL)** — một SIEM phổ biến; SPL là ngôn ngữ truy vấn log.
-- **osquery / Velociraptor** — truy vấn trạng thái endpoint bằng cú pháp giống SQL, phục vụ threat hunting.
-- **TheHive / SOAR** — quản lý case IR và **tự động hoá** các bước lặp lại (tra cứu, chặn, thông báo), để con người tập trung vào phần phức tạp.
-
-**Vấn đề giải quyết.** Con người không thể xử lý thủ công hàng tỷ log hay từng gói tin. Các công cụ này mở rộng năng lực phát hiện và phản ứng ở quy mô lớn.
-
-### Threat Hunting & MITRE ATT&CK
-
-**Định nghĩa.** **Threat hunting** là hoạt động chủ động tìm dấu vết kẻ tấn công mà detection tự động chưa bắt được, bắt đầu từ một **giả thuyết** (ví dụ: kẻ tấn công đang lateral movement). **MITRE ATT&CK** là cơ sở tri thức phân loại có hệ thống các kỹ thuật tấn công (Tactics × Techniques), mỗi technique có mã Txxxx.
-
-**Vấn đề giải quyết.** Kẻ tấn công tinh vi biết né các rule có sẵn. Săn chủ động dựa trên hiểu biết về TTP giúp phát hiện thứ mà hệ thống tự động bỏ sót.
-
-### Chain of Custody & Forensics
-
-**Định nghĩa.** **Forensics** (điều tra số) là quá trình thu thập và phân tích bằng chứng số. **Chain of custody** (chuỗi lưu giữ bằng chứng) là hồ sơ ghi rõ ai giữ bằng chứng, khi nào, thao tác gì — đảm bảo tính nguyên vẹn và truy vết.
-
-**Vấn đề giải quyết.** Bằng chứng bị sửa đổi hoặc không rõ nguồn gốc thì mất giá trị pháp lý. Một nguyên tắc cốt lõi: dữ liệu dễ bay hơi (RAM) mất khi tắt máy, nên phải thu thập theo **order of volatility** — lý do nhiều playbook yêu cầu cô lập mạng nhưng giữ máy chạy thay vì tắt nguồn.
-
-### Log Retention
-
-**Định nghĩa.** Chính sách quy định **thời gian lưu giữ log** và phương thức lưu. Thường phân tầng hot/warm/cold: log mới lưu ở tầng truy cập nhanh (chi phí cao), log cũ nén và lưu ở tầng chi phí thấp.
-
-**Vấn đề giải quyết.** Kẻ tấn công có thể ẩn trong mạng nhiều tháng trước khi bị phát hiện; lưu log quá ngắn khiến điều tra mất dấu thời điểm xâm nhập. Ngoài ra, nhiều quy định pháp lý bắt buộc thời gian lưu tối thiểu.
-
-Các mục tiếp theo đi sâu vào chi tiết kỹ thuật của từng khái niệm trên.
-
-> Chương này là tài liệu tham chiếu để tự học và tra cứu. Mỗi khái niệm trình bày theo trục: **LÀ GÌ → CƠ CHẾ BÊN TRONG (tới mức bit/byte/bước/tham số) → VÍ DỤ THỰC TẾ (lệnh, cấu hình, rule, output) → LƯU Ý BẢO MẬT**. Các con số được ghi rõ nguồn; chỗ nào cần kiểm chứng sẽ ghi "[cần kiểm chứng]".
+> Mỗi mục dưới đây đi theo trục là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật; con số nào chưa chắc chắn sẽ được đánh dấu "cần kiểm chứng".
 
 ---
 
@@ -394,7 +315,9 @@ Priority = Severity (Impact) × Likelihood
 
 ### 10.5.1. NIST SP 800-61 — 4 pha
 
-NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide) định nghĩa vòng đời 4 pha. Lưu ý vòng đời là **chu trình lặp** (không tuyến tính) — Detection & Analysis và Containment/Eradication/Recovery có thể quay vòng nhiều lần.
+Vòng đời 4 pha kinh điển đến từ NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide). Lưu ý vòng đời là **chu trình lặp** (không tuyến tính) — Detection & Analysis và Containment/Eradication/Recovery có thể quay vòng nhiều lần.
+
+> **Cập nhật phiên bản:** tháng 4/2025 NIST phát hành **SP 800-61 Rev. 3**, thay thế Rev. 2. Rev. 3 không còn mô tả vòng đời 4 pha tuyến tính mà tổ chức lại quanh 6 chức năng của **NIST CSF 2.0** (Govern, Identify, Protect, Detect, Respond, Recover) dưới dạng một Community Profile. Mô hình 4 pha ở đây (Rev. 2) vẫn được dùng rộng rãi để giảng dạy và ánh xạ tốt sang SANS PICERL, nhưng khi tham chiếu tài liệu chuẩn hiện hành nên dẫn Rev. 3.
 
 ```
       ┌───────────────────────────────────────────────────────────────────────────┐
@@ -1024,3 +947,8 @@ Vận hành SOC là một vòng khép kín:
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- **Điều tra alert thật, không tin bản tóm tắt của SIEM.** Ở hệ thống mình vận hành (stack Wazuh + OpenSearch) từng có một IP VPS công cộng bơm mấy trăm request trong hơn 2 giờ để quét path traversal — kiểu `%252e%252e` (double-encoding), `....//`, nhắm vào `.ssh/id_rsa`, `.env`, `.mysql_history`, lại còn xoay user-agent và giả referer Bing cho giống traffic thật. Lúc đầu nhìn cảnh báo thấy đáng sợ, nhưng khi mở raw event ra soi (aggregate theo `data.url`, `rule.id`, dựng date_histogram, đọc `full_log` để lấy dòng log gốc vì access.log trên máy đã xoay) thì thấy toàn `301/400/404` — không có event "tấn công trả 200" nào. Kết luận: bị quét dữ dội nhưng **chưa thủng**. Bài học mình rút ra đúng như mục 10.4: severity thật nằm ở *kết quả* (có response 2xx bất thường không), không phải ở *số lượng* request.
+- **Chặn IP là "đập chuột chũi".** Sau vụ trên mình thử chặn IP thì hôm sau hàng chục IP/subnet khác lại quét cả fleet. Từ đó mình nghiêng hẳn sang hardening theo *hành vi* (rate-limit, giới hạn truy cập theo nguồn, chặn tên tệp nhạy cảm ở lớp proxy) thay vì đuổi theo từng IP.
+- **SOAR để giảm nhiễu, không phải để thay người.** Mình đang dựng một luồng nối SIEM → SOAR: lọc IP public trong alert rồi enrich qua vài nguồn threat intel (điểm tin cậy kiểu AbuseIPDB + số engine gắn cờ kiểu VirusTotal) trước khi báo về kênh vận hành. Giá trị lớn nhất không phải "tự động chặn" mà là **phân biệt nguồn có tiền sử tấn công với truy cập hợp lệ bị log nhầm** — nhờ vậy số alert cần người xử lý giảm rõ. Đúng tinh thần mục 10.8.6: hành động phá hoại (block/purge) mình vẫn để human-in-the-loop, chỉ auto phần enrich/gắn nhãn.
+- **Đang tìm hiểu tiếp:** nối ngưỡng tự chặn (kiểu fail2ban ↔ SIEM) sao cho không tự bắn vào chân khi một IP hợp lệ vô tình vượt ngưỡng.

@@ -1,0 +1,2105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 15 — Threat Intelligence &amp;amp; Attack Frameworks — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 15 — Threat Intelligence &amp;amp; Attack Frameworks — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch14.html"><link rel="next" href="ch16.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter open active" data-ch="15"><a class="nav-ch-title" href="#top"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"><a class="nav-sub" href="#ch15-overview">Overview</a><a class="nav-sub" href="#ch15-151-why-frameworks-are-needed-from-scattered-alerts-to-a-common-language">15.1. Why frameworks are needed: from &quot;scattered alerts&quot; to a &quot;common language&quot;</a><a class="nav-sub" href="#ch15-152-cyber-threat-intelligence-cti-definition-classification-lifecycle">15.2. Cyber Threat Intelligence (CTI): definition, classification, lifecycle</a><a class="nav-sub" href="#ch15-153-cyber-kill-chain-lockheed-martin-7-steps">15.3. Cyber Kill Chain (Lockheed Martin) — 7 steps</a><a class="nav-sub" href="#ch15-154-diamond-model-of-intrusion-analysis">15.4. Diamond Model of Intrusion Analysis</a><a class="nav-sub" href="#ch15-155-ioc-vs-ioa">15.5. IOC vs IOA</a><a class="nav-sub" href="#ch15-156-pyramid-of-pain-david-bianco-2013">15.6. Pyramid of Pain (David Bianco, 2013)</a><a class="nav-sub" href="#ch15-157-mitre-attck-architecture-and-data-model">15.7. MITRE ATT&amp;amp;CK — architecture and data model</a><a class="nav-sub" href="#ch15-158-deep-dive-into-key-techniques-mechanism-detection-signals">15.8. Deep dive into key techniques (mechanism + detection signals)</a><a class="nav-sub" href="#ch15-159-the-matrices-enterprise-mobile-ics">15.9. The matrices: Enterprise, Mobile, ICS</a><a class="nav-sub" href="#ch15-1510-attck-navigator-mapping-detections-measuring-coverage">15.10. ATT&amp;amp;CK Navigator: mapping detections &amp;amp; measuring coverage</a><a class="nav-sub" href="#ch15-1511-detection-engineering-sigma-yara-suricata-mapped-to-attck">15.11. Detection Engineering: Sigma, YARA, Suricata mapped to ATT&amp;amp;CK</a><a class="nav-sub" href="#ch15-1512-intelligence-sharing-stix-taxii-misp">15.12. Intelligence sharing: STIX, TAXII, MISP</a><a class="nav-sub" href="#ch15-1513-malware-classification">15.13. Malware classification</a><a class="nav-sub" href="#ch15-1514-basic-malware-analysis">15.14. Basic malware analysis</a><a class="nav-sub" href="#ch15-1515-synthesis-attack-lifecycle-detection-signals">15.15. Synthesis: attack lifecycle ↔ detection signals</a><a class="nav-sub" href="#ch15-1516-security-operational-notes-summary">15.16. Security &amp;amp; operational notes — summary</a><a class="nav-sub" href="#ch15-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-15" data-ch="15">
+<h1 id="ch15-chapter-15-threat-intelligence-attack-frameworks">Chapter 15 — Threat Intelligence &amp; Attack Frameworks</h1>
+<h2 id="ch15-overview">Overview</h2>
+<p>Reading logs without a framework, each alert is an isolated fragment — you see a weird IP calling out, but you can't tell which stage of a real attack it belongs to, or talk about it with the threat intel team using the same vocabulary. This chapter pulls together the "common language" that SOC and threat intel folks use to describe, measure, and respond to adversary behavior.</p>
+<p>The chapter follows the shape of a real investigation. First comes the thinking framework: the Cyber Kill Chain splits a targeted attack into 7 linear stages — break one link and the whole chain fails; the Diamond Model looks at each intrusion through 4 vertices (adversary, capability, infrastructure, victim), letting you pivot from one small clue to an entire APT group. Next is how to classify evidence: IOCs (static, easily changed) versus IOAs (behavior chains, harder to evade), and the Pyramid of Pain, which explains why blocking an IP costs the attacker five minutes while blocking a TTP forces them to rebuild their whole approach.</p>
+<p>MITRE ATT&amp;CK is the most detailed piece — a knowledge base of real-world behavior with a unique identifier for every technique (like <code>T1059.001</code>), and ATT&amp;CK Navigator colors that matrix in to show detection gaps. From theory, the chapter moves down to writing actual rules: Sigma for logs, YARA for files/memory, Suricata for network traffic — and how to share that intelligence outward through STIX/TAXII/MISP. The last stretch separates out malware types (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) and the two approaches to dissecting a sample — static and dynamic — two things I used to lump together before sorting them out properly.</p>
+<blockquote>
+<p>Need a quick lookup? Table <strong>15.15</strong> links each attack stage to its representative technique, telemetry source, and detection rule — use it as the chapter's hands-on index.</p>
+</blockquote>
+<hr />
+<h2 id="ch15-151-why-frameworks-are-needed-from-scattered-alerts-to-a-common-language">15.1. Why frameworks are needed: from "scattered alerts" to a "common language"</h2>
+<p>Before standardized frameworks existed, every security team described attacks in its own way: "someone logged in with the wrong password many times," "a strange file ran PowerShell." The problem was not a lack of data but a <strong>lack of a common language</strong> to:</p>
+<ol>
+<li><strong>Exchange</strong> between teams/organizations (internal SOC ↔ ISAC ↔ vendor).</li>
+<li><strong>Measure detection coverage</strong>: what percentage of the behaviors an adversary could perform can we detect?</li>
+<li><strong>Prioritize investment</strong>: which detection rule should we write first?</li>
+<li><strong>Reproducibility</strong>: the same behavior is always referred to by the same identifier.</li>
+</ol>
+<p>The frameworks in this chapter solve different problems but complement one another:</p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>The question it answers</th>
+<th>Level of abstraction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cyber Kill Chain</td>
+<td>What <strong>linear stages</strong> does an attack pass through?</td>
+<td>High (strategic)</td>
+</tr>
+<tr>
+<td>Diamond Model</td>
+<td>How does an event relate to <strong>adversary / capability / infrastructure / victim</strong>?</td>
+<td>Medium (event analysis)</td>
+</tr>
+<tr>
+<td>MITRE ATT&amp;CK</td>
+<td>What does the adversary <strong>actually do</strong> at each stage (observed behavior)?</td>
+<td>Low (technical, measurable)</td>
+</tr>
+<tr>
+<td>Pyramid of Pain</td>
+<td>Which IOC, when blocked, <strong>hurts</strong> the adversary most?</td>
+<td>A measure of IOC value</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why so many frameworks?</strong> The Kill Chain is too coarse to write detections from; ATT&amp;CK is too detailed to report to leadership; the Diamond Model helps analyze relationships but does not enumerate techniques. A mature SOC uses all three: the Kill Chain to tell the story, the Diamond Model to pivot investigations, and ATT&amp;CK to measure coverage and write rules.</p>
+<hr />
+<h2 id="ch15-152-cyber-threat-intelligence-cti-definition-classification-lifecycle">15.2. Cyber Threat Intelligence (CTI): definition, classification, lifecycle</h2>
+<h3 id="ch15-1521-what-cti-is-and-is-not">15.2.1. What CTI is and is not</h3>
+<p><strong>Threat Intelligence</strong> = threat data that has been <strong>processed + analyzed + contextualized</strong> to support <strong>decision-making</strong>. The key point distinguishing it from raw "data":</p>
+<pre><code>Data      → &quot;IP 185.220.101.45 appeared in the logs&quot;
+Information→ &quot;This IP is a Tor exit node, connected at 03:00&quot;
+Intelligence→ &quot;This IP was used by the FIN7 group as C2 in a campaign
+              targeting the financial sector in May; recommend blocking
+              + hunting for hosts that have beaconed to it&quot;
+</code></pre>
+<p>Intelligence must be <strong>actionable</strong> and carry <strong>context</strong> (who, what target, why).</p>
+<h3 id="ch15-1522-the-four-types-of-cti">15.2.2. The four types of CTI</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Consumer</th>
+<th>Time horizon</th>
+<th>Concrete example</th>
+<th>Typical format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Strategic</strong></td>
+<td>Leadership, CISO</td>
+<td>Long-term (months/years)</td>
+<td>"The crypto-exchange sector is targeted by Lazarus with financial motives"</td>
+<td>Prose report, non-technical</td>
+</tr>
+<tr>
+<td><strong>Operational</strong></td>
+<td>SOC manager, IR lead</td>
+<td>Medium-term (weeks)</td>
+<td>"An ongoing campaign uses Office macros → Cobalt Strike; TTPs include T1566.001, T1059.001"</td>
+<td>Campaign report, TTP list</td>
+</tr>
+<tr>
+<td><strong>Tactical</strong></td>
+<td>Threat hunter, detection engineer</td>
+<td>Short–medium</td>
+<td>"Specific TTP: PowerShell <code>-enc</code> base64 spawned from winword.exe"</td>
+<td>Sigma rule, ATT&amp;CK technique</td>
+</tr>
+<tr>
+<td><strong>Technical</strong></td>
+<td>SOC analyst L1/L2, automated systems</td>
+<td>Very short (hours/days)</td>
+<td>"Hash <code>a1b2c3...</code>, IP <code>185.x</code>, domain <code>evil.com</code>"</td>
+<td>IOC feed (STIX/MISP), CSV</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why tier it?</strong> Because technical IOCs are <strong>perishable</strong> (the adversary changes IPs/hashes easily) while TTPs/strategic intelligence are more <strong>durable</strong>. Detection investment should shift toward the higher tiers (see the Pyramid of Pain in 15.6).</p>
+<h3 id="ch15-1523-the-intelligence-lifecycle-6-phases">15.2.3. The Intelligence Lifecycle — 6 phases</h3>
+<p>The classic model (originating in the military/CIA intelligence community, applied to CTI):</p>
+<pre><code>   ┌────────────────────────────────────────────────────────────┐
+   ▼                                                              │
+1.Direction → 2.Collection → 3.Processing → 4.Analysis → 5.Dissemination → 6.Feedback
+   │                                                                          │
+   └──────────────────────────── closed feedback loop ───────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>What is done</th>
+<th>Output</th>
+<th>Technical note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Direction (Planning)</strong></td>
+<td>Define intelligence requirements (PIR – Priority Intelligence Requirements)</td>
+<td>"Who is targeting us? With which TTPs?"</td>
+<td>No PIR → aimless collection, drowning in useless IOCs</td>
+</tr>
+<tr>
+<td><strong>2. Collection</strong></td>
+<td>Gather from OSINT, commercial feeds, internal telemetry, dark web, ISAC</td>
+<td>Raw data</td>
+<td>Record source + timestamp to assess reliability</td>
+</tr>
+<tr>
+<td><strong>3. Processing</strong></td>
+<td>Normalize: parse logs, decode, dedupe, normalize to STIX</td>
+<td>Structured data</td>
+<td>An often-skipped step → "garbage in"</td>
+</tr>
+<tr>
+<td><strong>4. Analysis</strong></td>
+<td>Correlate, assign TTPs, assess reliability (Admiralty Code)</td>
+<td>Intelligence product</td>
+<td>Avoid confirmation bias; use ACH (Analysis of Competing Hypotheses)</td>
+</tr>
+<tr>
+<td><strong>5. Dissemination</strong></td>
+<td>Publish in the right format for the right audience</td>
+<td>Reports, feeds, rules</td>
+<td>Strategic ≠ technical in format</td>
+</tr>
+<tr>
+<td><strong>6. Feedback</strong></td>
+<td>Users evaluate: was it actionable?</td>
+<td>Adjust PIR</td>
+<td>Closes the loop; without it, CTI drifts from need</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The Admiralty Code (NATO)</strong> is used to assign reliability along two axes: <strong>source reliability (A–F)</strong> and <strong>information credibility (1–6)</strong>. For example, "B2" = a usually reliable source, information probably true.</p>
+<table>
+<thead>
+<tr>
+<th>Source reliability</th>
+<th>Information credibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A = Completely reliable</td>
+<td>1 = Confirmed</td>
+</tr>
+<tr>
+<td>B = Usually reliable</td>
+<td>2 = Probably true</td>
+</tr>
+<tr>
+<td>C = Fairly reliable</td>
+<td>3 = Possibly true</td>
+</tr>
+<tr>
+<td>D = Not usually reliable</td>
+<td>4 = Doubtful</td>
+</tr>
+<tr>
+<td>E = Unreliable</td>
+<td>5 = Improbable</td>
+</tr>
+<tr>
+<td>F = Cannot be judged</td>
+<td>6 = Cannot be judged</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch15-153-cyber-kill-chain-lockheed-martin-7-steps">15.3. Cyber Kill Chain (Lockheed Martin) — 7 steps</h2>
+<p>A model published by Lockheed Martin (2011) describing targeted attacks (APTs) as a linear chain. The defensive philosophy: <strong>break any single link</strong> and the whole chain breaks → the "intrusion kill chain."</p>
+<pre><code> [1]            [2]             [3]          [4]             [5]            [6]            [7]
+Recon ──▶ Weaponization ──▶ Delivery ──▶ Exploitation ──▶ Installation ──▶ C2 ──▶ Actions on Objectives
+ scout       pair exploit    deliver to    run exploit       install        control   steal / destroy /
+ the target  + payload       the victim    code              persistence    channel   move laterally
+                                                                            ▲
+   ── break ANY single link ──▶ the whole chain breaks ────────────────────┘
+</code></pre>
+<p>The diagram shows the model's linear nature: an attack proceeds sequentially from left to right, and defenders only need to break one step to neutralize the entire campaign. This is also its weakness — the model assumes a one-directional flow, making it hard to describe repeated lateral movement or cloud attacks with no malware "delivery" stage.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Stage</th>
+<th>Attacker action</th>
+<th>Indicators / Blue Team defense</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Reconnaissance</strong></td>
+<td>Gather emails, technologies, personnel (LinkedIn, whois, scanning)</td>
+<td>WAF/IDS logs detecting scans; honeytokens; monitoring registrations of brand-lookalike domains</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Weaponization</strong></td>
+<td>Pair exploit + payload (e.g., a PDF with a macro)</td>
+<td>Hard to detect (occurs on the attacker's side); analyze obtained samples</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Delivery</strong></td>
+<td>Send via email/USB/web</td>
+<td>Email gateway, attachment sandbox, proxy logs</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Exploitation</strong></td>
+<td>Exploit a vulnerability to run code</td>
+<td>EDR exploit detection, EMET/CFG, patching</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Installation</strong></td>
+<td>Install a backdoor/persistence</td>
+<td>Monitor autoruns, new services, registry Run keys</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Command &amp; Control (C2)</strong></td>
+<td>Establish a control channel</td>
+<td>Beacon analysis, DNS tunneling, JA3 fingerprinting</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Actions on Objectives</strong></td>
+<td>Steal data, destroy, move laterally</td>
+<td>DLP, exfil monitoring, mass-encryption detection (ransomware)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Limitations:</strong> The Kill Chain assumes linearity and is centered on "external malware"; it is weak at describing insider attacks, repeated lateral movement, or cloud attacks with no "malware delivery." ATT&amp;CK was created to fill this gap (looping, non-linear, observed behavior).</p>
+<p><strong>The Unified Kill Chain (Paul Pols, 2017)</strong> merges the Kill Chain + ATT&amp;CK into 18 stages across 3 clusters (In → Through → Out), addressing the linearity issue. Verify the number of stages against the original if citing precisely.</p>
+<hr />
+<h2 id="ch15-154-diamond-model-of-intrusion-analysis">15.4. Diamond Model of Intrusion Analysis</h2>
+<p>Published in 2013 (Caltagirone, Pendergast, Betz). Each <strong>intrusion event</strong> is modeled by 4 interlinked diamond vertices:</p>
+<pre><code>                 Adversary
+                    /\
+                   /  \
+                  /    \
+   Infrastructure ------ Capability
+                  \    /
+                   \  /
+                    \/
+                  Victim
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Vertex</th>
+<th>Meaning</th>
+<th>Concrete example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adversary</strong></td>
+<td>The attacker (operator/customer)</td>
+<td>The APT29 group</td>
+</tr>
+<tr>
+<td><strong>Capability</strong></td>
+<td>Capabilities: malware, exploits, skills (TTPs)</td>
+<td>The "WellMess" backdoor, exploit for CVE-XXXX</td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Infrastructure: C2 domains, IPs, sending email</td>
+<td><code>185.220.101.45</code>, <code>update-msft[.]com</code></td>
+</tr>
+<tr>
+<td><strong>Victim</strong></td>
+<td>The victim: organization, person, asset</td>
+<td>Pharmaceutical company X, mail server</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The strength — Pivoting:</strong> when you hold one vertex, you trace the others. For example: from a <strong>C2 domain</strong> (infrastructure) → query passive DNS for the <strong>shared IP</strong> → find <strong>other domains</strong> pointing to the same IP → infer the group's other <strong>capabilities/adversaries</strong>.</p>
+<pre><code>Domain evil.com ─(passive DNS)→ 1.2.3.4 ─(reverse)→ bad2.com, bad3.com
+       │                                                    │
+   (whois)                                              (sandbox)
+       ▼                                                    ▼
+ reg email X ─────(pivot adversary)──────► same campaign
+</code></pre>
+<p><strong>Extended meta-features</strong>: timestamp, phase (mapped to the Kill Chain), result, direction, methodology, resources. <strong>Social-Political</strong> (the adversary↔victim motive) and <strong>Technology</strong> (capability↔infrastructure) are two additional axes.</p>
+<p>The Diamond Model complements ATT&amp;CK: ATT&amp;CK fills in <strong>Capability</strong> (concrete TTPs), while the Diamond Model places it in an investigative relationship.</p>
+<hr />
+<h2 id="ch15-155-ioc-vs-ioa">15.5. IOC vs IOA</h2>
+<p>An everyday analogy: an IOC is like the fingerprint a burglar leaves behind after the break-in — static evidence that something <em>has happened</em>. An IOA is like a camera catching someone <em>prying a window open right now</em> — a chain of behavior <em>in progress</em> that you can interrupt before anything is stolen.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th><strong>IOC (Indicator of Compromise)</strong></th>
+<th><strong>IOA (Indicator of Attack)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nature</td>
+<td>Static evidence of what has happened</td>
+<td>Behavior/intent in progress</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>Hash <code>e3b0c44...</code>, IP, domain, mutex, registry key</td>
+<td>"winword.exe spawns powershell.exe which then downloads a file from the Internet"</td>
+</tr>
+<tr>
+<td>Durability</td>
+<td>Low (easily changed)</td>
+<td>High (attack logic is hard to change)</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Match against a list</td>
+<td>Analyze behavior chains (EDR)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example IOA (a cause-and-effect chain) that an EDR detects:</strong></p>
+<pre><code>1. outlook.exe  → creates process winword.exe (opens attachment)
+2. winword.exe  → spawns cmd.exe /c powershell -enc &lt;base64&gt;
+3. powershell   → connects out to 185.x (download)
+4. powershell   → writes file to %APPDATA%\svchost.exe
+5. new file     → creates registry Run key (persistence)
+</code></pre>
+<p>No single indicator above is "absolutely malicious" — it is the <strong>chain</strong> itself that signals an attack. This is the core difference: IOC = "what has been seen"; IOA = "what is being attempted." An ATT&amp;CK technique is essentially a standardized way of expressing an <strong>IOA</strong>.</p>
+<hr />
+<h2 id="ch15-156-pyramid-of-pain-david-bianco-2013">15.6. Pyramid of Pain (David Bianco, 2013)</h2>
+<p>Picture chasing off a burglar: change the lock and they just try the window (cheap, swapped in minutes); but if you make their very <em>method of breaking in</em> unusable, they have to relearn the whole trade. The Pyramid of Pain measures exactly that "pain."</p>
+<p>It measures the <strong>degree of pain</strong> that blocking a type of indicator causes the adversary — that is, the cost they must pay to evade.</p>
+<pre><code>                    /\
+                   /  \                    ← Tough!       (hardest for the attacker to change)
+                  / TTP \
+                 /------\
+                / Tools  \                 ← Challenging
+               /----------\
+              /  Network/   \              ← Annoying
+             / Host Artifacts \
+            /------------------\
+           /   Domain Names     \          ← Simple
+          /----------------------\
+         /     IP Addresses       \        ← Easy
+        /--------------------------\
+       /        Hash Values         \      ← Trivial   (change 1 byte → new hash)
+      /------------------------------\
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Indicator</th>
+<th>Adversary cost to evade</th>
+<th>Blue Team action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trivial</td>
+<td>Hash (MD5/SHA256)</td>
+<td>Change 1 byte → an entirely different hash</td>
+<td>Block anyway, but don't expect much</td>
+</tr>
+<tr>
+<td>Easy</td>
+<td>IP address</td>
+<td>Rent a new IP (a few minutes)</td>
+<td>Block + track infrastructure patterns</td>
+</tr>
+<tr>
+<td>Simple</td>
+<td>Domain</td>
+<td>Register a new domain (automated DGA)</td>
+<td>DNS sinkhole, DGA detection</td>
+</tr>
+<tr>
+<td>Annoying</td>
+<td>Host/Network artifacts (mutex, unusual User-Agent, registry)</td>
+<td>Must modify the malware</td>
+<td>Write detections against the artifact</td>
+</tr>
+<tr>
+<td>Challenging</td>
+<td>Tools (Mimikatz, Cobalt Strike)</td>
+<td>Must switch tools</td>
+<td>YARA against the tool, JA3</td>
+</tr>
+<tr>
+<td>Tough</td>
+<td><strong>TTPs</strong> (behaviors: dump LSASS, pass-the-hash)</td>
+<td>Must change <strong>how they operate</strong></td>
+<td>ATT&amp;CK detection — invest here</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Operational lesson:</strong> investing in detection at the apex of the pyramid (TTPs) yields long-term returns; IOCs at the base are cheap but only block the specific known campaign. This is why MITRE ATT&amp;CK (a TTP catalog) is at the center of modern detection engineering.</p>
+<hr />
+<h2 id="ch15-157-mitre-attck-architecture-and-data-model">15.7. MITRE ATT&amp;CK — architecture and data model</h2>
+<p><strong>ATT&amp;CK</strong> = <em>Adversarial Tactics, Techniques, and Common Knowledge</em>. It is a <strong>knowledge base</strong> of adversary behaviors <strong>observed in the real world</strong> (curated from public reports). It is not a linear framework like the Kill Chain — it is a <strong>matrix</strong> of behaviors.</p>
+<h3 id="ch15-1571-conceptual-hierarchy">15.7.1. Conceptual hierarchy</h3>
+<pre><code>Tactic  = the tactical GOAL (&quot;WHY&quot; — what the attacker wants to achieve)
+   └─ Technique = the general WAY to achieve the goal (&quot;WHAT&quot;)   → ID  Txxxx
+        └─ Sub-technique = a specific variant (&quot;HOW&quot;) → ID Txxxx.xxx
+              └─ Procedure = the CONCRETE implementation by a group/malware
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Answers</th>
+<th>Identifier</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tactic</strong></td>
+<td>Why (the goal)</td>
+<td><code>TAxxxx</code></td>
+<td>TA0006 Credential Access</td>
+</tr>
+<tr>
+<td><strong>Technique</strong></td>
+<td>What (the method)</td>
+<td><code>Txxxx</code></td>
+<td>T1003 OS Credential Dumping</td>
+</tr>
+<tr>
+<td><strong>Sub-technique</strong></td>
+<td>How (the variant)</td>
+<td><code>Txxxx.xxx</code></td>
+<td>T1003.001 LSASS Memory</td>
+</tr>
+<tr>
+<td><strong>Procedure</strong></td>
+<td>Who does it, specifically how</td>
+<td>(description)</td>
+<td>"Mimikatz <code>sekurlsa::logonpasswords</code> reads LSASS"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ID structure — component breakdown:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Format</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix</td>
+<td>1 character</td>
+<td>Object type</td>
+<td><code>T</code>=Technique, <code>TA</code>=Tactic, <code>S</code>=Software, <code>G</code>=Group, <code>M</code>=Mitigation, <code>C</code>=Campaign, <code>DS</code>=Data Source</td>
+</tr>
+<tr>
+<td>Technique number</td>
+<td>4 digits</td>
+<td>Technique identifier</td>
+<td><code>1003</code></td>
+</tr>
+<tr>
+<td>Dot + 3 digits</td>
+<td><code>.xxx</code></td>
+<td>Sub-technique</td>
+<td><code>.001</code></td>
+</tr>
+</tbody>
+</table>
+<p>Full example: <code>T1059.001</code> = Technique 1059 (Command and Scripting Interpreter), sub-technique 001 (PowerShell).</p>
+<h3 id="ch15-1572-relationship-model-attck-stix-data-model">15.7.2. Relationship model (ATT&amp;CK STIX data model)</h3>
+<p>ATT&amp;CK is published as a <strong>STIX 2.1 bundle</strong> (JSON) on GitHub at <code>mitre/cti</code>. The main object types and their mappings:</p>
+<table>
+<thead>
+<tr>
+<th>ATT&amp;CK concept</th>
+<th>STIX 2.1 type</th>
+<th>Relationship</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Technique</td>
+<td><code>attack-pattern</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Tactic</td>
+<td><code>x-mitre-tactic</code></td>
+<td>a technique's <code>kill_chain_phases</code> point to the tactic</td>
+</tr>
+<tr>
+<td>Group</td>
+<td><code>intrusion-set</code></td>
+<td><code>uses</code> → attack-pattern / malware</td>
+</tr>
+<tr>
+<td>Software (malware/tool)</td>
+<td><code>malware</code> / <code>tool</code></td>
+<td><code>uses</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Mitigation</td>
+<td><code>course-of-action</code></td>
+<td><code>mitigates</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Data Source/Component</td>
+<td><code>x-mitre-data-source</code> / <code>x-mitre-data-component</code></td>
+<td><code>detects</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Relationship</td>
+<td><code>relationship</code></td>
+<td>links the objects together</td>
+</tr>
+</tbody>
+</table>
+<p><strong>An excerpt of an <code>attack-pattern</code> (abbreviated, with correct STIX structure):</strong></p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;attack-pattern&quot;,
+  &quot;id&quot;: &quot;attack-pattern--0a3ead4e-6d47-4ccb-854c-a6a4f9d96b22&quot;,
+  &quot;spec_version&quot;: &quot;2.1&quot;,
+  &quot;name&quot;: &quot;PowerShell&quot;,
+  &quot;x_mitre_is_subtechnique&quot;: true,
+  &quot;kill_chain_phases&quot;: [
+    { &quot;kill_chain_name&quot;: &quot;mitre-attack&quot;, &quot;phase_name&quot;: &quot;execution&quot; }
+  ],
+  &quot;external_references&quot;: [
+    { &quot;source_name&quot;: &quot;mitre-attack&quot;,
+      &quot;external_id&quot;: &quot;T1059.001&quot;,
+      &quot;url&quot;: &quot;https://attack.mitre.org/techniques/T1059/001&quot; }
+  ],
+  &quot;x_mitre_platforms&quot;: [&quot;Windows&quot;],
+  &quot;x_mitre_data_sources&quot;: [&quot;Command: Command Execution&quot;,
+                           &quot;Process: Process Creation&quot;,
+                           &quot;Module: Module Load&quot;],
+  &quot;x_mitre_detection&quot;: &quot;Monitor for execution of powershell.exe with...&quot;
+}
+</code></pre>
+<p>Important note: the <strong>technique ID is placed in <code>external_references</code></strong> (where <code>source_name == "mitre-attack"</code>), NOT in the <code>id</code> field (that is the STIX UUID). This is a common point of confusion when writing scripts that parse ATT&amp;CK.</p>
+<h3 id="ch15-1573-fetching-and-querying-attck-data-runnable-examples">15.7.3. Fetching and querying ATT&amp;CK data — runnable examples</h3>
+<p>Download the Enterprise bundle and count techniques with <code>jq</code>:</p>
+<pre><code class="language-bash"># Download the Enterprise ATT&amp;CK STIX bundle
+curl -sSL -o enterprise-attack.json \
+  https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
+
+# Count attack-patterns that are not deprecated/revoked
+jq '[.objects[]
+      | select(.type==&quot;attack-pattern&quot;)
+      | select((.revoked // false)|not)
+      | select((.x_mitre_deprecated // false)|not)] | length' \
+   enterprise-attack.json
+
+# List technique ID + name for the &quot;credential-access&quot; tactic
+jq -r '.objects[]
+        | select(.type==&quot;attack-pattern&quot;)
+        | select(.kill_chain_phases[]?.phase_name==&quot;credential-access&quot;)
+        | (.external_references[]
+            | select(.source_name==&quot;mitre-attack&quot;).external_id)
+          + &quot;  &quot; + .name' \
+   enterprise-attack.json | sort | head
+</code></pre>
+<p>Parameter explanation: <code>select(.type=="attack-pattern")</code> filters for techniques; <code>.kill_chain_phases[]?.phase_name</code> accesses the tactic (the <code>?</code> avoids errors when the array is absent); <code>.external_references[] | select(.source_name=="mitre-attack").external_id</code> extracts the technique ID.</p>
+<p>Querying at the Python layer with the official <code>mitreattack-python</code> library:</p>
+<pre><code class="language-python">from mitreattack.stix20 import MitreAttackData
+
+mad = MitreAttackData(&quot;enterprise-attack.json&quot;)
+
+# Get a technique by ATT&amp;CK ID
+t = mad.get_object_by_attack_id(&quot;T1003.001&quot;, &quot;attack-pattern&quot;)
+print(t.name)                       # LSASS Memory
+
+# Which groups use this technique?
+groups = mad.get_groups_using_technique(t.id)
+for g in groups:
+    print(g[&quot;object&quot;].name)         # e.g.: APT28, ...
+</code></pre>
+<h3 id="ch15-1574-the-14-enterprise-tactics-reconnaissance-impact">15.7.4. The 14 Enterprise Tactics (Reconnaissance → Impact)</h3>
+<p>The order of columns in the Enterprise matrix (this is the <strong>logical order</strong>, not a mandatory linear sequence in a real attack):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tactic</th>
+<th>ID</th>
+<th>Attacker's goal</th>
+<th>Example technique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Reconnaissance</strong></td>
+<td>TA0043</td>
+<td>Gather information before the attack</td>
+<td>T1595 Active Scanning, T1589 Gather Victim Identity Info</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Resource Development</strong></td>
+<td>TA0042</td>
+<td>Prepare infrastructure/tools</td>
+<td>T1583 Acquire Infrastructure, T1587 Develop Capabilities</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Initial Access</strong></td>
+<td>TA0001</td>
+<td>Gain a foothold in the network</td>
+<td>T1566 Phishing, T1190 Exploit Public-Facing App</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Execution</strong></td>
+<td>TA0002</td>
+<td>Run malicious code</td>
+<td><strong>T1059</strong> Command and Scripting Interpreter</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Persistence</strong></td>
+<td>TA0003</td>
+<td>Maintain the foothold across reboots</td>
+<td>T1547 Boot/Logon Autostart, T1053 Scheduled Task</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Privilege Escalation</strong></td>
+<td>TA0004</td>
+<td>Elevate privileges</td>
+<td>T1548 Abuse Elevation Control, T1068 Exploit for PrivEsc</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Defense Evasion</strong></td>
+<td>TA0005</td>
+<td>Evade detection</td>
+<td>T1070 Indicator Removal, T1027 Obfuscated Files</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Credential Access</strong></td>
+<td>TA0006</td>
+<td>Steal accounts/passwords</td>
+<td><strong>T1110</strong> Brute Force, <strong>T1003</strong> OS Credential Dumping</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Discovery</strong></td>
+<td>TA0007</td>
+<td>Probe the environment</td>
+<td>T1083 File/Directory Discovery, T1018 Remote System Discovery</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Lateral Movement</strong></td>
+<td>TA0008</td>
+<td>Move to other hosts</td>
+<td><strong>T1021</strong> Remote Services, T1550 Use Alternate Auth Material</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Collection</strong></td>
+<td>TA0009</td>
+<td>Gather target data</td>
+<td>T1005 Data from Local System, T1113 Screen Capture</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>Command and Control</strong></td>
+<td>TA0011</td>
+<td>Control remotely</td>
+<td>T1071 App Layer Protocol, T1572 Protocol Tunneling</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Exfiltration</strong></td>
+<td>TA0010</td>
+<td>Smuggle data out</td>
+<td><strong>T1041</strong> Exfil Over C2 Channel, T1048 Exfil Over Alt Protocol</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Impact</strong></td>
+<td>TA0040</td>
+<td>Destroy/extort</td>
+<td>T1486 Data Encrypted for Impact, T1490 Inhibit System Recovery</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the two tactics "Reconnaissance" and "Resource Development" were added later (PRE-ATT&amp;CK folded in):</strong> initially, ATT&amp;CK Enterprise started from Initial Access. Pre-intrusion activities (recon, acquiring infrastructure) occur outside the victim's network and are therefore hard to gather telemetry on; they were split into PRE-ATT&amp;CK and then (in 2020) reintegrated as the first two columns.</p>
+<hr />
+<h2 id="ch15-158-deep-dive-into-key-techniques-mechanism-detection-signals">15.8. Deep dive into key techniques (mechanism + detection signals)</h2>
+<h3 id="ch15-1581-t1110-brute-force-credential-access">15.8.1. T1110 — Brute Force (Credential Access)</h3>
+<p><strong>What it is:</strong> trying many credential pairs until one succeeds. Sub-techniques:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1110.001</td>
+<td>Password Guessing</td>
+<td>Try many passwords for <strong>one</strong> account</td>
+</tr>
+<tr>
+<td>T1110.002</td>
+<td>Password Cracking</td>
+<td>Crack hashes <strong>offline</strong> (after dumping them)</td>
+</tr>
+<tr>
+<td>T1110.003</td>
+<td>Password Spraying</td>
+<td>Try <strong>one</strong> common password across <strong>many</strong> accounts (evading lockout)</td>
+</tr>
+<tr>
+<td>T1110.004</td>
+<td>Credential Stuffing</td>
+<td>Use user/password pairs leaked from elsewhere</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why password spraying is dangerous:</strong> lockout policies typically lock an account after N wrong attempts <em>on a single account</em>. Spraying <code>Summer2024!</code> across 5000 users one at a time → each user has only 1 failed attempt → no lockout is triggered.</p>
+<p><strong>Real-world example — spraying SMB/RDP with <code>crackmapexec</code> (used in an authorized lab):</strong></p>
+<pre><code class="language-bash"># One password, many users, with --continue-on-success to collect all hits
+crackmapexec smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' \
+    --continue-on-success
+</code></pre>
+<blockquote>
+<p>Tooling note: <code>crackmapexec</code> (CME) has been unmaintained since ~2023; the community-maintained successor is <strong>NetExec</strong> (<code>nxc</code>), with near-identical syntax (<code>nxc smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' --continue-on-success</code>). Prefer <code>nxc</code> in new environments.</p>
+</blockquote>
+<p><strong>Blue Team signals (Windows Security log):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value to watch for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event ID</td>
+<td><code>4625</code> (logon failed) — many, spread across many <code>TargetUserName</code> values</td>
+</tr>
+<tr>
+<td>Event ID</td>
+<td><code>4771</code> (Kerberos pre-auth failed), <code>4768</code></td>
+</tr>
+<tr>
+<td>Failure Reason / Status</td>
+<td><code>0xC000006A</code> (wrong password), <code>0xC0000234</code> (account locked)</td>
+</tr>
+<tr>
+<td>Pattern</td>
+<td><strong>Many distinct usernames within the same password attempt window</strong> → spray</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Detection logic (pseudo-SIEM):
+  COUNT(distinct TargetUserName) WHERE EventID=4625
+  GROUP BY SourceIP, time_bucket(5m) &gt; 20  → alert: password spraying
+</code></pre>
+<h3 id="ch15-1582-t1059-command-and-scripting-interpreter-execution">15.8.2. T1059 — Command and Scripting Interpreter (Execution)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Interpreter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1059.001</td>
+<td>PowerShell</td>
+</tr>
+<tr>
+<td>T1059.003</td>
+<td>Windows Command Shell (cmd)</td>
+</tr>
+<tr>
+<td>T1059.004</td>
+<td>Unix Shell (bash)</td>
+</tr>
+<tr>
+<td>T1059.005</td>
+<td>Visual Basic</td>
+</tr>
+<tr>
+<td>T1059.006</td>
+<td>Python</td>
+</tr>
+<tr>
+<td>T1059.007</td>
+<td>JavaScript</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example of an encoded PowerShell payload — part-by-part explanation:</strong></p>
+<pre><code class="language-powershell">powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBi...
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+<th>Why the attacker uses it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-nop</code></td>
+<td><code>-NoProfile</code></td>
+<td>Skip the profile (avoid logging/initialization)</td>
+</tr>
+<tr>
+<td><code>-w hidden</code></td>
+<td><code>-WindowStyle Hidden</code></td>
+<td>Hide the window</td>
+</tr>
+<tr>
+<td><code>-enc</code></td>
+<td><code>-EncodedCommand</code> (Base64 of <strong>UTF-16LE</strong>)</td>
+<td>Evade string detection, avoid quote escaping</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Encoding note:</strong> the string after <code>-enc</code> is the Base64 of <strong>UTF-16 Little Endian</strong> text, not UTF-8. To decode correctly:</p>
+<pre><code class="language-bash"># The real command: decode the encoded command
+echo 'SQBFAFgAIAAoAE4AZQB3AC0ATwBi' | base64 -d | iconv -f UTF-16LE -t UTF-8
+# → &quot;IEX (New-Ob...&quot;   (Invoke-Expression — download &amp; run from memory)
+</code></pre>
+<p><strong>Blue Team signals:</strong>
+- <strong>Script Block Logging</strong> (Event ID <code>4104</code>) records the decoded script content — enable it via the GPO <code>Administrative Templates → Windows PowerShell → Turn on PowerShell Script Block Logging</code>.
+- Process creation (<code>4688</code> / Sysmon <code>1</code>) with a <code>CommandLine</code> containing <code>-enc</code>, <code>-e</code>, <code>FromBase64String</code>, <code>IEX</code>, <code>DownloadString</code>.
+- Unusual parent–child relationships: <code>winword.exe → powershell.exe</code> (an IOA).</p>
+<h3 id="ch15-1583-t1003-os-credential-dumping-credential-access">15.8.3. T1003 — OS Credential Dumping (Credential Access)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Credential source</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1003.001</td>
+<td><strong>LSASS Memory</strong></td>
+<td>Read the memory of the <code>lsass.exe</code> process (containing hashes/Kerberos tickets/sometimes plaintext)</td>
+</tr>
+<tr>
+<td>T1003.002</td>
+<td>Security Account Manager (SAM)</td>
+<td>Read the <code>SAM</code> registry hive → local NTLM hashes</td>
+</tr>
+<tr>
+<td>T1003.003</td>
+<td>NTDS (<code>ntds.dit</code>)</td>
+<td>The AD database on a Domain Controller → all domain hashes</td>
+</tr>
+<tr>
+<td>T1003.004</td>
+<td>LSA Secrets</td>
+<td><code>HKLM\SECURITY\Policy\Secrets</code></td>
+</tr>
+<tr>
+<td>T1003.006</td>
+<td>DCSync</td>
+<td>Impersonate a DC, request replication (<code>DRSGetNCChanges</code>) to retrieve hashes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why LSASS is a target:</strong> the Local Security Authority Subsystem Service holds credential material to support SSO. Mimikatz's <code>sekurlsa::logonpasswords</code> opens a handle to <code>lsass.exe</code>, reads the memory structures, and decrypts them.</p>
+<p><strong>Real-world example (lab):</strong></p>
+<pre><code>mimikatz # privilege::debug          # enable SeDebugPrivilege
+mimikatz # sekurlsa::logonpasswords  # dump credentials from LSASS
+</code></pre>
+<p>Dumping with a "living off the land" tool (LOLBIN) is less likely to draw AV attention:</p>
+<pre><code class="language-cmd">:: Create an LSASS minidump using comsvcs.dll (LOLBIN)
+rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump &lt;PID_lsass&gt; C:\temp\l.dmp full
+</code></pre>
+<p><strong>Blue Team signals:</strong>
+- Sysmon <strong>Event ID 10</strong> (ProcessAccess) with <code>TargetImage</code> = <code>lsass.exe</code> and <code>GrantedAccess</code> = <code>0x1010</code>/<code>0x1410</code>/<code>0x143A</code> (memory-read rights) from a non-system process.
+- <strong>Credential Guard</strong> (VBS) isolates LSASS secrets → neutralizes mimikatz <code>logonpasswords</code>.
+- <strong>PPL (Protected Process Light)</strong> for LSASS: <code>RunAsPPL=1</code> at <code>HKLM\SYSTEM\CurrentControlSet\Control\Lsa</code>.</p>
+<p>A Sysmon configuration to detect LSASS access:</p>
+<pre><code class="language-xml">&lt;Sysmon schemaversion=&quot;4.90&quot;&gt;
+  &lt;EventFiltering&gt;
+    &lt;RuleGroup name=&quot;lsass-access&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessAccess onmatch=&quot;include&quot;&gt;
+        &lt;TargetImage condition=&quot;image&quot;&gt;lsass.exe&lt;/TargetImage&gt;
+      &lt;/ProcessAccess&gt;
+    &lt;/RuleGroup&gt;
+  &lt;/EventFiltering&gt;
+&lt;/Sysmon&gt;
+</code></pre>
+<h3 id="ch15-1584-t1021-remote-services-lateral-movement">15.8.4. T1021 — Remote Services (Lateral Movement)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Service</th>
+<th>Port</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1021.001</td>
+<td>RDP</td>
+<td>TCP <strong>3389</strong></td>
+<td>Event <code>4624</code> Logon Type <strong>10</strong> (RemoteInteractive)</td>
+</tr>
+<tr>
+<td>T1021.002</td>
+<td>SMB/Windows Admin Shares (C$, ADMIN$)</td>
+<td>TCP <strong>445</strong></td>
+<td>Logon Type <strong>3</strong>; access to <code>\\host\ADMIN$</code></td>
+</tr>
+<tr>
+<td>T1021.004</td>
+<td>SSH</td>
+<td>TCP 22</td>
+<td>auth log</td>
+</tr>
+<tr>
+<td>T1021.006</td>
+<td>WinRM</td>
+<td>TCP 5985/5986</td>
+<td>Logon Type 3; <code>wsmprovhost.exe</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Logon Type — lookup table (Windows Event 4624):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Meaning</th>
+<th>Relevance to lateral movement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive (at the machine)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network (SMB, share, WinRM)</td>
+<td><strong>Yes</strong> — pass-the-hash, psexec</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive (RDP)</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+<td>persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Real-world example — pass-the-hash over SMB (<code>impacket</code>):</strong></p>
+<pre><code class="language-bash"># Use the NTLM hash instead of the password to execute remotely (T1021.002 + T1550.002)
+impacket-psexec -hashes :32ed87bdb5fdc5e9cba88547376818d4 \
+    Administrator@10.0.0.5
+</code></pre>
+<p><strong>Signal:</strong> the sequence <code>4624 (Type 3) → creation of the "PSEXESVC" service (Event 7045) → child process cmd.exe</code> on the target host.</p>
+<h3 id="ch15-1585-t1041-exfiltration-over-c2-channel-exfiltration">15.8.5. T1041 — Exfiltration Over C2 Channel (Exfiltration)</h3>
+<p><strong>What it is:</strong> smuggling data out <strong>over the very C2 channel already in use</strong> (HTTP/HTTPS/DNS) rather than opening a separate channel — to blend in with the traffic.</p>
+<p><strong>Blue Team signals — detecting C2/beacons at the packet level:</strong>
+- <strong>Beaconing</strong>: regular periodic connections (e.g., every 60s ± jitter) to the same host. Detected by analyzing the <strong>periodicity</strong> of NetFlow.
+- <strong>Anomalous upload/download ratio</strong> (bytes_out &gt;&gt; bytes_in for exfiltration).
+- <strong>JA3/JA3S</strong> fingerprints of the TLS client hello matching Cobalt Strike/Metasploit.
+- <strong>DNS exfil</strong>: long subdomains, high entropy, many TXT/NULL queries.</p>
+<pre><code>Beacon pattern (NetFlow viewed over time):
+  10:00:00  client → C2  220 bytes
+  10:01:00  client → C2  240 bytes   ← period ~60s
+  10:02:01  client → C2  225 bytes
+  ...  (small deviation = jitter)  → alert: regular beaconing
+</code></pre>
+<hr />
+<h2 id="ch15-159-the-matrices-enterprise-mobile-ics">15.9. The matrices: Enterprise, Mobile, ICS</h2>
+<p>ATT&amp;CK has multiple "domains" with their own tactics/techniques suited to each environment:</p>
+<table>
+<thead>
+<tr>
+<th>Matrix</th>
+<th>Scope</th>
+<th>Sub-platforms</th>
+<th>Domain-specific tactics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td>Enterprise IT</td>
+<td>Windows, Linux, macOS, <strong>Cloud</strong> (IaaS, SaaS, Office/Google Workspace, Azure AD/Entra ID), Network, Containers</td>
+<td>14 tactics (listed above)</td>
+</tr>
+<tr>
+<td><strong>Mobile</strong></td>
+<td>Android, iOS</td>
+<td>—</td>
+<td>Adds device-related tactics; e.g., Network Effects</td>
+</tr>
+<tr>
+<td><strong>ICS</strong></td>
+<td>Industrial control systems/OT</td>
+<td>PLC, SCADA, HMI</td>
+<td>12 tactics including <strong>Impair Process Control</strong>, <strong>Inhibit Response Function</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloud (within Enterprise):</strong> examples of cloud-specific techniques:
+- T1078.004 Valid Accounts: <strong>Cloud Accounts</strong>
+- T1098 Account Manipulation (adding IAM credentials/roles)
+- T1530 Data from Cloud Storage (reading a public S3 bucket)
+- T1526 Cloud Service Discovery</p>
+<p><strong>ICS — why it is separate:</strong> in OT, "Impact" can mean <strong>causing physical damage</strong> (opening/closing valves, destroying a turbine — like Stuxnet/Triton). The <code>Inhibit Response Function</code> tactic describes disabling safety systems (Safety Instrumented Systems) — a concept with no equivalent in IT. Example techniques: T0816 Device Restart/Shutdown, T0831 Manipulation of Control.</p>
+<hr />
+<h2 id="ch15-1510-attck-navigator-mapping-detections-measuring-coverage">15.10. ATT&amp;CK Navigator: mapping detections &amp; measuring coverage</h2>
+<p>The <strong>Navigator</strong> is a web application (runnable offline) that colors the technique cells of the matrix to visualize: detection coverage, the activity of an APT group, and gap analysis. The data is stored in a <strong>layer file (JSON)</strong>.</p>
+<h3 id="ch15-15101-the-layer-json-structure-field-by-field">15.10.1. The layer JSON structure — field by field</h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;SOC Detection Coverage Q2&quot;,
+  &quot;versions&quot;: { &quot;attack&quot;: &quot;17&quot;, &quot;navigator&quot;: &quot;5.0.0&quot;, &quot;layer&quot;: &quot;4.5&quot; },
+  &quot;domain&quot;: &quot;enterprise-attack&quot;,
+  &quot;description&quot;: &quot;Current SIEM rule coverage&quot;,
+  &quot;techniques&quot;: [
+    {
+      &quot;techniqueID&quot;: &quot;T1059.001&quot;,
+      &quot;tactic&quot;: &quot;execution&quot;,
+      &quot;score&quot;: 100,
+      &quot;color&quot;: &quot;&quot;,
+      &quot;comment&quot;: &quot;Covered by Sigma rule win_susp_powershell_enc&quot;,
+      &quot;enabled&quot;: true,
+      &quot;metadata&quot;: [
+        { &quot;name&quot;: &quot;rule_id&quot;, &quot;value&quot;: &quot;SIGMA-0421&quot; }
+      ]
+    },
+    {
+      &quot;techniqueID&quot;: &quot;T1003.001&quot;,
+      &quot;tactic&quot;: &quot;credential-access&quot;,
+      &quot;score&quot;: 50,
+      &quot;comment&quot;: &quot;Only a Sysmon EID10 rule, comsvcs not yet covered&quot;
+    }
+  ],
+  &quot;gradient&quot;: {
+    &quot;colors&quot;: [&quot;#ff6666&quot;, &quot;#ffe766&quot;, &quot;#8ec843&quot;],
+    &quot;minValue&quot;: 0, &quot;maxValue&quot;: 100
+  },
+  &quot;legendItems&quot;: [],
+  &quot;showTacticRowBackground&quot;: true,
+  &quot;tacticRowBackground&quot;: &quot;#dddddd&quot;,
+  &quot;selectTechniquesAcrossTactics&quot;: true
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>domain</code></td>
+<td>string</td>
+<td><code>enterprise-attack</code> / <code>mobile-attack</code> / <code>ics-attack</code></td>
+</tr>
+<tr>
+<td><code>versions.attack</code></td>
+<td>string</td>
+<td>The ATT&amp;CK version (e.g., "15") — must match for IDs to be valid</td>
+</tr>
+<tr>
+<td><code>techniques[].techniqueID</code></td>
+<td>string</td>
+<td>Technique/sub-technique ID</td>
+</tr>
+<tr>
+<td><code>techniques[].tactic</code></td>
+<td>string</td>
+<td>tactic shortname (since one technique can belong to multiple tactics → you must specify which cell)</td>
+</tr>
+<tr>
+<td><code>techniques[].score</code></td>
+<td>number</td>
+<td>A score to color the gradient (e.g., % coverage)</td>
+</tr>
+<tr>
+<td><code>gradient</code></td>
+<td>object</td>
+<td>Maps score→color (min→max)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why <code>tactic</code> is needed on each technique:</strong> a technique like T1078 Valid Accounts appears in <strong>multiple columns</strong> (Initial Access, Persistence, Privilege Escalation, Defense Evasion). The <code>tactic</code> field specifies which cell to color.</p>
+<h3 id="ch15-15102-the-real-world-coverage-measurement-process">15.10.2. The real-world coverage measurement process</h3>
+<ol>
+<li>List all existing detection rules (Sigma/SIEM).</li>
+<li>Map each rule → one or more technique IDs (via the <code>tags: attack.txxxx</code> field in Sigma — see 15.11).</li>
+<li>Generate the layer JSON (via script), with <code>score=100</code> for techniques that have a rule and <code>0</code> for those that don't.</li>
+<li>Open Navigator → import the layer → the red areas are your <strong>detection gaps</strong>.</li>
+<li>Compare against the layers of APTs targeting your industry (MITRE provides ready-made layers per group) → <strong>combine the two layers</strong> with arithmetic to prioritize.</li>
+</ol>
+<p><strong>Script to generate a layer from a Sigma repository (abbreviated):</strong></p>
+<pre><code class="language-python">import glob, yaml, json, re
+
+techs = {}
+for f in glob.glob(&quot;rules/**/*.yml&quot;, recursive=True):
+    doc = yaml.safe_load(open(f, encoding=&quot;utf-8&quot;))
+    for tag in (doc.get(&quot;tags&quot;) or []):
+        m = re.fullmatch(r&quot;attack\.(t\d{4}(?:\.\d{3})?)&quot;, tag, re.I)
+        if m:
+            techs[m.group(1).upper()] = techs.get(m.group(1).upper(), 0) + 1
+
+layer = {
+  &quot;name&quot;: &quot;Sigma coverage&quot;, &quot;domain&quot;: &quot;enterprise-attack&quot;,
+  &quot;versions&quot;: {&quot;attack&quot;: &quot;17&quot;, &quot;navigator&quot;: &quot;5.0.0&quot;, &quot;layer&quot;: &quot;4.5&quot;},
+  &quot;techniques&quot;: [
+     {&quot;techniqueID&quot;: t, &quot;score&quot;: min(100, c*25),
+      &quot;comment&quot;: f&quot;{c} rule(s)&quot;} for t, c in techs.items()
+  ],
+  &quot;gradient&quot;: {&quot;colors&quot;: [&quot;#ff6666&quot;,&quot;#8ec843&quot;], &quot;minValue&quot;:0, &quot;maxValue&quot;:100}
+}
+json.dump(layer, open(&quot;coverage.json&quot;,&quot;w&quot;), indent=2)
+</code></pre>
+<p>Navigator supports <strong>layer arithmetic</strong>: for example, create a new layer = <code>a - b</code> to find the techniques an APT uses (a) that you do not yet cover (b).</p>
+<hr />
+<h2 id="ch15-1511-detection-engineering-sigma-yara-suricata-mapped-to-attck">15.11. Detection Engineering: Sigma, YARA, Suricata mapped to ATT&amp;CK</h2>
+<h3 id="ch15-15111-sigma-siem-agnostic-rules">15.11.1. Sigma — SIEM-agnostic rules</h3>
+<p><strong>What it is:</strong> a YAML format that describes detections over <strong>logs</strong> in a neutral way, which <code>sigma-cli</code> then converts into Splunk/Elastic/Sentinel queries, etc.</p>
+<p><strong>[PROD] Rule structure — field by field</strong> (this rule matches on <code>CommandLine</code> behavior, sitting in the upper tiers of the Pyramid of Pain — see <a href="ch10.html">Chapter 10</a> on detection engineering and <a href="ch08.html">Chapter 8</a> on endpoint telemetry):</p>
+<pre><code class="language-yaml">title: PowerShell EncodedCommand Suspicious
+id: f7d4c3b2-1a2b-4c3d-9e8f-0a1b2c3d4e5f
+status: experimental
+description: Detects powershell.exe running with the -EncodedCommand parameter
+references:
+  - https://attack.mitre.org/techniques/T1059/001
+author: Blue Team
+date: 2026/06/19
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+    CommandLine|contains:
+      - ' -enc '
+      - ' -EncodedCommand '
+      - ' -e '
+  condition: selection
+falsepositives:
+  - Some legitimate administration scripts use -enc
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Yes</td>
+<td>A unique UUID (deduplication, referencing)</td>
+</tr>
+<tr>
+<td><code>logsource.category</code></td>
+<td>Yes</td>
+<td>Log type (<code>process_creation</code>, <code>firewall</code>, <code>dns_query</code>, ...)</td>
+</tr>
+<tr>
+<td><code>detection.selection</code></td>
+<td>Yes</td>
+<td>Matching conditions (mapping key→log field)</td>
+</tr>
+<tr>
+<td><code>detection.condition</code></td>
+<td>Yes</td>
+<td>The boolean logic combining the selections</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>Recommended</td>
+<td><code>attack.txxxx</code> → links to ATT&amp;CK (used to measure coverage)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modifiers</strong> (<code>|</code>): <code>endswith</code>, <code>contains</code>, <code>startswith</code>, <code>re</code> (regex), <code>all</code>. Why modifiers exist: real-world logs contain full paths → you need <code>endswith</code> rather than an exact match.</p>
+<p><strong>Compiling to a backend (the real command):</strong></p>
+<pre><code class="language-bash">pip install sigma-cli pysigma-backend-splunk
+sigma convert -t splunk -p splunk_windows powershell_enc.yml
+# Output (SPL):
+# Image=&quot;*\\powershell.exe&quot; (CommandLine=&quot;* -enc *&quot; OR CommandLine=&quot;* -e *&quot; ...)
+</code></pre>
+<h3 id="ch15-15112-yara-pattern-matching-on-filesmemory">15.11.2. YARA — pattern matching on files/memory</h3>
+<p><strong>What it is:</strong> a rule language that matches <strong>strings/bytes/regex</strong> in files or process memory → to classify malware (the "Tools" tier on the Pyramid of Pain).</p>
+<p><strong>[PROD] Rule structure</strong> (matches strings characteristic of the tool — the "Tools" tier, relatively durable since it forces the adversary to switch tools):</p>
+<pre><code class="language-yara">import &quot;pe&quot;
+
+rule Mimikatz_Strings
+{
+    meta:
+        author      = &quot;BlueTeam&quot;
+        description = &quot;Detects characteristic Mimikatz strings&quot;
+        attack      = &quot;T1003.001&quot;
+        reference   = &quot;https://attack.mitre.org/software/S0002/&quot;
+
+    strings:
+        $s1 = &quot;sekurlsa::logonpasswords&quot; ascii wide
+        $s2 = &quot;privilege::debug&quot;          ascii wide
+        $s3 = { 6D 69 6D 69 6B 61 74 7A }      // &quot;mimikatz&quot; hex
+        $re = /gentilkiwi|benjamin delpy/ nocase
+
+    condition:
+        uint16(0) == 0x5A4D and          // MZ header (PE file)
+        pe.number_of_sections &gt; 1 and
+        2 of ($s*) and $re
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strings</code></td>
+<td>Declares patterns: <code>ascii</code>/<code>wide</code> (UTF-16), <code>nocase</code>, hex <code>{ .. }</code>, regex <code>/../</code></td>
+</tr>
+<tr>
+<td><code>condition</code></td>
+<td>The logic; <code>uint16(0)==0x5A4D</code> checks that the first 2 bytes = <code>MZ</code> (PE); <code>2 of ($s*)</code> = at least 2 strings match</td>
+</tr>
+<tr>
+<td><code>import "pe"</code></td>
+<td>The PE analysis module (number of sections, imports, entry point)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why <code>uint16(0)==0x5A4D</code>:</strong> a PE file begins with the <strong>"MZ"</strong> signature (0x4D 0x5A) — reading the first 2 bytes in little-endian yields <code>0x5A4D</code>. This condition rejects non-PE files early → making the rule faster.</p>
+<p><strong>The real scanning command:</strong></p>
+<pre><code class="language-bash">yara -r -w mimikatz.yar /path/to/scan        # -r recursive, -w suppress warnings
+yara mimikatz.yar --scan-list pids.txt        # scan by PID (memory)
+</code></pre>
+<h3 id="ch15-15113-suricata-idsips-for-network-detection-c2exfil">15.11.3. Suricata — IDS/IPS for network detection (C2/exfil)</h3>
+<p><strong>What it is:</strong> a signature-based IDS/IPS with protocol analysis. Rules match packets/flows and are tagged with ATT&amp;CK <code>metadata</code>.</p>
+<p><strong>[DEMO] Rule structure — part by part</strong> (illustrates the mechanism only, NOT for direct production use): IOCs based on a fixed User-Agent/URI string sit at the base of the Pyramid of Pain — the adversary changes the User-Agent or URI within minutes, so this rule is <strong>short-lived</strong>, easily evaded, and prone to false positives. For real deployment, prioritize behavior/TTP-based detection (see <a href="ch10.html">Chapter 10</a>) and add network telemetry correlated with the endpoint (see <a href="ch08.html">Chapter 8</a>).</p>
+<pre><code>alert http $HOME_NET any -&gt; $EXTERNAL_NET any ( \
+    msg:&quot;ATT&amp;CK T1071.001 Suspicious User-Agent CobaltStrike default&quot;; \
+    flow:established,to_server; \
+    http.user_agent; content:&quot;Mozilla/5.0 (compatible; MSIE 9.0&quot;; \
+    http.uri; content:&quot;/__utm.gif&quot;; \
+    classtype:trojan-activity; \
+    metadata: attack_target Client_Endpoint, mitre_technique_id T1071; \
+    sid:9000001; rev:1; )
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>alert http</code></td>
+<td>Action (<code>alert</code>/<code>drop</code>/<code>reject</code>) + app-layer protocol</td>
+</tr>
+<tr>
+<td><code>$HOME_NET any -&gt; $EXTERNAL_NET any</code></td>
+<td>Direction: source IP/port → destination IP/port</td>
+</tr>
+<tr>
+<td><code>flow:established,to_server</code></td>
+<td>Only match client→server packets within an established connection</td>
+</tr>
+<tr>
+<td><code>http.user_agent</code> + <code>content</code></td>
+<td>Sticky buffer: only search within the User-Agent header</td>
+</tr>
+<tr>
+<td><code>sid</code></td>
+<td>Signature ID (unique); <code>rev</code> is the revision</td>
+</tr>
+<tr>
+<td><code>metadata: mitre_technique_id</code></td>
+<td>Tags with the ATT&amp;CK ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why use a sticky buffer (<code>http.user_agent</code>):</strong> it confines the <code>content</code> search to exactly the field you want, avoiding false positives and improving speed (no scanning of the entire payload).</p>
+<p><strong>Running it for real on a pcap file:</strong></p>
+<pre><code class="language-bash">suricata -r capture.pcap -S local.rules -l ./out/
+# Alert results in ./out/fast.log and eve.json (JSON, with full fields)
+cat ./out/fast.log
+# 06/19/2026-10:00:01  [**] [1:9000001:1] ATT&amp;CK T1071.001 ... [**] ...
+</code></pre>
+<hr />
+<h2 id="ch15-1512-intelligence-sharing-stix-taxii-misp">15.12. Intelligence sharing: STIX, TAXII, MISP</h2>
+<h3 id="ch15-15121-stix-21-the-language-for-describing-cti">15.12.1. STIX 2.1 — the language for describing CTI</h3>
+<p><strong>STIX (Structured Threat Information eXpression)</strong> uses <strong>JSON</strong>; everything is an <strong>SDO</strong> (STIX Domain Object), an <strong>SRO</strong> (Relationship Object), or an <strong>SCO</strong> (Cyber-observable Object).</p>
+<p><strong>[DEMO] A STIX Indicator (SDO) — field by field</strong> (illustrates the structure; a single-domain IOC itself sits at the base of the Pyramid of Pain and is short-lived — it should not be a pillar of detection):</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;indicator&quot;,
+  &quot;spec_version&quot;: &quot;2.1&quot;,
+  &quot;id&quot;: &quot;indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f&quot;,
+  &quot;created&quot;: &quot;2026-06-19T08:00:00.000Z&quot;,
+  &quot;modified&quot;: &quot;2026-06-19T08:00:00.000Z&quot;,
+  &quot;name&quot;: &quot;Malicious C2 domain&quot;,
+  &quot;indicator_types&quot;: [&quot;malicious-activity&quot;],
+  &quot;pattern&quot;: &quot;[domain-name:value = 'update-msft.com']&quot;,
+  &quot;pattern_type&quot;: &quot;stix&quot;,
+  &quot;valid_from&quot;: &quot;2026-06-19T00:00:00Z&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size/Format</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td>Object type (<code>indicator</code>, <code>malware</code>, <code>threat-actor</code>, ...)</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td><code>type--UUIDv4</code></td>
+<td>Globally unique identifier</td>
+</tr>
+<tr>
+<td><code>created</code>/<code>modified</code></td>
+<td>ISO 8601 UTC (timestamp)</td>
+<td>Versioning</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>STIX Patterning language</td>
+<td>An expression matching an observable</td>
+</tr>
+<tr>
+<td><code>pattern_type</code></td>
+<td>enum</td>
+<td><code>stix</code>, <code>snort</code>, <code>yara</code>, <code>sigma</code>, ...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The STIX Pattern</strong> is a mini-language: <code>[file:hashes.'SHA-256' = 'abc...' AND file:size &gt; 1024]</code>. Operators: <code>AND OR FOLLOWEDBY</code>, qualifiers <code>WITHIN</code>, <code>REPEATS</code>. Why <code>pattern</code> is kept separate: it allows expressing compound conditions, not just a single IOC.</p>
+<h3 id="ch15-15122-taxii-21-the-protocol-for-transporting-stix">15.12.2. TAXII 2.1 — the protocol for transporting STIX</h3>
+<p><strong>TAXII (Trusted Automated eXchange of Indicator Information)</strong> is an <strong>HTTPS REST</strong> API for exchanging STIX. The model: <strong>Server → API Roots → Collections → Objects</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/taxii2/</code></td>
+<td>GET</td>
+<td>Discovery: lists the API roots</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/</code></td>
+<td>GET</td>
+<td>The list of collections</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/{id}/objects/</code></td>
+<td>GET</td>
+<td>Fetches STIX objects (supports the <code>?added_after=</code> filter)</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/{id}/objects/</code></td>
+<td>POST</td>
+<td>Pushes an object up</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># You must set the correct TAXII 2.1 Accept media type
+curl -s -H &quot;Accept: application/taxii+json;version=2.1&quot; \
+     -u user:pass \
+     &quot;https://taxii.example.org/api1/collections/&lt;id&gt;/objects/?added_after=2026-06-18T00:00:00Z&quot;
+</code></pre>
+<p>The <code>Accept: application/taxii+json;version=2.1</code> header is <strong>mandatory</strong> — the server uses it to negotiate the version; without it, it returns a 406.</p>
+<h3 id="ch15-15123-misp-a-pragmatic-sharing-platform">15.12.3. MISP — a pragmatic sharing platform</h3>
+<p><strong>MISP</strong> uses the model <strong>Event → Attribute → Object → Tag/Galaxy</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Event</strong></td>
+<td>An event/campaign (containing many attributes)</td>
+</tr>
+<tr>
+<td><strong>Attribute</strong></td>
+<td>An IOC: <code>type</code> (ip-dst, domain, sha256, url, ...), <code>value</code>, <code>category</code>, <code>to_ids</code> (whether to push it to the IDS)</td>
+</tr>
+<tr>
+<td><strong>Object</strong></td>
+<td>A structured group of attributes (e.g., a "file" comprising filename+md5+sha256)</td>
+</tr>
+<tr>
+<td><strong>Galaxy / Cluster</strong></td>
+<td>Contextual knowledge; <strong>MITRE ATT&amp;CK is embedded as a Galaxy</strong> → attach techniques to events</td>
+</tr>
+<tr>
+<td><strong>Tag</strong></td>
+<td>A label (TLP, ATT&amp;CK, threat-actor)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The <code>to_ids</code> field is important:</strong> <code>true</code> = the IOC is reliable enough to push as an IDS/SIEM rule; <code>false</code> = context only, no automatic blocking (avoiding false positives).</p>
+<p><strong>TLP (Traffic Light Protocol)</strong> governs sharing:</p>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Shared with</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tlp:red</code></td>
+<td>Direct recipients only</td>
+</tr>
+<tr>
+<td><code>tlp:amber</code></td>
+<td>The organization + partners who need to know</td>
+</tr>
+<tr>
+<td><code>tlp:amber+strict</code></td>
+<td>Within the organization only</td>
+</tr>
+<tr>
+<td><code>tlp:green</code></td>
+<td>The community, not publicly</td>
+</tr>
+<tr>
+<td><code>tlp:clear</code> (formerly white)</td>
+<td>Public</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A real example — creating an event + adding attributes via the REST API (PyMISP):</strong></p>
+<pre><code class="language-python">from pymisp import PyMISP, MISPEvent, MISPAttribute
+
+misp = PyMISP(&quot;https://misp.local&quot;, &quot;&lt;AUTH_KEY&gt;&quot;, ssl=False)
+
+ev = MISPEvent()
+ev.info = &quot;FIN7 phishing campaign June 2026&quot;
+ev.distribution = 1          # 1 = This community only
+ev.threat_level_id = 2       # 1=High,2=Medium,3=Low,4=Undefined
+ev.analysis = 1              # 0=Initial,1=Ongoing,2=Completed
+ev.add_tag(&quot;tlp:amber&quot;)
+ev.add_tag('misp-galaxy:mitre-attack-pattern=&quot;OS Credential Dumping - T1003&quot;')
+
+ev.add_attribute(&quot;domain&quot;, &quot;update-msft.com&quot;, to_ids=True,
+                 category=&quot;Network activity&quot;)
+ev.add_attribute(&quot;sha256&quot;,
+                 &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;,
+                 to_ids=True, category=&quot;Payload delivery&quot;)
+
+created = misp.add_event(ev, pythonify=True)
+print(created.id)
+</code></pre>
+<p>Or plain HTTP:</p>
+<pre><code class="language-bash">curl -s https://misp.local/events/add \
+  -H &quot;Authorization: &lt;AUTH_KEY&gt;&quot; \
+  -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;Event&quot;:{&quot;info&quot;:&quot;Test&quot;,&quot;distribution&quot;:&quot;0&quot;,&quot;threat_level_id&quot;:&quot;2&quot;,
+        &quot;analysis&quot;:&quot;0&quot;,
+        &quot;Attribute&quot;:[{&quot;type&quot;:&quot;ip-dst&quot;,&quot;value&quot;:&quot;185.220.101.45&quot;,&quot;to_ids&quot;:true}]}}'
+</code></pre>
+<hr />
+<h2 id="ch15-1513-malware-classification">15.13. Malware classification</h2>
+<p>Think of it like a disease: a virus must attach to a "host" to spread (like the flu latching onto a person), a worm crawls to other machines on its own with no one opening anything (like an airborne epidemic), and a trojan disguises itself as a harmless gift so we carry it inside ourselves. Naming the "disease" correctly is what lets you pick the right "cure."</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Propagation mechanism/definition</th>
+<th>Needs a host?</th>
+<th>Self-replicates?</th>
+<th>Related ATT&amp;CK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Virus</strong></td>
+<td>Inserts code into another file/program; runs when the host runs</td>
+<td>Yes</td>
+<td>Yes (via the host)</td>
+<td>T1204 User Execution</td>
+</tr>
+<tr>
+<td><strong>Worm</strong></td>
+<td>Spreads itself over the network/via vulnerabilities, with no user action</td>
+<td>No</td>
+<td>Yes (automatically)</td>
+<td>T1210 Exploit Remote Services</td>
+</tr>
+<tr>
+<td><strong>Trojan</strong></td>
+<td>Masquerades as legitimate software, opens a backdoor</td>
+<td>—</td>
+<td>No</td>
+<td>T1036 Masquerading</td>
+</tr>
+<tr>
+<td><strong>Ransomware</strong></td>
+<td>Encrypts data, demands a ransom</td>
+<td>—</td>
+<td>Possibly</td>
+<td><strong>T1486</strong> Data Encrypted for Impact</td>
+</tr>
+<tr>
+<td><strong>Rootkit</strong></td>
+<td>Hides its presence (kernel/bootkit), hooks APIs</td>
+<td>—</td>
+<td>No</td>
+<td>T1014 Rootkit</td>
+</tr>
+<tr>
+<td><strong>RAT</strong></td>
+<td>Remote Access Trojan: comprehensive remote control</td>
+<td>—</td>
+<td>No</td>
+<td>T1219 Remote Access Software</td>
+</tr>
+<tr>
+<td><strong>Botnet</strong></td>
+<td>A network of infected machines under centralized control (DDoS/spam)</td>
+<td>—</td>
+<td>Yes</td>
+<td>T1583.005 Botnet</td>
+</tr>
+<tr>
+<td><strong>Fileless</strong></td>
+<td>Lives in memory/registry/WMI, touching the disk little or not at all</td>
+<td>No</td>
+<td>—</td>
+<td>T1059, T1047 WMI, T1620 Reflective Loading</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why fileless is hard to detect:</strong> there is no file for AV to scan by hash/signature → you must detect at the <strong>behavioral</strong> level (IOA): PowerShell loading code into RAM, WMI event subscriptions for persistence, the registry containing a base64 payload. This directly illustrates the Pyramid of Pain — forcing the Blue Team up to the TTP tier.</p>
+<hr />
+<h2 id="ch15-1514-basic-malware-analysis">15.14. Basic malware analysis</h2>
+<h3 id="ch15-15141-static-analysis-without-running-the-sample">15.14.1. Static Analysis (without running the sample)</h3>
+<p><strong>Strings</strong> — extract ASCII/Unicode strings to find traces (URLs, IPs, commands, mutexes):</p>
+<pre><code class="language-bash">strings -n 8 sample.exe | grep -Ei 'http|\.exe|powershell|HKEY|cmd'
+strings -e l sample.exe          # -e l = little-endian 16-bit (Unicode/UTF-16)
+</code></pre>
+<p><code>-n 8</code> only takes strings ≥ 8 characters (reducing noise); <code>-e l</code> is necessary because Windows often uses UTF-16LE strings that <code>strings</code> skips by default.</p>
+<p><strong>PE Header — the Windows executable file structure (down to the byte):</strong></p>
+<p>A PE file is laid out as follows (offsets from the start of the file):</p>
+<pre><code>Offset 0x00  ┌────────────────────────┐
+             │ DOS Header (IMAGE_DOS_HEADER, 64 bytes) │
+             │   e_magic  = &quot;MZ&quot; (0x4D5A)              │  ← 2 bytes, offset 0x00
+             │   e_lfanew = offset to the PE header     │  ← 4 bytes, offset 0x3C
+0x3C ───────►│                                          │
+             ├────────────────────────┤
+e_lfanew ──► │ PE Signature &quot;PE\0\0&quot; (0x50450000)       │  ← 4 bytes
+             ├────────────────────────┤
+             │ COFF File Header (IMAGE_FILE_HEADER, 20B)│
+             │   Machine          (2B)  0x8664=x64      │
+             │   NumberOfSections (2B)                  │
+             │   TimeDateStamp    (4B)  epoch compile   │
+             │   ... SizeOfOptionalHeader (2B)          │
+             │   Characteristics  (2B)                  │
+             ├────────────────────────┤
+             │ Optional Header (PE32: 224B / PE32+:240B)│
+             │   Magic (2B) 0x10B=PE32, 0x20B=PE32+     │
+             │   AddressOfEntryPoint (4B) RVA           │
+             │   ImageBase, SectionAlignment, ...       │
+             │   Subsystem (2B) 2=GUI,3=CUI             │
+             │   DataDirectory[16] (Import, Export...)  │
+             ├────────────────────────┤
+             │ Section Table (each entry 40 bytes)      │
+             │   .text  .data  .rdata  .rsrc            │
+             └────────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Offset</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>e_magic</code></td>
+<td>0x00</td>
+<td>2 B</td>
+<td>DOS signature</td>
+<td><code>4D 5A</code> ("MZ")</td>
+</tr>
+<tr>
+<td><code>e_lfanew</code></td>
+<td>0x3C</td>
+<td>4 B</td>
+<td>Offset to the PE header</td>
+<td><code>0x000000E8</code></td>
+</tr>
+<tr>
+<td>PE signature</td>
+<td>e_lfanew</td>
+<td>4 B</td>
+<td><code>50 45 00 00</code> ("PE\0\0")</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>Machine</code></td>
+<td>+0x04</td>
+<td>2 B</td>
+<td>Architecture</td>
+<td><code>0x8664</code> (x64), <code>0x014C</code> (x86)</td>
+</tr>
+<tr>
+<td><code>NumberOfSections</code></td>
+<td>+0x06</td>
+<td>2 B</td>
+<td>Number of sections</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>TimeDateStamp</code></td>
+<td>+0x08</td>
+<td>4 B</td>
+<td>Compile time (epoch)</td>
+<td><code>0x5F2A...</code></td>
+</tr>
+<tr>
+<td><code>Magic</code> (Opt.)</td>
+<td>+0x18</td>
+<td>2 B</td>
+<td>PE32 vs PE32+</td>
+<td><code>0x010B</code> / <code>0x020B</code></td>
+</tr>
+<tr>
+<td><code>AddressOfEntryPoint</code></td>
+<td>Opt+0x10</td>
+<td>4 B</td>
+<td>RVA of the code entry point</td>
+<td><code>0x1500</code></td>
+</tr>
+<tr>
+<td><code>Subsystem</code></td>
+<td>Opt</td>
+<td>2 B</td>
+<td>GUI/Console</td>
+<td><code>2</code>=GUI, <code>3</code>=Console</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why reading the PE header has forensic value:</strong>
+- A <code>TimeDateStamp</code> that is absurdly off (far in the future/past) → may have been forged (anti-forensics).
+- A section with <strong>RawSize ≈ 0 but a large VirtualSize</strong> + high entropy → a sign of being <strong>packed</strong> (UPX, themida).
+- <strong>Sparse imports</strong> (only <code>LoadLibrary</code>+<code>GetProcAddress</code>) → dynamic import resolution → packed/obfuscated.</p>
+<pre><code class="language-bash"># Analyze a PE with pefile (Python)
+python3 - &lt;&lt;'PY'
+import pefile, math
+pe = pefile.PE(&quot;sample.exe&quot;)
+print(&quot;Machine:&quot;, hex(pe.FILE_HEADER.Machine))
+print(&quot;Compile time:&quot;, pe.FILE_HEADER.TimeDateStamp)
+print(&quot;EntryPoint RVA:&quot;, hex(pe.OPTIONAL_HEADER.AddressOfEntryPoint))
+for s in pe.sections:
+    data = s.get_data()
+    ent = 0
+    if data:
+        from collections import Counter
+        for c in Counter(data).values():
+            p = c/len(data); ent -= p*math.log2(p)
+    print(s.Name.decode(errors='replace').strip('\x00'),
+          &quot;vsize=%#x rawsize=%#x entropy=%.2f&quot; %
+          (s.Misc_VirtualSize, s.SizeOfRawData, ent))
+PY
+</code></pre>
+<p>Entropy &gt; ~7.0 on an executable section suggests compressed/encrypted data (packed). This is an important heuristic in triage.</p>
+<p><strong>Hashing &amp; lookup:</strong></p>
+<pre><code class="language-bash">sha256sum sample.exe                # hash to look up in VirusTotal/MISP
+# Import hash (imphash) – characteristic of the import table, groups variants from the same builder
+python3 -c &quot;import pefile;print(pefile.PE('sample.exe').get_imphash())&quot;
+</code></pre>
+<p>The <code>imphash</code> (import hash) is more durable than a file hash because samples from the same "builder" usually have the same import order → grouping variants together (the Tools tier on the Pyramid of Pain).</p>
+<h3 id="ch15-15142-dynamic-analysis-running-in-a-sandbox">15.14.2. Dynamic Analysis (running in a sandbox)</h3>
+<p><strong>What it is:</strong> running the sample in an isolated environment (a VM snapshot, with no route to the real Internet or using INetSim to simulate it), capturing its behavior: processes created, files written, registry changes, network connections, API calls.</p>
+<p><strong>Safe setup — why:</strong>
+- The VM is <strong>not connected to the production network</strong>; a snapshot allows reverting.
+- <strong>INetSim/FakeNet</strong> simulates DNS/HTTP so the sample "believes" it is online → revealing the C2 without actually connecting out.
+- Beware of sandbox-aware malware: many samples check for <code>VMware</code>, the CPU count, <code>sbiedll.dll</code>, or sleep for a long time to evade.</p>
+<p><strong>Tools &amp; real commands:</strong></p>
+<pre><code class="language-bash"># 1. Simulate network services (Linux analysis)
+inetsim                          # logs the DNS queries and HTTP requests the sample sends
+
+# 2. Trace system calls (Linux ELF)
+strace -f -e trace=network,file ./sample 2&gt;strace.log
+
+# 3. Procmon (Windows) — filter:
+#    Operation = Process Create / RegSetValue / WriteFile
+#    → export to CSV to map to ATT&amp;CK
+</code></pre>
+<p><strong>Sample output (Procmon) → mapped to ATT&amp;CK:</strong></p>
+<pre><code>winword.exe → Process Create powershell.exe -enc ...   → T1059.001
+powershell  → WriteFile %APPDATA%\Microsoft\svchost.exe → T1105 Ingress Tool Transfer
+powershell  → RegSetValue HKCU\...\Run\Updater          → T1547.001 Registry Run Key
+svchost.exe → TCP Connect 185.220.101.45:443            → T1071.001 / T1041
+</code></pre>
+<p><strong>Cuckoo/CAPE Sandbox reports</strong> automate this: they run the sample, hook the APIs, and return JSON containing a list of behaviors + <strong>already mapped to ATT&amp;CK techniques</strong> (<code>ttps</code> in the report). CAPE also dumps the unpacked payload from memory — useful because static analysis on a packed sample is useless.</p>
+<hr />
+<h2 id="ch15-1515-synthesis-attack-lifecycle-detection-signals">15.15. Synthesis: attack lifecycle ↔ detection signals</h2>
+<p>A quick-reference table linking <strong>stage → technique → telemetry → detection</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Representative technique</th>
+<th>Telemetry source</th>
+<th>Signal / Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial Access</td>
+<td>T1566.001 Spearphishing Attachment</td>
+<td>Email gateway, EDR</td>
+<td>Office spawns a script (IOA)</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>T1059.001 PowerShell</td>
+<td>EID 4104, Sysmon 1</td>
+<td><code>-enc</code>, <code>IEX</code>, <code>DownloadString</code></td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>T1547.001 Run Key</td>
+<td>Sysmon 13 (RegSet)</td>
+<td>Writing to <code>...\CurrentVersion\Run</code></td>
+</tr>
+<tr>
+<td>Priv Esc</td>
+<td>T1068 Exploit for PrivEsc</td>
+<td>EDR, kernel log</td>
+<td>Token manipulation, crash dump</td>
+</tr>
+<tr>
+<td>Defense Evasion</td>
+<td>T1070.001 Clear Windows Event Logs</td>
+<td>EID 1102</td>
+<td>The audit log is cleared</td>
+</tr>
+<tr>
+<td>Credential Access</td>
+<td>T1003.001 LSASS</td>
+<td>Sysmon 10</td>
+<td>GrantedAccess <code>0x1010</code> to lsass</td>
+</tr>
+<tr>
+<td>Discovery</td>
+<td>T1018 Remote System Discovery</td>
+<td>Sysmon 1</td>
+<td><code>net view</code>, <code>nltest /dclist</code></td>
+</tr>
+<tr>
+<td>Lateral Movement</td>
+<td>T1021.002 SMB/Admin Shares</td>
+<td>EID 4624 Type 3, 7045</td>
+<td>PSEXESVC service created</td>
+</tr>
+<tr>
+<td>Collection</td>
+<td>T1560 Archive Collected Data</td>
+<td>Sysmon 11</td>
+<td><code>rar.exe a -hp</code>, 7zip</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>T1071.001 Web Protocols</td>
+<td>Proxy, NetFlow, Zeek</td>
+<td>Beaconing, JA3 match</td>
+</tr>
+<tr>
+<td>Exfiltration</td>
+<td>T1041 Exfil over C2</td>
+<td>NetFlow</td>
+<td>bytes_out &gt;&gt; bytes_in</td>
+</tr>
+<tr>
+<td>Impact</td>
+<td>T1486 Data Encrypted</td>
+<td>Sysmon 11, EDR</td>
+<td>Mass file-extension renaming, deletion of shadow copies (T1490 <code>vssadmin delete shadows</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Detection engineering principles:</strong>
+1. Map every rule → an ATT&amp;CK ID (for measuring coverage in Navigator).
+2. Prioritize TTPs (the apex of the Pyramid) over IOCs (the base).
+3. A single technique should have <strong>multiple rules across multiple data sources</strong> (defense-in-depth detection) — e.g., LSASS dumping detected via both Sysmon 10 and EDR memory scanning.
+4. Track <strong>false positives</strong> via Sigma's <code>falsepositives</code> field; an untuned rule will be ignored (alert fatigue).
+5. Close the loop: use feedback from real IR (Diamond Model pivots) to create new PIRs → updating collection (the CTI lifecycle).</p>
+<hr />
+<h2 id="ch15-1516-security-operational-notes-summary">15.16. Security &amp; operational notes — summary</h2>
+<ul>
+<li><strong>IOCs are perishable</strong>: automatically expire technical IOCs (via <code>valid_from</code>/TTL in STIX, or MISP's decay model) to avoid bloating the block list and causing FPs.</li>
+<li><strong><code>to_ids</code> must be reviewed by a human</strong>: do not auto-block every IOC received from a feed — a legitimate domain mistakenly tagged can cause an outage.</li>
+<li><strong>Strict TLP</strong>: leaking <code>tlp:red</code> intelligence can expose the source/victim; enforce TLP at both the human and the sharing-system level.</li>
+<li><strong>ATT&amp;CK is not a compliance checklist</strong>: "100% coverage" is an illusion — techniques are always expanding and procedures are infinite; coverage is only a prioritization tool, not a goal.</li>
+<li><strong>Malware analysis = a risky activity</strong>: always isolate the network, use a throwaway VM, and never analyze a live sample on a machine connected to the production network.</li>
+<li><strong>Threat-informed defense</strong>: select the APT groups actually targeting your industry (via reports/ISACs), take their ATT&amp;CK layers, and prioritize detection accordingly rather than trying to cover the entire matrix.</li>
+</ul>
+<hr />
+<h3 id="ch15-references-to-verify-when-citing-precisely">References to verify when citing precisely</h3>
+<ul>
+<li>The number of tactics/techniques and specific IDs change with each ATT&amp;CK version — always cross-check <code>attack.mitre.org</code> and the <code>versions.attack</code> value in your layer.</li>
+<li>The number of Unified Kill Chain stages (18) and the details of the STIX media types should be re-checked against the original specification (OASIS STIX/TAXII 2.1) before use in formal documentation.</li>
+</ul>
+<hr />
+<h2 id="ch15-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch14.html"><span>← Previous</span><b>14 · Virtualization &amp; Containers</b></a><a class="pg next" href="ch16.html"><span>Next →</span><b>16 · Compliance &amp; Governance (GRC)</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

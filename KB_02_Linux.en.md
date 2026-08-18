@@ -2,54 +2,21 @@
 
 ## Overview
 
-This chapter looks at the inner workings of Linux from an information-security perspective: privilege separation, the process lifecycle, filesystem organization, logging, and hardening measures. Most server infrastructure — web servers, databases, containers, cloud — runs on Linux. So both attack and defense play out directly on the mechanisms described here. What follows is a short map of the concepts; the full definitions live in the technical sections below.
+Nearly every server I've had to patch or dig through logs on — web server, database, container — runs Linux, so whatever traces an attack leaves behind live in the mechanisms of that same operating system. This chapter looks at Linux through that lens: not to administer it, but to know who just did what, under which privileges, and why they were allowed to.
 
-### User space and kernel space
-The **kernel** runs at ring 0 with exclusive access to the hardware and to system data structures. Application processes run in **user space** (ring 3) and cannot directly touch the hardware or another process's memory. Every resource request (reading a file, opening a socket) must go through a **system call (syscall)**, where the kernel checks permissions. This boundary is the root security barrier: it isolates faults and malicious code from the hardware and from the address space of other processes.
+The starting point is the boundary every Unix system is built on: the **kernel** runs at ring 0 with exclusive access to hardware, while application processes are confined to **user space** and must go through a **syscall** for every resource they need — a barrier that isolates faults and malware from both the hardware and other processes. On top of that, Linux organizes files under the **FHS** standard (configuration in `/etc`, logs in `/var/log`) so tools and monitoring rules work the same regardless of distribution, then controls who can do what through the **rwx permission model** plus the special SUID/SGID/sticky bits — a misconfigured SUID-root binary is still a textbook privilege-escalation path. User identity lives in `/etc/passwd`, while passwords exist only as hashes in `/etc/shadow`, readable by root alone; the actual gate for running commands with elevated rights is **sudo** and **PAM**, which together give both least privilege and an audit trail.
 
-### The FHS directory tree
-The **Filesystem Hierarchy Standard (FHS)** standardizes the location of each type of file: configuration in `/etc`, logs in `/var/log`, system binaries in `/usr/bin`. This standard lets tools, scripts, and monitoring rules operate independently of the distribution. Security implication: the fixed location of sensitive resources (e.g., `/etc`) makes it possible to identify precisely which objects need integrity monitoring.
+The next layer is the process lifecycle: a **process** is born through `fork()` and then loads a new program image via `execve()`, carrying its own security identity — and during an investigation, a web server that suddenly spawns a shell is a textbook indicator of compromise. `/proc` exposes kernel state per process, making it a goldmine for forensics, while **namespaces** and **cgroups** are the two mechanisms — isolation and resource limiting — that every Docker container is built on. The full lifecycle of services on a machine, from startup through monitoring and automatic recovery, is handled by **systemd** via units, which is also what lets you harden individual services through declarative directives.
 
-### The permission model
-Every file carries three sets of **read / write / execute (rwx)** permissions for three classes: **owner, group, and others (other)**. Three special bits are added: **SUID**, **SGID**, and the **sticky bit**; of these, SUID lets a process run with the permissions of the file's owner (possibly root). Misconfigured permissions — especially a poorly written SUID-root binary — are among the most common privilege-escalation vectors.
+The rest of the chapter covers the day-to-day operations-and-investigation layer, which I've grouped into a short list since each piece stands fairly independently:
 
-### `/etc/passwd`, `/etc/shadow`, and password hashes
-`/etc/passwd` is the world-readable account database (name, UID, shell). Passwords are not stored here; instead they are **hashed** and placed in `/etc/shadow` — which only root can read. A hash is a one-way transformation: the original password cannot be computed back from it. Splitting the two files keeps the account table public for UID↔name mapping, while isolating the sensitive data out of reach of offline cracking.
+- **Logging** through `rsyslog`/`journald` captures every sensitive event, while `logrotate` keeps the disk from filling up — but logs only earn their forensic value once they're shipped off the box before an attacker can wipe the local copy.
+- Package managers (`apt`, `dnf`) don't just install software — they verify **digital signatures** in transit, which is the whole basis for trusting where anything running on the machine came from.
+- **cron** is as convenient for automation as it is attractive to attackers: a stray crontab entry is a quiet place to hide a backdoor that fires on schedule, which is why it's always on the list during an investigation.
+- Under the hood of every command line is bash's file descriptors, redirection, and pipes chained into pipelines, plus text tools like `grep`/`awk`/`sed`/`sort`/`uniq` — the toolkit for querying millions of log lines in a single command.
+- Last comes **hardening**: locking down SSH, `fail2ban` auto-blocking IPs that guess passwords, a firewall opening only the ports you need, and SELinux/AppArmor constraining a service's behavior even after it's already been compromised.
 
-### `sudo`, PAM
-- **sudo**: lets a user execute specified commands with another user's privileges (root by default) without sharing the root password; every invocation is logged. Compared with `su`, sudo provides least privilege and an audit trail.
-- **PAM (Pluggable Authentication Modules)**: separates authentication logic from the application. Instead of each service (ssh, login, sudo) implementing its own credential check, they all call PAM. Additional rules (lock the account after N failures, enforce password complexity) are declared centrally and applied system-wide.
-
-### Processes
-A **process** is a program in execution, identified by a PID and carrying a security identity (effective UID/GID). A new process is created via `fork()` (cloning the parent process) followed by `execve()` (loading a new program image). **Signals** are an asynchronous control mechanism (requests to stop, terminate, reload). During an investigation, a process's parent-child relationship, identity, and syscall sequence are key data points: a web server spawning a shell is a classic indicator of compromise.
-
-### `/proc`, namespaces, cgroups
-- **`/proc`**: a pseudo-filesystem that exposes kernel and per-process state (the running binary, file descriptors, network connections); it is a critical forensic data source.
-- **Namespaces**: a kernel mechanism that virtualizes resources (network, PID tree, mounts, etc.) so that a group of processes sees what looks like its own private system. This is the foundation of **containers** (Docker).
-- **cgroups**: limit and measure resources (CPU, RAM, IO, number of processes) per group. The primary goal is to protect availability: preventing an abused service from exhausting the entire host's resources.
-
-### systemd
-**systemd** is the init process (PID 1) on most modern distributions, managing the service lifecycle through **units**. Compared with sysvinit, systemd starts services in parallel according to their dependencies, restarts failed services automatically, monitors them through cgroups, and allows per-service hardening through declarative directives (limiting privileges, syscalls, filesystem access).
-
-### Logging (rsyslog, journald, logrotate)
-**Logs** record system events: logins, privileged commands, errors. `rsyslog` and `journald` are two log-collection systems; `logrotate` manages the lifecycle of log files to prevent the disk from filling up. Logs are forensic evidence, so they should be forwarded to a centralized system (SIEM) as early as possible: a log copy that has left the machine is not deleted when an attacker cleans up local logs.
-
-### Package management (apt, dnf)
-A package manager installs, removes, and updates software with a unified set of commands, and it verifies **digital signatures** to ensure the integrity and provenance of packages in transit. Timely patching and control over software sources are foundations of a secure system.
-
-### cron
-**cron** executes commands on a predefined schedule (by minute, hour, day). Beyond its automation value, cron is a favored persistence location for malware (running a backdoor periodically); cron configurations are therefore objects that must be examined during an investigation.
-
-### Bash: file descriptors, redirection, pipes
-Every process opens three standard **file descriptors**: stdin (0), stdout (1), stderr (2). **Redirection** redirects these streams to a file or another descriptor; a **pipe** (`|`) connects one command's stdout to the next command's stdin. This mechanism lets small commands be combined into powerful processing pipelines — the basis of automation scripts and log analysis.
-
-### Text-processing tools (grep, awk, sed, etc.)
-A suite of tools for filtering and extracting text: `grep` finds lines by pattern, `awk` processes by column/field, `sed` substitutes lines, `sort`/`uniq` sort and count. On logs that can run to millions of lines, these tools allow fast queries (for example, listing the IPs with the most failed logins) in a single command line — a daily investigative skill.
-
-### Hardening (sshd, fail2ban, firewall, SELinux/AppArmor)
-**Hardening** is a set of measures that shrink the attack surface: configuring SSH securely, using `fail2ban` to automatically block password-guessing IPs, and using a firewall (netfilter) to open only the necessary ports. It can also apply **Mandatory Access Control** (SELinux/AppArmor) to constrain a service's behavior even after it is compromised. Default configurations are usually permissive; hardening brings the system back to the principle of least privilege.
-
-> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Every data structure is described down to the field/byte level; every tool comes with a runnable, real-world example. Sample commands and output are taken from common Linux environments (Debian/Ubuntu, RHEL/Rocky); a few figures that depend on the kernel/distribution version are noted explicitly.
+> Commands and sample output throughout the chapter were actually run on Debian/Ubuntu or RHEL/Rocky; anything that depends on kernel or distro version is called out separately.
 
 ---
 
@@ -102,7 +69,7 @@ strace -f -e trace=openat,connect,execve -s 200 curl -s https://example.com -o /
 ```
 execve("/usr/bin/curl", ["curl","-s","https://example.com",...], 0x7ffd...) = 0
 openat(AT_FDCWD, "/etc/ssl/certs/ca-certificates.crt", O_RDONLY) = 5
-connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("93.184.216.34")}, 16) = -1 EINPROGRESS (Operation now in progress)
+connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("192.0.2.10")}, 16) = -1 EINPROGRESS (Operation now in progress)
 ```
 
 **Security note:** seccomp-bpf (used by container runtimes and by systemd's `SystemCallFilter=`) filters precisely these `rax` numbers. Understanding the syscall table helps in writing/reading seccomp profiles and detecting anomalous behavior (e.g., a web server suddenly calling `execve`).
@@ -1020,7 +987,7 @@ Sample output:
     207 203.0.113.77
      95 192.0.2.44
 ```
-This result feeds directly into an allowlist/blocklist or an alert (see fail2ban, 2.12.3).
+This result feeds directly into an allowlist/blocklist or an alert (see fail2ban, 2.12.2).
 
 ---
 
@@ -1032,7 +999,6 @@ File `/etc/ssh/sshd_config`; apply with `systemctl reload sshd`. A sample harden
 
 ```ini
 Port 22
-Protocol 2
 AddressFamily inet
 
 # Authentication
@@ -1139,6 +1105,19 @@ packet in -> [raw->mangle->nat] --> routing? --yes--> [mangle->filter] --> [mang
                                                                OUTPUT [...] --> POSTROUTING
 ```
 
+**The four iptables tables — each has one job, don't mix them:**
+
+| Table | What it exists for | Chains present | When you touch it |
+|---|---|---|---|
+| `filter` | Allow/block packets — the firewall proper | INPUT, FORWARD, OUTPUT | 90% of the time; the default table when `-t` is omitted |
+| `nat` | Rewrite addresses/ports (SNAT/DNAT/MASQUERADE) | PREROUTING, OUTPUT, POSTROUTING | The machine acts as a gateway/port-forwarder; only `NEW` packets traverse it |
+| `mangle` | Modify packet headers (TTL, TOS/DSCP, marks) | All 5 chains | Marking packets for QoS/policy routing — rarely needed |
+| `raw` | Processing BEFORE conntrack (`NOTRACK`) | PREROUTING, OUTPUT | Excluding high-volume traffic from the conntrack table |
+
+**What is a chain?** A list of rules attached to a hook; the first rule a packet matches decides its verdict (`ACCEPT`/`DROP`/`REJECT`/jump to a sub-chain) — if nothing matches, the chain's **policy** applies. Besides the 5 built-in chains you can create your own (`iptables -N ssh-guard`) and `-j ssh-guard` into it to group rules by topic — easier to read and to count (each rule has its own counter, visible with `iptables -L -v -n`).
+
+**The anatomy of a rule, worth internalizing:** `iptables -t <table> -A <chain> <matches...> -j <verdict>` — the matches are AND-ed conditions (`-p tcp --dport 22`, `-s 203.0.113.0/24`, `-i eth0`, `-m conntrack --ctstate NEW`...), and the verdict is the action when all of them match.
+
 **iptables** (traditional syntax) — a deny-by-default policy for INPUT:
 ```bash
 iptables -P INPUT DROP                 # default policy: block
@@ -1159,14 +1138,42 @@ Breaking down the SSH rule:
 
 **Why is the `ESTABLISHED,RELATED` rule needed?** Stateful: once a valid inbound/outbound connection is established, the reply packets in the `ESTABLISHED` state are allowed through without opening a separate port — the foundation of a stateful firewall.
 
+**A few practical rules you end up needing:**
+```bash
+# Block one IP / one IP range (insert at the TOP of the chain with -I so it matches before any ACCEPT)
+iptables -I INPUT -s 198.51.100.9 -j DROP
+iptables -I INPUT -s 185.177.72.0/24 -j DROP
+
+# Sliding-window SSH rate limit using the recent module:
+# more than 4 NEW connections to port 22 within 60s from the same source -> drop
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --set
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --update --seconds 60 --hitcount 4 -j DROP
+
+# View rules with counters (packets/bytes matched) — the quickest way to tell whether a rule is "firing"
+iptables -L INPUT -v -n --line-numbers
+# Delete a rule by line number
+iptables -D INPUT 3
+```
+For long IP lists (hundreds/thousands of entries), do not stack sequential rules — every packet has to walk the whole list. Use `ipset` (with iptables) or an nftables `set` (example below): O(1) hash lookup, a single rule referencing the whole collection.
+
+**The iptables ↔ nftables relationship (read carefully or you'll think you're using one while actually using the other):** on modern distributions (Debian 10+, Ubuntu 20.04+, RHEL 8+), the `iptables` command is usually just a shim that translates the old syntax onto the nftables backend — known as **iptables-nft**. Check with `iptables -V`: `(nf_tables)` means the nft shim, `(legacy)` means the old backend. The practical consequence: rules created via `iptables` and rules created via `nft` live in the same kernel but do **not** fully show up in each other's tooling — a firewall audit must use `nft list ruleset` (which sees both), so never run just `iptables -L` and conclude "this machine has no rules". Docker/Kubernetes and fail2ban still commonly insert rules through the iptables layer — one more reason to audit with `nft list ruleset`.
+
 **nftables** (the modern replacement, a single `nft` tool for IPv4/IPv6) — `/etc/nftables.conf`:
 ```nft
 #!/usr/sbin/nft -f
 flush ruleset
 table inet filter {
+    set blocklist {
+        type ipv4_addr
+        flags interval
+        elements = { 198.51.100.9, 185.177.72.0/24 }
+    }
     chain input {
         type filter hook input priority 0; policy drop;
         iif "lo" accept
+        ip saddr @blocklist drop
         ct state established,related accept
         ct state invalid drop
         tcp dport 22 ct state new limit rate 5/minute accept
@@ -1179,13 +1186,27 @@ table inet filter {
 }
 ```
 ```bash
-nft -f /etc/nftables.conf      # load
+nft -f /etc/nftables.conf      # load (atomic: all or nothing)
 nft list ruleset               # view all rules (with counters)
 nft list table inet filter
+nft add element inet filter blocklist { 203.0.113.99 }   # add an IP to the set at runtime
 ```
-**Why does nftables replace iptables?** A single framework for v4/v6/arp/bridge, concise set/map syntax (e.g., a blocklist of thousands of IPs in one high-performance `set`), atomic reloads, and easier scripting.
+**Why does nftables replace iptables?** A single framework for v4/v6/arp/bridge (an `inet` table covers IPv4+IPv6 at once — iptables needs a parallel `ip6tables`), concise set/map syntax (a blocklist of thousands of IPs in one hash-lookup `set` instead of a sequential walk), atomic reloads (no moment of "half old ruleset, half new"), and easier scripting.
 
-**Security note:** default to `policy drop` for INPUT/FORWARD; open only the necessary ports; rate-limit the admin port; log dropped packets for investigation. Save the rules so they survive a reboot (`netfilter-persistent save` or the `nftables` service).
+**Making rules survive a reboot** — iptables/nft rules live only in kernel memory; a reboot wipes them clean:
+```bash
+# The nftables way (recommended): rules are a config FILE, loaded by a service at boot
+nft list ruleset > /etc/nftables.conf   # or write the file by hand and validate with nft -f
+systemctl enable --now nftables
+
+# The traditional iptables way (Debian/Ubuntu)
+apt install iptables-persistent         # stores at /etc/iptables/rules.v4 and rules.v6
+netfilter-persistent save
+# RHEL-family: dnf install iptables-services; service iptables save
+```
+The nice part of the nftables way: `/etc/nftables.conf` is a plain text file — put it in git, review diffs like code, run `nft -c -f` (check) before applying.
+
+**Security note:** default to `policy drop` for INPUT/FORWARD; open only the necessary ports; rate-limit the admin port; log dropped packets for investigation. When editing a firewall remotely, protect yourself: work inside `tmux`/keep a spare SSH session open, or schedule a rollback job like `echo 'nft -f /etc/nftables.conf.known-good' | at now + 5 minutes` and cancel it once you've confirmed you can still get in — locking yourself out of a server with one DROP rule is a classic mistake.
 
 ### 2.12.4. SELinux and AppArmor — Mandatory Access Control (MAC)
 
@@ -1243,12 +1264,182 @@ journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
 
 ---
 
-## 2.13. Summary of the defensive mindset on Linux
+## 2.13. Performance & resource diagnostics — the dashboard says "where it's high", the commands say "which process is causing it"
+
+Why is this section in a security notebook? First, **availability** is one pillar of the CIA triad — a machine that dies from resource exhaustion is an information-security incident too. Second, a lot of intrusion indicators first show up as resource anomalies: a cryptominer = abnormally high CPU, a DoS = load/network spiking, and **a full disk means logging stops** — the attacker gets a free blind spot. The skill of "spot the abnormal number → find the process behind it" serves operations and investigation alike.
+
+The methodology I use: **two layers, each answering a different question.**
+- The metric/dashboard layer (Prometheus + node_exporter, graphed in Grafana — or any equivalent stack): answers "**where is it high, since when, and what's the trend**". Metrics are aggregates — they don't know which process is responsible.
+- The on-box command layer (SSH in): answers "**which process, which file, which connection is causing it**". Commands see individual processes but have no history.
+
+The two layers complement each other: a dashboard alone knows the disease but not the culprit; commands alone capture the current state but not "high since when, is it periodic". The workflow on an alert: the dashboard narrows it to an axis (CPU/RAM/disk/I-O/network/load) → SSH in → run exactly that axis's command group.
+
+> The commands below need the `sysstat` package (provides `mpstat`/`iostat`/`pidstat`/`sar`), plus `htop`, `iotop`, `ncdu`: `apt install sysstat htop iotop ncdu`.
+
+### 2.13.1. The 30-second overview — run before you think
+
+Six commands, in order, for the big picture before digging in:
+
+```bash
+uptime                    # load average over 1/5/15 minutes — compare to core count
+free -h                   # RAM: look at the available column, not used
+df -h                     # which mount is filling up
+top                       # (or htop) overall CPU/RAM + the loudest processes
+dmesg -T | tail -30       # what the kernel just complained about: OOM kills, I/O errors, segfaults
+systemctl --failed        # which services are down
+```
+These 30 seconds usually already isolate the problem axis; the rest is a deep dive per axis below.
+
+### 2.13.2. The CPU axis — read by *mode*, not just by %
+
+"CPU at 90%" by itself says nothing; the right question is **which mode that 90% belongs to**. `mpstat` (sysstat package) breaks CPU down by mode, per core:
+
+```bash
+mpstat -P ALL 1 3        # one sample per second, 3 times, all cores
+```
+```
+CPU    %usr  %nice   %sys %iowait  %irq  %soft %steal  %idle
+all   72.31   0.00   5.12    0.75  0.00   0.51   9.87  11.44
+  0   88.00   0.00   4.00    0.00  0.00   1.00  17.00   7.00
+```
+
+| Column | CPU time spent on | Sustained high means |
+|---|---|---|
+| `%usr` | Application code (user space) | An app is genuinely burning CPU → find it with `htop`/`pidstat`; if you don't recognize the process, suspect a cryptominer |
+| `%sys` | Kernel (syscalls, drivers) | The app is hammering syscalls (tiny I/O, constant forking) — inspect with `strace`/`perf` |
+| `%iowait` | *Sitting idle* waiting for disk I/O | The bottleneck is the DISK, not the CPU — jump to the Disk I/O axis (2.13.5); more CPU won't help |
+| `%steal` | Taken by the hypervisor to serve other VMs | On a cloud VM: noisy neighbor / the provider throttling CPU (burstable credits exhausted). Not fixable from inside the VM — change shape/host or accept it |
+| `%irq`/`%soft` | Hard/soft interrupts (usually network) | Abnormally high `%soft` plus heavy traffic → suspect a flood |
+| `%idle` | Idle | — |
+
+`%iowait` and `%steal` are the two classic traps: both make "CPU look high" on a dashboard while the culprit isn't the CPU at all. Finding the process by CPU:
+
+```bash
+ps aux --sort=-%cpu | head -12    # snapshot of right now
+pidstat 1 5                       # over time — catches processes that "pulse"
+```
+`pidstat` beats `ps` by sampling continuously: a process that only spikes in bursts shows up instead of slipping between two `ps` runs.
+
+### 2.13.3. The RAM axis — PSI instead of "used is high"
+
+**The biggest trap on the RAM axis: "used is high" is usually NOT a problem.** Linux deliberately uses free RAM as page cache (re-reads of files skip the disk), and many apps (JVM, Elasticsearch, databases) allocate a large heap and simply keep it — that's designed behavior, not a leak. The number to watch in `free -h` is **`available`** (an estimate of RAM that can be handed to new processes immediately, reclaimable cache included), not `used`.
+
+So when is RAM *genuinely* short? The kernel answers directly via **PSI — Pressure Stall Information** (kernel ≥ 4.20): instead of measuring "how much is in use", PSI measures **the total time processes are stalled waiting for the resource** — i.e., it measures exactly what we care about: "is anyone actually suffering from lack of RAM?"
+
+```bash
+cat /proc/pressure/memory
+```
+```
+some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+```
+- `some` = % of time **at least one** task was stalled on memory; `full` = % of time **all** non-idle tasks were stalled (the whole machine freezes up).
+- `avg10/60/300` = rolling averages over 10 seconds / 1 minute / 5 minutes.
+- Reading it: all zeros → RAM is fine no matter what `used` says. `some avg10` positive and sustained → shortage beginning; `full` positive → the machine is visibly stalling, typically just before an OOM kill. The same format exists for `/proc/pressure/cpu` and `/proc/pressure/io` — node_exporter collects all three, and they make far better alerting panels than % used.
+
+The full check sequence:
+```bash
+free -h                           # look at available; how much swap is in use
+cat /proc/pressure/memory         # PSI — the measure of "genuinely short"
+vmstat 1 5                        # si/so columns: swap-in/out (KB/s) happening right now
+ps aux --sort=-%mem | head -12    # top RAM consumers (RSS column)
+dmesg -T | grep -iE "oom|killed process"   # has the kernel already had to execute someone
+```
+- `si`/`so` persistently positive = the machine is swapping back and forth (thrashing) — performance falls off a cliff even though RAM "isn't full".
+- An OOM kill in `dmesg` is evidence you're already too late: the kernel kills the process with the highest `oom_score`. If the victim is an important service, consider `MemoryMax=` (cgroups, section 2.5.7) on the other services rather than reflexively adding RAM.
+
+### 2.13.4. The disk-space axis — df lies in two places
+
+```bash
+df -h                             # which mount is full — but not enough, keep reading
+df -i                             # INODES: running out also reports "No space left" with tens of GB free
+sudo du -xh --max-depth=1 / 2>/dev/null | sort -h | tail -15   # biggest directories (-x: don't wander onto other mounts)
+ncdu -x /                         # like du but interactive — very fast drill-down
+sudo lsof +L1 | grep -i deleted   # files DELETED but still held open by a process
+docker system df                  # how much Docker is using (images/containers/volumes/build cache)
+journalctl --disk-usage           # how much the journal is using
+```
+The two places `df -h` "lies":
+1. **Out of inodes**: a filesystem has a finite inode count; millions of small files (session files, caches, mail queues) exhaust the inodes while plenty of space remains — the error is still "No space left on device". `df -i` exposes it instantly (`IUse%` at 100%).
+2. **Deleted files not yet released**: deleting a file only removes its name from the directory; **the inode and its data persist as long as any process holds an open file descriptor** (the same mechanism we met with logrotate, section 2.7.5). The classic symptom: you `rm` a 20GB log file and `df` doesn't move. `lsof +L1` (lists files with link count 0) names the process; the correct fix is to reload/restart that process (or send a reopen-logs signal such as `USR1`), not to keep deleting things.
+
+On Docker machines the usual suspect is `/var/lib/docker`: old images stacking up with every deploy, build cache, container logs. `docker system df -v` gives the detailed listing. Clean deliberately (`docker image prune -a --filter "until=168h"` — images only, with a time cutoff) and **never swing `docker system prune` around on a machine with data volumes** — one mistaken `--volumes` flag and real data is gone.
+
+**The security angle:** full disk = logging stops = investigative blindness; "disk almost full" therefore deserves to be treated as a security alert, not just an ops one. In the other direction, attackers know this too — one form of anti-forensics is deliberately filling the disk before acting.
+
+### 2.13.5. The disk I/O axis — a "busy" disk is not a "full" disk
+
+A disk with free space can still choke because its **I/O bandwidth is saturated** — the symptom surfaces as `%iowait` (2.13.2) and apps that are "slow for no reason".
+
+```bash
+iostat -xz 1 5                    # -x: extended stats; -z: hide silent devices
+```
+```
+Device   r/s   w/s   rkB/s   wkB/s  await  %util
+sda      1.2  310.5    48.0  42817.3  38.20  97.40
+```
+- `%util` = % of time the device had I/O in flight. Near 100% sustained = the disk's schedule is packed. (For SSDs/NVMe, which process in parallel, 100% `%util` isn't necessarily the true ceiling — read it together with `await`.)
+- `await` = average time for a request to complete, **queueing time included** (ms). This is the number the app actually "feels": high `%util` with low `await` means the disk is busy but keeping up; both high means genuine saturation.
+- `r/s`, `w/s`, `rkB/s`, `wkB/s`: the shape of the load — thousands of small requests or a few big ones, reads or writes.
+
+Finding the culprit:
+```bash
+sudo iotop -o                     # -o: only show processes CURRENTLY doing I/O
+pidstat -d 1 5                    # kB read/written per process over time
+cat /proc/pressure/io             # PSI for I/O — read exactly like memory PSI
+```
+Usual suspects on the systems I operate: backup/compression jobs running at peak hours, databases scanning whole tables for lack of an index, over-verbose logging, and swap thrashing (in which case the root disease is RAM — go back to 2.13.3).
+
+### 2.13.6. The network axis — look at drops/errors, not % bandwidth
+
+```bash
+ss -tulpn                         # LISTENING ports + processes — inspect the exposed surface
+ss -s                             # connection totals by state (estab, timewait...)
+ss -tan state established | wc -l # count open connections
+ip -s link                        # RX/TX counters: errors, dropped, overrun per interface
+sar -n DEV 1 5                    # per-interface throughput over time
+```
+`ip -s link` prints RX/TX blocks; the columns worth watching are `errors`/`dropped`:
+```
+RX: bytes  packets errors dropped overrun mcast
+    9.1G   8123456      0   12043       0     0
+```
+- Hitting the bandwidth ceiling is rarely the real problem on an ordinary server; **steadily climbing drops/errors are the disease** (buffer overruns, NIC/driver faults, the host not keeping up → dropped packets, retransmits, rising latency). Alerts belong on the *growth rate* of the drop counters, not on % bandwidth.
+- `ss -s` with `estab` spiking abnormally from scattered sources is the shape of a DoS/flood; a strange new listening port in `ss -tulpn` is a backdoor indicator (compare against a baseline).
+
+### 2.13.7. The load axis — high load does not mean short of CPU
+
+**Load average on Linux counts both `R` processes (waiting for CPU) and `D` processes (uninterruptible — stuck in I/O, section 2.5.2).** This is the most commonly misread point: a load of 20 on a 4-core box could be 20 processes fighting for CPU — or an idle CPU and 20 processes hanging on a dead NFS mount.
+
+```bash
+uptime && nproc                   # load RELATIVE TO core count — load/core > 1 sustained is what matters
+vmstat 1 5                        # r column = waiting for CPU; b = blocked; wa = %iowait
+ps -eo state,pid,comm | grep "^D" # roll call of D-state processes
+```
+Reading the verdict: high load + high `r` + high `%usr` → genuinely short of CPU. High load + high `b` + many `D` processes + high `wa` → stuck on I/O (failing disk, hung NFS, throttled cloud storage) — go back to the Disk I/O axis, and remember `D` processes cannot be killed with `kill -9` (2.5.2).
+
+### 2.13.8. Quick lookup: symptom → first command
+
+| Dashboard/panel alert | Run first | Question being answered |
+|---|---|---|
+| High CPU | `mpstat -P ALL 1`, `htop` | Which mode? Which process? |
+| High RAM / memory PSI | `cat /proc/pressure/memory`, `ps aux --sort=-%mem` | Genuine shortage or just high used? Who's eating it? |
+| Disk full | `df -h; df -i`, `du -xh --max-depth=1 /`, `lsof +L1` | Out of space, out of inodes, or ghost files? |
+| Disk I/O / io PSI | `iostat -xz 1`, `iotop -o` | Saturated yet? Which process is writing? |
+| Network | `ip -s link`, `ss -tulpn` | Drops/errors or just lots of traffic? Strange ports? |
+| High load / procs blocked | `vmstat 1`, `ps -eo state,pid,comm \| grep "^D"` | Short of CPU or stuck on I/O? |
+
+My own experience: turn this table into an actual internal runbook (which panel is red → paste which block of commands) — at 2 a.m. during an incident nobody remembers `iostat`'s flags.
+
+---
+
+## 2.14. Summary of the defensive mindset on Linux
 
 - **Privilege boundaries** are the root: user/kernel (syscall, seccomp), DAC (rwx/ACL/SUID), MAC (SELinux/AppArmor), capabilities, namespaces. Each layer narrows the damage when the layer above is breached.
 - **Least privilege**: services run as their own user, `NoNewPrivileges`, a deny-by-default firewall, narrow sudoers, `nosuid/noexec` mounts.
 - **Observability**: structured logs (journald + auditd), pushed centrally to a SIEM before an attacker deletes them, and fluent reading of `auth.log`/AVC with grep/awk.
 - **Integrity**: `dpkg -V`/`rpm -V`, FSS for the journal, baselines of SUID/cron to detect changes.
+- **Availability is security too**: resource exhaustion (CPU/RAM/disk/I-O) is both an incident and an attack symptom; the two-layer diagnosis "the dashboard says where it's high, the commands say which process" (2.13) is a skill shared by operations and investigation.
 - **Every hardening configuration** (sshd, fail2ban, nftables, systemd unit, SELinux) has a concrete file/syntax above — use them as verifiable templates on a real system.
 
 
@@ -1257,3 +1448,10 @@ journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- **The runbook is the thing most worth writing that I put off the longest.** When I first took on server duty, every time a Grafana panel turned red I would google `iostat`'s flags all over again. Eventually I sat down and wrote a proper runbook — "which panel is red → paste which block of commands" (essentially the skeleton of section 2.13) — and I use it almost daily now. The lesson: diagnostic knowledge is only worth anything when it exists as copy-pasteable commands at 2 a.m., not as "I remember there's a tool for that".
+- **I used to misread "high RAM used = about to die".** Once I saw a machine at ~90% RAM used, panicked, and was about to propose a RAM upgrade. Only later did I understand that apps (JVM/search-engine types) holding a big heap is designed behavior, and Linux puts idle RAM to work as cache. Since learning about PSI (`/proc/pressure/memory`) I barely look at % used anymore: PSI at zero → ignore used entirely; PSI positive and sustained → time to act. Changing one monitored number cut the false alarms dramatically.
+- **The first time I saw `%steal` I thought the machine was broken.** A cloud VM on a system I operate got inexplicably slow — `%usr` was low yet everything dragged. It turned out `%steal` was in the double digits: the hypervisor was sharing our CPU with a noisy neighbor. There was nothing to "fix" from inside the VM; the fixable thing was learning to read the right column so I'd stop wasting an afternoon blaming the app.
+- **The recurring disk-full incident caused by Docker images.** A dev machine I look after kept filling its disk every day or two; each time I would `df -h` and `du` around in circles before remembering `/var/lib/docker`. The cause: every deploy stacked on a new image, and nobody cleaned up the old ones. The fix: a 3 a.m. cron running `docker image prune` with a time filter — and absolutely no casual `docker system prune` on machines with data volumes; one mistaken `--volumes` flag and real data is gone. Bonus lesson from the same episode: `rm`-ing a huge log file without `df` budging — the file isn't dead while a process still holds its fd, and `lsof +L1` names the culprit.
+- **On firewalls, the biggest trick played on me was iptables-nft.** `iptables -L` on one machine and `nft list ruleset` on another gave me two different pictures and confused me for a good while, until I understood that `iptables` is now usually just a shim translating to nftables (`iptables -V` prints `(nf_tables)`). These days I default to `nft list ruleset` for a complete audit, including rules inserted by Docker or fail2ban.
+- **Still exploring:** wiring alerts from the SIEM to the firewall so IPs get added to an nftables set automatically past a threshold (fail2ban-style, but fed by centralized logs instead of local ones) — still experimental; I don't dare enable auto-blocking in production yet for fear of banning a NAT range full of real users.

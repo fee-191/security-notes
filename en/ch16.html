@@ -1,0 +1,2020 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 16 — Compliance &amp;amp; Governance (GRC) — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 16 — Compliance &amp;amp; Governance (GRC) — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch15.html"><link rel="next" href="ch17.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="16"><a class="nav-ch-title" href="#top"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch16-overview">Overview</a><a class="nav-sub" href="#ch16-160-chapter-map-and-the-overall-grc-model">16.0. Chapter map and the overall GRC model</a><a class="nav-sub" href="#ch16-161-risk-management">16.1. Risk Management</a><a class="nav-sub" href="#ch16-162-nist-cybersecurity-framework-csf">16.2. NIST Cybersecurity Framework (CSF)</a><a class="nav-sub" href="#ch16-163-nist-special-publications">16.3. NIST Special Publications</a><a class="nav-sub" href="#ch16-164-isoiec-27001-27002">16.4. ISO/IEC 27001 &amp;amp; 27002</a><a class="nav-sub" href="#ch16-165-pci-dss-overview-financialcard-industry">16.5. PCI DSS (overview — financial/card industry)</a><a class="nav-sub" href="#ch16-166-vietnamese-law-at-the-level-of-operational-meaning">16.6. Vietnamese law (at the level of operational meaning)</a><a class="nav-sub" href="#ch16-167-operational-compliance">16.7. Operational Compliance</a><a class="nav-sub" href="#ch16-168-grc-in-banking-finance">16.8. GRC in banking / finance</a><a class="nav-sub" href="#ch16-169-summary-quick-reference-checklist">16.9. Summary &amp;amp; quick-reference checklist</a><a class="nav-sub" href="#ch16-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-16" data-ch="16">
+<h1 id="ch16-chapter-16-compliance-governance-grc">Chapter 16 — Compliance &amp; Governance (GRC)</h1>
+<h2 id="ch16-overview">Overview</h2>
+<p>The first time a client sent over a security questionnaire — dozens of lines long, before they'd even sign a contract: what algorithm encrypts data at rest, who can access it, how long logs are kept, whether there's an incident response process — it hit me that writing secure code and being able to prove you're secure are two different jobs. <strong>GRC (Governance, Risk, Compliance)</strong> is the framework for the second one: it answers who is accountable, which risks get priority, and what evidence you hand regulators, customers, and partners when they ask.</p>
+<p>The chapter opens with GRC's three nested layers — governance sets the rules of the game, risk measures what could go wrong, compliance proves adherence — then moves into how risk gets quantified and treated (SLE/ARO/ALE, the four options of mitigate/transfer/avoid/accept, and residual risk that always needs a risk owner's sign-off). From there it covers the reference frameworks: NIST CSF for a strategic-level vocabulary to describe security posture, SP 800-53/800-61/800-207 for more concrete controls and processes, ISO 27001/27002 for a certifiable management system, PCI DSS for payment card data.</p>
+<p>The Vietnamese legal section — the Law on Cyber Information Security, the Cybersecurity Law, the decrees classifying systems and protecting personal data, plus the new personal-data-protection law taking effect in 2026 — directly shapes where a system must store data and how it obtains consent, so it isn't something you can skip even if you're not a lawyer. The chapter closes with the operational side: turning frameworks into daily practice (data classification, audit trails, crosswalks between standards) and the specifics of banking and finance, including the Three Lines Model and continuous compliance.</p>
+<blockquote>
+<p>Every concept below follows the same sequence: what it is → how it works internally → a runnable example → security notes. Vietnamese legal provisions are marked <code>[NEEDS VERIFICATION]</code> wherever a document number or article isn't something I'm fully certain of.</p>
+</blockquote>
+<hr />
+<h2 id="ch16-160-chapter-map-and-the-overall-grc-model">16.0. Chapter map and the overall GRC model</h2>
+<p>GRC = <strong>Governance, Risk, Compliance</strong>. These are not three separate things but three nested layers:</p>
+<pre><code>+------------------------------------------------------------------+
+|  GOVERNANCE                                                       |
+|  - Who is accountable? Risk appetite?                            |
+|  - Policy, standard, procedure                                   |
+|   +-----------------------------------------------------------+   |
+|   |  RISK MANAGEMENT                                          |  |
+|   |  asset -&gt; threat -&gt; vuln -&gt; likelihood x impact -&gt; risk    |  |
+|   |  -&gt; treat (accept/mitigate/transfer/avoid) -&gt; register     |  |
+|   |   +----------------------------------------------------+   |  |
+|   |   |  COMPLIANCE                                        |  |  |
+|   |   |  Map control -&gt; framework -&gt; evidence -&gt; audit     |  |  |
+|   |   |  NIST CSF/800-53/800-61/800-207, ISO 27001/27002,  |  |  |
+|   |   |  PCI DSS, Cyber Info Sec/Cybersecurity Laws,       |  |  |
+|   |   |  Decree 85/2016, Decree 13/2023                    |  |  |
+|   |   +----------------------------------------------------+   |  |
+|   +-----------------------------------------------------------+   |
++------------------------------------------------------------------+
+</code></pre>
+<p><strong>Distinguishing the 4 tiers of governance documents</strong> (very commonly confused — the table below is the standard used in an ISMS):</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>English name</th>
+<th>Nature</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Policy</td>
+<td>"What must be done" — mandatory, approved by leadership</td>
+<td>"All personal data must be encrypted at rest"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Standard</td>
+<td>"By what technology/specification" — mandatory</td>
+<td>"At-rest encryption uses AES-256-GCM"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Procedure</td>
+<td>"Which steps to follow" — mandatory</td>
+<td>"KMS key rotation procedure every 90 days: step 1..n"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Guideline</td>
+<td>"Should do" — recommended</td>
+<td>"Prefer envelope encryption"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why separate into 4 tiers?</strong> So that the policy remains stable over the long term (changes rarely → less re-approval at the leadership level), while standards/procedures change with technology. If you embed "AES-256" into the policy, then every time the algorithm changes you would have to get the entire Board to re-sign — which is not practical.</p>
+<hr />
+<h2 id="ch16-161-risk-management">16.1. Risk Management</h2>
+<p>Risk management is an iterative cycle, not a one-off activity. The diagram below summarizes the process from establishing context to continuous monitoring (mapped to ISO 31000 and the NIST RMF):</p>
+<pre><code>   ┌──────────────────────────────────────────────────────────┐
+   │  ① ESTABLISH CONTEXT (scope, risk appetite)              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ② RISK IDENTIFICATION                                   │
+   │     asset → threat → vulnerability                       │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ③ ANALYSIS &amp; EVALUATION                                 │
+   │     Inherent risk = Likelihood × Impact                  │
+   │     (quantitative SLE/ALE  or  qualitative 5×5)          │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ④ RISK TREATMENT (4 options)                            │
+   │     mitigate | transfer | avoid | accept                 │
+   │     → residual risk remains                              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑤ RECORD in RISK REGISTER + risk owner signs           │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑥ MONITOR &amp; REVIEW PERIODICALLY                         │
+   └───────────────────────────────┬──────────────────────────┘
+                                   │
+   └───────────────────────────────┘  (loop: back to ② —
+        residual risk is periodically reassessed)
+</code></pre>
+<p>Note: risk is progressively reduced over each cycle (inherent → residual), but never reaches zero — the residual portion must be formally accepted by someone with the authority to do so. The monitoring loop closes the cycle: an outdated register creates a false sense of security, so it must be reviewed periodically.</p>
+<h3 id="ch16-1611-the-causal-chain-asset-threat-vulnerability-risk">16.1.1. The causal chain: asset → threat → vulnerability → risk</h3>
+<p><strong>What it is.</strong> Risk does not arise on its own. It is the result of a chain: there is a valuable <strong>asset</strong> → a <strong>threat</strong> exists that wants/is able to cause harm → the asset has a <strong>vulnerability</strong> for the threat to exploit → when successfully exploited it causes an <strong>impact</strong> with a certain <strong>likelihood</strong>. Risk = a function of likelihood and impact.</p>
+<p><strong>Mechanism — precise definition of each component:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Operational definition</th>
+<th>Example on an exchange system (CEX)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Asset</td>
+<td>Something of value that needs protecting (data, system, reputation)</td>
+<td>DB holding the hot wallet private key</td>
+</tr>
+<tr>
+<td>Threat</td>
+<td>An actor + action that could cause harm</td>
+<td>An APT group targeting the hot wallet to drain funds</td>
+</tr>
+<tr>
+<td>Threat actor</td>
+<td>The agent (human/automation)</td>
+<td>APT38 (Lazarus)</td>
+</tr>
+<tr>
+<td>Vulnerability</td>
+<td>A weakness that allows the threat to succeed</td>
+<td>RPC node exposed to the Internet, not filtering <code>eth_sendRawTransaction</code></td>
+</tr>
+<tr>
+<td>Exploit</td>
+<td>The means of realizing exploitation of the vuln</td>
+<td>Sending a pre-signed tx through the exposed RPC</td>
+</tr>
+<tr>
+<td>Impact</td>
+<td>The consequence if it occurs (financial/reputational/legal)</td>
+<td>Loss of USD 50 million in coins</td>
+</tr>
+<tr>
+<td>Likelihood</td>
+<td>Probability/frequency of occurrence</td>
+<td>"Medium–high" or ARO=0.3/year</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>A measure to reduce likelihood or impact</td>
+<td>HSM transaction signing, RPC allowlist, MPC</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conceptual formula:</strong></p>
+<pre><code>Inherent Risk  = Likelihood(no control) x Impact(no control)
+Residual Risk  = Likelihood(after control) x Impact(after control)
+Risk Treatment works on the gap: Inherent - Residual
+</code></pre>
+<p><strong>Security note:</strong> A common mistake: assessing risk based only on the <em>vulnerability</em> (scan results) while ignoring asset value. A CVE 9.8 on an internal printer with no sensitive data has a lower residual risk than a CVE 6.5 on a payment gateway. Always multiply by the <em>impact on the asset</em>, do not rank purely by CVSS.</p>
+<h3 id="ch16-1612-quantitative-sle-aro-ale">16.1.2. Quantitative: SLE, ARO, ALE</h3>
+<p><strong>What it is.</strong> A method that assigns a <strong>monetary value</strong> to risk for objective comparison and to justify the cost of controls (cost-benefit). The standard trio of terms (NIST/(ISC)² CISSP):</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Full name</th>
+<th>Unit</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AV</td>
+<td>Asset Value</td>
+<td>money</td>
+<td>entered directly</td>
+</tr>
+<tr>
+<td>EF</td>
+<td>Exposure Factor</td>
+<td>% (0–1)</td>
+<td>proportion of the asset lost in one event</td>
+</tr>
+<tr>
+<td>SLE</td>
+<td>Single Loss Expectancy</td>
+<td>money</td>
+<td><code>SLE = AV × EF</code></td>
+</tr>
+<tr>
+<td>ARO</td>
+<td>Annualized Rate of Occurrence</td>
+<td>times/year</td>
+<td>event frequency per year</td>
+</tr>
+<tr>
+<td>ALE</td>
+<td>Annualized Loss Expectancy</td>
+<td>money/year</td>
+<td><code>ALE = SLE × ARO</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>A worked example by hand.</strong> Asset = an e-commerce web cluster, AV = USD 2,000,000. A ransomware incident disrupts 30% of revenue per event → EF = 0.30.</p>
+<pre><code>SLE = AV × EF = 2,000,000 × 0.30 = 600,000 USD / event
+Assume ARO = 0.5  (once every 2 years)
+ALE = SLE × ARO = 600,000 × 0.5 = 300,000 USD / year
+</code></pre>
+<p><strong>Control investment decision (cost-benefit):</strong> If purchasing an EDR + backup solution costs USD 80,000/year and reduces ARO to 0.1:</p>
+<pre><code>ALE_new   = 600,000 × 0.1 = 60,000 USD/year
+ALE_reduced = 300,000 - 60,000 = 240,000 USD/year  (risk savings)
+ROSI (Return On Security Investment) = (240,000 - 80,000) / 80,000 = 200%
+</code></pre>
+<p><strong>Quick-calculation script (runnable, Python 3):</strong></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+# ale_calc.py — calculate SLE/ALE and ROSI for control cost-benefit
+def ale(av, ef, aro):
+    sle = av * ef
+    return sle, sle * aro
+
+def rosi(ale_before, ale_after, control_cost):
+    benefit = ale_before - ale_after
+    return (benefit - control_cost) / control_cost
+
+av, ef, aro = 2_000_000, 0.30, 0.5
+sle, ale_b = ale(av, ef, aro)
+_, ale_a   = ale(av, ef, 0.1)
+print(f&quot;SLE      = {sle:,.0f} USD/event&quot;)
+print(f&quot;ALE base = {ale_b:,.0f} USD/yr&quot;)
+print(f&quot;ALE post = {ale_a:,.0f} USD/yr&quot;)
+print(f&quot;ROSI     = {rosi(ale_b, ale_a, 80_000):.0%}&quot;)
+</code></pre>
+<p>Sample output:</p>
+<pre><code>SLE      = 600,000 USD/event
+ALE base = 300,000 USD/yr
+ALE post = 60,000 USD/yr
+ROSI     = 200%
+</code></pre>
+<p><strong>Security note:</strong> Quantitative analysis sounds scientific, but <strong>EF and ARO are usually guesses</strong>. Use it for <em>relative comparison</em> of options, not to report "the risk is exactly USD 300,000" — that is pseudoscience. For long-tail risks such as the loss of the entire cold wallet key, ALE underestimates because it is an extremely small ARO × an extremely large impact → it is better to use a separate scenario analysis.</p>
+<h3 id="ch16-1613-qualitative-the-likelihood-impact-matrix">16.1.3. Qualitative: the likelihood × impact matrix</h3>
+<p><strong>What it is.</strong> When there is no reliable monetary data, use a qualitative scale (usually 5×5). Each axis is 1–5, the risk score = the product, mapped to a color band.</p>
+<pre><code>IMPACT →        1-Insig  2-Minor  3-Mod   4-Major  5-Severe
+LIKELIHOOD ↓
+5-Almost Certain   5       10       15      20       25
+4-Likely           4        8       12      16       20
+3-Possible         3        6        9      12       15
+2-Unlikely         2        4        6       8       10
+1-Rare             1        2        3       4        5
+
+Band:  1-4 = Low (green)  |  5-9 = Medium (yellow)
+       10-15 = High (orange) | 16-25 = Critical (red)
+</code></pre>
+<p><strong>Scale definition table (must be written out concretely, otherwise everyone scores differently):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Likelihood (definition)</th>
+<th>Impact (financial/operational definition)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>Occurs &gt;1 time/year</td>
+<td>Loss of &gt;1% of annual revenue OR a legal violation incurring a fine</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Once per 1–2 years</td>
+<td>Disruption of a core service for &gt;4h</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Once per 2–5 years</td>
+<td>Internal disruption, recovered within the day</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Once per 5–10 years</td>
+<td>Minor impact, 1 team</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Almost never</td>
+<td>Negligible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1614-risk-treatment-the-4-options">16.1.4. Risk Treatment: the 4 options</h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Meaning</th>
+<th>When to use</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mitigate</strong></td>
+<td>Add controls to reduce L or I</td>
+<td>Risk above threshold, a feasible control exists</td>
+<td>WAF, MFA, encryption</td>
+</tr>
+<tr>
+<td><strong>Transfer</strong></td>
+<td>Shift the financial consequence to another party</td>
+<td>Large impact, hard to reduce on your own</td>
+<td>Buy cyber insurance; use a SaaS with an SLA</td>
+</tr>
+<tr>
+<td><strong>Avoid</strong></td>
+<td>Drop the activity that generates the risk</td>
+<td>Risk exceeds appetite and is not offset by the benefit</td>
+<td>Stop storing credit card numbers</td>
+</tr>
+<tr>
+<td><strong>Accept</strong></td>
+<td>Keep as-is, formally documented</td>
+<td>Residual ≤ risk appetite</td>
+<td>Accept a low risk with the risk owner's signature</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why must there be a formal "Accept"?</strong> Every residual risk must have a <strong>risk owner</strong> sign off on its acceptance. This is the key legal/governance point: if an incident occurs, the documentation proves the risk was recognized and someone with authority decided to accept it — rather than "no one knew."</p>
+<h3 id="ch16-1615-risk-register-the-record-structure-down-to-each-field">16.1.5. Risk Register — the record structure down to each field</h3>
+<p><strong>What it is.</strong> A risk register — the central repository tracking every risk. Each row = one risk. Below is the standard schema (CSV) down to each field:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type/Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>risk_id</code></td>
+<td>string, e.g. RISK-0001</td>
+<td>Unique identifier</td>
+<td>RISK-0042</td>
+</tr>
+<tr>
+<td><code>asset</code></td>
+<td>text</td>
+<td>Related asset</td>
+<td>Hot wallet signing service</td>
+</tr>
+<tr>
+<td><code>threat</code></td>
+<td>text</td>
+<td>Threat</td>
+<td>Key exfiltration by an attacker</td>
+</tr>
+<tr>
+<td><code>vulnerability</code></td>
+<td>text</td>
+<td>Weakness</td>
+<td>RPC without an allowlist</td>
+</tr>
+<tr>
+<td><code>likelihood_inherent</code></td>
+<td>int 1–5</td>
+<td>L before control</td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>impact_inherent</code></td>
+<td>int 1–5</td>
+<td>I before control</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>inherent_score</code></td>
+<td>int (L×I)</td>
+<td>Original risk score</td>
+<td>20</td>
+</tr>
+<tr>
+<td><code>existing_controls</code></td>
+<td>text</td>
+<td>Existing controls</td>
+<td>HSM, network ACL</td>
+</tr>
+<tr>
+<td><code>likelihood_residual</code></td>
+<td>int 1–5</td>
+<td>L after control</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>impact_residual</code></td>
+<td>int 1–5</td>
+<td>I after control</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>residual_score</code></td>
+<td>int</td>
+<td>Residual score</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>treatment</code></td>
+<td>enum</td>
+<td>mitigate/transfer/avoid/accept</td>
+<td>mitigate</td>
+</tr>
+<tr>
+<td><code>risk_owner</code></td>
+<td>string</td>
+<td>Person accountable</td>
+<td>CISO</td>
+</tr>
+<tr>
+<td><code>target_date</code></td>
+<td>date ISO-8601</td>
+<td>Remediation deadline</td>
+<td>2026-09-30</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>open/in_progress/closed/accepted</td>
+<td>in_progress</td>
+</tr>
+<tr>
+<td><code>last_review</code></td>
+<td>date</td>
+<td>Most recent review</td>
+<td>2026-06-01</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A real example — file <code>risk_register.csv</code>:</strong></p>
+<pre><code class="language-csv">risk_id,asset,threat,vulnerability,L_inh,I_inh,inh_score,controls,L_res,I_res,res_score,treatment,owner,target_date,status
+RISK-0042,Hot wallet signer,Key exfiltration,RPC no allowlist,4,5,20,&quot;HSM; net ACL&quot;,2,5,10,mitigate,CISO,2026-09-30,in_progress
+RISK-0043,KYC PII DB,Data breach,Unencrypted backup,3,5,15,&quot;TDE; KMS&quot;,1,5,5,mitigate,DPO,2026-08-15,open
+RISK-0044,Old TLS endpoint,MITM,TLS 1.0 enabled,3,3,9,&quot;none&quot;,3,3,9,avoid,Infra Lead,2026-07-01,open
+</code></pre>
+<p><strong>Operational query (runnable, using <code>q</code>/<code>csvkit</code> or awk):</strong></p>
+<pre><code class="language-bash"># List risks with residual &gt;= 10 (High/Critical) still open, using awk
+awk -F',' 'NR&gt;1 &amp;&amp; $11&gt;=10 &amp;&amp; $15!=&quot;closed&quot; {print $1&quot;: &quot;$2&quot; (res=&quot;$11&quot;, owner=&quot;$13&quot;)&quot;}' risk_register.csv
+</code></pre>
+<p>Output:</p>
+<pre><code>RISK-0042: Hot wallet signer (res=10, owner=CISO)
+</code></pre>
+<p><strong>Security note:</strong> The risk register is a sensitive document — it draws a map of weaknesses for an attacker. Access must be controlled (need-to-know), not left in an open wiki. At the same time it must stay <em>alive</em>: review it periodically (e.g. quarterly) — an outdated register is more dangerous than none because it creates a false sense of security.</p>
+<hr />
+<h2 id="ch16-162-nist-cybersecurity-framework-csf">16.2. NIST Cybersecurity Framework (CSF)</h2>
+<h3 id="ch16-1621-structure-the-6-functions-csf-20">16.2.1. Structure &amp; the 6 Functions (CSF 2.0)</h3>
+<p><strong>What it is.</strong> The NIST CSF is a voluntary framework, not a control checklist but a <strong>common language</strong> for describing security posture. CSF 1.1 has 5 Functions; <strong>CSF 2.0 (released 2024) adds GOVERN</strong> for a total of 6:</p>
+<pre><code>            +-------------------+
+            |   GV - GOVERN     |  (new in 2.0, spans the other functions)
+            +---------+---------+
+                      |
+ +----------+ +-------+------+ +---------+ +----------+ +----------+
+ | ID       | | PR           | | DE      | | RS       | | RC       |
+ | IDENTIFY | | PROTECT      | | DETECT  | | RESPOND  | | RECOVER  |
+ +----------+ +--------------+ +---------+ +----------+ +----------+
+</code></pre>
+<p><strong>The 3-level hierarchical structure (very important for mapping controls):</strong></p>
+<pre><code>Function  (e.g. PR - Protect)
+  └─ Category   (e.g. PR.AC - Identity Management &amp; Access Control)
+       └─ Subcategory  (e.g. PR.AC-01 - Identities &amp; credentials managed)
+            └─ Informative References (map to 800-53, ISO 27001, CIS...)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Function</th>
+<th>Objective</th>
+<th>Representative categories</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GV</td>
+<td>Govern</td>
+<td>Establish &amp; oversee the security strategy, roles, policy, and supply chain risk management</td>
+<td>GV.OC, GV.RM, GV.RR, GV.PO, GV.OV, GV.SC</td>
+</tr>
+<tr>
+<td>ID</td>
+<td>Identify</td>
+<td>Understand assets, risks, environment</td>
+<td>ID.AM (Asset Mgmt), ID.RA (Risk Assessment)</td>
+</tr>
+<tr>
+<td>PR</td>
+<td>Protect</td>
+<td>Protective measures</td>
+<td>PR.AC/PR.AA, PR.DS (Data Security), PR.PT</td>
+</tr>
+<tr>
+<td>DE</td>
+<td>Detect</td>
+<td>Detect events</td>
+<td>DE.CM (Continuous Monitoring), DE.AE</td>
+</tr>
+<tr>
+<td>RS</td>
+<td>Respond</td>
+<td>Respond</td>
+<td>RS.RP, RS.CO, RS.AN, RS.MI</td>
+</tr>
+<tr>
+<td>RC</td>
+<td>Recover</td>
+<td>Recover</td>
+<td>RC.RP, RC.IM, RC.CO</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[NEEDS VERIFICATION]</code> Specific category codes changed between CSF 1.1 and 2.0 (e.g. PR.AC → PR.AA in 2.0). When writing official documentation, cross-check against the latest CSF 2.0 from nist.gov.</p>
+</blockquote>
+<h3 id="ch16-1622-implementation-tiers-profiles">16.2.2. Implementation Tiers &amp; Profiles</h3>
+<p><strong>Tiers (1–4)</strong> describe the maturity of the risk management process (NOT a security score):</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Name</th>
+<th>Characteristics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Partial</td>
+<td>Reactive, ad-hoc, no process</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Risk Informed</td>
+<td>Risk awareness exists but is not organization-wide</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Repeatable</td>
+<td>Formalized as policy, repeatable processes, updated periodically</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Adaptive</td>
+<td>Continuous improvement, using lessons learned &amp; predictive analysis</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A Profile</strong> = a mapping of Functions/Categories suited to a specific business. Compare the <strong>Current Profile</strong> vs the <strong>Target Profile</strong> to produce a gap list.</p>
+<p><strong>A real example — a profile file in JSON used to track gaps:</strong></p>
+<pre><code class="language-json">{
+  &quot;organization&quot;: &quot;CEX-Example&quot;,
+  &quot;csf_version&quot;: &quot;2.0&quot;,
+  &quot;assessment_date&quot;: &quot;2026-06-19&quot;,
+  &quot;subcategories&quot;: [
+    { &quot;id&quot;: &quot;GV.SC-04&quot;, &quot;desc&quot;: &quot;Suppliers prioritized by criticality&quot;,
+      &quot;current_tier&quot;: 2, &quot;target_tier&quot;: 4, &quot;gap&quot;: 2, &quot;owner&quot;: &quot;Procurement&quot; },
+    { &quot;id&quot;: &quot;PR.DS-01&quot;, &quot;desc&quot;: &quot;Data-at-rest protected&quot;,
+      &quot;current_tier&quot;: 3, &quot;target_tier&quot;: 4, &quot;gap&quot;: 1, &quot;owner&quot;: &quot;Platform&quot; },
+    { &quot;id&quot;: &quot;DE.CM-01&quot;, &quot;desc&quot;: &quot;Networks monitored&quot;,
+      &quot;current_tier&quot;: 2, &quot;target_tier&quot;: 3, &quot;gap&quot;: 1, &quot;owner&quot;: &quot;SOC&quot; }
+  ]
+}
+</code></pre>
+<pre><code class="language-bash"># List gaps &gt; 0, sorted descending — runnable with jq
+jq -r '.subcategories | sort_by(-.gap)[] | select(.gap&gt;0)
+       | &quot;\(.id)\tgap=\(.gap)\towner=\(.owner)&quot;' csf_profile.json
+</code></pre>
+<p>Output:</p>
+<pre><code>GV.SC-04    gap=2   owner=Procurement
+PR.DS-01    gap=1   owner=Platform
+DE.CM-01    gap=1   owner=SOC
+</code></pre>
+<p><strong>Security note:</strong> CSF specifies the framework only; it does <em>not</em> say "you must configure AES-256." For concrete action you must drop down to the Informative References → NIST SP 800-53 or the CIS Controls. Do not stop at the CSF level and assume you have controls in place.</p>
+<hr />
+<h2 id="ch16-163-nist-special-publications">16.3. NIST Special Publications</h2>
+<h3 id="ch16-1631-sp-800-53-catalog-of-security-and-privacy-controls">16.3.1. SP 800-53 — Catalog of Security and Privacy Controls</h3>
+<p><strong>What it is.</strong> NIST's most detailed control catalog (Rev. 5). Mandatory for U.S. federal systems (via FISMA), and widely used as a control library. Organized by <strong>control family</strong> (20 families in Rev. 5).</p>
+<p><strong>Control identifier structure:</strong></p>
+<pre><code>   AC - 2 ( 3 )
+   │    │   │
+   │    │   └── Control Enhancement (optional, number in parentheses)
+   │    └────── Control number within the family
+   └─────────── Family identifier (2 letters)
+
+Example: AC-2(3) = Account Management, enhancement 3 (Disable Inactive Accounts)
+</code></pre>
+<p><strong>Control families table (selection):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Family</th>
+<th>Domain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AC</td>
+<td>Access Control</td>
+<td>Authorization, accounts, least privilege</td>
+</tr>
+<tr>
+<td>AU</td>
+<td>Audit and Accountability</td>
+<td>Logs, audit trail, time stamp</td>
+</tr>
+<tr>
+<td>AT</td>
+<td>Awareness and Training</td>
+<td>Training</td>
+</tr>
+<tr>
+<td>CM</td>
+<td>Configuration Management</td>
+<td>Baseline, hardening</td>
+</tr>
+<tr>
+<td>CP</td>
+<td>Contingency Planning</td>
+<td>DR/BCP</td>
+</tr>
+<tr>
+<td>IA</td>
+<td>Identification and Authentication</td>
+<td>Identification, MFA</td>
+</tr>
+<tr>
+<td>IR</td>
+<td>Incident Response</td>
+<td>Incident response</td>
+</tr>
+<tr>
+<td>RA</td>
+<td>Risk Assessment</td>
+<td>Risk assessment, scanning</td>
+</tr>
+<tr>
+<td>SC</td>
+<td>System and Communications Protection</td>
+<td>Crypto, network, boundary</td>
+</tr>
+<tr>
+<td>SI</td>
+<td>System and Information Integrity</td>
+<td>Patching, AV, flaw remediation</td>
+</tr>
+<tr>
+<td>SA</td>
+<td>System and Services Acquisition</td>
+<td>SDLC, supply chain</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>Program Management</td>
+<td>Program management</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Rev. 5 has <strong>20 families</strong> (adding families such as PT - PII Processing, SR - Supply Chain Risk Management). <code>[NEEDS VERIFICATION]</code> the complete list of 20 families if an official citation is required.</p>
+</blockquote>
+<p><strong>Anatomy of a control — example AU-2 Audit Events:</strong></p>
+<pre><code>Control:        AU-2 EVENT LOGGING
+Statement (a):  Identify the types of events the system is capable of logging
+Statement (b):  Coordinate the event logging function with other org entities...
+Discussion:     [explains the rationale]
+Related:        AC-6, AU-3, AU-12, SI-4 ...
+Enhancements:   AU-2(...) [Rev.5 withdrew some]
+Baseline:       LOW / MODERATE / HIGH allocation
+</code></pre>
+<p><strong>Baseline by impact classification (from FIPS 199):</strong> each system is classified Low/Moderate/High for each CIA objective, and controls are selected according to the corresponding baseline (SP 800-53B).</p>
+<p><strong>A real example — OSCAL.</strong> NIST publishes the 800-53 catalog in the machine-readable <strong>OSCAL</strong> format (JSON/XML/YAML). This is how it is actually used in DevSecOps to automate compliance:</p>
+<pre><code class="language-bash"># Download the 800-53 Rev5 catalog in OSCAL JSON (public repo usnistgov/oscal-content)
+# then extract control AU-2 with jq
+jq -r '.catalog.groups[]?.controls[]?
+        | select(.id==&quot;au-2&quot;)
+        | &quot;\(.id | ascii_upcase): \(.title)&quot;' \
+   NIST_SP-800-53_rev5_catalog.json
+</code></pre>
+<p>Sample output:</p>
+<pre><code>AU-2: Event Logging
+</code></pre>
+<p><strong>Mapping a control → real configuration (example AU-2/AU-3 on Linux auditd):</strong> the control says "log events," while the real configuration is the file <code>/etc/audit/rules.d/audit.rules</code>:</p>
+<pre><code class="language-bash"># /etc/audit/rules.d/00-compliance.rules  (auditd)
+# AU-2/AU-3: log all permission configuration changes &amp; record who/what/when
+-w /etc/passwd  -p wa -k identity         # track user edits
+-w /etc/sudoers -p wa -k privilege        # sudo privilege changes
+-a always,exit -F arch=b64 -S execve -F euid=0 -k root_cmd   # commands run as root
+# AU-9: protect logs from modification
+-e 2                                       # lock the audit config (immutable until reboot)
+</code></pre>
+<p>Apply and verify:</p>
+<pre><code class="language-bash">sudo augenrules --load            # load rules
+sudo auditctl -l                  # list active rules
+# find records related to the key 'privilege'
+sudo ausearch -k privilege --start today
+</code></pre>
+<p><strong>Security note:</strong> The control <code>AU-9 Protection of Audit Information</code> requires that logs cannot be modified by an attacker. On auditd, <code>-e 2</code> makes the configuration immutable; in addition, logs must be pushed <strong>away</strong> (remote syslog/SIEM) immediately, because an attacker who gains root will delete local logs. The audit trail loses its non-repudiation property if an attacker can modify it.</p>
+<h3 id="ch16-1632-sp-800-61-computer-security-incident-handling-guide">16.3.2. SP 800-61 — Computer Security Incident Handling Guide</h3>
+<p><strong>What it is.</strong> A guide to the incident response (IR) process. It defines a <strong>4-phase lifecycle</strong> (note: this differs from the 6-step SANS PICERL model):</p>
+<pre><code>   ┌──────────────────────┐
+   │ 1. Preparation       │  Prepare: tools, playbooks, training, IR team
+   └──────────┬───────────┘
+              ▼
+   ┌──────────────────────┐
+   │ 2. Detection &amp;       │  Detect &amp; analyze: triage, scope, severity
+   │    Analysis          │
+   └──────────┬───────────┘
+              ▼   ◄──────────────┐   (loop: contains multiple rounds)
+   ┌──────────────────────┐      │
+   │ 3. Containment,      │──────┘
+   │    Eradication &amp;     │
+   │    Recovery          │
+   └──────────┬───────────┘
+              ▼
+   ┌──────────────────────┐
+   │ 4. Post-Incident     │  Lessons learned, update controls &amp; playbooks
+   │    Activity          │
+   └──────────────────────┘
+</code></pre>
+<blockquote>
+<p>Comparison: <strong>SANS PICERL</strong> = Preparation, Identification, Containment, Eradication, Recovery, Lessons learned (6 steps). NIST merges Containment/Eradication/Recovery into one large phase (4 phases). <code>[SP 800-61 Rev.3, 2025, integrated the CSF 2.0 language — NEEDS VERIFICATION of detailed changes]</code>.</p>
+</blockquote>
+<p><strong>Containment is divided into 2 types (an important technical decision):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Objective</th>
+<th>Technical example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Short-term</td>
+<td>Isolate immediately, prevent spread</td>
+<td>Isolate the VLAN, disconnect the NIC, block the IP at the firewall</td>
+</tr>
+<tr>
+<td>Long-term</td>
+<td>Temporary patch so the system runs during the investigation</td>
+<td>Temporary patch, increased monitoring, clean replacement host</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A real example — evidence &amp; chain of custody.</strong> During containment, evidence must be collected <em>before</em> destroying state. The order of collection follows volatility (order of volatility, RFC 3227):</p>
+<pre><code>High volatility  -&gt;  low
+1. CPU registers, cache
+2. RAM (memory), routing table, ARP cache, process list
+3. Temp files, swap
+4. Disk
+5. Remote logging / monitoring data
+6. Physical config, network topology
+7. Archival media
+</code></pre>
+<p>Commands to collect RAM and hash it to preserve integrity (chain of custody):</p>
+<pre><code class="language-bash"># Dump RAM on the Linux system under investigation (LiME or avml), then hash immediately
+sudo ./avml /evidence/mem-$(hostname)-$(date +%Y%m%dT%H%M%SZ).lime
+sha256sum /evidence/mem-*.lime | tee /evidence/HASHES.txt
+# Record the chain of custody (who, when, what)
+printf '%s\tcollector=%s\thost=%s\tsha256=%s\n' \
+  &quot;$(date -u +%FT%TZ)&quot; &quot;$USER&quot; &quot;$(hostname)&quot; &quot;$(sha256sum /evidence/mem-*.lime|cut -d' ' -f1)&quot; \
+  &gt;&gt; /evidence/custody.log
+</code></pre>
+<p><strong>Security note:</strong> Hashing with SHA-256 <em>at the moment of collection</em> is legal proof that the evidence was not modified afterward. If the hash changes → the evidence loses its value in court. Never analyze the original — work on a copy whose hash has been verified.</p>
+<h3 id="ch16-1633-sp-800-207-zero-trust-architecture">16.3.3. SP 800-207 — Zero Trust Architecture</h3>
+<p><strong>What it is.</strong> A model that drops "trust based on network location" (no more "inside the network = safe"). Every access request must be authenticated + authorized + have its risk continuously evaluated, based on 7 principles (tenets).</p>
+<p><strong>Logical architecture — PEP/PDP:</strong></p>
+<pre><code>   Subject (user/device) ── request ──►  ┌──────── PEP ────────┐
+                                          │  Policy Enforcement │  (gateway/proxy)
+                                          │     Point           │
+                                          └─────────┬───────────┘
+                                                    │ allow/deny?
+                                                    ▼
+                              ┌──────────── Control Plane ──────────────┐
+                              │  PDP = Policy Decision Point             │
+                              │   ├─ Policy Engine (PE):                 │
+                              │   │     computes the trust score         │
+                              │   └─ Policy Administrator (PA):          │
+                              │         grants/revokes tokens,           │
+                              │         configures the channel           │
+                              └────────────┬─────────────────────────────┘
+        Signals into the PE:               │
+        CDM, threat intel, SIEM, ID mgmt, data access policy, PKI
+</code></pre>
+<p><strong>State machine flow of a Zero Trust request:</strong></p>
+<pre><code>1. Subject sends a request to a resource -&gt; intercepted at the PEP
+2. PEP asks the PDP: &quot;subject X, device Y, requesting access to resource Z&quot;
+3. PE gathers signals: identity (MFA done?), device posture (patched? EDR?),
+   context (time, location), threat intel -&gt; computes a trust score
+4. Compared against policy -&gt; ALLOW / DENY / STEP-UP (require additional MFA)
+5. If ALLOW: the PA issues a short-lived session/token, the PEP opens the channel
+6. Continuously re-evaluated: if posture degrades -&gt; revoke the session
+</code></pre>
+<p><strong>A real example — OPA/Rego policy (a real PDP in a K8s/microservice environment):</strong></p>
+<pre><code class="language-rego">package zerotrust.authz
+
+import future.keywords.if
+
+default allow := false
+
+# Allow if: MFA done, device compliant, within business hours, not threat-intel flagged
+allow if {
+    input.subject.mfa == true
+    input.device.compliant == true
+    input.device.patch_age_days &lt;= 30
+    input.context.threat_score &lt; 50
+    valid_business_hours
+}
+
+valid_business_hours if {
+    h := time.clock([time.now_ns(), &quot;Asia/Ho_Chi_Minh&quot;])[0]
+    h &gt;= 7
+    h &lt; 20
+}
+
+# Require step-up MFA for a sensitive action
+step_up if {
+    input.resource.sensitivity == &quot;high&quot;
+    input.subject.mfa_age_minutes &gt; 15
+}
+</code></pre>
+<p>Decision query (runnable with the <code>opa</code> binary):</p>
+<pre><code class="language-bash">echo '{
+  &quot;subject&quot;: {&quot;mfa&quot;: true, &quot;mfa_age_minutes&quot;: 5},
+  &quot;device&quot;:  {&quot;compliant&quot;: true, &quot;patch_age_days&quot;: 12},
+  &quot;context&quot;: {&quot;threat_score&quot;: 10},
+  &quot;resource&quot;:{&quot;sensitivity&quot;: &quot;high&quot;}
+}' | opa eval -I -d zerotrust.rego 'data.zerotrust.authz.allow' --format=pretty
+</code></pre>
+<p>Output:</p>
+<pre><code>true
+</code></pre>
+<p><strong>Security note:</strong> The PDP/PEP becomes a point of concentrated power — if an attacker takes over the Policy Administrator, they control all authorization. The control plane must be protected at the highest level (HSM-backed signing tokens, log every decision to the SIEM, never let the PEP fail-open). Issued tokens must be short-lived (a few minutes) for continuous evaluation to be meaningful.</p>
+<hr />
+<h2 id="ch16-164-isoiec-27001-27002">16.4. ISO/IEC 27001 &amp; 27002</h2>
+<h3 id="ch16-1641-isoiec-27001-isms">16.4.1. ISO/IEC 27001 — ISMS</h3>
+<p><strong>What it is.</strong> The international standard for an <strong>Information Security Management System (ISMS)</strong>. Unlike the NIST CSF (voluntary), 27001 is a <strong>certifiable</strong> standard — an organization is audited by a third party and issued a certificate. Current version: <strong>ISO/IEC 27001:2022</strong>.</p>
+<p><strong>Structure of 27001 = the clause section (clauses 4–10, MANDATORY) + Annex A (reference controls).</strong></p>
+<p><strong>PDCA (Plan-Do-Check-Act)</strong> is the engine of continual improvement, mapped onto the clauses:</p>
+<pre><code>       PLAN ───────────────► DO
+   (4 Context,            (8 Operation)
+    5 Leadership,             │
+    6 Planning,               ▼
+    7 Support)            CHECK (9 Performance
+        ▲                      evaluation:
+        │                      monitoring, audit,
+        │                      mgmt review)
+        │                         │
+       ACT ◄──────────────────────┘
+   (10 Improvement:
+    nonconformity,
+    corrective action)
+</code></pre>
+<p><strong>Clauses 4–10 table (mandatory clauses) — digging into each clause:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Clause</th>
+<th>Name</th>
+<th>Core operational requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>Context of the organization</td>
+<td>Define the context, interested parties, <strong>scope of the ISMS</strong></td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Scope</td>
+<td>The scope of applicability (important: a narrow scope = easier audit but less protection)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Leadership</td>
+<td>Leadership commitment, ISMS policy, roles &amp; responsibilities</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Planning</td>
+<td><strong>Risk assessment + risk treatment</strong>, security objectives, <strong>SoA</strong></td>
+</tr>
+<tr>
+<td>6.1.2</td>
+<td>Risk assessment</td>
+<td>A repeatable risk assessment process</td>
+</tr>
+<tr>
+<td>6.1.3</td>
+<td>Risk treatment</td>
+<td>Select controls + produce the <strong>Statement of Applicability</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Support</td>
+<td>Resources, competence, awareness, communication, <strong>documented information</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Operation</td>
+<td>Implement the risk treatment plan, change control</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Performance evaluation</td>
+<td>Measurement, <strong>internal audit</strong>, <strong>management review</strong></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Improvement</td>
+<td>Handle nonconformity, corrective action, continual improvement</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statement of Applicability (SoA)</strong> — the central document of 27001. It lists <strong>every</strong> Annex A control, recording: whether it is applicable, the rationale, and whether it has been implemented.</p>
+<p><strong>A real example — an SoA as a table (CSV):</strong></p>
+<pre><code class="language-csv">control_id,control_name,applicable,justification,status,evidence
+A.5.1,Policies for information security,YES,Required by ISMS scope,Implemented,POL-001 v3
+A.5.7,Threat intelligence,YES,CEX faces APT,In progress,TI feed contract
+A.8.1,User endpoint devices,YES,BYOD allowed,Implemented,MDM Intune
+A.8.24,Use of cryptography,YES,PII + funds,Implemented,KMS+AES-256-GCM
+A.7.4,Physical security monitoring,NO,No own datacenter (cloud only),N/A,AWS SOC2 report
+</code></pre>
+<pre><code class="language-bash"># Check: which controls are applicable=YES but not yet Implemented (an audit gap)
+awk -F',' 'NR&gt;1 &amp;&amp; $3==&quot;YES&quot; &amp;&amp; $5!=&quot;Implemented&quot; {print $1&quot; (&quot;$2&quot;) -&gt; &quot;$5}' soa.csv
+</code></pre>
+<p>Output:</p>
+<pre><code>A.5.7 (Threat intelligence) -&gt; In progress
+</code></pre>
+<p><strong>Why is the SoA important?</strong> The auditor uses the SoA as a starting point: for each "Applicable + Implemented" control, they demand <strong>evidence</strong>. For each "Not applicable," they demand a <strong>reasonable justification</strong>. The SoA is the contract between the organization and the auditor.</p>
+<p><strong>Annex A of 27001:2022 — 93 controls, 4 themes</strong> (restructured from the 114 controls/14 domains of the 2013 version):</p>
+<table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Code</th>
+<th># of controls</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organizational</td>
+<td>A.5</td>
+<td>37</td>
+<td>Policy, roles, suppliers, IR, compliance</td>
+</tr>
+<tr>
+<td>People</td>
+<td>A.6</td>
+<td>8</td>
+<td>Recruitment, training, disciplinary process, remote work</td>
+</tr>
+<tr>
+<td>Physical</td>
+<td>A.7</td>
+<td>14</td>
+<td>Security zones, equipment, data destruction</td>
+</tr>
+<tr>
+<td>Technological</td>
+<td>A.8</td>
+<td>34</td>
+<td>Access control, crypto, logging, network, secure development</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1642-isoiec-27002-code-of-practice">16.4.2. ISO/IEC 27002 — Code of practice</h3>
+<p><strong>What it is.</strong> While 27001 <em>says which control</em> (Annex A lists the names), <strong>27002 explains what that control means and how to implement it</strong> (implementation guidance). It uses the same numbering (A.5–A.8).</p>
+<p><strong>The 5 new attributes in 27002:2022</strong> — each control is tagged to enable filtering/mapping:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Possible values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Control type</td>
+<td>Preventive / Detective / Corrective</td>
+</tr>
+<tr>
+<td>Information security properties</td>
+<td>Confidentiality / Integrity / Availability</td>
+</tr>
+<tr>
+<td>Cybersecurity concepts</td>
+<td>Identify / Protect / Detect / Respond / Recover (maps to CSF)</td>
+</tr>
+<tr>
+<td>Operational capabilities</td>
+<td>Governance, Asset_mgmt, Identity_and_access_mgmt...</td>
+</tr>
+<tr>
+<td>Security domains</td>
+<td>Governance_and_Ecosystem, Protection, Defence, Resilience</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why have attributes?</strong> They allow you to slice the control catalog across multiple dimensions — for example, filtering all "Detective + Detect" controls to build monitoring capability. This is the technical bridge between ISO and the NIST CSF.</p>
+<h3 id="ch16-1643-audit-certification">16.4.3. Audit &amp; certification</h3>
+<p><strong>The 27001 certification process (2 stages):</strong></p>
+<pre><code>Stage 1 audit  (Documentation review)
+  - Check that the ISMS has complete documentation: scope, policy, SoA, risk assessment,
+    risk treatment plan, internal audit, management review.
+  - Outcome: whether it is ready for Stage 2.
+        │
+        ▼
+Stage 2 audit  (Implementation / effectiveness)
+  - The auditor samples controls and demands evidence of execution (logs, tickets, screenshots,
+    configuration). Interviews staff.
+  - Findings: Major NC / Minor NC / Observation.
+        │
+        ▼
+Certification (certificate valid for 3 years)
+        │
+        ▼
+Surveillance audit (year 1, year 2) -&gt; Recertification (year 3)
+</code></pre>
+<p><strong>Classification of findings:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Meaning</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Major nonconformity</td>
+<td>A systemic violation/missing mandatory control</td>
+<td>Blocks certification until remediated</td>
+</tr>
+<tr>
+<td>Minor nonconformity</td>
+<td>A localized, non-systemic deviation</td>
+<td>Requires a corrective action plan</td>
+</tr>
+<tr>
+<td>Observation/OFI</td>
+<td>An opportunity for improvement</td>
+<td>Not mandatory, but should be addressed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security note:</strong> A 27001 certificate certifies that a <em>management system</em> exists and operates, NOT that the system "cannot be hacked." A narrow scope (e.g. only one department) can still receive a valid certificate — always read the <strong>scope statement</strong> on a vendor's certificate before trusting it. This is an important due diligence point when assessing a vendor.</p>
+<h3 id="ch16-1644-small-company-view-iso-27001-soc-2-on-thin-resources">16.4.4. Small-company view: ISO 27001 / SOC 2 on thin resources</h3>
+<p>At a small company (a dev outsourcing shop, a startup), doing "enough" 27001 or SOC 2 is usually not about maximal security but about <strong>getting through the sales gate</strong>: large customers won't sign with a vendor that has no certificate or can't answer a security questionnaire. A few pragmatic lessons:</p>
+<ul>
+<li><strong>Narrowing scope is the biggest lever.</strong> Audit cost scales with scope. Put into the ISMS only the systems/teams that actually touch customer data (e.g. the prod platform plus the team that runs it), and keep dev/internal environments out of scope. A narrow but honest scope beats a broad scope with no evidence.</li>
+<li><strong>SOC 2 vs 27001:</strong> SOC 2 (Type I = at a point in time, Type II = control effectiveness over a 3–12 month window) is an auditor's attestation report (AICPA, common with US customers), while 27001 is an ISMS certificate (common with EU/APAC customers). Many customers accept either; pick the one that fits your customer market.</li>
+<li><strong>Evidence should be automated output, not manual screenshots.</strong> For Type II, the auditor samples evidence spread over time → doing it by hand won't scale. Make evidence something the pipeline/system emits automatically: access logs, CI scan results, IAM/MFA policy exports, periodic review tickets (see also 16.7.4 crosswalk and continuous compliance in 16.8.3). A control you can prove with machine-generated logs passes an audit far more smoothly than a "screenshot of the config."</li>
+<li><strong>Customer security questionnaires</strong> (SIG, CAIQ, or the customer's own Excel sheet) are effectively a pre-contract mini-audit. Answering them over and over is very time-consuming if you rewrite from scratch each time — so build a <strong>baseline doc / answer bank</strong> (architecture description, encryption controls, access management, IR, backup, data residency) to reuse answers and keep them consistent across rounds.</li>
+</ul>
+<hr />
+<h2 id="ch16-165-pci-dss-overview-financialcard-industry">16.5. PCI DSS (overview — financial/card industry)</h2>
+<p><strong>What it is.</strong> The Payment Card Industry Data Security Standard — a standard mandated by <em>contract</em> (not by law) for any organization that stores/processes/transmits <strong>cardholder data (CHD)</strong>. Current version <strong>PCI DSS v4.0 / v4.0.1</strong>. 6 objectives, <strong>12 requirements</strong>.</p>
+<p><strong>Cardholder data — classified down to each field (EXTREMELY important, it determines what may be stored):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Field</th>
+<th>Storable after authorization?</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cardholder Data (CHD)</td>
+<td>PAN (Primary Account Number, 13–19 digits)</td>
+<td>YES — but must be encrypted/truncated</td>
+<td>Display at most the first 6 + last 4</td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Cardholder name</td>
+<td>YES</td>
+<td></td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Expiration date</td>
+<td>YES</td>
+<td></td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Service code</td>
+<td>YES</td>
+<td></td>
+</tr>
+<tr>
+<td>Sensitive Auth Data (SAD)</td>
+<td>Full track data (magnetic stripe)</td>
+<td><strong>NEVER</strong></td>
+<td>Prohibited from storage after auth</td>
+</tr>
+<tr>
+<td>SAD</td>
+<td>CAV2/CVC2/CVV2/CID (3–4 digit code)</td>
+<td><strong>NEVER</strong></td>
+<td>Prohibited from storage after auth</td>
+</tr>
+<tr>
+<td>SAD</td>
+<td>PIN / PIN block</td>
+<td><strong>NEVER</strong></td>
+<td>Prohibited from storage after auth</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The 12 PCI DSS requirements (6 objectives):</strong></p>
+<pre><code>Build &amp; Maintain Secure Network
+  1. Install &amp; maintain network security controls (firewall)
+  2. Apply secure configurations (no vendor defaults)
+Protect Account Data
+  3. Protect stored account data (encrypt the PAN)
+  4. Encrypt CHD transmitted over public networks (TLS)
+Maintain Vulnerability Mgmt
+  5. Protect against malware
+  6. Develop &amp; maintain secure systems/software
+Strong Access Control
+  7. Restrict access on a need-to-know basis
+  8. Identify &amp; authenticate access (MFA)
+  9. Restrict physical access
+Monitor &amp; Test
+  10. Log &amp; monitor all access to CHD
+  11. Test security regularly (scan, pentest)
+Maintain Policy
+  12. Information security policy
+</code></pre>
+<p><strong>A real example — masking the PAN (Requirement 3.4) in logs.</strong> Never log the full PAN. The masking function keeps the first 6 + last 4:</p>
+<pre><code class="language-python">def mask_pan(pan: str) -&gt; str:
+    pan = pan.replace(&quot; &quot;, &quot;&quot;)
+    if len(pan) &lt; 13:
+        raise ValueError(&quot;Invalid PAN&quot;)
+    return pan[:6] + &quot;*&quot; * (len(pan) - 10) + pan[-4:]
+
+print(mask_pan(&quot;4111111111111111&quot;))   # -&gt; 411111******1111
+</code></pre>
+<p><strong>Luhn check (mod-10) — PAN structurally valid:</strong></p>
+<pre><code class="language-python">def luhn_ok(pan: str) -&gt; bool:
+    digits = [int(d) for d in pan if d.isdigit()][::-1]
+    total = sum(d if i % 2 == 0 else (d*2 - 9 if d*2 &gt; 9 else d*2)
+                for i, d in enumerate(digits))
+    return total % 10 == 0
+
+print(luhn_ok(&quot;4111111111111111&quot;))   # -&gt; True
+</code></pre>
+<p><strong>Security note:</strong> The most effective way to reduce PCI scope is <strong>tokenization</strong> — replace the PAN with a meaningless token, keeping the real PAN in a vault or offloading it entirely to a payment processor (the PAN never touches your system). Every system that "touches" CHD falls into audit scope, so a good architecture isolates the <strong>Cardholder Data Environment (CDE)</strong> with strict segmentation (Requirement 1) to narrow the scope.</p>
+<hr />
+<h2 id="ch16-166-vietnamese-law-at-the-level-of-operational-meaning">16.6. Vietnamese law (at the level of operational meaning)</h2>
+<blockquote>
+<p>This section interprets the <strong>operational meaning</strong> for engineers. Specific document numbers/articles are marked <code>[NEEDS VERIFICATION]</code> where uncertain — do NOT use this as formal legal advice; for legal decisions you must cross-check the original text and consult the legal department.</p>
+</blockquote>
+<h3 id="ch16-1661-law-on-cyber-information-security-2015">16.6.1. Law on Cyber Information Security 2015</h3>
+<p><strong>What it is.</strong> The Law on Cyber Information Security No. <strong>86/2015/QH13</strong>, effective <strong>2016-07-01</strong>. The foundational legal framework for information security: protecting information on networks, classifying information, protecting personal information (at the level of principle), information system security, the business of information security products/services (licensing), and civil cryptography.</p>
+<p><strong>Operational meaning for engineers:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Topic in the law</th>
+<th>Real operational consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protection of personal information (principle)</td>
+<td>Consent is required when collecting; data may be corrected/deleted on request (more detail in Decree 13/2023)</td>
+</tr>
+<tr>
+<td>Classification of systems by level</td>
+<td>Lays the foundation for the level 1–5 classification (detail in Decree 85/2016)</td>
+</tr>
+<tr>
+<td>Business of information security products/services</td>
+<td>Providing pentest/security monitoring services requires a license</td>
+</tr>
+<tr>
+<td>Civil cryptography</td>
+<td>Trading in civil cryptography products requires a license (Government Cipher Committee)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1662-cybersecurity-law-2018">16.6.2. Cybersecurity Law 2018</h3>
+<p><strong>What it is.</strong> The Cybersecurity Law No. <strong>24/2018/QH14</strong>, effective <strong>2019-01-01</strong>. It focuses on <strong>national security and social order and safety</strong> in cyberspace — a different emphasis from the Cyber Information Security Law (which leans technical).</p>
+<p><strong>Two notable operational points (controversial and affecting system architecture):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Operational meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data localization (in-country storage)</strong></td>
+<td>Some enterprises (especially those providing services over telecom/Internet networks that collect Vietnamese user data) may be required to <strong>store data within Vietnam</strong> and establish a branch/representative office. This is a key <strong>data residency</strong> factor when designing a cloud architecture.</td>
+</tr>
+<tr>
+<td><strong>Protection of information systems important to national security</strong></td>
+<td>Systems in this category are subject to cybersecurity inspection/monitoring by the authorities</td>
+</tr>
+<tr>
+<td>Cooperation in investigations</td>
+<td>An obligation to provide information/support to the authorities as prescribed</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[NEEDS VERIFICATION]</code> The scope of affected parties and the specific conditions of the localization requirement are detailed in the implementing decree (e.g. Decree 53/2022/NĐ-CP guiding the Cybersecurity Law). The affected parties and the application "trigger" should be read carefully in the decree.</p>
+</blockquote>
+<h3 id="ch16-1663-classifying-systems-by-level-decree-852016nđ-cp">16.6.3. Classifying systems by level — Decree 85/2016/NĐ-CP</h3>
+<p><strong>What it is.</strong> Decree <strong>85/2016/NĐ-CP</strong> on <strong>ensuring the security of information systems by level</strong> (guiding the Cyber Information Security Law 2015). It classifies information systems into <strong>5 levels</strong> by the severity of consequences if compromised. The higher the level → the stricter the technical &amp; management requirements.</p>
+<p><strong>Similar in spirit to the U.S. FIPS 199 (Low/Mod/High) but with 5 levels:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Description of consequences (operational interpretation)</th>
+<th>Illustrative example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Level 1</td>
+<td>Minor harm to the legitimate rights/interests of an organization or individual</td>
+<td>An internal showcase website</td>
+</tr>
+<tr>
+<td>Level 2</td>
+<td>Serious harm to rights/interests</td>
+<td>An enterprise's internal service system</td>
+</tr>
+<tr>
+<td>Level 3</td>
+<td>Serious harm to production, public interest, social order</td>
+<td>A system with much personal data; a large-scale online service</td>
+</tr>
+<tr>
+<td>Level 4</td>
+<td>Very serious harm to national defense and security OR especially serious harm to public order and interest</td>
+<td>A large financial/banking system, critical infrastructure</td>
+</tr>
+<tr>
+<td>Level 5</td>
+<td>Especially serious harm to national defense and security</td>
+<td>A nation's most critical systems</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Operational consequence (the level-dossier process):</strong></p>
+<pre><code>1. Preliminarily classify the system -&gt; determine the proposed level
+2. Prepare a DOSSIER proposing the level (system description, security assurance plan)
+3. Appraise &amp; approve the level (competent authority)
+4. Implement the security assurance plan as required by the LEVEL
+   (technical requirements reference TCVN 11930:2017 - basic requirements for
+    ensuring information system security by level)
+5. Inspect and assess periodically
+</code></pre>
+<blockquote>
+<p><strong>Level 4 and above</strong> carry strict technical &amp; management requirements (monitoring, response plans, strong access control...). <code>[NEEDS VERIFICATION]</code> The detailed technical requirements for each level are in <strong>TCVN 11930:2017</strong> and the guiding circulars of the Ministry of Information and Communications — consult the original text for a precise list of each technical requirement for level 4.</p>
+</blockquote>
+<p><strong>Security note:</strong> For an exchange/financial system in Vietnam, determining the level (usually falling into level 3 or 4) drives the entire legally mandatory control baseline — similar to how FIPS 199 determines the 800-53 baseline. You must prepare the level dossier before designing controls, not the other way around.</p>
+<h3 id="ch16-1664-personal-data-protection-decree-132023nđ-cp">16.6.4. Personal data protection — Decree 13/2023/NĐ-CP</h3>
+<p><strong>What it is.</strong> Decree <strong>13/2023/NĐ-CP</strong> on <strong>personal data protection (PDPD)</strong>, effective <strong>2023-07-01</strong>. It was the personal-data instrument closest to the GDPR in Vietnam during 2023–2025. It defines personal data, sensitive personal data, the roles of the parties, data subject rights, and obligations.</p>
+<blockquote>
+<p><strong>IMPORTANT UPDATE — elevated from decree to statute.</strong> The National Assembly passed the <strong>Law on Personal Data Protection (Law No. 91/2025/QH15)</strong> on 2025-06-26, <strong>effective 2026-01-01</strong>. This is the first <em>statute</em>-level instrument on personal data, sitting above Decree 13/2023 (decree level) and becoming the highest legal framework for PDP in Vietnam. Notable points (cross-check the original text when quoting precisely): prohibition on buying/selling personal data, tighter conditions for cross-border data transfer, and defined penalties. The operational principles below (consent, data subject rights, DPIA/TIA, breach notification) still hold but <strong>must be re-checked against Law 91/2025 and its new implementing decrees</strong> rather than relying on Decree 13/2023 alone. <code>[NEEDS VERIFICATION]</code> the number/articles of the decree implementing Law 91/2025.</p>
+</blockquote>
+<p><strong>Classification of personal data (determines the level of technical protection):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Operational definition</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basic personal data</td>
+<td>Ordinary identifying information</td>
+<td>Full name, date of birth, phone number, email, national ID</td>
+</tr>
+<tr>
+<td>Sensitive personal data</td>
+<td>Requires enhanced protection</td>
+<td>Health, biometrics, financial, political/religious views, location, sexual life...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Roles of the parties (mapped to GDPR controller/processor):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Role under Decree 13/2023</th>
+<th>GDPR equivalent</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Personal Data Controller</td>
+<td>Controller</td>
+<td>Decides the purpose &amp; means of processing</td>
+</tr>
+<tr>
+<td>Personal Data Processor</td>
+<td>Processor</td>
+<td>Processes under authorization from the controller</td>
+</tr>
+<tr>
+<td>Controller-cum-Processor</td>
+<td>Controller+Processor</td>
+<td>Both decides and processes</td>
+</tr>
+<tr>
+<td>Third party</td>
+<td>Third party</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key operational obligations:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Obligation</th>
+<th>Technical consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Consent</strong> before processing</td>
+<td>Must have a mechanism to collect + log consent (timestamp, purpose, policy version)</td>
+</tr>
+<tr>
+<td>Data subject rights: access, correct, delete, withdraw consent, object</td>
+<td>Must have a DSAR (Data Subject Access Request) API/process</td>
+</tr>
+<tr>
+<td><strong>Data processing impact assessment dossier (DPIA)</strong> — <code>[NEEDS VERIFICATION of the exact name/form]</code></td>
+<td>Prepare a personal data processing impact assessment dossier, store it, and have it ready to provide to the authority (Ministry of Public Security - A05)</td>
+</tr>
+<tr>
+<td>Notification of processing sensitive data / transferring data abroad</td>
+<td>A dossier for transferring personal data abroad (TIA)</td>
+</tr>
+<tr>
+<td>Breach notification</td>
+<td>A breach notification process within the prescribed time limit</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[NEEDS VERIFICATION]</code> The breach notification time limit (72h?) and the specific DPIA/TIA dossier forms under Decree 13/2023 — consult the original text.</p>
+</blockquote>
+<p><strong>A real example — a consent logging schema (auditable, satisfying the obligation to prove):</strong></p>
+<pre><code class="language-sql">CREATE TABLE consent_records (
+    consent_id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    data_subject  VARCHAR(64)  NOT NULL,         -- pseudonym, do NOT store raw PII
+    purpose       VARCHAR(128) NOT NULL,         -- the specific purpose
+    policy_version VARCHAR(16) NOT NULL,         -- version of the policy that was shown
+    consent_given BOOLEAN      NOT NULL,
+    granted_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    withdrawn_at  TIMESTAMPTZ,                   -- null if not yet withdrawn
+    source_ip_hash CHAR(64),                     -- sha256(ip) — evidence, not the raw IP
+    evidence_hash CHAR(64)                       -- hash of the full consent record
+);
+-- Right to withdraw consent: update withdrawn_at, do NOT delete the record (keep the audit trail)
+UPDATE consent_records SET withdrawn_at = now()
+ WHERE data_subject = 'subj_8f2a' AND purpose = 'marketing';
+</code></pre>
+<p><strong>Security note:</strong> The consent table is <strong>legal evidence</strong> — it must be immutable (append-only/audit log), with no arbitrary UPDATE/DELETE allowed on <code>granted_at</code>. When handling the "right to erasure," it must be balanced against other retention obligations (e.g. anti-money-laundering law requires keeping KYC for many years) — not all data can be deleted immediately; this is a very real retention conflict.</p>
+<h3 id="ch16-1665-decree-3562025-needs-verification">16.6.5. Decree 356/2025 (needs verification)</h3>
+<blockquote>
+<p><code>[NEEDS VERIFICATION — INSUFFICIENT RELIABLE DATA]</code> At the time of writing, I have <strong>no verified information</strong> about the detailed content of "Decree 356/2025." Do not fabricate content. When a citation is needed, it is mandatory to:
+1. Look up the original text on the legal information portal (vbpl.vn / thuvienphapluat.vn / the official gazette).
+2. Confirm the document number, date of issue, scope of regulation, and its relationship to existing decrees (e.g. whether it replaces any decree).
+3. Update this section with specific provisions after cross-checking.</p>
+<p>Citing a decree number/article incorrectly in a compliance document can lead to serious legal errors — therefore this document deliberately leaves it blank rather than filling in unverified information.</p>
+</blockquote>
+<hr />
+<h2 id="ch16-167-operational-compliance">16.7. Operational Compliance</h2>
+<h3 id="ch16-1671-data-classification">16.7.1. Data Classification</h3>
+<p><strong>What it is.</strong> Labeling data by sensitivity to apply corresponding controls. This is a <em>prerequisite</em> for every other control (encryption, retention, access) — without classification you do not know what to apply.</p>
+<p><strong>A typical 4-level model + control mapping:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Description</th>
+<th>Encryption control</th>
+<th>Retention</th>
+<th>Who has access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public</td>
+<td>May be made public</td>
+<td>Not required</td>
+<td>As needed</td>
+<td>Everyone</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>Internal</td>
+<td>TLS in transit</td>
+<td>1–3 years</td>
+<td>Employees</td>
+</tr>
+<tr>
+<td>Confidential</td>
+<td>Business secret</td>
+<td>At-rest + transit</td>
+<td>Per business need</td>
+<td>Need-to-know</td>
+</tr>
+<tr>
+<td>Restricted/Secret</td>
+<td>Sensitive PII, wallet keys, CHD</td>
+<td>AES-256 + KMS + key separation</td>
+<td>Per law (KYC for many years)</td>
+<td>Minimal, MFA, log all access</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A real example — labeling at the infrastructure layer (AWS S3 tag + a bucket policy that enforces encryption):</strong></p>
+<pre><code class="language-json">// bucket policy: deny upload if not SSE-KMS encrypted (enforce the control for Restricted data)
+{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;DenyUnEncryptedUploads&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Principal&quot;: &quot;*&quot;,
+    &quot;Action&quot;: &quot;s3:PutObject&quot;,
+    &quot;Resource&quot;: &quot;arn:aws:s3:::cex-kyc-restricted/*&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringNotEquals&quot;: { &quot;s3:x-amz-server-side-encryption&quot;: &quot;aws:kms&quot; }
+    }
+  }]
+}
+</code></pre>
+<pre><code class="language-bash"># Attach classification labels to the resource (tag-based policy)
+aws s3api put-bucket-tagging --bucket cex-kyc-restricted \
+  --tagging 'TagSet=[{Key=DataClass,Value=Restricted},{Key=Regulation,Value=ND13-2023}]'
+</code></pre>
+<h3 id="ch16-1672-access-control-audit-trail">16.7.2. Access control &amp; audit trail</h3>
+<p><strong>Audit trail — a log record of "who did what, when, and the result" — structured down to each field:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size/Type</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp</code></td>
+<td>ISO-8601, UTC</td>
+<td>The moment (NTP-synced)</td>
+<td>2026-06-19T03:22:11.482Z</td>
+</tr>
+<tr>
+<td><code>actor</code></td>
+<td>string</td>
+<td>The acting subject</td>
+<td>uid=svc_payment / user=alice</td>
+</tr>
+<tr>
+<td><code>actor_ip</code></td>
+<td>IPv4/IPv6</td>
+<td>The source</td>
+<td>10.4.2.17</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>enum</td>
+<td>The action</td>
+<td>READ / WRITE / DELETE / LOGIN</td>
+</tr>
+<tr>
+<td><code>resource</code></td>
+<td>URI/ID</td>
+<td>The target</td>
+<td>kyc-db/customer/8842</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td>enum</td>
+<td>The result</td>
+<td>SUCCESS / DENIED / ERROR</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>uuid</td>
+<td>The session</td>
+<td>b1f2...</td>
+</tr>
+<tr>
+<td><code>correlation_id</code></td>
+<td>uuid</td>
+<td>Cross-system trace</td>
+<td>trace-...</td>
+</tr>
+<tr>
+<td><code>prev_hash</code></td>
+<td>hex(32B)</td>
+<td>Hash of the previous record (tamper-evidence)</td>
+<td>9f3c...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why is there a <code>prev_hash</code>?</strong> To turn the log into a <strong>hash chain</strong> — modifying one old record breaks every hash that follows, making tampering detectable. This is the core of a non-repudiation audit trail:</p>
+<pre><code>record[n].hash = SHA256( record[n].fields || record[n-1].hash )
+
+If an attacker modifies record[k], then record[k].hash changes
+-&gt; record[k+1].prev_hash no longer matches -&gt; a break in the chain is detected
+</code></pre>
+<p><strong>A real example — generating a hash-chain log (Python):</strong></p>
+<pre><code class="language-python">import hashlib, json
+def chain_append(prev_hash: str, event: dict) -&gt; str:
+    payload = json.dumps(event, sort_keys=True).encode() + bytes.fromhex(prev_hash or &quot;00&quot;*32)
+    return hashlib.sha256(payload).hexdigest()
+
+prev = &quot;00&quot;*32
+for ev in [{&quot;ts&quot;:&quot;2026-06-19T03:22:11Z&quot;,&quot;actor&quot;:&quot;alice&quot;,&quot;action&quot;:&quot;READ&quot;,&quot;res&quot;:&quot;kyc/8842&quot;,&quot;result&quot;:&quot;SUCCESS&quot;}]:
+    prev = chain_append(prev, ev)
+    print(ev[&quot;action&quot;], &quot;-&gt;&quot;, prev[:16], &quot;...&quot;)
+</code></pre>
+<h3 id="ch16-1673-log-retention-data-residency">16.7.3. Log retention &amp; data residency</h3>
+<p><strong>Log retention</strong> — how long logs are kept, governed by: (1) legal requirements, (2) investigative capability, (3) storage cost.</p>
+<table>
+<thead>
+<tr>
+<th>Log type</th>
+<th>Recommended retention (reference)</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security/audit log (PII access, privileged)</td>
+<td>usually ≥ 1 year (PCI DSS Req.10: minimum 1 year, 3 months online)</td>
+<td>Incident investigation, audit</td>
+</tr>
+<tr>
+<td>KYC/AML records</td>
+<td>many years per anti-money-laundering law</td>
+<td>Legal obligation</td>
+</tr>
+<tr>
+<td>Application/debug log</td>
+<td>30–90 days</td>
+<td>Operations</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[NEEDS VERIFICATION]</code> The specific legal retention periods in Vietnam (e.g. under the Anti-Money-Laundering Law 2022, the decree on classification levels) — cross-check the text. PCI DSS Req.10 mandates <strong>retention ≥12 months, ≥3 months immediately retrievable</strong>, which is a figure verified in the PCI standard.</p>
+</blockquote>
+<p><strong>Data residency</strong> — which geographic region the data must reside in. Directly related to the Cybersecurity Law (localization). Applied technically via region pinning:</p>
+<pre><code class="language-hcl"># Terraform: pin resources to a region in/near Vietnam &amp; forbid replication outward
+provider &quot;aws&quot; {
+  region = &quot;ap-southeast-1&quot;   # Singapore (near Vietnam); if it must be located in Vietnam, use
+                              # a domestic provider (VNG, Viettel, FPT...)
+}
+resource &quot;aws_s3_bucket&quot; &quot;kyc&quot; {
+  bucket = &quot;cex-kyc-restricted&quot;
+}
+# Block cross-region replication: do NOT declare replication_configuration
+# + use an SCP (Service Control Policy) to forbid creating buckets outside the allowed region
+</code></pre>
+<p><strong>An SCP enforcing data residency org-wide (AWS Organizations):</strong></p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;DenyOutsideAllowedRegions&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;NotAction&quot;: [ &quot;iam:*&quot;, &quot;organizations:*&quot;, &quot;route53:*&quot; ],
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringNotEquals&quot;: { &quot;aws:RequestedRegion&quot;: [ &quot;ap-southeast-1&quot; ] }
+    }
+  }]
+}
+</code></pre>
+<p><strong>Security note:</strong> Data residency is not only the bucket's region — beware of: automatic backups to another region, CDN edge cache, log forwarding to a US SaaS (Datadog/Splunk Cloud), an international email/SMS provider. You must draw a complete <strong>data flow map</strong> to know where PII <em>actually</em> goes, and not trust only the primary DB's region configuration.</p>
+<h3 id="ch16-1674-control-crosswalk-across-frameworks">16.7.4. Control crosswalk across frameworks</h3>
+<p><strong>Why.</strong> An organization is often subject to multiple frameworks at once (27001 + CSF + Decree 85 + PCI). Implementing one physical control → satisfies multiple requirements. A <strong>crosswalk</strong> avoids duplicated work.</p>
+<p><strong>Example mapping of the control "MFA for privileged access":</strong></p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Control identifier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NIST CSF 2.0</td>
+<td>PR.AA-03 (authenticate)</td>
+</tr>
+<tr>
+<td>NIST 800-53</td>
+<td>IA-2(1), IA-2(2)</td>
+</tr>
+<tr>
+<td>ISO 27001:2022 Annex A</td>
+<td>A.8.5 (Secure authentication)</td>
+</tr>
+<tr>
+<td>PCI DSS v4.0</td>
+<td>Req. 8.4 / 8.5 (MFA)</td>
+</tr>
+<tr>
+<td>Decree 85/2016 (TCVN 11930)</td>
+<td>Authentication requirements by level <code>[NEEDS VERIFICATION of the section code]</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>A real example — a crosswalk file in YAML used in DevSecOps (1 control → multiple frameworks, with evidence attached):</strong></p>
+<pre><code class="language-yaml">controls:
+  - id: ORG-MFA-PRIV
+    name: &quot;Mandatory MFA for privileged access&quot;
+    implementation: &quot;Okta + FIDO2 for admins; conditions in OPA&quot;
+    evidence:
+      - &quot;okta_policy_export_2026Q2.json&quot;
+      - &quot;opa_test_results.txt&quot;
+    satisfies:
+      nist_csf: [&quot;PR.AA-03&quot;]
+      nist_800_53: [&quot;IA-2(1)&quot;, &quot;IA-2(2)&quot;]
+      iso_27001: [&quot;A.8.5&quot;]
+      pci_dss: [&quot;8.4.2&quot;, &quot;8.5.1&quot;]
+</code></pre>
+<pre><code class="language-bash"># Count how many requirements 1 control satisfies (measure the control's &quot;leverage&quot;)
+yq '.controls[] | .id + &quot;: &quot; + ([.satisfies[][]] | length | tostring) + &quot; requirements&quot;' crosswalk.yaml
+</code></pre>
+<p>Output:</p>
+<pre><code>ORG-MFA-PRIV: 7 requirements
+</code></pre>
+<hr />
+<h2 id="ch16-168-grc-in-banking-finance">16.8. GRC in banking / finance</h2>
+<h3 id="ch16-1681-the-three-lines-model">16.8.1. The Three Lines Model</h3>
+<p><strong>What it is.</strong> The standard risk governance model in the financial industry (IIA — the Institute of Internal Auditors). It separates responsibilities to avoid conflicts of interest.</p>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│  BOARD OF DIRECTORS / AUDIT COMMITTEE  (overall oversight)        │
+└──────────────────────────────────────────────────────────────────┘
+        1st Line               2nd Line               3rd Line
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│ Owns &amp; manages     │ │ Risk oversight &amp;   │ │ Independent        │
+│ risk day-to-day    │ │ compliance         │ │ assurance          │
+│                    │ │ (Risk, Compliance, │ │ (Internal Audit)   │
+│ (Dev, SecOps,      │ │  CISO office)      │ │                    │
+│  IT, business)     │ │                    │ │ - independent      │
+│ - operates         │ │ - sets policy      │ │   audit of 1st &amp;   │
+│   controls         │ │ - monitors         │ │   2nd line         │
+│                    │ │   controls         │ │ - reports straight │
+│                    │ │                    │ │   to the Board     │
+└────────────────────┘ └────────────────────┘ └─────────┬──────────┘
+                                                         │
+                  External Audit + Regulator ◄───────────┘
+                  (external, independent)
+</code></pre>
+<p><strong>Why separate the lines?</strong> The people who <em>operate</em> the controls (1st) must not <em>assess</em> their own controls (3rd) — otherwise it is a case of "playing and refereeing at the same time." Internal Audit (3rd line) reports straight to the Board, not through the CISO, to preserve independence.</p>
+<h3 id="ch16-1682-the-legalsupervisory-framework-for-the-vietnamese-financial-industry-operational-level">16.8.2. The legal/supervisory framework for the Vietnamese financial industry (operational level)</h3>
+<table>
+<thead>
+<tr>
+<th>Authority/Document</th>
+<th>Operational role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>State Bank of Vietnam (SBV)</td>
+<td>The supervisory authority; issues circulars on banking IT security</td>
+</tr>
+<tr>
+<td>Circular on the security of banking information systems</td>
+<td><code>[NEEDS VERIFICATION of the document number]</code> — typically prescribes system classification, backup, DR, access control, and logging for credit institutions</td>
+</tr>
+<tr>
+<td>Anti-Money-Laundering Law (2022)</td>
+<td>KYC/CDD obligations, suspicious transaction reporting (STR), record-keeping</td>
+</tr>
+<tr>
+<td>Basel / international standards</td>
+<td>A reference for operational risk governance</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[NEEDS VERIFICATION]</code> The number of the SBV circular on IT security (e.g. circulars prescribing information system security assurance in banking operations) — consult the original text before citing.</p>
+</blockquote>
+<h3 id="ch16-1683-continuous-compliance-in-devsecops">16.8.3. Continuous Compliance in DevSecOps</h3>
+<p><strong>What it is.</strong> Instead of a manual audit once a year, <strong>continuous compliance control</strong> via policy-as-code running in CI/CD. This is the intersection of GRC and DevSecOps.</p>
+<p><strong>A real example — checking a control in the pipeline (OPA Conftest checking IaC before deploy):</strong></p>
+<pre><code class="language-rego"># policy/encryption.rego — fail the build if a Restricted resource is not encrypted
+package main
+deny[msg] {
+    input.resource.aws_s3_bucket[name]
+    not input.resource.aws_s3_bucket_server_side_encryption_configuration[name]
+    msg := sprintf(&quot;S3 bucket '%s' is missing at-rest encryption (violates A.8.24 / Decree 13)&quot;, [name])
+}
+</code></pre>
+<pre><code class="language-bash"># Run in CI: block the merge if the encryption control is violated
+conftest test --policy policy/ terraform-plan.json
+</code></pre>
+<p>Sample output on violation:</p>
+<pre><code>FAIL - terraform-plan.json - main - S3 bucket 'cex-kyc-restricted' is missing at-rest encryption (violates A.8.24 / Decree 13)
+1 test, 0 passed, 1 failure
+</code></pre>
+<p><strong>Example — automatically collecting evidence for an audit (a script that gathers logs + configuration into an evidence package with a hash):</strong></p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# collect_evidence.sh — package evidence for the Q2 audit cycle
+set -euo pipefail
+OUT=&quot;evidence_$(date +%Y%m%d).tar.gz&quot;
+mkdir -p evidence/{access,config,scan}
+aws iam get-account-password-policy            &gt; evidence/config/pw_policy.json
+aws s3api get-bucket-encryption --bucket cex-kyc-restricted &gt; evidence/config/s3_enc.json
+auditctl -l                                    &gt; evidence/access/auditd_rules.txt
+tar czf &quot;$OUT&quot; evidence/
+sha256sum &quot;$OUT&quot; | tee &quot;${OUT}.sha256&quot;
+echo &quot;Evidence package: $OUT&quot;
+</code></pre>
+<p><strong>Security note:</strong> Policy-as-code can <strong>fail-open</strong> if the pipeline skips the test step on error (e.g. <code>|| true</code>). In a financial environment, the compliance control must <strong>fail-closed</strong> — the pipeline must stop (exit non-zero) when a policy is violated or when the policy engine itself fails. At the same time, automated evidence must be immutable (write-once, pushed to object lock / WORM storage) for the auditor to trust it.</p>
+<hr />
+<h2 id="ch16-169-summary-quick-reference-checklist">16.9. Summary &amp; quick-reference checklist</h2>
+<p><strong>When to use which framework:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A common language to describe security posture, reporting to leadership</td>
+<td>NIST CSF 2.0</td>
+</tr>
+<tr>
+<td>A detailed technical control library to select &amp; implement</td>
+<td>NIST SP 800-53</td>
+</tr>
+<tr>
+<td>An incident response process</td>
+<td>NIST SP 800-61</td>
+</tr>
+<tr>
+<td>Dropping location-based trust, microsegmentation</td>
+<td>NIST SP 800-207 (ZT)</td>
+</tr>
+<tr>
+<td>International certification of a management system</td>
+<td>ISO/IEC 27001 + 27002</td>
+</tr>
+<tr>
+<td>Handling payment card data</td>
+<td>PCI DSS v4.0</td>
+</tr>
+<tr>
+<td>Vietnamese law — security by level</td>
+<td>Cyber Info Sec Law 2015 + Decree 85/2016 + TCVN 11930</td>
+</tr>
+<tr>
+<td>Vietnamese law — national security, localization</td>
+<td>Cybersecurity Law 2018 (+ implementing decree)</td>
+</tr>
+<tr>
+<td>Vietnamese law — personal data</td>
+<td>PDP Law 91/2025/QH15 (effective 2026-01-01) + Decree 13/2023 &amp; implementing decrees</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Self-protection rule when writing compliance documentation:</strong> every document number, article, and legal retention period must be cross-checked against the original text before official use. This document marks <code>[NEEDS VERIFICATION]</code> everywhere it could not be verified — especially <strong>Decree 356/2025</strong> (no reliable information yet), the SBV circular numbers, the TCVN 11930 section codes, and the breach notification time limit of Decree 13/2023.</p>
+<hr />
+<h2 id="ch16-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li><strong>A customer security questionnaire is what made GRC "click" for me.</strong> At first I thought compliance was just paperwork. Then, in practice where I work, a customer sent a security questionnaire of a few dozen lines before signing — asking what algorithm we use for encryption at rest, how we manage keys, who can access data, whether we have MFA, how long we keep logs, which region the data sits in, whether we have an IR process. Being able to answer directly decided whether the deal happened. That's when I understood: a technical control and "the evidence proving you have that control" are two different things, and GRC is the bridge.</li>
+<li><strong>Lesson: build a baseline doc so you don't start from scratch each time.</strong> The first time, answering took several days of asking around every team. After that I consolidated it into a base document: an architecture diagram, a list of controls by group (encryption, IAM/MFA, logging, backup, IR, data residency), each pointing to real evidence (config exports, scan results). Next time I just map the customer's questions onto the baseline → much faster, and the answers stay consistent across customers.</li>
+<li><strong>Something I got wrong:</strong> I used to think "having an ISO 27001 certificate means the system is secure." In fact the certificate only says the ISMS <em>exists and operates within the declared scope</em>; the scope can be very narrow. Now, when assessing a vendor, I read the scope statement first.</li>
+<li><strong>Still exploring:</strong> how to turn compliance evidence into automated output (policy-as-code, evidence collection by script) so I don't have to take manual screenshots every audit cycle — the continuous compliance direction in 16.8.3.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch15.html"><span>← Previous</span><b>15 · Threat Intel &amp; Frameworks</b></a><a class="pg next" href="ch17.html"><span>Next →</span><b>17 · Programming &amp; Automation</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

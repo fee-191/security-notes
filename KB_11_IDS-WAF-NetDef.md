@@ -2,62 +2,13 @@
 
 ## Tổng quan
 
-Chương này trình bày các kiểm soát kỹ thuật để **bảo vệ một mạng máy tính**: phát hiện hoạt động dò quét/tấn công, ngăn chặn lưu lượng độc hại, và thiết lập kênh truyền an toàn qua hạ tầng công cộng. Mục tiêu giải quyết: mọi dịch vụ (website, hệ thống nội bộ, sàn giao dịch) đều phơi bày bề mặt tấn công khi nối mạng, và không một kiểm soát đơn lẻ nào bao phủ được toàn bộ. Mỗi công cụ dưới đây xử lý một tầng dữ liệu và một loại mối đe doạ khác nhau; phối hợp chúng tạo nên phòng thủ theo chiều sâu.
+Thứ khiến mình để tâm tới mảng này là một chuyện rất tầm thường: đám scanner ngoài Internet không cần biết bạn là ai, cứ có cổng mở là chúng gõ cửa suốt ngày. Bảo vệ một mạng vì thế không phải là dựng một bức tường thật dày, mà là xếp nhiều lớp kiểm soát mà mỗi lớp "nhìn" được một phạm vi dữ liệu khác nhau — đó là **phòng thủ theo chiều sâu**: có thiết bị chỉ thấy địa chỉ và cổng ở L3/L4, có thiết bị đọc được cả nội dung HTTP ở L7, và không lớp nào bao phủ hết phần còn lại.
 
-### Phòng thủ theo chiều sâu (defense-in-depth)
+Chương đi theo đúng thứ tự các lớp đó. Ngoài cùng là **firewall** với **pfSense** (dựa trên `pf` của FreeBSD, stateful nên nhớ được kết nối đang mở, kiêm luôn phân đoạn VLAN và làm điểm cuối VPN) — lớp chặn rẻ nhất, loại bỏ thứ rõ ràng không hợp lệ trước khi nó đi sâu hơn. Sâu vào trong là **IDS/IPS**: cùng một engine nhưng khác cách đặt — IDS đứng out-of-band chỉ cảnh báo, IPS nằm inline và chặn thật, đổi lại chặn nhầm là gián đoạn dịch vụ (nên thực tế luôn chạy IDS để tinh chỉnh trước rồi mới dám chuyển sang chặn). Hai góc nhìn bổ khuyết nhau: **NIDS** thấy traffic giữa các host nên bắt được lateral movement và quét mạng, **HIDS** thấy syscall và file trên một host nên bắt được persistence và leo thang đặc quyền. Phần engine đi sâu vào **Snort** và **Suricata** — khớp theo chữ ký, mạnh với đòn đã biết, mù với đòn chưa có chữ ký.
 
-- **Định nghĩa.** Mô hình xếp chồng nhiều lớp kiểm soát độc lập (lọc gói, kiểm soát truy cập, mã hoá, giám sát) thay vì dựa vào một lớp duy nhất. Lớp này bị vượt qua thì lớp kế tiếp vẫn còn hiệu lực.
-- **Vấn đề giải quyết.** Không lớp nào hoàn hảo. Mỗi thiết bị "đọc" được một phạm vi dữ liệu khác nhau (có thiết bị chỉ thấy địa chỉ L3/L4, có thiết bị đọc được nội dung L7), nên cần phối hợp nhiều thiết bị để bao phủ đủ các tầng.
+Lên tới tầng ứng dụng là **WAF** — thứ mà firewall L3/L4 không làm được, vì nó phải parse method, URI, header, body mới phân biệt nổi request hợp lệ với request mang payload — với **ModSecurity** và bộ luật soạn sẵn **OWASP CRS**. Song song đó là **VPN** (IPsec, OpenVPN, WireGuard — cùng mục tiêu, khác nhau ở cách trao khoá và độ phức tạp) cho nhu cầu nối hai đầu qua Internet như thể chung một mạng. Cuối chương là hai thứ mình dùng nhiều nhất trong thực tế: **hardening nginx làm reverse proxy** (11.6 — rate limit, chặn tên tệp nhạy cảm, `default_server`, và cả giới hạn của chính nginx), và **Zeek** — công cụ không khớp chữ ký mà ghi lại hành vi mạng thành log có cấu trúc để phân tích sau.
 
-### IDS và IPS
-
-- **IDS (Intrusion Detection System).** Giám sát lưu lượng theo chế độ out-of-band, sinh cảnh báo khi phát hiện dấu hiệu khả nghi nhưng không tác động lên gói tin.
-- **IPS (Intrusion Prevention System).** Nằm inline trên đường dữ liệu, vừa phát hiện vừa chặn (drop/reset) lưu lượng độc hại; rủi ro đi kèm là chặn nhầm (false positive) gây gián đoạn dịch vụ.
-- **Vấn đề giải quyết.** Hai mô hình đánh đổi khác nhau giữa khả dụng và mức độ thực thi. Thực tế triển khai IDS (chế độ alert) trước để tinh chỉnh giảm false positive, sau đó mới chuyển sang IPS (inline-block).
-
-### NIDS và HIDS
-
-- **NIDS (Network IDS).** Phân tích lưu lượng trên dây tại biên/lõi mạng; thấy toàn bộ traffic giữa các host nhưng mù với traffic mã hoá nếu không có khoá.
-- **HIDS (Host IDS).** Chạy trên từng host, quan sát syscall, file integrity (toàn vẹn tệp), log, tiến trình; thấy chi tiết hành vi nội bộ một host nhưng không thấy host khác.
-- **Vấn đề giải quyết.** Hai góc nhìn bổ sung nhau: NIDS bắt lateral movement/scan, HIDS bắt persistence/leo thang đặc quyền. Tổng hợp cả hai mới có toàn cảnh.
-
-### Snort và Suricata
-
-- **Định nghĩa.** Hai engine IDS/IPS dựa trên **chữ ký** (signature): so khớp lưu lượng với các mẫu dữ liệu đặc trưng của những kiểu tấn công đã biết.
-- **Vấn đề giải quyết.** Nhiều cuộc tấn công có dấu hiệu lặp lại đã được cộng đồng ghi nhận; bộ chữ ký cho phép phát hiện nhanh và chính xác các đòn quen thuộc. Hạn chế: tấn công mới chưa có chữ ký sẽ lọt — cần bổ sung công cụ giám sát theo hành vi.
-
-### WAF, ModSecurity và OWASP CRS
-
-- **WAF (Web Application Firewall).** Tường lửa hoạt động ở tầng ứng dụng (L7): parse và kiểm tra nội dung HTTP (method, URI, header, body, tham số) để chặn các đòn nhắm vào ứng dụng (ví dụ SQL injection).
-- **ModSecurity.** Một engine WAF mã nguồn mở phổ biến, chạy nhúng trong Apache/NGINX hoặc trên reverse proxy.
-- **OWASP CRS (Core Rule Set).** Bộ quy tắc chuẩn soạn sẵn nạp vào ModSecurity, giúp tránh tự xây tập luật từ đầu.
-- **Vấn đề giải quyết.** Firewall L3/L4 không hiểu nội dung ứng dụng nên không phân biệt được yêu cầu hợp lệ với yêu cầu chứa payload tấn công. WAF lấp khoảng trống đó ở tầng L7.
-
-### Firewall và pfSense
-
-- **Firewall.** Thiết bị/phần mềm quyết định cho phép hay chặn gói tin dựa trên quy tắc L3/L4 (IP nguồn/đích, giao thức, cổng).
-- **pfSense.** Nền tảng firewall/router mã nguồn mở dựa trên FreeBSD và `pf`, biến một máy thường thành thiết bị gác cổng cho cả mạng. **Stateful** nghĩa là nó ghi nhớ trạng thái các kết nối đang diễn ra để khớp gói phản hồi mà không cần rule ngược.
-- **Vấn đề giải quyết.** Đây là lớp chặn rẻ và nhanh nhất, đặt ngoài cùng để loại bỏ lưu lượng rõ ràng không hợp lệ trước khi tới các lớp sâu hơn. pfSense cũng đảm nhiệm phân đoạn mạng (VLAN) và làm điểm kết nối VPN.
-
-### VPN — IPsec, OpenVPN, WireGuard
-
-- **VPN (Virtual Private Network).** Đường hầm mã hoá chạy qua hạ tầng công cộng: gói gốc được bọc và bảo vệ tính bí mật + toàn vẹn trước khi truyền, nên bên thứ ba chặn được cũng không đọc hay sửa được.
-- **IPsec / OpenVPN / WireGuard.** Ba công nghệ triển khai đường hầm với cùng mục tiêu nhưng khác nhau ở cách trao khoá và độ phức tạp: IPsec là chuẩn lâu đời nhiều tuỳ chọn; OpenVPN linh hoạt, dễ xuyên firewall; WireGuard gọn nhẹ, hiệu năng cao, dễ audit.
-- **Vấn đề giải quyết.** Nhân viên từ xa hoặc hai chi nhánh cần kết nối an toàn qua Internet như thể cùng một mạng riêng.
-
-### Proxy và reverse proxy
-
-- **Forward proxy.** Đại diện cho client khi truy cập ra ngoài: server đích chỉ thấy proxy, không thấy client. Dùng để ẩn danh, lọc nội dung, kiểm soát truy cập egress.
-- **Reverse proxy.** Đại diện cho server: tiếp nhận mọi kết nối từ ngoài rồi chuyển tới backend phù hợp; client không thấy máy chủ thật.
-- **Vấn đề giải quyết.** Reverse proxy là điểm gắn WAF lý tưởng (đã kết thúc TLS, đọc được plaintext), đồng thời cân bằng tải và giấu backend để giảm bề mặt tấn công.
-
-### Zeek
-
-- **Định nghĩa.** Bộ giám sát an ninh mạng (NSM) sinh log giàu ngữ cảnh cho mọi kết nối và sự kiện giao thức (ai kết nối với ai, khi nào, giao thức gì, kéo dài bao lâu), khác với mô hình khớp chữ ký của Snort/Suricata.
-- **Vấn đề giải quyết.** Điều tra sự cố cần nhật ký chi tiết để truy vết, kể cả với tấn công chưa có chữ ký. Snort/Suricata cảnh báo nhanh, Zeek cung cấp ngữ cảnh đầy đủ để săn mối đe doạ và phân tích sau sự cố.
-
-> Chương này là tài liệu tham chiếu kỹ thuật cho kỹ sư Blue Team / AppSec / DevSecOps. Mục tiêu: đào tới mức field/byte/bước, kèm ví dụ thực tế chạy được cho từng công cụ. Các số liệu cấu trúc giao thức bám theo RFC tương ứng (IPv4 RFC 791, TCP RFC 9293, IPsec/ESP RFC 4303, IKEv2 RFC 7296, WireGuard whitepaper, OpenVPN protocol). Khi một con số phụ thuộc phiên bản/triển khai cụ thể, chương sẽ ghi rõ "cần kiểm chứng theo phiên bản".
-
+> Các mục có nhãn [DEMO] là cấu hình rút gọn để minh hoạ cú pháp, đừng bê thẳng lên production — bản dùng thật luôn nằm ở phần kế bên.
 ---
 
 ## 11.1. Mô hình phòng thủ mạng và vị trí của IDS/IPS/WAF
@@ -340,6 +291,8 @@ WAF (Web Application Firewall) hoạt động ở L7: nó parse HTTP request (me
 
 ModSecurity là một engine rule chạy như module embedded (Apache `mod_security2`, NGINX `ModSecurity-nginx` connector) hoặc reverse proxy. OWASP CRS (Core Rule Set) là bộ rule chuẩn chạy trên engine đó. (Các lớp lỗ hổng web mà WAF nhắm chặn — SQLi, XSS, OWASP Top 10 — xem [Chương 5](#sec-05).)
 
+Lưu ý về vòng đời dự án: Trustwave đã kết thúc hỗ trợ thương mại ModSecurity và chuyển giao dự án về OWASP từ 2024; hiện ModSecurity (v2/v3) do cộng đồng OWASP duy trì (cần kiểm chứng). Bản thân CRS từ dòng 4.x cũng đổi tên từ "OWASP ModSecurity Core Rule Set" thành **OWASP CRS** — vì bộ rule không còn gắn riêng với engine ModSecurity: cùng cú pháp SecLang chạy được trên engine tương thích như **Coraza** (viết bằng Go, hay dùng với Caddy/Envoy, hỗ trợ CRS đầy đủ). Bắt đầu dự án mới thì nên cân nhắc cả Coraza (cần kiểm chứng theo thời điểm đọc).
+
 ### 11.3.2. Năm phase xử lý của ModSecurity
 
 ModSecurity gắn rule vào 5 phase theo vòng đời transaction HTTP:
@@ -494,6 +447,7 @@ Apache-Error: ModSecurity: Access denied with code 403
 - WAF bypass vẫn khả thi (encoding lạ, HTTP parameter pollution, request smuggling).
 - Luôn dùng anomaly scoring và tuning theo ứng dụng cụ thể.
 - Bật response-body inspection để chống data leak, nhưng cân nhắc chi phí RAM/latency.
+- WAF không nên là lớp chặn ĐẦU TIÊN: những pattern rẻ tiền (tên tệp nhạy cảm, rate-limit theo IP, Host lạ) nên bị loại ngay ở reverse proxy phía trước (xem 11.6) — để WAF dành tài nguyên cho phần khó: mọi biến thể encoding, injection trong body/tham số.
 
 ---
 
@@ -853,7 +807,9 @@ So sánh ba VPN:
 
 ---
 
-## 11.6. Proxy và Reverse proxy
+## 11.6. Proxy, Reverse proxy và hardening NGINX làm reverse proxy
+
+### 11.6.1. Forward proxy vs reverse proxy
 
 | | Forward proxy | Reverse proxy |
 |---|---|---|
@@ -890,6 +846,148 @@ server {
 - Backend chỉ được tin XFF khi đến từ proxy đáng tin; nếu không, client tự đặt XFF giả sẽ bypass được IP allowlist/rate-limit.
 - Reverse proxy cũng giúp giấu phiên bản backend (giảm bề mặt tấn công).
 - Đây cũng là nơi chống HTTP request smuggling, bằng cách chuẩn hoá nghiêm ngặt header `Content-Length`/`Transfer-Encoding`.
+
+### 11.6.2. Vấn đề của cấu hình mặc định: `location /` proxy tất cả
+
+Reverse proxy không chỉ để "chuyển tiếp cho chạy được" — nó là chỗ đứng lý tưởng cho **lớp chặn sớm** trong defense-in-depth. Nhưng template phổ biến nhất khi dựng nginx làm reverse proxy lại bỏ trống hoàn toàn vai trò đó:
+
+```nginx
+# [ANTI-PATTERN] server block "chạy được" nhưng không có một lớp phòng vệ nào
+server {
+    listen 443 ssl;
+    server_name api-dev.example.com;
+    client_max_body_size 4G;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Đây gần như nguyên văn một server block mình gặp khi audit một máy dev chạy web API ở hệ thống mình vận hành (đã ẩn danh hoá). Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:
+
+| Thiếu | Hệ quả |
+|---|---|
+| Không `limit_req`/`limit_conn` | Không có phanh — scanner gửi bao nhiêu, nginx nhận bấy nhiêu |
+| `location /` proxy MỌI path xuống app | Request quét (`/.ssh/id_rsa`, `/.env`...) cũng được đẩy xuống app rồi mới bị app từ chối |
+| `client_max_body_size 4G` | Bất kỳ IP nào cũng được phép đẩy body 4GB → nguy cơ DoS cạn RAM/disk (11.6.6) |
+| Không có `default_server` riêng | Request bằng IP trần / Host lạ vẫn được server block "thật" tiếp đón (11.6.5) |
+
+Vấn đề nằm ở chỗ **"trả lỗi nhưng vẫn tốn tài nguyên"**. Mỗi request rác vẫn đi đủ chuỗi: TLS handshake (phần đắt nhất — mật mã bất đối xứng), nginx parse request, mở socket/kết nối tới backend, app nhận request, chạy router, sinh 404/500. App "từ chối" không có nghĩa là miễn phí — và nguy hiểm hơn, nó nghĩa là toàn bộ phòng thủ đang dựa vào việc app tự bảo vệ, không có lớp nào phía trước. 536 request quét trong hơn 2 giờ (case thật ở 11.6.8) là 536 lần TLS + parse + một phần chạm app. Nguyên tắc: cái gì chắc chắn là rác thì phải bị loại càng sớm càng tốt — ngay tại proxy, trước khi chạm app. Các mục 11.6.3–11.6.7 là các lớp chặn sớm đó, xếp từ "hành vi" đến "diệt gốc".
+
+### 11.6.3. Rate limiting — `limit_req` (leaky bucket) và `limit_conn`
+
+**Sinh ra để giải quyết:** người thật không gửi đều đặn một request mỗi vài giây suốt hai tiếng; scanner thì có. Giới hạn tốc độ theo IP nguồn chặn được *hành vi* đó mà không cần biết trước IP nào là xấu — quan trọng khi nguồn quét xoay IP liên tục (11.6.8).
+
+```nginx
+# Trong http {} — khai báo vùng nhớ đếm trạng thái
+limit_req_zone  $binary_remote_addr zone=perip:10m  rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=connperip:10m;
+
+# Trong server {} hoặc location {}
+limit_req        zone=perip burst=20 nodelay;
+limit_req_status 429;      # mặc định 503; 429 Too Many Requests đúng ngữ nghĩa hơn
+limit_conn       connperip 20;
+```
+
+Từng tham số:
+- `$binary_remote_addr`: IP client ở dạng nhị phân (IPv4 = 4 byte) thay vì chuỗi văn bản — mỗi entry trong zone nhỏ hơn, chứa được nhiều IP hơn.
+- `zone=perip:10m`: 10MB shared memory lưu bộ đếm cho từng IP; cỡ 160.000 trạng thái (mỗi state ~64 byte — cần kiểm chứng theo phiên bản). Hết chỗ thì nginx xoá entry cũ nhất.
+- `rate=10r/s`: cơ chế **leaky bucket** — mỗi IP có một "xô rò" thoát nước với tốc độ cố định 10 request/giây (nginx đo mịn theo mili giây: 1 request/100ms). Request đến khi xô đầy sẽ bị từ chối.
+- `burst=20`: cho xô chứa thêm tối đa 20 request vượt nhịp. Truy cập thật thường "bùng" theo cụm (mở một trang kéo theo hàng chục request tài nguyên gần như đồng thời) — không có burst sẽ chặn nhầm ngay.
+- `nodelay`: xử lý ngay các request trong hạn mức burst thay vì xếp hàng nhả dần theo nhịp `rate`; chỉ khi vượt cả burst mới bị trả lỗi. Thiếu `nodelay` thì client hợp lệ bị cộng trễ nhân tạo.
+- `limit_conn connperip 20`: tối đa 20 kết nối đồng thời mở từ một IP — chặn kiểu tấn công mở thật nhiều kết nối rồi giữ treo (slow attack), thứ `limit_req` (đếm request) không nhìn thấy.
+
+**Chọn ngưỡng thế nào:** đừng đoán — đo tải thật. Đếm request/giây theo từng IP từ access log giờ cao điểm (`awk` cột IP + timestamp, hoặc panel sẵn có trên hệ giám sát), lấy đỉnh của client hợp lệ *bận nhất* rồi nhân hệ số an toàn 2–3 lần. Ngưỡng đúng là ngưỡng mà client thật không bao giờ chạm còn scanner thì chạm ngay.
+
+**Đánh đổi:** nhiều client sau một NAT (văn phòng, CGNAT di động) dùng chung một IP nguồn — ngưỡng quá thấp chặn nhầm cả toà nhà; API client hợp lệ gọi dày cần zone riêng (key theo API key/token thay vì IP) hoặc dùng module `geo` ánh xạ dải IP tin cậy sang biến để miễn limit.
+
+### 11.6.4. Chặn tên tệp/đường dẫn nhạy cảm — và giới hạn của nginx
+
+**Sinh ra để giải quyết:** scanner dò tệp bí mật theo danh sách quen thuộc — `.env`, `.git/config`, `.ssh/id_rsa`, dump `.sql`, backup `.bak`, `.mysql_history`. Không có lý do gì để những path đó đi xuống app; chặn ngay ở nginx bằng một location regex:
+
+```nginx
+location ~* (?:\.env|\.git|/\.ssh/|id_rsa|id_ed25519|\.mysql_history|\.sql|\.bak)(?:$|/) {
+    return 403;
+}
+```
+
+(Lưu ý: `location` chỉ so khớp phần *path* của URI — query string không nằm trong đó, nên đừng cố khớp `?` ở đây.)
+
+`return 403` tại nginx gần như miễn phí: không proxy, không chạm app, không sinh lỗi 500 phía backend.
+
+**Điểm kỹ thuật quan trọng — vì sao chặn theo TÊN TỆP chứ không chặn pattern `../`:** trước khi so khớp `location`, nginx **chuẩn hoá URI**: decode percent-encoding (`%2e` → `.`), gộp slash thừa (`merge_slashes`), phân giải các thành phần `./` và `../`. Hệ quả là chặn theo cú pháp traversal ở tầng location **không đáng tin**: pattern `../` viết trong regex thì URI đã bị nginx phân giải mất trước khi match; pattern `%2e%2e` thì đã bị decode thành `..`; còn biến thể double-encoding `%252e%252e` chỉ bị decode một lần thành `%2e%2e` — không khớp cả hai cách viết. Nhưng dù kẻ quét mã hoá đường đi kiểu gì, **đích cuối vẫn là một tên tệp cụ thể** (`id_rsa`, `.env`, `.mysql_history`) — và tên tệp đó sau chuẩn hoá luôn hiện nguyên hình trong URI. Chặn theo tên tệp bắt được đa số scan với chi phí gần bằng 0. Còn chặn traversal *triệt để* (mọi biến thể encoding, kể cả trong body/tham số POST) là việc của WAF — ModSecurity + OWASP CRS với chuỗi transform `t:urlDecodeUni` và các rule traversal/LFI chuyên dụng (xem 11.3.3 về transform, 11.3.5 về CRS).
+
+### 11.6.5. `default_server` — ngắt request Host lạ / IP trần bằng `return 444`
+
+**Sinh ra để giải quyết:** đa số scanner quét theo dải IP, gửi request bằng IP trần hoặc Host ngẫu nhiên chứ không biết domain của bạn. Nếu không khai báo `default_server` tường minh, nginx lấy server block **đầu tiên** trên mỗi cặp địa chỉ:port làm mặc định — nghĩa là vhost "thật" của bạn đứng ra tiếp đón toàn bộ request rác đó.
+
+```nginx
+server {
+    listen 80  default_server;
+    listen 443 ssl default_server;
+    server_name _;                                   # bắt mọi Host không khớp block nào khác
+    ssl_certificate     /etc/nginx/ssl/dummy.crt;    # cert self-signed "vứt đi"
+    ssl_certificate_key /etc/nginx/ssl/dummy.key;
+    return 444;                                      # đóng kết nối, không trả một byte
+}
+```
+
+**Vì sao `444`:** đây là mã riêng của nginx (không phải HTTP status chuẩn) — nginx **đóng kết nối ngay, không gửi response**. So với `403`: một response 403 vẫn là HTTP hoàn chỉnh (status line, header, body), tự xác nhận "ở đây có web server sống" cho scanner ghi nhận; `444` khiến phía quét chỉ thấy kết nối bị ngắt — ít thông tin nhất có thể.
+
+**Vì sao cần cert dummy cho block 443:** với HTTPS, TLS handshake diễn ra *trước khi* nginx đọc được request. Client vào bằng IP trần không gửi SNI → nginx chọn cert của `default_server`; block `listen 443 ssl` không có cert thì cấu hình không hợp lệ. Cert self-signed là đủ — ta không cần scanner tin cert, chỉ cần handshake không đổ lỗi sang vhost thật.
+
+### 11.6.6. `client_max_body_size` — đừng bao giờ nới 4G mặc định
+
+Kịch bản quen thuộc: upload bị lỗi `413 Request Entity Too Large` (mặc định nginx chỉ cho 1m) → ai đó sửa thành `client_max_body_size 4G;` ở tầng server cho "hết lỗi". Hệ quả: **bất kỳ IP nào** cũng được phép đẩy body 4GB vào **mọi endpoint**. Body lớn được nginx buffer vào RAM (`client_body_buffer_size`) rồi tràn sang file tạm trên disk — vài kết nối song song đủ cạn disk/RAM. Đây là DoS rẻ tiền, không cần lỗ hổng nào trong app.
+
+Cách đúng: mặc định nhỏ, override đúng chỗ cần:
+```nginx
+# http {} hoặc server {}
+client_max_body_size 20m;
+
+# chỉ location thật sự nhận upload lớn
+location /api/upload {
+    client_max_body_size 200m;
+    proxy_pass http://localhost:5000;
+}
+```
+**Đánh đổi:** phải rà xem endpoint nào thật sự cần upload lớn để override — làm ngược (nới toàn cục, quên siết) là anti-pattern ở 11.6.2.
+
+### 11.6.7. Môi trường dev/staging: allow/deny theo IP — diệt gốc
+
+Mọi biện pháp phía trên là *giảm thiểu*; với môi trường dev/staging còn có biện pháp *diệt gốc*: các domain này không có lý do phơi ra toàn Internet. Bot chỉ quét được thứ nó chạm tới được — giới hạn nguồn truy cập về dải IP office/VPN thì toàn bộ chiến dịch scan bên ngoài dừng ở tầng này:
+
+```nginx
+# trong server {} của môi trường dev/staging
+allow 203.0.113.0/24;   # dải IP office (placeholder — thay bằng dải thật)
+allow 10.8.0.0/24;      # subnet VPN nội bộ
+deny  all;              # còn lại: 403
+```
+
+Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trường) thì có module `geoip2` ánh xạ IP → mã quốc gia làm biến điều kiện. **Đánh đổi:** phải duy trì danh sách IP hợp lệ; dev/QA làm việc từ xa buộc phải qua VPN — nhưng đó là cái giá đúng cho môi trường không dành cho công chúng.
+
+### 11.6.8. Bài học từ một chiến dịch scan thực tế
+
+Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả một cuộc điều tra ở hệ thống mình vận hành (7/2026), kể lại đã ẩn danh hoá.
+
+Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `45.148.10.80` (VPS ở Amsterdam) — **536 request trong ~2 giờ 15 phút** nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Một dòng access log gốc điển hình:
+
+```
+45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
+```
+
+Đặc điểm đọc ra từ log: biến thể `....//` và double-encoding `%252e%252e` để né bộ lọc `../` thông thường (đúng cái bẫy ở 11.6.4); nhắm `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` lần lượt cho mọi user phổ biến (root/admin/ubuntu/deploy/www-data...); referer giả Bing + user-agent xoay liên tục để né phát hiện; nhịp đều ~1 request/5 giây suốt 2 giờ — chắc chắn là máy, không phải người. Kết quả: toàn 301/400/404, không request nào trả 200 — **chưa thủng**, nhưng toàn bộ 536 request đều được nhận và một phần chạm app (cấu hình đúng như anti-pattern 11.6.2).
+
+Mở rộng truy vấn ra cả fleet thì bức tranh đổi hẳn: **hàng chục IP thuộc nhiều subnet** (`185.177.72.x`, `45.148.10.x`, `195.178.110.x`...) quét tất cả các máy web-facing, IP xoay liên tục. Bài học rút ra:
+
+1. **Chặn IP đơn lẻ là "đập chuột chũi"**: chặn xong `.80` thì `.62`, `.42` và subnet khác tới ngay. Chặn IP/subnet chỉ là biện pháp tình thế khi đang bị dồn dập.
+2. **Ưu tiên biện pháp theo hành vi, áp cho cả fleet**: rate-limit (11.6.3), chặn tên tệp (11.6.4), `default_server` 444 (11.6.5), siết body size (11.6.6) — không phụ thuộc IP nguồn nên không phải chạy theo scanner. Với dev/staging, allow/deny theo IP (11.6.7) diệt gốc luôn.
+3. **Hướng tự động hoá (đang nghiên cứu)**: nối fail2ban hoặc cơ chế active response của SIEM để tự chặn IP khi vượt ngưỡng cảnh báo (SIEM đếm alert theo `srcip` → đẩy lệnh chặn xuống firewall). Cần đặt ngưỡng và thời hạn chặn cẩn thận để không tự chặn nhầm đối tác NAT chung IP.
 
 ---
 
@@ -949,14 +1047,14 @@ Internet
 [ pfSense / NGFW ]  ── L3/L4 stateful filter, NAT, anti-DDoS, VPN termination (IPsec/WG/OVPN)
   │  (SPAN/TAP) ───────────────► [ Suricata IDS ]  +  [ Zeek ]  ──► SIEM
   │
-[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination
+[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination, rate-limit + chặn sớm (11.6)
   │
 [ App servers ]  ── HIDS (Wazuh/auditd), prepared statements (gốc vẫn là code an toàn)
 ```
 
 Nguyên tắc vận hành cốt lõi:
 1. Tuning trước, enforce sau: IDS alert-only và WAF DetectionOnly trong giai đoạn baseline; đo false positive rồi mới inline/On.
-2. Lớp đúng việc: chặn L3/L4 ở firewall (rẻ), L7 ở WAF; đừng dùng WAF chống flood hay firewall chống SQLi.
+2. Lớp đúng việc: chặn L3/L4 ở firewall (rẻ), L7 ở WAF; đừng dùng WAF chống flood hay firewall chống SQLi. Request rác nhận diện được bằng pattern rẻ (tên tệp nhạy cảm, tần suất, Host lạ) thì ngắt ngay ở reverse proxy (11.6) trước khi chạm WAF/app.
 3. Defense-in-depth: WAF/IDS là compensating control; không thay thế code an toàn, patch, least-privilege.
 4. Khả dụng của thiết bị phòng thủ: IPS/WAF inline là điểm có thể gây gián đoạn / điểm thắt cổ chai (chokepoint) — thiết kế fail-open/fail-close có chủ đích, HA, và giới hạn regex/ReDoS.
 5. Mã hoá làm NIDS mù: cân nhắc TLS inspection ở reverse proxy (nơi đã có khoá) thay vì giải mã giữa đường.
@@ -969,3 +1067,10 @@ Nguyên tắc vận hành cốt lõi:
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- Phần 11.6 mình viết lại sau một đợt audit cấu hình nginx trên cả fleet máy web ở hệ thống mình vận hành. Mẹo audit nhanh mà mình thấy đáng giá: chạy trên từng máy `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` — một con số duy nhất cho biết máy đó có bao nhiêu dòng cấu hình phòng vệ. Kết quả của mình: 5/6 máy trả về **0**. Con số 0 đó thuyết phục hơn mọi bài thuyết trình về defense-in-depth.
+- Máy duy nhất có sẵn một phần cấu hình tốt được mình lấy làm **mẫu chuẩn hoá** cho các máy còn lại — đỡ viết từ đầu, và "máy X đang chạy ổn định với config này" là lập luận dễ được DevOps chấp nhận hơn một config mới tinh mình tự nghĩ ra.
+- Từng hiểu sai: thấy scanner ăn toàn 301/400/404 thì yên tâm "app chặn được rồi". Sai ở hai chỗ — trả lỗi vẫn tốn đủ TLS + parse + một phần chạm app; và quan trọng hơn, nó nghĩa là cả hệ thống đang dựa vào đúng một lớp là app tự bảo vệ, không có gì phía trước.
+- Cũng từng tin chặn regex `../` ở nginx là chống được traversal — sai nốt, vì nginx chuẩn hoá URI trước khi match location (11.6.4). May mà hiểu ra trước khi kịp tuyên bố "đã chặn traversal" ở đâu đó.
+- Kinh nghiệm triển khai: đề xuất theo thứ tự ưu tiên (diệt gốc bằng allow/deny cho dev trước, rồi rate-limit, chặn tên tệp, default_server, body size), và **thử trên MỘT máy dev trước** — theo dõi vài ngày xem `limit_req` có chặn nhầm client hợp lệ không (đếm 429/503 trong log) rồi mới nhân bản ra cả fleet.
+- Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng qua fail2ban hoặc active response của SIEM, và đưa WAF (ModSecurity/CRS hoặc Coraza) lên reverse proxy — hiện các máy của mình mới dừng ở lớp chặn rẻ tiền bằng nginx thuần.

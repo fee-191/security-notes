@@ -1,0 +1,2417 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 2 — Hệ điều hành Linux — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 2 — Hệ điều hành Linux — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch01.html"><link rel="next" href="ch03.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="02"><a class="nav-ch-title" href="#top"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"><a class="nav-sub" href="#ch02-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch02-21-kien-truc-tong-quan-va-ranh-gioi-user-space-kernel-space">2.1. Kiến trúc tổng quan và ranh giới user space / kernel space</a><a class="nav-sub" href="#ch02-22-filesystem-hierarchy-standard-fhs">2.2. Filesystem Hierarchy Standard (FHS)</a><a class="nav-sub" href="#ch02-23-mo-hinh-quyen-12-bit-đoc-ls--l-tung-ky-tu-octal-umask">2.3. Mô hình quyền: 12 bit, đọc ls -l từng ký tự, octal, umask</a><a class="nav-sub" href="#ch02-24-etcpasswd-etcshadow-hash-mat-khau">2.4. /etc/passwd, /etc/shadow, hash mật khẩu</a><a class="nav-sub" href="#ch02-25-tien-trinh-process">2.5. Tiến trình (Process)</a><a class="nav-sub" href="#ch02-26-systemd-init-unit-dich-vu-timer">2.6. systemd — init, unit, dịch vụ, timer</a><a class="nav-sub" href="#ch02-27-logging-rsyslog-journald-authlog-logrotate">2.7. Logging: rsyslog, journald, auth.log, logrotate</a><a class="nav-sub" href="#ch02-28-quan-ly-goi-apt-va-dnf">2.8. Quản lý gói: apt và dnf</a><a class="nav-sub" href="#ch02-29-cron-5-truong-thoi-gian">2.9. cron — 5 trường thời gian</a><a class="nav-sub" href="#ch02-210-bash-file-descriptor-redirection-pipe">2.10. Bash: file descriptor, redirection, pipe</a><a class="nav-sub" href="#ch02-211-cong-cu-xu-ly-text-grep-awk-sed-cut-sort-uniq-phan-tich-log-thuc-chien">2.11. Công cụ xử lý text: grep, awk, sed, cut, sort, uniq — phân tích log thực chiến</a><a class="nav-sub" href="#ch02-212-hardening-sshd-fail2ban-netfilter-selinuxapparmor">2.12. Hardening: sshd, fail2ban, netfilter, SELinux/AppArmor</a><a class="nav-sub" href="#ch02-213-chan-đoan-hieu-nang-tai-nguyen-dashboard-noi-cao-o-đau-lenh-noi-process-nao-gay-ra">2.13. Chẩn đoán hiệu năng &amp;amp; tài nguyên — dashboard nói &quot;cao ở đâu&quot;, lệnh nói &quot;process nào gây ra&quot;</a><a class="nav-sub" href="#ch02-214-tong-ket-tu-duy-phong-thu-tren-linux">2.14. Tổng kết tư duy phòng thủ trên Linux</a><a class="nav-sub" href="#ch02-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-02" data-ch="02">
+<h1 id="ch02-chuong-2-he-đieu-hanh-linux">Chương 2 — Hệ điều hành Linux</h1>
+<h2 id="ch02-tong-quan">Tổng quan</h2>
+<p>Gần như mọi máy chủ mình từng phải vá lỗi hay lục log sự cố — web server, database, container — đều chạy Linux, nên dấu vết tấn công cũng nằm ngay trong các cơ chế của chính hệ điều hành này. Chương này nhìn Linux qua đúng góc đó: không học để quản trị hệ thống, mà học để biết ai vừa làm gì, bằng quyền nào, và tại sao lại được phép làm vậy.</p>
+<p>Điểm xuất phát là ranh giới gốc của mọi hệ Unix: <strong>kernel</strong> chạy ở ring 0 độc quyền phần cứng, còn tiến trình ứng dụng bị nhốt trong <strong>user space</strong> và phải xin qua <strong>syscall</strong> mỗi khi cần tài nguyên — hàng rào này cô lập lỗi và mã độc khỏi phần cứng lẫn khỏi tiến trình khác. Trên nền đó Linux tổ chức file theo chuẩn <strong>FHS</strong> (cấu hình ở <code>/etc</code>, log ở <code>/var/log</code>) để công cụ và rule giám sát hoạt động độc lập với distro, rồi kiểm soát ai được làm gì bằng <strong>mô hình quyền rwx</strong> cùng các bit đặc biệt SUID/SGID/sticky — một binary SUID-root cấu hình sai vẫn là đường leo thang đặc quyền kinh điển. Danh tính người dùng nằm ở <code>/etc/passwd</code>, còn mật khẩu chỉ tồn tại dưới dạng hash trong <code>/etc/shadow</code> mà chỉ root đọc được; việc cấp quyền chạy lệnh có kiểm soát thì giao cho <strong>sudo</strong> và <strong>PAM</strong>, hai lớp vừa phân quyền tối thiểu vừa ghi log truy vết.</p>
+<p>Lớp tiếp theo là vòng đời tiến trình: một <strong>process</strong> sinh ra qua <code>fork()</code> rồi nạp chương trình mới bằng <code>execve()</code>, mang theo danh tính bảo mật riêng — khi điều tra, một web server bất ngờ sinh ra shell con chính là chỉ dấu xâm nhập kinh điển. <code>/proc</code> phơi bày trạng thái kernel theo từng tiến trình nên là mỏ dữ liệu điều tra, còn <strong>namespaces</strong> và <strong>cgroups</strong> là hai cơ chế cô lập và giới hạn tài nguyên mà mọi container Docker đều dựng trên đó. Toàn bộ vòng đời dịch vụ trên máy, từ khởi động tới giám sát và tự phục hồi, do <strong>systemd</strong> quản lý qua các unit — và cũng chính systemd cho phép hardening từng dịch vụ bằng các directive khai báo.</p>
+<p>Phần còn lại của chương là lớp vận hành và điều tra thường nhật, mỗi mảng khá độc lập nên mình gom thành một danh sách ngắn:</p>
+<ul>
+<li><strong>Logging</strong> qua <code>rsyslog</code>/<code>journald</code> ghi lại mọi sự kiện nhạy cảm, còn <code>logrotate</code> giữ cho đĩa không bị log lấp đầy — nhưng log chỉ có giá trị điều tra thật khi được đẩy khỏi máy trước khi attacker kịp dọn dấu vết cục bộ.</li>
+<li>Trình quản lý gói (<code>apt</code>, <code>dnf</code>) không chỉ cài phần mềm, nó còn xác minh <strong>chữ ký số</strong> trên đường tải — nền tảng để tin được nguồn gốc mọi thứ đang chạy trên máy.</li>
+<li><strong>cron</strong> tiện cho tự động hóa bao nhiêu thì cũng hấp dẫn kẻ tấn công bấy nhiêu: một dòng crontab lạ là chỗ giấu backdoor chạy định kỳ rất kín, nên luôn nằm trong danh sách cần kiểm khi điều tra.</li>
+<li>Dưới các câu lệnh vẫn là file descriptor, redirection và pipe của bash ghép thành pipeline, cùng bộ công cụ xử lý text <code>grep</code>/<code>awk</code>/<code>sed</code>/<code>sort</code>/<code>uniq</code> — thứ giúp truy vấn nhanh trên log dài hàng triệu dòng chỉ bằng một dòng lệnh.</li>
+<li>Cuối cùng là <strong>hardening</strong>: SSH cấu hình chặt, <code>fail2ban</code> tự khóa IP dò mật khẩu, firewall chỉ mở đúng cổng cần, và SELinux/AppArmor giới hạn hành vi dịch vụ ngay cả khi nó đã bị chiếm quyền.</li>
+</ul>
+<blockquote>
+<p>Lệnh và output mẫu trong chương đều chạy thật trên Debian/Ubuntu hoặc RHEL/Rocky; chỗ nào phụ thuộc phiên bản kernel/distro thì có ghi chú riêng.</p>
+</blockquote>
+<hr />
+<h2 id="ch02-21-kien-truc-tong-quan-va-ranh-gioi-user-space-kernel-space">2.1. Kiến trúc tổng quan và ranh giới user space / kernel space</h2>
+<p>Trước khi đi vào từng cơ chế, cần nắm mô hình phân tầng vì gần như mọi quyết định bảo mật trên Linux đều xoay quanh ranh giới giữa <strong>user space</strong> và <strong>kernel space</strong>.</p>
+<pre><code>+---------------------------------------------------------------+
+|  USER SPACE (ring 3 trên x86-64)                              |
+|   bash, sshd, nginx, python ...                               |
+|   thư viện: glibc (libc.so.6), libssl ...                     |
+|        |  system call (syscall instruction)                   |
++--------|------------------------------------------------------+
+         v
++---------------------------------------------------------------+
+|  KERNEL SPACE (ring 0)                                        |
+|   - syscall dispatcher (bảng sys_call_table)                  |
+|   - scheduler (CFS/EEVDF tùy phiên bản)                       |
+|   - VFS -&gt; ext4/xfs/btrfs                                     |
+|   - net stack (socket -&gt; TCP/IP -&gt; netfilter)                 |
+|   - LSM hooks (SELinux/AppArmor)                              |
+|   - quản lý process, memory (page table), namespaces, cgroups |
++---------------------------------------------------------------+
+</code></pre>
+<p><strong>Vì sao thiết kế tách ring 3 / ring 0?</strong> CPU x86-64 có 4 mức đặc quyền (ring 0–3); Linux chỉ dùng ring 0 (kernel) và ring 3 (user). Tách biệt để code user space không thể trực tiếp truy cập phần cứng, bảng trang của process khác, hay cấu trúc kernel — mọi yêu cầu phải đi qua <strong>syscall</strong>, nơi kernel kiểm tra quyền. Đây là hàng rào bảo mật gốc của toàn hệ thống.</p>
+<p><strong>Syscall ở mức instruction (x86-64, Linux):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Thanh ghi</th>
+<th>Vai trò khi gọi syscall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rax</code></td>
+<td>Số hiệu syscall (vd. <code>read</code>=0, <code>write</code>=1, <code>open</code>=2, <code>execve</code>=59)</td>
+</tr>
+<tr>
+<td><code>rdi</code></td>
+<td>Tham số 1</td>
+</tr>
+<tr>
+<td><code>rsi</code></td>
+<td>Tham số 2</td>
+</tr>
+<tr>
+<td><code>rdx</code></td>
+<td>Tham số 3</td>
+</tr>
+<tr>
+<td><code>r10</code></td>
+<td>Tham số 4 (lưu ý: KHÔNG phải <code>rcx</code> như ABI gọi hàm thường)</td>
+</tr>
+<tr>
+<td><code>r8</code></td>
+<td>Tham số 5</td>
+</tr>
+<tr>
+<td><code>r9</code></td>
+<td>Tham số 6</td>
+</tr>
+<tr>
+<td><code>rax</code> (sau lệnh)</td>
+<td>Giá trị trả về (âm = <code>-errno</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Lệnh <code>syscall</code> chuyển CPU sang ring 0, nhảy tới địa chỉ trong MSR <code>LSTAR</code>. Quan sát chuỗi syscall của một tiến trình là kỹ thuật điều tra trọng yếu:</p>
+<pre><code class="language-bash">strace -f -e trace=openat,connect,execve -s 200 curl -s https://example.com -o /dev/null
+</code></pre>
+<p><code>-f</code> theo cả tiến trình con, <code>-e trace=</code> lọc nhóm syscall, <code>-s 200</code> in tới 200 ký tự chuỗi. Output mẫu:</p>
+<pre><code>execve(&quot;/usr/bin/curl&quot;, [&quot;curl&quot;,&quot;-s&quot;,&quot;https://example.com&quot;,...], 0x7ffd...) = 0
+openat(AT_FDCWD, &quot;/etc/ssl/certs/ca-certificates.crt&quot;, O_RDONLY) = 5
+connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr(&quot;192.0.2.10&quot;)}, 16) = -1 EINPROGRESS (Operation now in progress)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> seccomp-bpf (dùng bởi container runtime, systemd <code>SystemCallFilter=</code>) lọc chính các số <code>rax</code> này. Hiểu bảng syscall giúp viết/đọc seccomp profile và phát hiện hành vi bất thường (vd. một web server bỗng gọi <code>execve</code>).</p>
+<hr />
+<h2 id="ch02-22-filesystem-hierarchy-standard-fhs">2.2. Filesystem Hierarchy Standard (FHS)</h2>
+<p>FHS (chuẩn hiện hành 3.0) quy định ý nghĩa từng thư mục gốc. <strong>Vì sao cần chuẩn?</strong> Để công cụ, script và admin biết chắc file ở đâu mà không phụ thuộc distro — điều cốt yếu khi viết rule giám sát (vd. theo dõi ghi vào <code>/etc</code>, <code>/bin</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Đường dẫn</th>
+<th>Mục đích</th>
+<th>Ghi được lúc runtime?</th>
+<th>Quan tâm bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>Gốc</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/bin</code>, <code>/sbin</code></td>
+<td>Binary thiết yếu (thường symlink vào <code>/usr/bin</code>)</td>
+<td>Không nên</td>
+<td>Ghi vào đây = thay binary hệ thống</td>
+</tr>
+<tr>
+<td><code>/usr</code></td>
+<td>Phần lớn chương trình, thư viện (<code>/usr/bin</code>, <code>/usr/lib</code>, <code>/usr/local</code>)</td>
+<td>Read-only được khuyến nghị</td>
+<td>Theo dõi thay đổi</td>
+</tr>
+<tr>
+<td><code>/etc</code></td>
+<td>File cấu hình hệ thống (text)</td>
+<td>Có</td>
+<td><code>/etc/passwd</code>, <code>/etc/shadow</code>, <code>/etc/cron*</code> — mục tiêu hàng đầu</td>
+</tr>
+<tr>
+<td><code>/var</code></td>
+<td>Dữ liệu biến đổi: <code>/var/log</code>, <code>/var/spool</code>, <code>/var/lib</code></td>
+<td>Có</td>
+<td>Log nằm ở đây; cần bảo vệ tính toàn vẹn</td>
+</tr>
+<tr>
+<td><code>/tmp</code></td>
+<td>Tạm, xóa khi reboot, thường <code>sticky bit</code></td>
+<td>Có (ai cũng)</td>
+<td>Mục tiêu race condition / symlink attack</td>
+</tr>
+<tr>
+<td><code>/var/tmp</code></td>
+<td>Tạm nhưng giữ qua reboot</td>
+<td>Có</td>
+<td>Payload dai dẳng</td>
+</tr>
+<tr>
+<td><code>/home</code></td>
+<td>Thư mục người dùng</td>
+<td>Có (chủ sở hữu)</td>
+<td><code>.ssh/</code>, <code>.bash_history</code></td>
+</tr>
+<tr>
+<td><code>/root</code></td>
+<td>Home của root</td>
+<td>root</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/proc</code></td>
+<td>Pseudo-FS: trạng thái kernel/process</td>
+<td>Một phần</td>
+<td><code>/proc/&lt;pid&gt;/maps</code>, <code>/environ</code> lộ secret</td>
+</tr>
+<tr>
+<td><code>/sys</code></td>
+<td>Pseudo-FS: device/kernel object (sysfs)</td>
+<td>Một phần</td>
+<td>cgroup, module</td>
+</tr>
+<tr>
+<td><code>/dev</code></td>
+<td>Device node (devtmpfs)</td>
+<td>—</td>
+<td><code>/dev/mem</code>, <code>/dev/kmem</code> rất nhạy cảm</td>
+</tr>
+<tr>
+<td><code>/boot</code></td>
+<td>Kernel, initramfs, bootloader</td>
+<td>Hiếm</td>
+<td>Tampering = rootkit</td>
+</tr>
+<tr>
+<td><code>/run</code></td>
+<td>Runtime state (tmpfs, mất khi reboot)</td>
+<td>Có</td>
+<td>PID file, socket</td>
+</tr>
+<tr>
+<td><code>/opt</code></td>
+<td>Phần mềm bên thứ ba</td>
+<td>Có</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/mnt</code>, <code>/media</code></td>
+<td>Điểm mount</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">stat -f /            # xem filesystem chứa /
+findmnt -t ext4,xfs  # liệt kê mount kèm option (ro, nosuid, nodev)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> mount với cờ <code>nosuid,nodev,noexec</code> cho <code>/tmp</code>, <code>/var/tmp</code>, <code>/home</code> là biện pháp hardening cơ bản — vô hiệu hóa SUID, device node, và thực thi binary từ những vùng người dùng ghi được.</p>
+<hr />
+<h2 id="ch02-23-mo-hinh-quyen-12-bit-đoc-ls--l-tung-ky-tu-octal-umask">2.3. Mô hình quyền: 12 bit, đọc <code>ls -l</code> từng ký tự, octal, umask</h2>
+<h3 id="ch02-231-cau-truc-12-bit-quyen">2.3.1. Cấu trúc 12 bit quyền</h3>
+<p>Mỗi inode lưu một trường <code>st_mode</code> 16-bit; trong đó <strong>12 bit thấp</strong> là quyền truy cập (4 bit cao còn lại mã hóa loại file). 12 bit chia làm 4 nhóm 3 bit:</p>
+<pre><code> bit:  11 10  9 | 8 7 6 | 5 4 3 | 2 1 0
+       SUID SGID STK| r w x | r w x | r w x
+       &lt;--special--&gt;|&lt;owner&gt;|&lt;group&gt;|&lt;other&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Bit</th>
+<th>Tên</th>
+<th>Giá trị octal</th>
+<th>Ý nghĩa lên FILE</th>
+<th>Ý nghĩa lên THƯ MỤC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Special</td>
+<td>11</td>
+<td>SUID</td>
+<td>4000</td>
+<td>Chạy với UID của chủ sở hữu file</td>
+<td>(vô nghĩa)</td>
+</tr>
+<tr>
+<td>Special</td>
+<td>10</td>
+<td>SGID</td>
+<td>2000</td>
+<td>Chạy với GID của nhóm chủ</td>
+<td>File mới kế thừa GID thư mục</td>
+</tr>
+<tr>
+<td>Special</td>
+<td>9</td>
+<td>Sticky</td>
+<td>1000</td>
+<td>(xưa: giữ text trong swap, nay bỏ)</td>
+<td>Chỉ chủ file mới xóa được file trong dir</td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>8/7/6</td>
+<td>r/w/x</td>
+<td>0400/0200/0100</td>
+<td>đọc / ghi / thực thi</td>
+<td>liệt kê / tạo-xóa / cd vào</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>5/4/3</td>
+<td>r/w/x</td>
+<td>0040/0020/0010</td>
+<td>tương tự</td>
+<td>tương tự</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>2/1/0</td>
+<td>r/w/x</td>
+<td>0004/0002/0001</td>
+<td>tương tự</td>
+<td>tương tự</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao <code>x</code> trên thư mục khác <code>r</code>?</strong> <code>r</code> cho phép đọc danh sách tên file; <code>x</code> cho phép "đi qua" (traverse) để truy cập một file đã biết tên bên trong. Có thể có <code>x</code> mà không <code>r</code>: bạn vào được <code>/dir/file</code> nếu biết tên, nhưng không <code>ls</code> được.</p>
+<h3 id="ch02-232-đoc-ls--l-tung-ky-tu">2.3.2. Đọc <code>ls -l</code> từng ký tự</h3>
+<pre><code>-rwxr-xr--   1 root  staff   8192 Jun 19 10:00 tool
+drwxr-x---   2 alice alice   4096 Jun 19 10:00 secret
+crw-rw----   1 root  tty     5, 0 Jun 19 10:00 /dev/tty
+-rwsr-xr-x   1 root  root   55672 Jun 19 10:00 /usr/bin/passwd
+</code></pre>
+<p>Chuỗi 10 ký tự đầu, ví dụ <code>-rwsr-xr-x</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Vị trí</th>
+<th>Ký tự</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>-</code></td>
+<td>Loại file: <code>-</code>=file thường, <code>d</code>=dir, <code>l</code>=symlink, <code>c</code>=char dev, <code>b</code>=block dev, <code>s</code>=socket, <code>p</code>=named pipe (FIFO)</td>
+</tr>
+<tr>
+<td>2–4</td>
+<td><code>rws</code></td>
+<td>Owner: r, w, và <code>s</code> = SUID bật + x bật (nếu SUID bật nhưng x tắt thì là <code>S</code> hoa)</td>
+</tr>
+<tr>
+<td>5–7</td>
+<td><code>r-x</code></td>
+<td>Group</td>
+</tr>
+<tr>
+<td>8–10</td>
+<td><code>r-x</code></td>
+<td>Other</td>
+</tr>
+</tbody>
+</table>
+<p>Quy tắc ký tự đặc biệt:
+- Cột execute owner: <code>x</code>+SUID → <code>s</code>; SUID không có x → <code>S</code>.
+- Cột execute group: <code>x</code>+SGID → <code>s</code>; SGID không có x → <code>S</code>.
+- Cột execute other: <code>x</code>+sticky → <code>t</code>; sticky không có x → <code>T</code>.</p>
+<p>Ví dụ <code>/tmp</code>:</p>
+<pre><code>drwxrwxrwt 18 root root 4096 Jun 19 11:00 /tmp
+                       ^ chữ 't' = sticky bit
+</code></pre>
+<p>Sticky trên <code>/tmp</code> ngăn user A xóa file của user B dù <code>/tmp</code> có <code>w</code> cho mọi người.</p>
+<p>Với device node <code>crw-rw----</code>, cột "size" hiển thị <strong>major, minor</strong> (vd. <code>5, 0</code>) thay vì kích thước byte — vì <code>c</code>/<code>b</code> là device.</p>
+<h3 id="ch02-233-octal-va-chmod">2.3.3. Octal và <code>chmod</code></h3>
+<pre><code class="language-bash">chmod 4755 /usr/local/bin/myprog   # SUID + rwxr-xr-x
+chmod u+s,g-w file                 # ký hiệu tượng trưng
+chmod 1777 /tmp                    # sticky + rwx cho tất cả
+stat -c '%a %A %U:%G' /usr/bin/passwd
+# 4755 -rwsr-xr-x root:root
+</code></pre>
+<p><code>%a</code> in octal, <code>%A</code> in chuỗi rwx, tiện cho audit hàng loạt.</p>
+<p><strong>Săn SUID/SGID — kỹ thuật điều tra bắt buộc:</strong></p>
+<pre><code class="language-bash">find / -xdev \( -perm -4000 -o -perm -2000 \) -type f -printf '%M %u %p\n' 2&gt;/dev/null
+</code></pre>
+<ul>
+<li><code>-xdev</code>: không vượt sang filesystem khác (tránh quét NFS, /proc).</li>
+<li><code>-perm -4000</code>: khớp khi <em>có ít nhất</em> bit SUID (dấu <code>-</code> = "chứa các bit này").</li>
+<li><code>-printf '%M %u %p\n'</code>: in mode, owner, path.</li>
+</ul>
+<p>Output mẫu:</p>
+<pre><code>-rwsr-xr-x root /usr/bin/sudo
+-rwsr-xr-x root /usr/bin/passwd
+-rwsr-xr-x root /usr/bin/su
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> mọi binary SUID-root là một bề mặt leo thang đặc quyền. Một binary SUID gọi shell, đọc file tùy ý, hoặc cho ghi file tùy ý đều có thể bị lạm dụng (tham khảo dự án GTFOBins). Lập baseline danh sách SUID và cảnh báo khi xuất hiện entry mới.</p>
+<h3 id="ch02-234-umask">2.3.4. <code>umask</code></h3>
+<p><code>umask</code> là <strong>mặt nạ loại bỏ</strong> quyền cho file/dir mới tạo. Quyền cuối = quyền yêu cầu mặc định AND NOT(umask).</p>
+<ul>
+<li>Default cho file: <code>0666</code> (không bao giờ tự cấp x cho file mới).</li>
+<li>Default cho dir: <code>0777</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>umask</th>
+<th>File mới</th>
+<th>Dir mới</th>
+<th>Diễn giải</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>022</code></td>
+<td><code>644</code></td>
+<td><code>755</code></td>
+<td>other/group không ghi</td>
+</tr>
+<tr>
+<td><code>027</code></td>
+<td><code>640</code></td>
+<td><code>750</code></td>
+<td>other không truy cập gì</td>
+</tr>
+<tr>
+<td><code>077</code></td>
+<td><code>600</code></td>
+<td><code>700</code></td>
+<td>chỉ chủ sở hữu</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">umask              # in hiện tại, vd 0022
+umask 027
+touch a; mkdir b; stat -c '%a %n' a b
+# 640 a
+# 750 b
+</code></pre>
+<p><strong>Lưu ý:</strong> umask được kế thừa từ shell/PAM (<code>/etc/login.defs</code> <code>UMASK</code>, <code>pam_umask</code>). Dịch vụ chạy với umask lỏng có thể tạo file log/secret world-readable. Hardening server thường đặt <code>027</code> hoặc <code>077</code>.</p>
+<h3 id="ch02-235-acl-posix-access-control-lists">2.3.5. ACL — POSIX Access Control Lists</h3>
+<p>Mô hình rwx 3 nhóm không đủ khi cần "user X có quyền riêng ngoài owner/group". ACL bổ sung entry chi tiết, lưu trong extended attribute <code>system.posix_acl_access</code>.</p>
+<pre><code class="language-bash">setfacl -m u:bob:rwx,g:devs:r-x file.txt   # cấp bob rwx, nhóm devs r-x
+setfacl -d -m u:bob:rwx /shared            # default ACL: file mới trong dir kế thừa
+getfacl file.txt
+</code></pre>
+<p>Output <code>getfacl</code>:</p>
+<pre><code># file: file.txt
+# owner: alice
+# group: alice
+user::rw-
+user:bob:rwx          &lt;- ACL entry tường minh
+group::r--
+mask::rwx             &lt;- mask: trần quyền tối đa cho named user/group
+other::r--
+</code></pre>
+<p><strong><code>mask</code> quan trọng:</strong> quyền hiệu lực của <code>user:bob</code> = ACL entry AND mask. Nếu <code>setfacl -m m::r--</code>, bob bị giới hạn còn <code>r--</code> dù entry ghi <code>rwx</code>. Khi có ACL, <code>ls -l</code> hiển thị dấu <code>+</code>:</p>
+<pre><code>-rw-rwxr--+ 1 alice alice 0 Jun 19 file.txt
+</code></pre>
+<p>Cột "group" trong <code>ls -l</code> lúc này hiển thị <strong>mask</strong>, không phải quyền group thật — điểm hay gây nhầm khi audit.</p>
+<p><strong>Lưu ý bảo mật:</strong> ACL không hiện trong <code>ls -l</code> cơ bản (chỉ dấu <code>+</code>). Quét quyền chỉ bằng <code>find -perm</code> sẽ bỏ sót cấp phát qua ACL. Dùng <code>getfacl -R</code> khi điều tra quyền nhạy cảm.</p>
+<hr />
+<h2 id="ch02-24-etcpasswd-etcshadow-hash-mat-khau">2.4. <code>/etc/passwd</code>, <code>/etc/shadow</code>, hash mật khẩu</h2>
+<h3 id="ch02-241-etcpasswd-7-truong-phan-tach-bang">2.4.1. <code>/etc/passwd</code> — 7 trường, phân tách bằng <code>:</code></h3>
+<pre><code>root:x:0:0:root:/root:/bin/bash
+sshd:x:106:65534::/run/sshd:/usr/sbin/nologin
+alice:x:1000:1000:Alice Nguyen,,,:/home/alice:/bin/bash
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Trường</th>
+<th>Ví dụ</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>username</td>
+<td><code>alice</code></td>
+<td>Tên đăng nhập</td>
+</tr>
+<tr>
+<td>2</td>
+<td>password</td>
+<td><code>x</code></td>
+<td><code>x</code> = hash ở <code>/etc/shadow</code>; <code>*</code>/<code>!</code> = khóa; trường rỗng = không cần mật khẩu (NGUY HIỂM)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>UID</td>
+<td><code>1000</code></td>
+<td>User ID. 0 = root; 1–999 system; ≥1000 user thường (tùy <code>login.defs</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GID</td>
+<td><code>1000</code></td>
+<td>Primary group ID</td>
+</tr>
+<tr>
+<td>5</td>
+<td>GECOS</td>
+<td><code>Alice Nguyen,,,</code></td>
+<td>Tên đầy đủ/comment (các trường con cách bằng dấu phẩy)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>home</td>
+<td><code>/home/alice</code></td>
+<td>Thư mục nhà</td>
+</tr>
+<tr>
+<td>7</td>
+<td>shell</td>
+<td><code>/bin/bash</code></td>
+<td>Shell đăng nhập; <code>/usr/sbin/nologin</code> hoặc <code>/bin/false</code> để chặn login</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao tách shadow?</strong> <code>/etc/passwd</code> phải world-readable (<code>644</code>) để map UID↔tên cho mọi tiến trình; nếu hash nằm đây, ai cũng đọc được để bẻ offline. Hash được dời sang <code>/etc/shadow</code> chỉ <code>root</code> đọc.</p>
+<pre><code class="language-bash">getent passwd alice     # hỏi qua NSS (gồm cả LDAP/SSSD), không chỉ file
+awk -F: '$3==0 {print $1}' /etc/passwd   # tìm mọi tài khoản UID 0 (chỉ nên có root)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> nhiều tài khoản UID 0 = nhiều "root ẩn". Trường password rỗng (field 2 trống) cho phép login không mật khẩu. Cả hai là dấu hiệu xâm nhập điển hình.</p>
+<h3 id="ch02-242-etcshadow-9-truong">2.4.2. <code>/etc/shadow</code> — 9 trường</h3>
+<p>Quyền điển hình <code>640 root:shadow</code> (hoặc <code>600</code>).</p>
+<pre><code>alice:$6$xQk2...salt...$hashpart...:19800:0:99999:7:14:20000:
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Trường</th>
+<th>Ví dụ</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>username</td>
+<td><code>alice</code></td>
+<td>Khớp với passwd</td>
+</tr>
+<tr>
+<td>2</td>
+<td>password hash</td>
+<td><code>$6$salt$hash</code></td>
+<td>Hash hoặc trạng thái đặc biệt (xem dưới)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>last change</td>
+<td><code>19800</code></td>
+<td>Ngày đổi mật khẩu lần cuối, tính bằng <strong>số ngày kể từ 1970-01-01</strong> (epoch days)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>min</td>
+<td><code>0</code></td>
+<td>Số ngày tối thiểu trước khi được đổi lại</td>
+</tr>
+<tr>
+<td>5</td>
+<td>max</td>
+<td><code>99999</code></td>
+<td>Số ngày tối đa mật khẩu còn hiệu lực</td>
+</tr>
+<tr>
+<td>6</td>
+<td>warn</td>
+<td><code>7</code></td>
+<td>Cảnh báo trước hết hạn (ngày)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>inactive</td>
+<td><code>14</code></td>
+<td>Số ngày sau hết hạn vẫn cho login</td>
+</tr>
+<tr>
+<td>8</td>
+<td>expire</td>
+<td><code>20000</code></td>
+<td>Ngày tài khoản bị vô hiệu hoàn toàn (epoch days)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>reserved</td>
+<td>(rỗng)</td>
+<td>Dành riêng</td>
+</tr>
+</tbody>
+</table>
+<p>Trạng thái đặc biệt của trường 2:
+- <code>*</code> hoặc <code>!</code> → tài khoản không thể đăng nhập bằng mật khẩu.
+- <code>!$6$...</code> → mật khẩu <strong>bị khóa</strong> (<code>passwd -l</code> thêm <code>!</code> vào đầu hash); xóa <code>!</code> là mở khóa.
+- Trống → đăng nhập không cần mật khẩu.</p>
+<h3 id="ch02-243-đinh-dang-hash-idsalthash">2.4.3. Định dạng hash <code>$id$salt$hash</code></h3>
+<p>Trường hash dùng cú pháp <strong>Modular Crypt Format (MCF)</strong>: <code>$id$[params]$salt$hash</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>id</code></th>
+<th>Thuật toán</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code></td>
+<td>MD5-crypt</td>
+<td>Yếu, đã lỗi thời</td>
+</tr>
+<tr>
+<td><code>2a</code>/<code>2b</code>/<code>2y</code></td>
+<td>bcrypt</td>
+<td>Mạnh; thường thấy ở app, ít ở shadow</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>SHA-256 crypt</td>
+<td>Có <code>rounds=</code> tùy chọn</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>SHA-512 crypt</td>
+<td>Mặc định nhiều distro Linux</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>yescrypt</td>
+<td>Mặc định Debian 11+/Ubuntu mới; memory-hard, mạnh nhất trong nhóm</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ bóc tách một bản ghi SHA-512:</p>
+<pre><code>$6$rounds=656000$YxZ.Hk1aB2c3D4e$M9...rất.dài...hashbase64...
+ |  |              |                |
+ |  |              |                +-- hash (định dạng base64 đặc biệt của crypt)
+ |  |              +------------------- salt (tới 16 ký tự)
+ |  +--------------------------------- tham số tùy chọn (rounds)
+ +------------------------------------ id thuật toán = 6 (SHA-512)
+</code></pre>
+<p><strong>Vì sao có salt?</strong> Salt ngẫu nhiên khiến hai user cùng mật khẩu có hash khác nhau, vô hiệu hóa rainbow table. <strong>Vì sao có <code>rounds</code>?</strong> Tăng chi phí tính toán làm brute-force/đoán offline chậm đi.</p>
+<pre><code class="language-bash"># Tạo hash thử nghiệm (yescrypt nếu hệ hỗ trợ)
+openssl passwd -6 'MatKhau!'      # SHA-512
+mkpasswd -m yescrypt 'MatKhau!'   # gói whois cung cấp mkpasswd
+chage -l alice                    # xem chính sách tuổi thọ mật khẩu (đọc shadow)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> hash MD5 (<code>$1$</code>) phải được nâng cấp. Nếu <code>/etc/shadow</code> bị lộ, attacker chạy <code>hashcat</code>/<code>john</code> offline; chế độ hashcat: <code>1800</code> cho <code>$6$</code>, <code>1700</code> cho SHA-512 thô, yescrypt cần phiên bản hashcat mới. Phòng thủ: chính sách mật khẩu mạnh + phát hiện đọc trái phép <code>/etc/shadow</code> qua auditd.</p>
+<h3 id="ch02-244-sudo-etcsudoers">2.4.4. <code>sudo</code>, <code>/etc/sudoers</code></h3>
+<p><code>sudo</code> cho phép chạy lệnh với quyền user khác (mặc định root) <strong>mà không chia sẻ mật khẩu root</strong>, đồng thời ghi log mọi lệnh — đó là lý do tồn tại của nó so với <code>su</code>.</p>
+<p>Cú pháp dòng trong <code>/etc/sudoers</code> (luôn sửa bằng <code>visudo</code> để check cú pháp trước khi lưu):</p>
+<pre><code>user    host = (runas_user:runas_group)   [TAG:] command
+</code></pre>
+<p>Ví dụ:</p>
+<pre><code># who    where     (as-whom)        what
+root     ALL=(ALL:ALL) ALL
+%admin   ALL=(ALL)     ALL
+alice    web01=(www-data) /usr/bin/systemctl restart nginx
+bob      ALL=(root)    NOPASSWD: /usr/bin/journalctl
+%dev     ALL=(ALL)     /usr/bin/apt update, /usr/bin/apt upgrade
+</code></pre>
+<p>Phân tích <code>alice web01=(www-data) /usr/bin/systemctl restart nginx</code>:
+- <code>alice</code>: chủ thể.
+- <code>web01</code>: chỉ áp dụng trên host tên <code>web01</code>.
+- <code>(www-data)</code>: chạy với tư cách user <code>www-data</code>.
+- lệnh được phép: chỉ đúng <code>systemctl restart nginx</code>.</p>
+<p>TAG thông dụng: <code>NOPASSWD:</code> (không hỏi mật khẩu), <code>NOEXEC:</code> (chặn binary spawn lệnh con).</p>
+<pre><code class="language-bash">sudo -l            # liệt kê quyền sudo của user hiện tại
+sudo -ll           # chi tiết hơn
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> quy tắc quá rộng dễ bị lạm dụng. <code>(ALL) NOPASSWD: /usr/bin/vim</code> cho phép <code>:!sh</code> thành root. Tránh wildcard và editor/interpreter trong sudoers. Đặt file drop-in vào <code>/etc/sudoers.d/</code> (phải <code>440</code>, không có khoảng trắng trong tên).</p>
+<h3 id="ch02-245-pam-pluggable-authentication-modules">2.4.5. PAM — Pluggable Authentication Modules</h3>
+<p>PAM tách logic xác thực khỏi ứng dụng: <code>sshd</code>, <code>login</code>, <code>sudo</code> không tự code kiểm mật khẩu mà gọi PAM, cấu hình tại <code>/etc/pam.d/&lt;service&gt;</code>. Mỗi dòng:</p>
+<pre><code>&lt;type&gt;   &lt;control&gt;   &lt;module&gt;   [arguments]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>type</code></th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth</code></td>
+<td>Xác minh danh tính (mật khẩu, token)</td>
+</tr>
+<tr>
+<td><code>account</code></td>
+<td>Kiểm tra tài khoản hợp lệ (hết hạn, giờ login)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>Đổi credential (cập nhật mật khẩu)</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>Thiết lập/giải phóng phiên (mount home, log, ulimit)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><code>control</code></th>
+<th>Hành vi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requisite</code></td>
+<td>Fail → dừng ngay, trả về thất bại</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td>Fail → ghi nhận thất bại nhưng vẫn chạy hết stack (không lộ module nào fail)</td>
+</tr>
+<tr>
+<td><code>sufficient</code></td>
+<td>Success → trả về thành công ngay (nếu chưa có <code>required</code> nào fail)</td>
+</tr>
+<tr>
+<td><code>optional</code></td>
+<td>Kết quả thường bị bỏ qua</td>
+</tr>
+<tr>
+<td><code>[success=1 default=ignore]</code></td>
+<td>Cú pháp điều khiển nhảy bước nâng cao</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ <code>/etc/pam.d/sshd</code> (rút gọn) với hardening lockout:</p>
+<pre><code>auth     required   pam_faillock.so preauth silent deny=5 unlock_time=900
+auth     [success=1 default=bad]  pam_unix.so
+auth     [default=die]  pam_faillock.so authfail deny=5 unlock_time=900
+account  required   pam_faillock.so
+session  required   pam_limits.so
+</code></pre>
+<p><code>pam_faillock</code> khóa tài khoản sau 5 lần sai trong cửa sổ, mở lại sau 900 giây. <code>pam_limits</code> áp <code>/etc/security/limits.conf</code> (giới hạn process, file descriptor — chống fork bomb).</p>
+<p><strong>Lưu ý bảo mật:</strong> sai thứ tự <code>sufficient</code>/<code>required</code> có thể tạo bypass xác thực. Thêm <code>pam_pwquality</code> để ép độ phức tạp mật khẩu. Module lạ trong <code>/etc/pam.d/</code> (vd. pam backdoor ghi mật khẩu ra file) là kỹ thuật persistence cần soi.</p>
+<hr />
+<h2 id="ch02-25-tien-trinh-process">2.5. Tiến trình (Process)</h2>
+<h3 id="ch02-251-đinh-danh-va-thuoc-tinh">2.5.1. Định danh và thuộc tính</h3>
+<p>Mỗi tiến trình có <code>task_struct</code> trong kernel. Các thuộc tính cốt lõi:</p>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PID</td>
+<td>Process ID (1 = <code>init</code>/systemd)</td>
+</tr>
+<tr>
+<td>PPID</td>
+<td>Parent PID</td>
+</tr>
+<tr>
+<td>RUID/EUID</td>
+<td>Real / Effective UID — EUID quyết định quyền; SUID làm EUID khác RUID</td>
+</tr>
+<tr>
+<td>RGID/EGID</td>
+<td>Real / Effective GID</td>
+</tr>
+<tr>
+<td>SUID/SGID (saved)</td>
+<td>UID/GID lưu để có thể tạm bỏ rồi lấy lại đặc quyền</td>
+</tr>
+<tr>
+<td>Supplementary groups</td>
+<td>Danh sách nhóm phụ</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">ps -eo pid,ppid,ruid,euid,stat,comm
+id alice
+cat /proc/self/status | grep -E '^(Uid|Gid|Groups):'
+</code></pre>
+<h3 id="ch02-252-trang-thai-tien-trinh-cot-stat">2.5.2. Trạng thái tiến trình (cột STAT)</h3>
+<table>
+<thead>
+<tr>
+<th>Ký tự</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>R</code></td>
+<td>Running/Runnable</td>
+<td>Đang chạy hoặc sẵn sàng chạy trên CPU</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Interruptible sleep</td>
+<td>Ngủ chờ sự kiện, có thể bị tín hiệu đánh thức</td>
+</tr>
+<tr>
+<td><code>D</code></td>
+<td>Uninterruptible sleep</td>
+<td>Ngủ trong I/O kernel, KHÔNG nhận tín hiệu (kể cả <code>kill -9</code>)</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Stopped</td>
+<td>Bị dừng bởi <code>SIGSTOP</code>/<code>SIGTSTP</code> hoặc đang debug</td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>Traced</td>
+<td>Dừng bởi debugger</td>
+</tr>
+<tr>
+<td><code>Z</code></td>
+<td>Zombie</td>
+<td>Đã chết, chờ cha gọi <code>wait()</code> để thu mã thoát</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>Dead</td>
+<td>(hiếm khi thấy)</td>
+</tr>
+</tbody>
+</table>
+<p>Hậu tố trong <code>ps</code> (cột STAT): <code>s</code>=session leader, <code>+</code>=foreground group, <code>l</code>=multi-threaded, <code>&lt;</code>=ưu tiên cao, <code>N</code>=nice thấp.</p>
+<p><strong>Vì sao <code>D</code> không kill được?</strong> Tiến trình đang nằm trong đường dẫn I/O của kernel; đánh thức bằng signal có thể làm hỏng trạng thái thiết bị/filesystem. <code>D</code> kéo dài thường báo hiệu NFS treo hoặc đĩa lỗi.</p>
+<p><strong>Zombie:</strong> không tiêu tốn tài nguyên ngoài một entry trong bảng process; xuất hiện nhiều <code>Z</code> nghĩa là tiến trình cha không <code>wait()</code>. Diệt zombie = diệt/sửa tiến trình cha.</p>
+<h3 id="ch02-253-bang-tin-hieu-signals">2.5.3. Bảng tín hiệu (signals)</h3>
+<p>Tín hiệu là cơ chế thông báo asynchronous. Số hiệu phổ biến (kiến trúc x86/ARM thông dụng — vài số khác trên alpha/mips, cần kiểm chứng theo <code>kill -l</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Số</th>
+<th>Tên</th>
+<th>Mặc định</th>
+<th>Bắt/chặn được?</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>SIGHUP</td>
+<td>Terminate</td>
+<td>Có</td>
+<td>Mất terminal; quy ước "reload config" cho daemon</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SIGINT</td>
+<td>Terminate</td>
+<td>Có</td>
+<td>Ctrl-C</td>
+</tr>
+<tr>
+<td>3</td>
+<td>SIGQUIT</td>
+<td>Core dump</td>
+<td>Có</td>
+<td>Ctrl-\</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SIGKILL</td>
+<td>Terminate</td>
+<td><strong>KHÔNG</strong></td>
+<td>Buộc kill, không thể bắt/chặn/ignore</td>
+</tr>
+<tr>
+<td>11</td>
+<td>SIGSEGV</td>
+<td>Core dump</td>
+<td>Có</td>
+<td>Truy cập bộ nhớ sai</td>
+</tr>
+<tr>
+<td>13</td>
+<td>SIGPIPE</td>
+<td>Terminate</td>
+<td>Có</td>
+<td>Ghi vào pipe không còn đầu đọc</td>
+</tr>
+<tr>
+<td>15</td>
+<td>SIGTERM</td>
+<td>Terminate</td>
+<td>Có</td>
+<td>Yêu cầu kết thúc lịch sự (mặc định của <code>kill</code>)</td>
+</tr>
+<tr>
+<td>17</td>
+<td>SIGCHLD</td>
+<td>Ignore</td>
+<td>Có</td>
+<td>Con thay đổi trạng thái</td>
+</tr>
+<tr>
+<td>18</td>
+<td>SIGCONT</td>
+<td>Continue</td>
+<td>—</td>
+<td>Tiếp tục tiến trình đã dừng</td>
+</tr>
+<tr>
+<td>19</td>
+<td>SIGSTOP</td>
+<td>Stop</td>
+<td><strong>KHÔNG</strong></td>
+<td>Dừng tiến trình, không thể bắt</td>
+</tr>
+<tr>
+<td>20</td>
+<td>SIGTSTP</td>
+<td>Stop</td>
+<td>Có</td>
+<td>Ctrl-Z</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">kill -l               # liệt kê toàn bộ tên/số tín hiệu
+kill -TERM 1234       # gửi SIGTERM
+kill -HUP $(pidof nginx)   # reload nginx mà không downtime
+kill -9 1234          # SIGKILL (chỉ khi cần thiết)
+</code></pre>
+<p><strong>Vì sao <code>SIGKILL</code>/<code>SIGSTOP</code> không bắt được?</strong> Để admin/kernel luôn có cách dừng tiến trình bất trị; nếu bắt được, malware có thể tự bảo vệ vô hạn.</p>
+<h3 id="ch02-254-fork-execve-cach-tien-trinh-ra-đoi">2.5.4. <code>fork()</code> + <code>execve()</code> — cách tiến trình ra đời</h3>
+<pre><code>parent
+  | fork()           -&gt; tạo bản sao (copy-on-write) page table; trả về PID con cho cha, 0 cho con
+  +--&gt; child (bản sao)
+         | execve(&quot;/bin/ls&quot;, argv, envp)
+         |   -&gt; thay thế toàn bộ image bộ nhớ bằng /bin/ls, GIỮ NGUYÊN PID &amp; các fd mở
+         v
+       /bin/ls đang chạy
+</code></pre>
+<ul>
+<li><code>fork()</code> nhân đôi tiến trình; nhờ <strong>copy-on-write</strong>, bộ nhớ chỉ bị copy thật khi một bên ghi → fork rẻ.</li>
+<li><code>execve()</code> nạp chương trình mới đè lên không gian địa chỉ hiện tại; <strong>các file descriptor mở vẫn được kế thừa</strong> trừ khi gắn cờ <code>O_CLOEXEC</code>. Đây là nền của shell redirection (mục 2.10).</li>
+<li>Sau khi con thoát, cha gọi <code>wait()</code>/<code>waitpid()</code> lấy mã thoát; chưa gọi thì con thành zombie.</li>
+</ul>
+<p><strong>Lưu ý bảo mật:</strong> chuỗi <code>fork</code>+<code>execve("/bin/sh")</code> từ một tiến trình không phải shell (vd. web server, daemon) là chỉ dấu RCE kinh điển — viết rule EDR/auditd cho <code>execve</code> của shell có parent là dịch vụ mạng.</p>
+<h3 id="ch02-255-proc-cua-so-vao-kernel-va-tien-trinh">2.5.5. <code>/proc</code> — cửa sổ vào kernel và tiến trình</h3>
+<p><code>/proc/&lt;pid&gt;/</code> là pseudo-filesystem do kernel sinh động.</p>
+<table>
+<thead>
+<tr>
+<th>Đường dẫn</th>
+<th>Nội dung</th>
+<th>Giá trị điều tra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/proc/&lt;pid&gt;/cmdline</code></td>
+<td>Dòng lệnh đầy đủ (đối số ngăn bằng NUL <code>\0</code>)</td>
+<td>Lệnh thật dù <code>ps</code> bị giả mạo argv</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/exe</code></td>
+<td>Symlink tới binary thực thi</td>
+<td>Phát hiện binary đã bị xóa (<code>(deleted)</code>) — malware fileless</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/cwd</code></td>
+<td>Symlink thư mục làm việc</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/environ</code></td>
+<td>Biến môi trường (NUL-separated)</td>
+<td>Lộ secret/token</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/maps</code></td>
+<td>Vùng bộ nhớ đã map (địa chỉ, quyền, file backing)</td>
+<td>Phát hiện code injection</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/fd/</code></td>
+<td>Symlink mọi file descriptor mở</td>
+<td>Tìm socket, file log đang ghi</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/status</code></td>
+<td>UID/GID, capabilities, seccomp, namespace</td>
+<td>Audit đặc quyền</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/root</code></td>
+<td>Symlink root filesystem của process (khác nếu chroot/container)</td>
+<td>Phát hiện chroot</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">tr '\0' ' ' &lt; /proc/$$/cmdline; echo      # đọc cmdline, đổi NUL thành space
+ls -l /proc/$(pidof nginx | cut -d' ' -f1)/exe
+grep -E 'Cap(Eff|Prm)|Seccomp' /proc/self/status
+</code></pre>
+<p>Phát hiện binary bị xóa nhưng vẫn chạy (kỹ thuật ẩn của malware):</p>
+<pre><code class="language-bash">ls -l /proc/*/exe 2&gt;/dev/null | grep deleted
+</code></pre>
+<h3 id="ch02-256-namespaces-nen-tang-container">2.5.6. Namespaces — nền tảng container</h3>
+<p>Namespace ảo hóa một loại tài nguyên kernel sao cho tiến trình trong namespace tưởng mình sở hữu riêng.</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Cô lập</th>
+<th>Tham số <code>clone()</code>/<code>unshare</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PID</td>
+<td>Cây PID (process trong NS thấy PID 1 riêng)</td>
+<td><code>CLONE_NEWPID</code></td>
+</tr>
+<tr>
+<td>NET</td>
+<td>Giao diện mạng, bảng route, iptables, port</td>
+<td><code>CLONE_NEWNET</code></td>
+</tr>
+<tr>
+<td>MNT</td>
+<td>Bảng mount</td>
+<td><code>CLONE_NEWNS</code></td>
+</tr>
+<tr>
+<td>UTS</td>
+<td>hostname, domainname</td>
+<td><code>CLONE_NEWUTS</code></td>
+</tr>
+<tr>
+<td>IPC</td>
+<td>SysV IPC, POSIX message queue</td>
+<td><code>CLONE_NEWIPC</code></td>
+</tr>
+<tr>
+<td>USER</td>
+<td>Ánh xạ UID/GID (root trong NS = unprivileged ngoài)</td>
+<td><code>CLONE_NEWUSER</code></td>
+</tr>
+<tr>
+<td>CGROUP</td>
+<td>Gốc cây cgroup nhìn thấy</td>
+<td><code>CLONE_NEWCGROUP</code></td>
+</tr>
+<tr>
+<td>TIME</td>
+<td>Đồng hồ boottime/monotonic</td>
+<td><code>CLONE_NEWTIME</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">lsns                              # liệt kê mọi namespace và process chủ
+unshare --net --pid --fork --mount-proc bash   # tạo shell trong net+pid namespace mới
+readlink /proc/self/ns/net        # in inode namespace, vd net:[4026531992]
+nsenter -t &lt;pid&gt; -n ss -tlnp      # nhảy vào net namespace của container để xem socket
+</code></pre>
+<p><strong>Vì sao quan trọng với bảo mật?</strong> Container = namespaces + cgroups + capabilities + seccomp/LSM. <code>CLONE_NEWUSER</code> cho phép "rootless container" nhưng từng là nguồn nhiều CVE leo thang đặc quyền. Khi điều tra container, dùng <code>nsenter</code> để soi từ host mà không cần shell trong container.</p>
+<h3 id="ch02-257-cgroups-gioi-han-va-đo-tai-nguyen">2.5.7. cgroups — giới hạn và đo tài nguyên</h3>
+<p>cgroups (v2 là mặc định trên hệ hiện đại) gom tiến trình thành cây và áp giới hạn CPU/RAM/IO. cgroup v2 mount tại <code>/sys/fs/cgroup</code>, một cây thống nhất.</p>
+<pre><code class="language-bash">systemd-cgls                      # cây cgroup theo unit systemd
+cat /sys/fs/cgroup/system.slice/nginx.service/memory.max
+cat /sys/fs/cgroup/.../cpu.max    # vd &quot;200000 100000&quot; = 2 CPU (quota/period micro giây)
+</code></pre>
+<p>File <code>memory.max</code> đặt trần RAM; vượt → OOM kill trong cgroup đó. <code>pids.max</code> chặn fork bomb. systemd phơi các giới hạn này qua <code>MemoryMax=</code>, <code>CPUQuota=</code>, <code>TasksMax=</code> trong unit.</p>
+<p><strong>Lưu ý bảo mật:</strong> cgroups là cơ chế <strong>chống cạn kiệt tài nguyên</strong> (availability), không phải cô lập bảo mật như namespaces. Đặt <code>TasksMax=</code>/<code>MemoryMax=</code> cho dịch vụ public-facing để một service bị lạm dụng không kéo sập cả host.</p>
+<hr />
+<h2 id="ch02-26-systemd-init-unit-dich-vu-timer">2.6. systemd — init, unit, dịch vụ, timer</h2>
+<p>systemd là PID 1 trên đa số distro hiện đại, quản lý vòng đời dịch vụ qua <strong>unit</strong>. <strong>Vì sao thay sysvinit?</strong> Khởi động song song theo phụ thuộc (nhanh hơn), giám sát tiến trình (tự restart), socket/timer activation, theo dõi qua cgroup, log có cấu trúc (journald).</p>
+<h3 id="ch02-261-cau-truc-mot-service-unit">2.6.1. Cấu trúc một service unit</h3>
+<p>File <code>/etc/systemd/system/myapp.service</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=My App API
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=myapp
+Group=myapp
+ExecStart=/usr/local/bin/myapp --port 8080
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+# Hardening:
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/myapp
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+MemoryMax=512M
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Directive</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[Unit]</code></td>
+<td><code>After=</code></td>
+<td>Thứ tự khởi động (không tạo phụ thuộc cứng)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Requires=</code></td>
+<td>Phụ thuộc cứng: nếu dependency fail thì unit này cũng fail</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Wants=</code></td>
+<td>Phụ thuộc mềm (khuyến nghị, không bắt buộc)</td>
+</tr>
+<tr>
+<td><code>[Service]</code></td>
+<td><code>Type=</code></td>
+<td>Mô hình khởi động (xem bảng dưới)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ExecStart=</code></td>
+<td>Lệnh chạy chính</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Restart=</code></td>
+<td><code>no</code>/<code>on-failure</code>/<code>always</code>/<code>on-abnormal</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>User=</code>/<code>Group=</code></td>
+<td>Hạ quyền — KHÔNG chạy root nếu không cần</td>
+</tr>
+<tr>
+<td><code>[Install]</code></td>
+<td><code>WantedBy=</code></td>
+<td>Target sẽ "kéo" unit khi <code>enable</code></td>
+</tr>
+</tbody>
+</table>
+<p>Các <code>Type=</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Khi nào systemd coi là "đã khởi động xong"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simple</code></td>
+<td>Ngay sau khi <code>ExecStart</code> được fork (mặc định nếu không có <code>Type</code>)</td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>Sau khi binary thực sự <code>execve</code> thành công</td>
+</tr>
+<tr>
+<td><code>forking</code></td>
+<td>Khi tiến trình cha thoát (daemon kiểu cũ tự background) — cần <code>PIDFile=</code></td>
+</tr>
+<tr>
+<td><code>oneshot</code></td>
+<td>Tiến trình chạy xong rồi thoát (job cài đặt); thường kèm <code>RemainAfterExit=yes</code></td>
+</tr>
+<tr>
+<td><code>notify</code></td>
+<td>Khi process gửi <code>sd_notify(READY=1)</code> qua socket — chính xác nhất</td>
+</tr>
+<tr>
+<td><code>dbus</code></td>
+<td>Khi service chiếm được tên trên D-Bus</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">systemctl daemon-reload                 # nạp lại sau khi sửa unit
+systemctl enable --now myapp.service     # bật khi boot + start ngay
+systemctl status myapp.service
+systemctl cat myapp.service              # in unit hiệu lực (gồm drop-in)
+systemd-analyze security myapp.service   # chấm điểm hardening (exposure score)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> <code>systemd-analyze security</code> cho điểm phơi nhiễm 0–10; các directive <code>ProtectSystem=strict</code>, <code>PrivateTmp=</code>, <code>NoNewPrivileges=</code>, <code>SystemCallFilter=</code>, <code>CapabilityBoundingSet=</code> giảm điểm. Đây là cách hardening dịch vụ rất hiệu quả mà không cần container.</p>
+<h3 id="ch02-262-timer-unit-thay-cron">2.6.2. Timer unit (thay cron)</h3>
+<p><code>backup.timer</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=Nightly backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>Cặp với <code>backup.service</code> (<code>Type=oneshot</code>). <code>OnCalendar</code> dùng cú pháp <code>DOW YYYY-MM-DD HH:MM:SS</code>. <code>Persistent=true</code> chạy bù nếu máy tắt lúc đến hạn. <code>RandomizedDelaySec</code> rải tải.</p>
+<pre><code class="language-bash">systemctl list-timers --all       # xem lần chạy kế tiếp &amp; gần nhất
+</code></pre>
+<p><strong>Lợi thế bảo mật so với cron:</strong> chạy trong cgroup, log vào journald, kế thừa toàn bộ hardening của <code>[Service]</code> — điều cron không có.</p>
+<hr />
+<h2 id="ch02-27-logging-rsyslog-journald-authlog-logrotate">2.7. Logging: rsyslog, journald, auth.log, logrotate</h2>
+<h3 id="ch02-271-mo-hinh-syslog-facility-severity">2.7.1. Mô hình syslog: facility + severity</h3>
+<p>Mỗi thông điệp syslog mang một <strong>PRI</strong> = facility×8 + severity. Trên dây (RFC 5424) PRI nằm trong dấu <code>&lt; &gt;</code> đầu gói.</p>
+<p>Facility (chọn lọc):</p>
+<table>
+<thead>
+<tr>
+<th>Số</th>
+<th>Facility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>kern</td>
+</tr>
+<tr>
+<td>1</td>
+<td>user</td>
+</tr>
+<tr>
+<td>2</td>
+<td>mail</td>
+</tr>
+<tr>
+<td>3</td>
+<td>daemon</td>
+</tr>
+<tr>
+<td>4</td>
+<td>auth (security/authorization)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>syslog</td>
+</tr>
+<tr>
+<td>10</td>
+<td>authpriv (auth nhạy cảm)</td>
+</tr>
+<tr>
+<td>16–23</td>
+<td>local0–local7 (tùy ứng dụng)</td>
+</tr>
+</tbody>
+</table>
+<p>Severity (thấp = nặng hơn):</p>
+<table>
+<thead>
+<tr>
+<th>Số</th>
+<th>Tên</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>emerg</td>
+<td>Hệ thống không dùng được</td>
+</tr>
+<tr>
+<td>1</td>
+<td>alert</td>
+<td>Cần xử lý ngay</td>
+</tr>
+<tr>
+<td>2</td>
+<td>crit</td>
+<td>Nguy kịch</td>
+</tr>
+<tr>
+<td>3</td>
+<td>err</td>
+<td>Lỗi</td>
+</tr>
+<tr>
+<td>4</td>
+<td>warning</td>
+<td>Cảnh báo</td>
+</tr>
+<tr>
+<td>5</td>
+<td>notice</td>
+<td>Bình thường nhưng đáng chú ý</td>
+</tr>
+<tr>
+<td>6</td>
+<td>info</td>
+<td>Thông tin</td>
+</tr>
+<tr>
+<td>7</td>
+<td>debug</td>
+<td>Gỡ lỗi</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ tính PRI: facility <code>authpriv</code>(10) + severity <code>info</code>(6) = 10×8+6 = <strong>86</strong> → gói bắt đầu <code>&lt;86&gt;</code>.</p>
+<p>Định dạng RFC 5424:</p>
+<pre><code>&lt;PRI&gt;VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID [STRUCTURED-DATA] MSG
+&lt;86&gt;1 2026-06-19T02:30:01.003Z web01 sshd 1234 - - Accepted publickey for alice
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ví dụ</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRI</td>
+<td><code>&lt;86&gt;</code></td>
+<td>facility×8+severity</td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td><code>1</code></td>
+<td>Phiên bản giao thức</td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td><code>2026-06-19T02:30:01.003Z</code></td>
+<td>ISO 8601, có mili giây + offset/Z</td>
+</tr>
+<tr>
+<td>HOSTNAME</td>
+<td><code>web01</code></td>
+<td>Máy phát</td>
+</tr>
+<tr>
+<td>APP-NAME</td>
+<td><code>sshd</code></td>
+<td>Ứng dụng</td>
+</tr>
+<tr>
+<td>PROCID</td>
+<td><code>1234</code></td>
+<td>Thường là PID</td>
+</tr>
+<tr>
+<td>MSGID</td>
+<td><code>-</code></td>
+<td>Loại message (<code>-</code> = none)</td>
+</tr>
+<tr>
+<td>STRUCTURED-DATA</td>
+<td><code>-</code></td>
+<td>Cặp key=value chuẩn</td>
+</tr>
+<tr>
+<td>MSG</td>
+<td><code>Accepted publickey...</code></td>
+<td>Nội dung</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch02-272-rsyslog-cau-hinh-loc-chuyen-tiep">2.7.2. rsyslog — cấu hình lọc &amp; chuyển tiếp</h3>
+<p><code>/etc/rsyslog.d/50-default.conf</code> (cú pháp truyền thống <code>facility.severity   đích</code>):</p>
+<pre><code>auth,authpriv.*                 /var/log/auth.log
+*.info;mail.none;authpriv.none  /var/log/syslog
+*.emerg                         :omusrmsg:*
+# Chuyển tiếp tới SIEM qua TCP (RELP/TLS khuyến nghị cho production)
+*.* @@siem.internal:6514
+</code></pre>
+<ul>
+<li><code>auth,authpriv.*</code> → tất cả severity của hai facility này.</li>
+<li><code>mail.none</code> → loại trừ facility mail.</li>
+<li><code>@@host:port</code> = TCP (một <code>@</code> = UDP, mất gói khi tải cao).</li>
+</ul>
+<pre><code class="language-bash">logger -p authpriv.warning &quot;Test message from logger&quot;   # bơm 1 message
+systemctl restart rsyslog
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> chuyển log tới SIEM tập trung càng sớm càng tốt — attacker xóa log cục bộ không xóa được bản đã rời máy. Ưu tiên TCP/TLS (RELP) để không mất sự kiện và để bảo mật đường truyền.</p>
+<h3 id="ch02-273-journald">2.7.3. journald</h3>
+<p>systemd-journald lưu log <strong>nhị phân, có cấu trúc, đánh index</strong>. Mỗi entry là tập field (kèm trường tin cậy do kernel cung cấp như <code>_UID</code>, <code>_PID</code>, <code>_SYSTEMD_UNIT</code> — ứng dụng không giả mạo được).</p>
+<pre><code class="language-bash">journalctl -u sshd.service           # log của một unit
+journalctl -p err -b                 # severity &gt;= err, từ lần boot này
+journalctl --since &quot;2026-06-19 02:00&quot; --until &quot;02:30&quot;
+journalctl _UID=1000 -o json-pretty  # lọc theo field tin cậy, xuất JSON
+journalctl -k                        # log kernel (dmesg)
+journalctl -f                        # follow realtime
+</code></pre>
+<p><strong>Persistent journal:</strong> mặc định một số distro lưu ở <code>/run/log/journal</code> (volatile, mất khi reboot). Đặt <code>Storage=persistent</code> trong <code>/etc/systemd/journald.conf</code> và tạo <code>/var/log/journal</code> để giữ qua reboot — bắt buộc cho điều tra sự cố.</p>
+<p><strong>Lưu ý bảo mật:</strong> bật <strong>Forward Secure Sealing (FSS)</strong> chống sửa log:</p>
+<pre><code class="language-bash">journalctl --setup-keys     # tạo sealing key; kẻ tấn công sửa journal sẽ bị phát hiện khi verify
+journalctl --verify
+</code></pre>
+<h3 id="ch02-274-varlogauthlog-đoc-va-đoi-chieu">2.7.4. <code>/var/log/auth.log</code> — đọc và đối chiếu</h3>
+<p>Các dòng tiêu biểu (Debian/Ubuntu; trên RHEL là <code>/var/log/secure</code>):</p>
+<pre><code>Jun 19 02:30:01 web01 sshd[1234]: Accepted publickey for alice from 203.0.113.5 port 51514 ssh2: ED25519 SHA256:abc...
+Jun 19 02:31:10 web01 sshd[1240]: Failed password for invalid user admin from 198.51.100.9 port 40222 ssh2
+Jun 19 02:32:00 web01 sudo:   alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/apt update
+Jun 19 02:33:00 web01 sshd[1255]: Disconnected from authenticating user root 198.51.100.9 port 40250 [preauth]
+</code></pre>
+<ul>
+<li><code>Accepted publickey ... ED25519 SHA256:...</code> → fingerprint khóa đăng nhập (đối chiếu allowlist).</li>
+<li><code>Failed password for invalid user admin</code> → tên không tồn tại = quét brute-force.</li>
+<li><code>sudo: alice : ... COMMAND=</code> → audit lệnh đặc quyền.</li>
+</ul>
+<pre><code class="language-bash"># Top IP gây đăng nhập thất bại
+grep &quot;Failed password&quot; /var/log/auth.log \
+ | grep -oE 'from [0-9.]+' | awk '{print $2}' | sort | uniq -c | sort -rn | head
+</code></pre>
+<h3 id="ch02-275-logrotate">2.7.5. logrotate</h3>
+<p>Ngăn log lấp đầy đĩa và lưu trữ có vòng đời. <code>/etc/logrotate.d/nginx</code>:</p>
+<pre><code>/var/log/nginx/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 www-data adm
+    sharedscripts
+    postrotate
+        [ -f /run/nginx.pid ] &amp;&amp; kill -USR1 $(cat /run/nginx.pid)
+    endscript
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>daily</code></td>
+<td>Xoay mỗi ngày (<code>weekly</code>/<code>monthly</code>/<code>size 100M</code>)</td>
+</tr>
+<tr>
+<td><code>rotate 14</code></td>
+<td>Giữ 14 bản cũ rồi xóa</td>
+</tr>
+<tr>
+<td><code>compress</code>/<code>delaycompress</code></td>
+<td>Nén bản cũ; trì hoãn nén bản gần nhất (để đang-mở-fd vẫn ghi được)</td>
+</tr>
+<tr>
+<td><code>create 0640 www-data adm</code></td>
+<td>Tạo log mới với quyền/chủ chỉ định</td>
+</tr>
+<tr>
+<td><code>postrotate ... kill -USR1</code></td>
+<td>Báo nginx mở lại file log (vì nginx vẫn giữ fd cũ trỏ tới file đã đổi tên)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao cần <code>postrotate</code>/USR1?</strong> Tiến trình giữ <strong>inode</strong> qua file descriptor; đổi tên file không đổi inode nó đang ghi → log mới sẽ rơi vào file cũ đã rename. Tín hiệu <code>USR1</code> (quy ước của nginx) buộc reopen log. <strong>Lưu ý bảo mật:</strong> <code>rotate</code> quá ít hoặc xóa quá nhanh có thể tiêu hủy bằng chứng — căn theo chính sách lưu trữ và đẩy về SIEM trước khi xóa.</p>
+<hr />
+<h2 id="ch02-28-quan-ly-goi-apt-va-dnf">2.8. Quản lý gói: apt và dnf</h2>
+<h3 id="ch02-281-apt-debianubuntu-deb">2.8.1. apt (Debian/Ubuntu, <code>.deb</code>)</h3>
+<pre><code class="language-bash">apt update                       # cập nhật danh sách gói từ repo (tải Release/Packages)
+apt full-upgrade                 # nâng cấp, cho phép gỡ gói nếu cần giải phụ thuộc
+apt install --no-install-recommends nginx=1.24.0-1
+apt-mark hold nginx              # ghim phiên bản
+apt list --installed
+dpkg -l | grep nginx             # truy vấn DB gói cấp thấp
+dpkg -V                          # verify checksum file đã cài (phát hiện tampering)
+apt-get -s upgrade               # mô phỏng, không thực thi
+</code></pre>
+<p>Cơ chế tin cậy: repo có file <code>Release</code> được ký GPG (<code>Release.gpg</code>/<code>InRelease</code>); khóa công khai nằm ở <code>/etc/apt/trusted.gpg.d/</code> hoặc tham chiếu <code>signed-by=</code> trong file <code>.sources</code>. apt kiểm chữ ký và hash trước khi cài → chống gói giả mạo qua mạng.</p>
+<h3 id="ch02-282-dnf-rhelfedorarocky-rpm">2.8.2. dnf (RHEL/Fedora/Rocky, <code>.rpm</code>)</h3>
+<pre><code class="language-bash">dnf check-update
+dnf install nginx
+dnf history                      # xem lịch sử giao dịch
+dnf history undo &lt;id&gt;            # rollback một giao dịch
+dnf needs-restarting -r          # dịch vụ cần restart sau update (gói dnf-utils)
+rpm -qa | grep nginx
+rpm -V nginx                     # verify: cột S(size) M(mode) 5(md5) ... khác baseline
+rpm -qf /usr/sbin/nginx          # file này thuộc gói nào
+</code></pre>
+<p>RPM ký từng gói bằng GPG; <code>gpgcheck=1</code> trong <code>.repo</code> ép kiểm.</p>
+<p><strong>Lưu ý bảo mật cho cả hai:</strong> chỉ dùng repo HTTPS đã ký; cố định phiên bản (<code>hold</code>/version lock) cho hệ thống quan trọng; <code>dpkg -V</code> / <code>rpm -V</code> là công cụ kiểm tính toàn vẹn nhanh để phát hiện binary bị thay. Thiết lập <code>unattended-upgrades</code> (Debian) / <code>dnf-automatic</code> cho bản vá bảo mật tự động.</p>
+<hr />
+<h2 id="ch02-29-cron-5-truong-thoi-gian">2.9. cron — 5 trường thời gian</h2>
+<p><code>crontab -e</code> của user, hoặc file hệ thống <code>/etc/crontab</code> và <code>/etc/cron.d/*</code> (có thêm trường USER thứ 6).</p>
+<pre><code>┌──────── phút        (0–59)
+│ ┌────── giờ         (0–23)
+│ │ ┌──── ngày tháng  (1–31)
+│ │ │ ┌── tháng       (1–12)
+│ │ │ │ ┌ thứ trong tuần (0–7; 0 và 7 đều = CN)
+│ │ │ │ │
+* * * * *  command
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Khoảng</th>
+<th>Ký tự đặc biệt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>phút</td>
+<td>0–59</td>
+<td><code>*</code> mọi giá trị; <code>*/5</code> mỗi 5; <code>1,15</code> danh sách; <code>0-30</code> khoảng</td>
+</tr>
+<tr>
+<td>giờ</td>
+<td>0–23</td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>ngày</td>
+<td>1–31</td>
+<td>như trên</td>
+</tr>
+<tr>
+<td>tháng</td>
+<td>1–12</td>
+<td>hoặc tên <code>jan</code>–<code>dec</code></td>
+</tr>
+<tr>
+<td>DOW</td>
+<td>0–7</td>
+<td>hoặc <code>sun</code>–<code>sat</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ:</p>
+<pre><code class="language-cron">*/5 * * * *  /usr/local/bin/health-check.sh           # mỗi 5 phút
+0 2 * * 1-5  /usr/local/bin/backup.sh                 # 02:00 T2–T6
+30 3 1 * *   root /usr/local/bin/monthly.sh           # (file /etc/cron.d) trường thứ 6 = user
+@reboot      /usr/local/bin/startup.sh                 # khi khởi động (macro)
+</code></pre>
+<p>Macro: <code>@reboot @daily @hourly @weekly @monthly @yearly</code>.</p>
+<p><strong>Lưu ý bảo mật:</strong> cron là điểm persistence ưa thích. Soi: <code>crontab -l</code> của mọi user (<code>/var/spool/cron/crontabs/*</code> Debian, <code>/var/spool/cron/*</code> RHEL), <code>/etc/crontab</code>, <code>/etc/cron.{d,hourly,daily,weekly,monthly}</code>. Entry với <code>@reboot</code>, lệnh tải/encode lạ, hoặc trỏ tới <code>/tmp</code> rất đáng ngờ. <code>cron</code> ghi vào syslog (<code>cron</code> facility) — đối chiếu thời điểm chạy với hoạt động đáng ngờ.</p>
+<hr />
+<h2 id="ch02-210-bash-file-descriptor-redirection-pipe">2.10. Bash: file descriptor, redirection, pipe</h2>
+<h3 id="ch02-2101-ba-file-descriptor-chuan">2.10.1. Ba file descriptor chuẩn</h3>
+<p>Mỗi tiến trình mở sẵn 3 fd; chúng chỉ là số nguyên trỏ vào bảng fd trong kernel:</p>
+<table>
+<thead>
+<tr>
+<th>fd</th>
+<th>Tên</th>
+<th>Mặc định</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>stdin</td>
+<td>Bàn phím / terminal</td>
+</tr>
+<tr>
+<td>1</td>
+<td>stdout</td>
+<td>Terminal</td>
+</tr>
+<tr>
+<td>2</td>
+<td>stderr</td>
+<td>Terminal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao tách stdout và stderr?</strong> Để có thể ghi kết quả "sạch" (1) đi nơi này và lỗi (2) đi nơi khác — không trộn dữ liệu với thông báo lỗi khi xử lý tự động.</p>
+<h3 id="ch02-2102-redirection-bang-đay-đu">2.10.2. Redirection — bảng đầy đủ</h3>
+<table>
+<thead>
+<tr>
+<th>Cú pháp</th>
+<th>Hành vi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&gt; file</code></td>
+<td>stdout ghi đè vào file (rút gọn của <code>1&gt;</code>)</td>
+</tr>
+<tr>
+<td><code>&gt;&gt; file</code></td>
+<td>stdout nối thêm</td>
+</tr>
+<tr>
+<td><code>2&gt; file</code></td>
+<td>stderr ghi đè</td>
+</tr>
+<tr>
+<td><code>2&gt;&gt; file</code></td>
+<td>stderr nối thêm</td>
+</tr>
+<tr>
+<td><code>&amp;&gt; file</code> / <code>&gt;&amp; file</code></td>
+<td>cả stdout+stderr (bashism)</td>
+</tr>
+<tr>
+<td><code>&gt; file 2&gt;&amp;1</code></td>
+<td>stdout vào file, RỒI stderr trỏ "tới chỗ 1 đang trỏ"</td>
+</tr>
+<tr>
+<td><code>2&gt;&amp;1 &gt; file</code></td>
+<td>(THỨ TỰ SAI) stderr trỏ tới terminal, rồi stdout mới đổi sang file</td>
+</tr>
+<tr>
+<td><code>&lt; file</code></td>
+<td>stdin đọc từ file</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;EOF ... EOF</code></td>
+<td>here-document</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;&lt;"chuoi"</code></td>
+<td>here-string</td>
+</tr>
+<tr>
+<td><code>2&gt;/dev/null</code></td>
+<td>vứt lỗi</td>
+</tr>
+<tr>
+<td><code>n&gt;&amp;-</code></td>
+<td>đóng fd n</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao thứ tự <code>2&gt;&amp;1</code> quan trọng?</strong> Redirection xử lý trái→phải. <code>2&gt;&amp;1</code> nghĩa "fd 2 = bản sao đích hiện tại của fd 1". Nếu fd 1 chưa đổi (vẫn terminal), stderr cũng ra terminal. Phải đặt <code>&gt; file</code> TRƯỚC để fd 1 trỏ vào file, rồi <code>2&gt;&amp;1</code> mới sao đúng.</p>
+<pre><code class="language-bash">make 2&gt;build-errors.log              # tách lỗi build ra file riêng
+./script.sh &gt; out.log 2&gt;&amp;1           # gộp đúng cách: cả hai vào out.log
+./script.sh &amp;&gt;out.log                # tương đương (bash)
+diff &lt;(sort a.txt) &lt;(sort b.txt)     # process substitution: mỗi &lt;() là một fd /dev/fd/N
+exec 3&gt;/var/log/app.audit            # mở fd tùy chỉnh 3
+echo &quot;event&quot; &gt;&amp;3                     # ghi qua fd 3
+</code></pre>
+<h3 id="ch02-2103-pipe">2.10.3. Pipe</h3>
+<p><code>cmd1 | cmd2</code>: kernel tạo một pipe (buffer kernel ~64KB); stdout của <code>cmd1</code> (fd 1) nối vào stdin của <code>cmd2</code> (fd 0). Hai tiến trình chạy <strong>đồng thời</strong>; <code>cmd1</code> chặn khi buffer đầy, <code>cmd2</code> chặn khi rỗng — đây là cơ chế backpressure.</p>
+<pre><code class="language-bash">set -o pipefail     # mã thoát của pipeline = lệnh đầu tiên fail (không chỉ lệnh cuối)
+cmd1 | cmd2 ; echo ${PIPESTATUS[@]}   # mảng mã thoát từng đoạn pipe
+</code></pre>
+<p><strong>Lưu ý:</strong> mặc định mã thoát của pipeline chỉ là của lệnh cuối — <code>grep x file | wc -l</code> trả về 0 dù <code>grep</code> không tìm thấy. <code>pipefail</code> rất quan trọng trong script bảo mật để không "nuốt" lỗi.</p>
+<hr />
+<h2 id="ch02-211-cong-cu-xu-ly-text-grep-awk-sed-cut-sort-uniq-phan-tich-log-thuc-chien">2.11. Công cụ xử lý text: grep, awk, sed, cut, sort, uniq — phân tích log thực chiến</h2>
+<p>Đây là bộ công cụ điều tra log hàng ngày. Dưới đây là một pipeline hoàn chỉnh phân tích <code>auth.log</code>, giải thích từng đoạn.</p>
+<h3 id="ch02-2111-grep-loc-dong">2.11.1. grep — lọc dòng</h3>
+<pre><code class="language-bash">grep -E &quot;Failed password|Invalid user&quot; /var/log/auth.log
+grep -c &quot;Accepted&quot; /var/log/auth.log          # đếm dòng khớp
+grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' file   # CHỈ in phần khớp (IPv4)
+grep -v &quot;cron&quot; file                            # đảo: bỏ dòng khớp
+grep -i -A3 -B1 error log                      # không phân biệt hoa, in 3 dòng sau, 1 trước
+</code></pre>
+<p><code>-E</code> bật regex mở rộng, <code>-o</code> chỉ in chuỗi khớp (không cả dòng), <code>-v</code> invert, <code>-c</code> đếm, <code>-A/-B/-C</code> ngữ cảnh.</p>
+<h3 id="ch02-2112-awk-xu-ly-theo-truong">2.11.2. awk — xử lý theo trường</h3>
+<p>awk chia mỗi dòng thành các trường <code>$1..$NF</code> theo <code>FS</code> (mặc định khoảng trắng). Cấu trúc: <code>awk 'PATTERN { ACTION }'</code>.</p>
+<pre><code class="language-bash"># Đếm số đăng nhập SSH thành công theo user
+awk '/Accepted/ {for(i=1;i&lt;=NF;i++) if($i==&quot;for&quot;) print $(i+1)}' /var/log/auth.log \
+  | sort | uniq -c | sort -rn
+</code></pre>
+<ul>
+<li><code>/Accepted/</code>: pattern, chỉ xử lý dòng có "Accepted".</li>
+<li>vòng <code>for</code> tìm từ <code>for</code>, in từ ngay sau (chính là username) — bền vững dù cột xê dịch.</li>
+<li><code>NF</code> = số trường, <code>$(i+1)</code> = trường kế.</li>
+</ul>
+<pre><code class="language-bash"># Tổng byte truyền theo IP từ access log nginx (trường 1 = IP, trường 10 = bytes)
+awk '{sum[$1]+=$10} END {for(ip in sum) printf &quot;%-16s %d\n&quot;, ip, sum[ip]}' access.log \
+  | sort -k2 -rn | head
+</code></pre>
+<p><code>sum[$1]+=$10</code> dùng associative array; khối <code>END</code> chạy sau khi đọc hết file.</p>
+<h3 id="ch02-2113-sed-stream-editor">2.11.3. sed — stream editor</h3>
+<pre><code class="language-bash">sed -n '100,150p' big.log               # chỉ in dòng 100–150
+sed 's/[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}/[IP]/g' log   # ẩn danh hóa IP
+sed -i.bak 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sed '/^#/d;/^$/d' config                 # xóa dòng comment và dòng trống
+</code></pre>
+<p><code>-n</code> tắt in tự động, <code>p</code> in; <code>s/old/new/g</code> thay thế toàn cục; <code>-i.bak</code> sửa tại chỗ và lưu backup <code>.bak</code>; <code>d</code> xóa dòng.</p>
+<h3 id="ch02-2114-cut-cat-theo-cotky-tu">2.11.4. cut — cắt theo cột/ký tự</h3>
+<pre><code class="language-bash">cut -d: -f1,7 /etc/passwd          # trường 1 và 7, phân tách bằng ':'
+cut -d' ' -f1-3 access.log         # 3 trường đầu
+cut -c1-15 /var/log/syslog         # 15 ký tự đầu (cột timestamp)
+</code></pre>
+<p><code>-d</code> đặt delimiter, <code>-f</code> chọn trường, <code>-c</code> chọn theo ký tự.</p>
+<h3 id="ch02-2115-sort-uniq-sap-xep-va-đem-trung">2.11.5. sort &amp; uniq — sắp xếp và đếm trùng</h3>
+<pre><code class="language-bash">sort -t: -k3 -n /etc/passwd        # sort theo UID (trường 3), số học
+sort -k2 -rn data                  # trường 2, số, giảm dần
+uniq -c                            # đếm dòng liên tiếp giống nhau (BẮT BUỘC sort trước)
+uniq -d                            # chỉ in dòng có lặp
+</code></pre>
+<p><strong>Vì sao <code>sort</code> trước <code>uniq</code>?</strong> <code>uniq</code> chỉ gộp các dòng giống nhau <strong>liền kề</strong>; phải <code>sort</code> để gom chúng lại trước.</p>
+<h3 id="ch02-2116-pipeline-thuc-chien-top-10-ip-brute-force-ssh">2.11.6. Pipeline thực chiến — "Top 10 IP brute-force SSH"</h3>
+<pre><code class="language-bash">grep &quot;Failed password&quot; /var/log/auth.log \
+  | grep -oE 'from ([0-9]{1,3}\.){3}[0-9]{1,3}' \
+  | awk '{print $2}' \
+  | sort \
+  | uniq -c \
+  | sort -rn \
+  | head -n 10
+</code></pre>
+<p>Diễn giải từng tầng:
+1. <code>grep "Failed password"</code> → giữ dòng đăng nhập thất bại.
+2. <code>grep -oE 'from &lt;IPv4&gt;'</code> → trích đúng cụm <code>from 198.51.100.9</code>.
+3. <code>awk '{print $2}'</code> → bỏ chữ <code>from</code>, còn IP.
+4. <code>sort</code> → gom IP giống nhau lại liền kề (chuẩn bị cho uniq).
+5. <code>uniq -c</code> → đếm số lần mỗi IP (gắn số đếm vào đầu dòng).
+6. <code>sort -rn</code> → sắp xếp giảm dần theo số đếm.
+7. <code>head -n 10</code> → 10 IP tấn công nhiều nhất.</p>
+<p>Output mẫu:</p>
+<pre><code>    412 198.51.100.9
+    207 203.0.113.77
+     95 192.0.2.44
+</code></pre>
+<p>Kết quả này nuôi trực tiếp vào allowlist/blocklist hoặc cảnh báo (xem fail2ban, 2.12.2).</p>
+<hr />
+<h2 id="ch02-212-hardening-sshd-fail2ban-netfilter-selinuxapparmor">2.12. Hardening: sshd, fail2ban, netfilter, SELinux/AppArmor</h2>
+<h3 id="ch02-2121-sshd_config-tung-directive">2.12.1. <code>sshd_config</code> — từng directive</h3>
+<p>File <code>/etc/ssh/sshd_config</code>; áp dụng bằng <code>systemctl reload sshd</code>. Cấu hình hardening mẫu:</p>
+<pre><code class="language-ini">Port 22
+AddressFamily inet
+
+# Xác thực
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+MaxAuthTries 3
+MaxSessions 4
+LoginGraceTime 30
+AuthenticationMethods publickey
+
+# Giới hạn người dùng
+AllowGroups ssh-users
+AllowUsers alice@203.0.113.0/24
+
+# Mã hóa (chỉ thuật toán mạnh)
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+
+# Giảm bề mặt
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+PermitTunnel no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LogLevel VERBOSE
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Tác dụng bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PermitRootLogin no</code></td>
+<td>Buộc đăng nhập user thường rồi <code>sudo</code> → có audit trail; chặn brute-force trực tiếp root</td>
+</tr>
+<tr>
+<td><code>PasswordAuthentication no</code></td>
+<td>Chỉ cho khóa công khai → loại bỏ brute-force mật khẩu</td>
+</tr>
+<tr>
+<td><code>MaxAuthTries 3</code></td>
+<td>Ngắt kết nối sau 3 lần sai</td>
+</tr>
+<tr>
+<td><code>LoginGraceTime 30</code></td>
+<td>Đóng kết nối chưa xác thực sau 30s (chống giữ slot)</td>
+</tr>
+<tr>
+<td><code>AuthenticationMethods publickey</code></td>
+<td>Có thể ép đa yếu tố: <code>publickey,keyboard-interactive</code></td>
+</tr>
+<tr>
+<td><code>AllowGroups</code>/<code>AllowUsers</code></td>
+<td>Allowlist ai được SSH (ngầm deny phần còn lại)</td>
+</tr>
+<tr>
+<td><code>KexAlgorithms</code>/<code>Ciphers</code>/<code>MACs</code></td>
+<td>Loại thuật toán yếu; <code>-etm</code> (encrypt-then-MAC) an toàn hơn</td>
+</tr>
+<tr>
+<td><code>LogLevel VERBOSE</code></td>
+<td>Ghi cả fingerprint khóa dùng đăng nhập (rất hữu ích điều tra)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">sshd -t                  # kiểm cú pháp trước khi reload (TRÁNH tự khóa mình)
+sshd -T | grep -i permitroot   # in cấu hình hiệu lực thực tế
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> luôn <code>sshd -t</code> và giữ một phiên đang mở khi reload, phòng cấu hình sai khóa luôn truy cập. Cân nhắc đổi không gửi version banner và đặt <code>Match</code> block cho cấu hình theo nhóm/địa chỉ.</p>
+<h3 id="ch02-2122-fail2ban-chan-brute-force-đong">2.12.2. fail2ban — chặn brute-force động</h3>
+<p>fail2ban đọc log, dùng regex (<code>failregex</code>) phát hiện thất bại, rồi gọi action (thường chèn rule firewall) ban IP một thời gian.</p>
+<p><code>/etc/fail2ban/jail.local</code>:</p>
+<pre><code class="language-ini">[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+banaction = nftables-multiport
+ignoreip = 127.0.0.1/8 203.0.113.0/24
+
+[sshd]
+enabled  = true
+port     = ssh
+backend  = systemd
+maxretry = 3
+bantime  = 24h
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>findtime</code></td>
+<td>Cửa sổ thời gian đếm thất bại (10 phút)</td>
+</tr>
+<tr>
+<td><code>maxretry</code></td>
+<td>Số thất bại trong <code>findtime</code> để bị ban (3)</td>
+</tr>
+<tr>
+<td><code>bantime</code></td>
+<td>Thời gian ban (<code>-1</code> = vĩnh viễn); có thể bật ban tăng dần</td>
+</tr>
+<tr>
+<td><code>backend = systemd</code></td>
+<td>Đọc từ journald thay vì file log</td>
+</tr>
+<tr>
+<td><code>ignoreip</code></td>
+<td>Allowlist không bao giờ ban</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">fail2ban-client status sshd       # xem IP đang bị ban và thống kê
+fail2ban-client set sshd unbanip 198.51.100.9
+fail2ban-regex /var/log/auth.log /etc/fail2ban/filter.d/sshd.conf   # test failregex
+</code></pre>
+<p>Một <code>failregex</code> (trong <code>filter.d/sshd.conf</code>) ví dụ khớp dòng thất bại:</p>
+<pre><code>^.*Failed (?:password|publickey) for .* from &lt;HOST&gt;
+</code></pre>
+<p><code>&lt;HOST&gt;</code> là macro fail2ban thay bằng regex IP và trích địa chỉ để ban.</p>
+<p><strong>Lưu ý bảo mật:</strong> đặt <code>ignoreip</code> cho dải quản trị để không tự khóa. fail2ban chống brute-force nhưng KHÔNG thay thế việc tắt password auth — kết hợp cả hai.</p>
+<h3 id="ch02-2123-netfilter-iptables-va-nftables">2.12.3. Netfilter: iptables và nftables</h3>
+<p>Cả hai cấu hình framework <code>netfilter</code> trong kernel. Gói đi qua các <strong>hook</strong> theo đường:</p>
+<pre><code>            PREROUTING            FORWARD            POSTROUTING
+gói vào --&gt; [raw-&gt;mangle-&gt;nat] --&gt; routing? --yes--&gt; [mangle-&gt;filter] --&gt; [mangle-&gt;nat] --&gt; ra
+                                      |
+                                      | (đích là máy này)
+                                      v
+                                   INPUT [mangle-&gt;filter] --&gt; tiến trình local
+                                                                  |
+                                                               OUTPUT [...] --&gt; POSTROUTING
+</code></pre>
+<p><strong>Bốn bảng (table) của iptables — mỗi bảng một nhiệm vụ, đừng trộn:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Bảng</th>
+<th>Sinh ra để làm gì</th>
+<th>Chain có mặt</th>
+<th>Khi nào đụng tới</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filter</code></td>
+<td>Cho/chặn gói — tường lửa đúng nghĩa</td>
+<td>INPUT, FORWARD, OUTPUT</td>
+<td>90% thời gian; bảng mặc định khi không có <code>-t</code></td>
+</tr>
+<tr>
+<td><code>nat</code></td>
+<td>Đổi địa chỉ/port (SNAT/DNAT/MASQUERADE)</td>
+<td>PREROUTING, OUTPUT, POSTROUTING</td>
+<td>Máy làm gateway/port-forward; chỉ gói <code>NEW</code> đi qua</td>
+</tr>
+<tr>
+<td><code>mangle</code></td>
+<td>Sửa header gói (TTL, TOS/DSCP, mark)</td>
+<td>Cả 5 chain</td>
+<td>Đánh dấu gói cho QoS/policy routing — hiếm dùng</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td>Xử lý TRƯỚC conntrack (<code>NOTRACK</code>)</td>
+<td>PREROUTING, OUTPUT</td>
+<td>Loại trừ traffic khối lượng lớn khỏi bảng conntrack</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Chain là gì?</strong> Danh sách rule gắn vào một hook; gói khớp rule nào trước thì theo verdict (<code>ACCEPT</code>/<code>DROP</code>/<code>REJECT</code>/nhảy chain con) của rule đó — không khớp gì thì theo <strong>policy</strong> của chain. Ngoài 5 chain dựng sẵn có thể tạo chain riêng (<code>iptables -N ssh-guard</code>) rồi <code>-j ssh-guard</code> để gom rule theo chủ đề — dễ đọc và dễ đếm (mỗi rule có counter riêng, xem bằng <code>iptables -L -v -n</code>).</p>
+<p><strong>Cấu trúc một rule đọc cho quen:</strong> <code>iptables -t &lt;bảng&gt; -A &lt;chain&gt; &lt;match...&gt; -j &lt;verdict&gt;</code> — match là các điều kiện AND với nhau (<code>-p tcp --dport 22</code>, <code>-s 203.0.113.0/24</code>, <code>-i eth0</code>, <code>-m conntrack --ctstate NEW</code>...), verdict là hành động khi khớp toàn bộ.</p>
+<p><strong>iptables</strong> (cú pháp truyền thống) — chính sách deny-by-default cho INPUT:</p>
+<pre><code class="language-bash">iptables -P INPUT DROP                 # policy mặc định: chặn
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+iptables -A INPUT -i lo -j ACCEPT      # cho loopback
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT  # cho kết nối đã thiết lập
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -m limit --limit 5/min -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -j LOG --log-prefix &quot;DROP_IN: &quot; --log-level 4
+</code></pre>
+<p>Phân tích rule SSH:
+- <code>-A INPUT</code>: nối vào chain INPUT.
+- <code>-p tcp --dport 22</code>: TCP đích port 22.
+- <code>-m conntrack --ctstate NEW</code>: chỉ gói khởi tạo kết nối mới.
+- <code>-m limit --limit 5/min</code>: tối đa 5 kết nối mới/phút (chống brute-force/flood).
+- <code>-j ACCEPT</code>: cho qua.</p>
+<p><strong>Vì sao cần rule <code>ESTABLISHED,RELATED</code>?</strong> Stateful: một khi kết nối ra/vào hợp lệ được thiết lập, gói phản hồi thuộc trạng thái <code>ESTABLISHED</code> được cho qua mà không cần mở port riêng — nền của tường lửa stateful.</p>
+<p><strong>Vài rule thực dụng hay cần đến:</strong></p>
+<pre><code class="language-bash"># Chặn một IP / một dải IP (chèn lên ĐẦU chain bằng -I để khớp trước mọi ACCEPT)
+iptables -I INPUT -s 198.51.100.9 -j DROP
+iptables -I INPUT -s 185.177.72.0/24 -j DROP
+
+# Giới hạn SSH kiểu &quot;cửa sổ trượt&quot; bằng module recent:
+# quá 4 kết nối NEW tới port 22 trong 60s từ cùng nguồn -&gt; drop
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --set
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --update --seconds 60 --hitcount 4 -j DROP
+
+# Xem rule kèm counter (số gói/byte đã khớp) — cách nhanh biết rule có &quot;ăn&quot; không
+iptables -L INPUT -v -n --line-numbers
+# Xóa rule theo số dòng
+iptables -D INPUT 3
+</code></pre>
+<p>Chặn danh sách IP dài (hàng trăm/nghìn entry) thì đừng xếp rule tuần tự — mỗi gói phải duyệt qua từng rule. Dùng <code>ipset</code> (với iptables) hoặc <code>set</code> (nftables, ví dụ dưới): tra cứu hash O(1), một rule duy nhất tham chiếu cả tập.</p>
+<p><strong>Quan hệ iptables ↔ nftables (đọc kỹ kẻo tưởng mình đang dùng cái này mà hóa ra cái kia):</strong> trên distro hiện đại (Debian 10+, Ubuntu 20.04+, RHEL 8+), lệnh <code>iptables</code> thường chỉ là lớp vỏ dịch cú pháp cũ sang backend nftables — gọi là <strong>iptables-nft</strong>. Kiểm tra bằng <code>iptables -V</code>: in <code>(nf_tables)</code> là vỏ nft, in <code>(legacy)</code> là backend cũ. Hệ quả thực tế: rule do <code>iptables</code> tạo và rule do <code>nft</code> tạo nằm chung kernel nhưng <strong>không hiển thị trong công cụ của nhau</strong> đầy đủ — audit firewall phải xem bằng <code>nft list ruleset</code> (nó thấy được cả hai) chứ đừng chỉ <code>iptables -L</code> rồi kết luận "máy không có rule". Docker/Kubernetes và fail2ban vẫn hay chèn rule qua lớp iptables — thêm lý do để audit bằng <code>nft list ruleset</code>.</p>
+<p><strong>nftables</strong> (thay thế hiện đại, một công cụ <code>nft</code> cho IPv4/IPv6) — <code>/etc/nftables.conf</code>:</p>
+<pre><code class="language-nft">#!/usr/sbin/nft -f
+flush ruleset
+table inet filter {
+    set blocklist {
+        type ipv4_addr
+        flags interval
+        elements = { 198.51.100.9, 185.177.72.0/24 }
+    }
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iif &quot;lo&quot; accept
+        ip saddr @blocklist drop
+        ct state established,related accept
+        ct state invalid drop
+        tcp dport 22 ct state new limit rate 5/minute accept
+        tcp dport 443 accept
+        ip protocol icmp icmp type echo-request limit rate 1/second accept
+        log prefix &quot;nft-drop: &quot; counter
+    }
+    chain forward { type filter hook forward priority 0; policy drop; }
+    chain output  { type filter hook output  priority 0; policy accept; }
+}
+</code></pre>
+<pre><code class="language-bash">nft -f /etc/nftables.conf      # nạp (atomic: hoặc toàn bộ hoặc không gì cả)
+nft list ruleset               # xem toàn bộ rule (kèm counter)
+nft list table inet filter
+nft add element inet filter blocklist { 203.0.113.99 }   # thêm IP vào set khi đang chạy
+</code></pre>
+<p><strong>Vì sao nftables thay iptables?</strong> Một framework duy nhất cho v4/v6/arp/bridge (bảng <code>inet</code> áp cả IPv4+IPv6 một lần — iptables phải duy trì song song <code>ip6tables</code>), cú pháp set/map gọn (blocklist hàng nghìn IP trong một <code>set</code> tra cứu hash thay vì duyệt tuần tự), atomic reload (không có khoảnh khắc "nửa ruleset cũ nửa mới"), dễ scripting.</p>
+<p><strong>Lưu rule bền vững qua reboot</strong> — rule iptables/nft chỉ sống trong kernel memory, reboot là mất sạch:</p>
+<pre><code class="language-bash"># Hướng nftables (khuyến nghị): rule là FILE cấu hình, service nạp lúc boot
+nft list ruleset &gt; /etc/nftables.conf   # hoặc tự soạn file rồi nft -f kiểm
+systemctl enable --now nftables
+
+# Hướng iptables truyền thống (Debian/Ubuntu)
+apt install iptables-persistent         # lưu ở /etc/iptables/rules.v4 và rules.v6
+netfilter-persistent save
+# RHEL-family: dnf install iptables-services; service iptables save
+</code></pre>
+<p>Điểm hay của hướng nftables: <code>/etc/nftables.conf</code> là một file text — đưa vào git, review diff như code, <code>nft -c -f</code> (check) trước khi áp.</p>
+<p><strong>Lưu ý bảo mật:</strong> mặc định <code>policy drop</code> cho INPUT/FORWARD; chỉ mở port cần thiết; rate-limit cổng quản trị; log gói bị drop để điều tra. Sửa firewall từ xa thì tự phòng thân: chạy trong <code>tmux</code>/để sẵn một phiên SSH đang mở, hoặc đặt job hoàn tác kiểu <code>echo 'nft -f /etc/nftables.conf.known-good' | at now + 5 minutes</code> rồi hủy khi xác nhận còn vào được — khóa mình ngoài máy chủ vì một rule DROP là lỗi kinh điển.</p>
+<h3 id="ch02-2124-selinux-va-apparmor-mandatory-access-control-mac">2.12.4. SELinux và AppArmor — Mandatory Access Control (MAC)</h3>
+<p>Quyền rwx truyền thống là <strong>DAC</strong> (Discretionary): chủ sở hữu tự quyết, root bỏ qua mọi thứ. <strong>MAC</strong> áp chính sách hệ thống mà ngay cả root cũng bị ràng buộc — nếu một dịch vụ bị chiếm, MAC giới hạn thiệt hại. Cả hai cài hook qua <strong>LSM</strong> trong kernel.</p>
+<p><strong>SELinux (RHEL/Fedora)</strong> — mọi tiến trình và file có <strong>security context</strong> dạng <code>user:role:type:level</code>:</p>
+<pre><code>system_u:system_r:httpd_t:s0          &lt;- tiến trình httpd
+unconfined_u:object_r:httpd_sys_content_t:s0   &lt;- file web nginx phục vụ
+</code></pre>
+<p>Quyết định dựa trên <strong>type enforcement</strong>: domain <code>httpd_t</code> chỉ được làm những gì policy cho phép trên các type liên quan.</p>
+<pre><code class="language-bash">getenforce                 # Enforcing / Permissive / Disabled
+setenforce 0               # tạm chuyển Permissive (chỉ log, không chặn)
+ps -eZ | grep nginx        # xem context tiến trình (cờ -Z)
+ls -Z /var/www/html        # xem context file
+ausearch -m AVC -ts recent # tìm sự kiện bị SELinux chặn (AVC denial)
+# Sửa context cho thư mục web tùy biến:
+semanage fcontext -a -t httpd_sys_content_t &quot;/srv/www(/.*)?&quot;
+restorecon -Rv /srv/www
+setsebool -P httpd_can_network_connect on   # bật boolean (cho phép httpd kết nối ra ngoài)
+</code></pre>
+<p>AVC denial trong log:</p>
+<pre><code>type=AVC msg=audit(...): avc:  denied  { read } for  pid=1234 comm=&quot;nginx&quot;
+ name=&quot;secret.txt&quot; scontext=system_u:system_r:httpd_t:s0
+ tcontext=unconfined_u:object_r:user_home_t:s0 tclass=file
+</code></pre>
+<p>Đọc: domain <code>httpd_t</code> bị từ chối <code>read</code> file mang type <code>user_home_t</code> — đúng tinh thần "web server không được đọc file home". <strong>KHÔNG</strong> vô hiệu hóa SELinux để "cho chạy"; thay vào đó sửa context hoặc boolean.</p>
+<p><strong>AppArmor (Ubuntu/SUSE)</strong> — profile theo <strong>đường dẫn</strong> (dễ đọc hơn SELinux). <code>/etc/apparmor.d/usr.sbin.myapp</code>:</p>
+<pre><code>#include &lt;tunables/global&gt;
+/usr/sbin/myapp {
+  #include &lt;abstractions/base&gt;
+  capability net_bind_service,
+  network inet stream,
+  /etc/myapp/** r,
+  /var/lib/myapp/** rw,
+  /var/log/myapp.log w,
+  /usr/sbin/myapp mr,
+  deny /home/** rwx,
+}
+</code></pre>
+<p>Mỗi dòng = một quy tắc đường dẫn + quyền (<code>r w m</code>=mmap exec <code>ix/px</code>...). <code>deny /home/** rwx</code> chặn tuyệt đối truy cập home.</p>
+<pre><code class="language-bash">aa-status                       # profile nào đang enforce/complain
+aa-complain /usr/sbin/myapp     # chế độ chỉ-log (học hành vi)
+aa-enforce  /usr/sbin/myapp     # bật chặn
+journalctl | grep apparmor      # xem denial (ALLOWED/DENIED)
+</code></pre>
+<p><strong>Vì sao path-based vs type-based?</strong> AppArmor dễ viết/đọc (theo path) nhưng yếu khi file đổi tên/hardlink; SELinux gắn nhãn vào inode nên chặt chẽ hơn nhưng dốc học hơn. Cả hai đều là lớp phòng thủ then chốt: khi RCE xảy ra trong một dịch vụ đã được giam (confined), payload bị chặn ở những thao tác ngoài profile/policy.</p>
+<hr />
+<h2 id="ch02-213-chan-đoan-hieu-nang-tai-nguyen-dashboard-noi-cao-o-đau-lenh-noi-process-nao-gay-ra">2.13. Chẩn đoán hiệu năng &amp; tài nguyên — dashboard nói "cao ở đâu", lệnh nói "process nào gây ra"</h2>
+<p>Vì sao mục này nằm trong sổ tay bảo mật? Thứ nhất, <strong>availability</strong> là một trụ của tam giác CIA — máy sập vì cạn tài nguyên cũng là sự cố an toàn thông tin. Thứ hai, rất nhiều dấu hiệu xâm nhập biểu hiện đầu tiên dưới dạng bất thường tài nguyên: cryptominer = CPU cao bất thường, DoS = load/network vọt, còn <strong>đĩa đầy thì log ngừng ghi</strong> — attacker được tặng không gian mù. Kỹ năng "nhìn con số bất thường → tìm ra process gây ra" dùng chung cho cả vận hành lẫn điều tra.</p>
+<p>Phương pháp luận mình dùng: <strong>hai tầng, mỗi tầng trả lời một câu hỏi khác nhau.</strong>
+- Tầng metric/dashboard (Prometheus + node_exporter, vẽ bằng Grafana — hoặc bất kỳ stack nào tương đương): trả lời "<strong>cao ở đâu, từ lúc nào, xu hướng ra sao</strong>". Metric là số liệu tổng hợp — nó không biết process nào gây ra.
+- Tầng lệnh trên máy (SSH vào): trả lời "<strong>process nào, file nào, kết nối nào gây ra</strong>". Lệnh nhìn được từng process nhưng không có lịch sử.</p>
+<p>Hai tầng bù nhau: chỉ có dashboard thì biết bệnh mà không biết thủ phạm; chỉ có lệnh thì bắt được hiện trạng mà không biết "cao từ bao giờ, có chu kỳ không". Quy trình khi có cảnh báo: dashboard khoanh vùng trục nào (CPU/RAM/disk/I-O/network/load) → SSH vào → chạy đúng nhóm lệnh của trục đó.</p>
+<blockquote>
+<p>Bộ lệnh dưới cần gói <code>sysstat</code> (cấp <code>mpstat</code>/<code>iostat</code>/<code>pidstat</code>/<code>sar</code>), cùng <code>htop</code>, <code>iotop</code>, <code>ncdu</code>: <code>apt install sysstat htop iotop ncdu</code>.</p>
+</blockquote>
+<h3 id="ch02-2131-tong-quan-30-giay-chay-truoc-khi-nghi">2.13.1. Tổng quan 30 giây — chạy trước khi nghĩ</h3>
+<p>Sáu lệnh, chạy theo thứ tự, cho bức tranh tổng thể trước khi đào sâu:</p>
+<pre><code class="language-bash">uptime                    # load average 1/5/15 phút — so với số core
+free -h                   # RAM: nhìn cột available, không phải used
+df -h                     # mount nào sắp đầy
+top                       # (hoặc htop) tổng CPU/RAM + process nổi nhất
+dmesg -T | tail -30       # kernel vừa kêu gì: OOM-kill, I/O error, segfault
+systemctl --failed        # service nào đang chết
+</code></pre>
+<p>30 giây này thường đã khoanh được trục có vấn đề; phần còn lại là đào sâu theo từng trục dưới đây.</p>
+<h3 id="ch02-2132-truc-cpu-đoc-theo-mode-khong-chi-theo">2.13.2. Trục CPU — đọc theo <em>mode</em>, không chỉ theo %</h3>
+<p>Con số "CPU 90%" chưa nói lên gì; câu hỏi đúng là <strong>90% đó thuộc mode nào</strong>. <code>mpstat</code> (gói sysstat) tách CPU theo mode, từng core:</p>
+<pre><code class="language-bash">mpstat -P ALL 1 3        # mỗi giây một mẫu, 3 lần, mọi core
+</code></pre>
+<pre><code>CPU    %usr  %nice   %sys %iowait  %irq  %soft %steal  %idle
+all   72.31   0.00   5.12    0.75  0.00   0.51   9.87  11.44
+  0   88.00   0.00   4.00    0.00  0.00   1.00  17.00   7.00
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Là thời gian CPU dành cho</th>
+<th>Cao kéo dài nghĩa là</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%usr</code></td>
+<td>Code ứng dụng (user space)</td>
+<td>Một app thật sự ăn CPU → tìm bằng <code>htop</code>/<code>pidstat</code>; nếu không nhận ra process thì nghi cryptominer</td>
+</tr>
+<tr>
+<td><code>%sys</code></td>
+<td>Kernel (syscall, driver)</td>
+<td>App gọi syscall dày đặc (I/O nhỏ, fork liên tục) — soi bằng <code>strace</code>/<code>perf</code></td>
+</tr>
+<tr>
+<td><code>%iowait</code></td>
+<td><em>Ngồi không</em> chờ I/O đĩa</td>
+<td>Nghẽn ở ĐĨA chứ không phải CPU — nhảy sang trục Disk I/O (2.13.5), thêm CPU không giải quyết gì</td>
+</tr>
+<tr>
+<td><code>%steal</code></td>
+<td>Bị hypervisor lấy phục vụ VM khác</td>
+<td>Trên VM cloud: noisy neighbor / nhà cung cấp bóp CPU (hết credit burstable). Không sửa được từ trong VM — đổi shape/host hoặc chấp nhận</td>
+</tr>
+<tr>
+<td><code>%irq</code>/<code>%soft</code></td>
+<td>Ngắt cứng/mềm (thường là network)</td>
+<td><code>%soft</code> cao bất thường kèm traffic lớn → nghi flood</td>
+</tr>
+<tr>
+<td><code>%idle</code></td>
+<td>Rảnh</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>%iowait</code> và <code>%steal</code> là hai cái bẫy kinh điển: cả hai đều làm "CPU cao" trên dashboard nhưng thủ phạm không phải CPU. Tìm process theo CPU:</p>
+<pre><code class="language-bash">ps aux --sort=-%cpu | head -12    # ảnh chụp hiện tại
+pidstat 1 5                       # theo thời gian — thấy được process &quot;nhấp nhô&quot;
+</code></pre>
+<p><code>pidstat</code> hơn <code>ps</code> ở chỗ lấy mẫu liên tục: process chỉ spike từng đợt sẽ hiện ra thay vì lọt khe giữa hai lần chạy <code>ps</code>.</p>
+<h3 id="ch02-2133-truc-ram-psi-thay-cho-used-cao">2.13.3. Trục RAM — PSI thay cho "used cao"</h3>
+<p><strong>Cái bẫy lớn nhất của trục RAM: "used cao" thường KHÔNG phải vấn đề.</strong> Linux chủ động dùng RAM rảnh làm page cache (đọc lại file khỏi chạm đĩa), và nhiều app (JVM, Elasticsearch, database) cấp phát heap lớn rồi giữ luôn — đó là hành vi thiết kế, không phải rò rỉ. Con số cần nhìn trong <code>free -h</code> là <strong><code>available</code></strong> (ước lượng RAM có thể cấp ngay cho tiến trình mới, đã tính phần cache thu hồi được), không phải <code>used</code>.</p>
+<p>Vậy khi nào là thiếu RAM <em>thật</em>? Kernel trả lời trực tiếp qua <strong>PSI — Pressure Stall Information</strong> (kernel ≥ 4.20): thay vì đo "đang dùng bao nhiêu", PSI đo <strong>tổng thời gian tiến trình bị đình trệ vì chờ tài nguyên</strong> — tức đo đúng cái ta quan tâm là "có ai đang khổ vì thiếu RAM không".</p>
+<pre><code class="language-bash">cat /proc/pressure/memory
+</code></pre>
+<pre><code>some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+</code></pre>
+<ul>
+<li><code>some</code> = % thời gian có <strong>ít nhất một</strong> task bị đình trệ vì thiếu memory; <code>full</code> = % thời gian <strong>mọi</strong> task không-idle đều đình trệ (cả máy khựng).</li>
+<li><code>avg10/60/300</code> = trung bình trượt 10 giây / 1 phút / 5 phút.</li>
+<li>Đọc: toàn 0.00 → RAM ổn bất kể <code>used</code> bao nhiêu. <code>some avg10</code> dương kéo dài → bắt đầu thiếu; <code>full</code> dương → máy đang khựng thấy rõ, thường ngay trước OOM-kill. Cùng định dạng đó có <code>/proc/pressure/cpu</code> và <code>/proc/pressure/io</code> — node_exporter thu được cả ba, làm panel cảnh báo tốt hơn hẳn % used.</li>
+</ul>
+<p>Chuỗi kiểm tra đầy đủ:</p>
+<pre><code class="language-bash">free -h                           # nhìn available; swap đã dùng bao nhiêu
+cat /proc/pressure/memory         # PSI — thước đo &quot;thiếu thật&quot;
+vmstat 1 5                        # cột si/so: swap-in/out (KB/s) đang diễn ra
+ps aux --sort=-%mem | head -12    # process ăn RAM nhất (cột RSS)
+dmesg -T | grep -iE &quot;oom|killed process&quot;   # kernel đã phải xử ai chưa
+</code></pre>
+<ul>
+<li><code>si</code>/<code>so</code> dương liên tục = máy đang swap qua lại (thrashing) — hiệu năng rơi tự do dù "chưa hết RAM".</li>
+<li>OOM-kill trong <code>dmesg</code> là bằng chứng đã quá muộn: kernel chọn giết process điểm <code>oom_score</code> cao nhất. Nếu nạn nhân là service quan trọng, cân nhắc <code>MemoryMax=</code> (cgroup, mục 2.5.7) cho các service còn lại thay vì tăng RAM theo phản xạ.</li>
+</ul>
+<h3 id="ch02-2134-truc-dung-luong-đia-df-noi-doi-o-hai-cho">2.13.4. Trục dung lượng đĩa — df nói dối ở hai chỗ</h3>
+<pre><code class="language-bash">df -h                             # mount nào đầy — nhưng chưa đủ, đọc tiếp
+df -i                             # INODE: hết inode cũng báo &quot;No space left&quot; dù còn hàng chục GB
+sudo du -xh --max-depth=1 / 2&gt;/dev/null | sort -h | tail -15   # thư mục nào to (-x: không lạc sang mount khác)
+ncdu -x /                         # như du nhưng duyệt tương tác — drill-down rất nhanh
+sudo lsof +L1 | grep -i deleted   # file ĐÃ XÓA nhưng process còn giữ fd
+docker system df                  # Docker chiếm bao nhiêu (image/container/volume/build cache)
+journalctl --disk-usage           # journal chiếm bao nhiêu
+</code></pre>
+<p>Hai chỗ <code>df -h</code> "nói dối":
+1. <strong>Hết inode</strong>: filesystem có số inode hữu hạn; hàng triệu file nhỏ (session file, cache, mail queue) ăn hết inode trong khi dung lượng còn thừa — lỗi vẫn là "No space left on device". <code>df -i</code> lộ ngay (<code>IUse%</code> 100%).
+2. <strong>File đã xóa nhưng chưa giải phóng</strong>: xóa file chỉ gỡ tên khỏi thư mục; <strong>inode và data còn nguyên chừng nào còn process giữ file descriptor mở</strong> (chính cơ chế đã gặp ở logrotate, mục 2.7.5). Triệu chứng kinh điển: <code>rm</code> file log 20GB mà <code>df</code> không nhúc nhích. <code>lsof +L1</code> (liệt kê file có link count 0) chỉ đích danh process; xử đúng là reload/restart process đó (hoặc signal reopen-log kiểu <code>USR1</code>), không phải đi xóa tiếp.</p>
+<p>Máy chạy Docker thì thủ phạm quen mặt là <code>/var/lib/docker</code>: image cũ mỗi lần deploy chồng thêm, build cache, container log. <code>docker system df -v</code> liệt kê chi tiết. Dọn có chủ đích (<code>docker image prune -a --filter "until=168h"</code> — chỉ image, có mốc thời gian) chứ <strong>đừng phang <code>docker system prune</code> trên máy có volume dữ liệu</strong> — thêm nhầm <code>--volumes</code> là mất data thật.</p>
+<p><strong>Góc bảo mật:</strong> đĩa đầy = log ngừng ghi = mù điều tra; vì thế "đĩa gần đầy" đáng được coi là cảnh báo an ninh chứ không chỉ vận hành. Chiều ngược lại, attacker cũng biết điều đó — một dạng anti-forensics là cố tình ghi đầy đĩa trước khi hành động.</p>
+<h3 id="ch02-2135-truc-disk-io-đia-ban-khac-đia-đay">2.13.5. Trục Disk I/O — đĩa "bận" khác đĩa "đầy"</h3>
+<p>Đĩa còn trống vẫn có thể nghẽn vì <strong>băng thông I/O bão hòa</strong> — triệu chứng lộ ra ở <code>%iowait</code> (2.13.2) và app "chậm không rõ lý do".</p>
+<pre><code class="language-bash">iostat -xz 1 5                    # -x: thống kê mở rộng; -z: ẩn thiết bị im lặng
+</code></pre>
+<pre><code>Device   r/s   w/s   rkB/s   wkB/s  await  %util
+sda      1.2  310.5    48.0  42817.3  38.20  97.40
+</code></pre>
+<ul>
+<li><code>%util</code> = % thời gian thiết bị có I/O đang xử lý. Gần 100% kéo dài = đĩa kín lịch. (Với SSD/NVMe xử lý song song, <code>%util</code> 100% chưa chắc đã là trần thật — đọc kèm <code>await</code>.)</li>
+<li><code>await</code> = thời gian trung bình một request hoàn thành, <strong>tính cả thời gian xếp hàng</strong> (ms). Đây là con số app "cảm nhận" được: <code>%util</code> cao mà <code>await</code> thấp thì đĩa bận nhưng vẫn kịp thở; cả hai cùng cao là bão hòa thật.</li>
+<li><code>r/s</code>, <code>w/s</code>, <code>rkB/s</code>, <code>wkB/s</code>: hình dạng tải — nghìn request nhỏ hay ít request to, đọc hay ghi.</li>
+</ul>
+<p>Tìm thủ phạm:</p>
+<pre><code class="language-bash">sudo iotop -o                     # -o: chỉ hiện process ĐANG có I/O
+pidstat -d 1 5                    # kB đọc/ghi theo process theo thời gian
+cat /proc/pressure/io             # PSI cho I/O — đọc y hệt PSI memory
+</code></pre>
+<p>Thủ phạm hay gặp ở hệ mình vận hành: job backup/nén chạy giờ cao điểm, database thiếu index quét cả bảng, log ghi quá dày, và swap thrashing (khi đó gốc bệnh là RAM — quay lại 2.13.3).</p>
+<h3 id="ch02-2136-truc-network-nhin-droperror-đung-nhin-bang-thong">2.13.6. Trục network — nhìn drop/error, đừng nhìn % băng thông</h3>
+<pre><code class="language-bash">ss -tulpn                         # cổng đang NGHE + process — soi bề mặt phơi ra ngoài
+ss -s                             # tổng kết nối theo trạng thái (estab, timewait...)
+ss -tan state established | wc -l # đếm kết nối đang mở
+ip -s link                        # counter RX/TX: errors, dropped, overrun theo interface
+sar -n DEV 1 5                    # throughput từng interface theo thời gian
+</code></pre>
+<p><code>ip -s link</code> in hai khối RX/TX; cột đáng nhìn là <code>errors</code>/<code>dropped</code>:</p>
+<pre><code>RX: bytes  packets errors dropped overrun mcast
+    9.1G   8123456      0   12043       0     0
+</code></pre>
+<ul>
+<li>Băng thông chạm trần hiếm khi là vấn đề thật trên server thường; <strong>drop/error tăng đều mới là bệnh</strong> (buffer tràn, NIC/driver lỗi, máy không kịp nhận → gói rớt, retransmit, độ trễ tăng). Cảnh báo nên đặt trên <em>tốc độ tăng</em> của counter drop, không phải % băng thông.</li>
+<li><code>ss -s</code> với <code>estab</code> vọt bất thường + nguồn phân tán là hình dạng của DoS/flood; <code>ss -tulpn</code> xuất hiện cổng nghe lạ là chỉ dấu backdoor (đối chiếu baseline).</li>
+</ul>
+<h3 id="ch02-2137-truc-load-load-cao-khong-đong-nghia-thieu-cpu">2.13.7. Trục load — load cao không đồng nghĩa thiếu CPU</h3>
+<p><strong>Load average trên Linux đếm cả process <code>R</code> (chờ CPU) lẫn process <code>D</code> (uninterruptible — kẹt I/O, mục 2.5.2).</strong> Đây là điểm dễ hiểu sai nhất: load 20 trên máy 4 core có thể là 20 process tranh CPU, mà cũng có thể là CPU rảnh tênh và 20 process đang treo chờ một cái NFS chết.</p>
+<pre><code class="language-bash">uptime &amp;&amp; nproc                   # load Ở ĐÂU so với SỐ CORE — load/core &gt; 1 kéo dài mới đáng ngại
+vmstat 1 5                        # cột r = chờ CPU; b = blocked; wa = %iowait
+ps -eo state,pid,comm | grep &quot;^D&quot; # điểm danh process trạng thái D
+</code></pre>
+<p>Đọc phán quyết: load cao + <code>r</code> cao + <code>%usr</code> cao → thiếu CPU thật. Load cao + <code>b</code> cao + nhiều process <code>D</code> + <code>wa</code> cao → kẹt I/O (đĩa hỏng, NFS treo, storage cloud bị bóp) — quay về trục Disk I/O, và nhớ process <code>D</code> không giết được bằng <code>kill -9</code> (2.5.2).</p>
+<h3 id="ch02-2138-bang-tra-nhanh-trieu-chung-lenh-đau-tien">2.13.8. Bảng tra nhanh: triệu chứng → lệnh đầu tiên</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard/panel báo</th>
+<th>Chạy trước tiên</th>
+<th>Đang trả lời câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU cao</td>
+<td><code>mpstat -P ALL 1</code>, <code>htop</code></td>
+<td>Mode nào? Process nào?</td>
+</tr>
+<tr>
+<td>RAM cao / PSI memory</td>
+<td><code>cat /proc/pressure/memory</code>, <code>ps aux --sort=-%mem</code></td>
+<td>Thiếu thật hay chỉ used cao? Ai ăn?</td>
+</tr>
+<tr>
+<td>Đĩa đầy</td>
+<td><code>df -h; df -i</code>, <code>du -xh --max-depth=1 /</code>, <code>lsof +L1</code></td>
+<td>Đầy dung lượng, hết inode, hay file ma?</td>
+</tr>
+<tr>
+<td>Disk I/O / PSI io</td>
+<td><code>iostat -xz 1</code>, <code>iotop -o</code></td>
+<td>Bão hòa chưa? Process nào ghi?</td>
+</tr>
+<tr>
+<td>Network</td>
+<td><code>ip -s link</code>, <code>ss -tulpn</code></td>
+<td>Drop/error hay chỉ nhiều traffic? Cổng lạ?</td>
+</tr>
+<tr>
+<td>Load cao / procs blocked</td>
+<td><code>vmstat 1</code>, <code>ps -eo state,pid,comm \| grep "^D"</code></td>
+<td>Thiếu CPU hay kẹt I/O?</td>
+</tr>
+</tbody>
+</table>
+<p>Kinh nghiệm của mình: viết hẳn bảng này thành runbook nội bộ (panel nào đỏ → dán nguyên khối lệnh nào) — lúc sự cố 2 giờ sáng không ai nhớ nổi cờ của <code>iostat</code>.</p>
+<hr />
+<h2 id="ch02-214-tong-ket-tu-duy-phong-thu-tren-linux">2.14. Tổng kết tư duy phòng thủ trên Linux</h2>
+<ul>
+<li><strong>Ranh giới đặc quyền</strong> là gốc: user/kernel (syscall, seccomp), DAC (rwx/ACL/SUID), MAC (SELinux/AppArmor), capabilities, namespaces. Mỗi lớp thu hẹp thiệt hại khi lớp trên bị phá.</li>
+<li><strong>Tối thiểu quyền</strong>: dịch vụ chạy user riêng, <code>NoNewPrivileges</code>, firewall deny-by-default, sudoers hẹp, mount <code>nosuid/noexec</code>.</li>
+<li><strong>Khả năng quan sát</strong>: log có cấu trúc (journald + auditd), đẩy tập trung tới SIEM trước khi attacker xóa, đọc thành thạo <code>auth.log</code>/AVC bằng grep/awk.</li>
+<li><strong>Toàn vẹn</strong>: <code>dpkg -V</code>/<code>rpm -V</code>, FSS cho journal, baseline SUID/cron để phát hiện thay đổi.</li>
+<li><strong>Sẵn sàng cũng là bảo mật</strong>: cạn tài nguyên (CPU/RAM/đĩa/I-O) vừa là sự cố vừa là triệu chứng tấn công; chẩn đoán hai tầng "dashboard nói cao ở đâu, lệnh nói process nào gây ra" (2.13) là kỹ năng dùng chung cho vận hành lẫn điều tra.</li>
+<li><strong>Mọi cấu hình hardening</strong> (sshd, fail2ban, nftables, systemd unit, SELinux) đều có file/cú pháp cụ thể ở trên — dùng làm khuôn mẫu kiểm chứng được trên hệ thật.</li>
+</ul>
+<hr />
+<h2 id="ch02-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li><strong>Runbook là thứ đáng viết nhất mà mình đã trì hoãn lâu nhất.</strong> Hồi mới nhận việc trực máy chủ, mỗi lần panel Grafana chuyển đỏ là mình lại google lại cờ của <code>iostat</code>. Sau mình ngồi viết hẳn một runbook "panel nào đỏ → dán nguyên khối lệnh nào" (chính là khung của mục 2.13) và dùng nó gần như hằng ngày. Bài học: kiến thức chẩn đoán chỉ có giá trị khi nó nằm sẵn dưới dạng lệnh copy-paste được lúc 2 giờ sáng, không phải dạng "mình nhớ là có tool đó".</li>
+<li><strong>Mình từng hiểu sai "RAM used cao = sắp chết".</strong> Có lần thấy máy báo RAM dùng ~90% là mình lo sốt vó, định đề xuất nâng RAM. Sau mới hiểu app (kiểu JVM/search engine) giữ heap là hành vi thiết kế, và Linux tận dụng RAM rảnh làm cache. Từ ngày biết PSI (<code>/proc/pressure/memory</code>), mình gần như không nhìn % used nữa: PSI bằng 0 thì kệ used bao nhiêu; PSI dương kéo dài mới là lúc hành động. Đổi một con số theo dõi mà đỡ hẳn cảnh báo giả.</li>
+<li><strong>Lần đầu thấy <code>%steal</code> mình tưởng máy hỏng.</strong> Một VM cloud ở hệ mình vận hành chậm bất thường, <code>%usr</code> thấp mà máy vẫn ì — hóa ra <code>%steal</code> hai chữ số: hypervisor đang chia CPU cho hàng xóm ồn ào. Không có gì để "sửa" từ trong VM cả; cái sửa được là biết đọc đúng cột để khỏi mất một buổi đi soi app oan.</li>
+<li><strong>Vụ đầy đĩa lặp lại vì Docker image.</strong> Một máy dev mình trông cứ 1–2 ngày lại đầy đĩa; lần nào cũng <code>df -h</code>, <code>du</code> loanh quanh rồi mới nhớ ra <code>/var/lib/docker</code>. Nguyên nhân: mỗi lần deploy chồng thêm một image mới, không ai dọn image cũ. Xử: cron 3 giờ sáng chạy <code>docker image prune</code> có filter thời gian — và tuyệt đối không <code>docker system prune</code> bừa trên máy có volume dữ liệu, thêm nhầm một cờ <code>--volumes</code> là mất data thật. Bonus học được cùng đợt: <code>rm</code> file log to mà <code>df</code> không giảm — file chưa chết vì process còn giữ fd, <code>lsof +L1</code> chỉ đích danh.</li>
+<li><strong>Về firewall, cú lừa lớn nhất với mình là iptables-nft.</strong> <code>iptables -L</code> trên máy này, <code>nft list ruleset</code> trên máy kia ra hai bức tranh khác nhau làm mình loạn một hồi, cho tới khi hiểu <code>iptables</code> giờ thường chỉ là vỏ dịch sang nftables (<code>iptables -V</code> in <code>(nf_tables)</code>). Giờ audit firewall mình mặc định xem <code>nft list ruleset</code> cho đủ, kể cả rule do Docker hay fail2ban chèn.</li>
+<li><strong>Đang tìm hiểu tiếp:</strong> nối cảnh báo từ SIEM sang firewall để tự thêm IP vào nftables set theo ngưỡng (kiểu fail2ban nhưng lấy tín hiệu từ log tập trung thay vì log cục bộ) — mới ở mức thử nghiệm, chưa dám cho tự chặn trên production vì sợ ban nhầm dải NAT của người dùng thật.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch01.html"><span>← Chương trước</span><b>01 · Mạng máy tính</b></a><a class="pg next" href="ch03.html"><span>Chương sau →</span><b>03 · Windows &amp; Active Directory</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

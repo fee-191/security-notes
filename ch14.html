@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 14 — Ảo hóa &amp;amp; Container — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 14 — Ảo hóa &amp;amp; Container — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch13.html"><link rel="next" href="ch15.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="14"><a class="nav-ch-title" href="#top"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"><a class="nav-sub" href="#ch14-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch14-moi-muc-đi-theo-trinh-tu-la-gi-co-che-ben-trong-toi-muc-tham-sobuoc-cu-the-vi-du-thuc-te-luu-y-bao-mat">&amp;gt; Mỗi mục đi theo trình tự: là gì → cơ chế bên trong (tới mức tham số/bước cụ thể) → ví dụ thực tế → lưu ý bảo mật.</a><a class="nav-sub" href="#ch14-141-nen-tang-ao-hoa-vi-sao-va-co-lap-o-đau">14.1. Nền tảng ảo hóa: vì sao và cô lập ở đâu</a><a class="nav-sub" href="#ch14-142-proxmox-ve">14.2. Proxmox VE</a><a class="nav-sub" href="#ch14-143-vmware-vsphereesxi">14.3. VMware vSphere/ESXi</a><a class="nav-sub" href="#ch14-144-vm-vs-container-so-sanh-toi-goc">14.4. VM vs Container — so sánh tới gốc</a><a class="nav-sub" href="#ch14-145-docker-internals">14.5. Docker internals</a><a class="nav-sub" href="#ch14-146-quet-image-voi-trivy">14.6. Quét image với Trivy</a><a class="nav-sub" href="#ch14-147-container-escape-co-che-cu-the">14.7. Container escape — cơ chế cụ thể</a><a class="nav-sub" href="#ch14-148-kubernetes">14.8. Kubernetes</a><a class="nav-sub" href="#ch14-149-falco-runtime-threat-detection">14.9. Falco — runtime threat detection</a><a class="nav-sub" href="#ch14-1410-checklist-cung-hoa-tong-hop">14.10. Checklist cứng hóa tổng hợp</a><a class="nav-sub" href="#ch14-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-14" data-ch="14">
+<h1 id="ch14-chuong-14-ao-hoa-container">Chương 14 — Ảo hóa &amp; Container</h1>
+<h2 id="ch14-tong-quan">Tổng quan</h2>
+<p>Một máy chủ vật lý chạy cùng lúc nhiều thứ không liên quan gì tới nhau là chuyện bình thường — và toàn bộ an toàn của cách sắp xếp đó nằm ở một câu hỏi: cái ranh giới ngăn chúng với nhau được dựng bằng gì, và nó vỡ ở đâu. Vì khi kẻ tấn công chiếm được một workload rồi <strong>escape</strong> ra ngoài, cả host lẫn mọi workload còn lại đều mất theo. Chương này đi qua hai mô hình cô lập — <strong>ảo hóa</strong> và <strong>container</strong> — dưới đúng góc nhìn đó.</p>
+<p>Ảo hóa dựng ranh giới dày: mỗi <strong>VM</strong> có kernel riêng, và <strong>hypervisor</strong> đứng giữa phân chia phần cứng thật rồi cưỡng chế cô lập. Phần này đi qua <strong>Proxmox VE</strong> (mã nguồn mở, nền KVM) và <strong>VMware ESXi/vSphere</strong>, cùng những thứ làm nên giá trị vận hành của chúng: snapshot để rollback, backup, và live migration chuyển VM đang chạy sang host khác.</p>
+<p>Container thì ngược lại — ranh giới mỏng hơn hẳn, vì mọi container <strong>dùng chung kernel của host</strong>. Đổi lại nó khởi động trong mili giây và gần như không tốn tài nguyên thừa. Cái gọi là "cô lập" ở đây thực chất là hai cơ chế kernel ghép lại: <strong>namespaces</strong> giới hạn container <em>thấy</em> được gì (PID, mạng, mount, hostname), còn <strong>cgroups</strong> giới hạn nó <em>dùng</em> được bao nhiêu (RAM, CPU, số PID) để một container không vét cạn cả máy. Kèm theo là mô hình <strong>image/layer/registry</strong> và <strong>Dockerfile</strong>, rồi <strong>Trivy</strong> để quét image tìm CVE, misconfig và secret hardcode ngay trong pipeline.</p>
+<p>Từ chỗ "ranh giới mỏng" đó, phần sau đi thẳng vào <strong>container escape</strong>: <code>--privileged</code>, mount nhầm <code>docker.sock</code>, cấp dư capability — biết đường thoát thì mới bịt được. Quy mô lớn hơn là <strong>Kubernetes</strong> với bốn điểm bảo mật trọng yếu: <strong>RBAC</strong>, <strong>NetworkPolicy</strong> (firewall L3/L4 giữa các Pod), <strong>Secret</strong> (mặc định chỉ base64 chứ chưa phải mã hóa — phải bật encryption-at-rest), và <strong>Pod Security Standards</strong>. Cuối cùng là <strong>Falco</strong> — lớp phát hiện lúc đang chạy, giám sát syscall và kêu lên khi có hành vi lạ như mở shell trong container hay đọc <code>/etc/shadow</code>, thường đẩy cảnh báo về SIEM.</p>
+<h2 id="ch14-moi-muc-đi-theo-trinh-tu-la-gi-co-che-ben-trong-toi-muc-tham-sobuoc-cu-the-vi-du-thuc-te-luu-y-bao-mat">&gt; Mỗi mục đi theo trình tự: là gì → cơ chế bên trong (tới mức tham số/bước cụ thể) → ví dụ thực tế → lưu ý bảo mật.</h2>
+<h2 id="ch14-141-nen-tang-ao-hoa-vi-sao-va-co-lap-o-đau">14.1. Nền tảng ảo hóa: vì sao và cô lập ở đâu</h2>
+<h3 id="ch14-1411-bai-toan-goc-đac-quyen-cpu-protection-rings">14.1.1. Bài toán gốc — đặc quyền CPU (protection rings)</h3>
+<p>CPU x86/x86-64 cung cấp bốn mức đặc quyền (privilege rings), được mã hóa trong 2 bit <code>CPL</code> (Current Privilege Level) nằm ở 2 bit thấp của thanh ghi đoạn <code>CS</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Ring</th>
+<th>CPL (2 bit)</th>
+<th>Vai trò truyền thống</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>00</code></td>
+<td>Kernel — toàn quyền lệnh đặc quyền (<code>HLT</code>, <code>LGDT</code>, <code>MOV CR3</code>, IN/OUT...)</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>01</code></td>
+<td>Hầu như không dùng (một số driver cũ)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>10</code></td>
+<td>Hầu như không dùng</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>11</code></td>
+<td>User space — không được chạy lệnh đặc quyền</td>
+</tr>
+</tbody>
+</table>
+<p>Vấn đề ảo hóa cổ điển: một guest OS được viết để chạy ở Ring 0 (nó nghĩ nó sở hữu phần cứng). Nếu để guest chạy thật ở Ring 0 thì nó chiếm máy. Nếu hạ guest xuống Ring 1/3 thì các lệnh đặc quyền của nó phải bị "bẫy" (trap) để hypervisor xử lý thay. x86 nguyên thủy KHÔNG đáp ứng tiêu chí Popek–Goldberg vì có một nhóm lệnh "nhạy cảm nhưng không trap" (sensitive but unprivileged) — ví dụ <code>POPF</code> khi ở Ring 3 sẽ âm thầm bỏ qua việc ghi cờ <code>IF</code> thay vì gây fault. Đây là lý do ra đời ba kỹ thuật: <strong>binary translation</strong>, <strong>paravirtualization</strong>, và <strong>hardware-assisted (VT-x/AMD-V)</strong>.</p>
+<h3 id="ch14-1412-hypervisor-type-1-vs-type-2">14.1.2. Hypervisor Type 1 vs Type 2</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Type 1 (bare-metal)</th>
+<th>Type 2 (hosted)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vị trí</td>
+<td>Chạy trực tiếp trên phần cứng, là kernel</td>
+<td>Chạy như tiến trình trên OS host</td>
+</tr>
+<tr>
+<td>Ví dụ</td>
+<td>VMware ESXi, Proxmox VE (KVM), Microsoft Hyper-V, Xen</td>
+<td>VMware Workstation/Player, VirtualBox, QEMU thuần</td>
+</tr>
+<tr>
+<td>Lập lịch CPU</td>
+<td>Hypervisor tự lập lịch vCPU lên pCPU</td>
+<td>Dựa vào scheduler của host OS</td>
+</tr>
+<tr>
+<td>Overhead</td>
+<td>Thấp (đường truy cập phần cứng ngắn)</td>
+<td>Cao hơn (qua một lớp OS)</td>
+</tr>
+<tr>
+<td>Bề mặt tấn công</td>
+<td>Hypervisor mỏng (vài MB tới vài chục MB)</td>
+<td>Cả host OS đầy đủ → bề mặt lớn</td>
+</tr>
+<tr>
+<td>Dùng cho</td>
+<td>Datacenter, production</td>
+<td>Lab, dev trên laptop</td>
+</tr>
+</tbody>
+</table>
+<p>Lưu ý KVM là trường hợp lai: KVM là một <strong>module kernel Linux</strong> (<code>kvm.ko</code> + <code>kvm-intel.ko</code>/<code>kvm-amd.ko</code>) biến chính Linux thành hypervisor Type 1. Proxmox VE đóng gói Linux + KVM + QEMU + LXC. Vì vậy "Proxmox = Type 1" theo nghĩa kernel host trở thành hypervisor, dù bản thân nó là một bản Debian đầy đủ.</p>
+<h3 id="ch14-1413-hardware-assisted-virtualization-vt-x-amd-v-va-vmcs">14.1.3. Hardware-assisted virtualization: VT-x / AMD-V và VMCS</h3>
+<blockquote>
+<p>Lưu ý: phần này đào sâu xuống mức phần cứng. Nếu bạn chỉ cần bức tranh lớn, đọc lướt và chuyển sang 14.2.</p>
+</blockquote>
+<p>Intel VT-x thêm hai chế độ vận hành mới (không phải ring mới):</p>
+<ul>
+<li><strong>VMX root mode</strong>: nơi hypervisor (VMM) chạy. Có thêm các lệnh <code>VMXON</code>, <code>VMLAUNCH</code>, <code>VMRESUME</code>, <code>VMEXIT</code>, <code>VMREAD</code>, <code>VMWRITE</code>, <code>VMPTRLD</code>.</li>
+<li><strong>VMX non-root mode</strong>: nơi guest chạy. Guest vẫn thấy đủ Ring 0–3 của riêng nó, nhưng mọi sự kiện "nhạy cảm" gây <strong>VM-exit</strong> chuyển điều khiển về root mode.</li>
+</ul>
+<p>Trạng thái chuyển đổi được lưu trong cấu trúc <strong>VMCS</strong> (Virtual Machine Control Structure) — một vùng 4KB căn theo trang, gồm 6 vùng logic:</p>
+<table>
+<thead>
+<tr>
+<th>Vùng VMCS</th>
+<th>Nội dung chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Guest-state area</td>
+<td>Trạng thái guest được lưu khi VM-exit, nạp lại khi VM-entry (RIP, RSP, CR0/CR3/CR4, segment, RFLAGS...)</td>
+</tr>
+<tr>
+<td>Host-state area</td>
+<td>Trạng thái host nạp lại khi VM-exit</td>
+</tr>
+<tr>
+<td>VM-execution control</td>
+<td>Bitmap quy định lệnh/sự kiện nào gây exit (ví dụ bit "HLT exiting", "use I/O bitmaps", "enable EPT")</td>
+</tr>
+<tr>
+<td>VM-exit control</td>
+<td>Hành vi khi exit (lưu/khôi phục MSR...)</td>
+</tr>
+<tr>
+<td>VM-entry control</td>
+<td>Hành vi khi entry (tiêm sự kiện/interrupt vào guest)</td>
+</tr>
+<tr>
+<td>VM-exit information</td>
+<td>Lý do exit (exit reason, exit qualification) — hypervisor đọc để biết tại sao</td>
+</tr>
+</tbody>
+</table>
+<p>Khi VM-exit xảy ra, CPU ghi mã lý do (Basic Exit Reason — 16 bit) vào VMCS. Ví dụ exit reason <code>0</code> = NMI, <code>1</code> = external interrupt, <code>12</code> = HLT, <code>30</code> = I/O instruction, <code>48</code> = EPT violation. Hypervisor đọc bằng <code>VMREAD</code> để dispatch xử lý.</p>
+<h3 id="ch14-1414-ao-hoa-bo-nho-shadow-page-tables-vs-eptnpt">14.1.4. Ảo hóa bộ nhớ: shadow page tables vs EPT/NPT</h3>
+<blockquote>
+<p>Lưu ý: phần này tiếp tục đào sâu xuống cơ chế MMU. Nếu chỉ cần bức tranh lớn, đọc lướt và chuyển sang 14.2.</p>
+</blockquote>
+<p>Guest có bảng phân trang riêng dịch <strong>GVA → GPA</strong> (Guest Virtual → Guest Physical). Nhưng GPA không phải địa chỉ RAM thật (HPA — Host Physical Address). Cần thêm một lớp dịch GPA → HPA.</p>
+<p>Cách cũ (shadow page tables): hypervisor duy trì một bảng "bóng" dịch thẳng GVA → HPA, đồng bộ mỗi khi guest sửa bảng trang của nó (bắt write-fault vào page table) → rất tốn kém.</p>
+<p>Cách mới — <strong>EPT</strong> (Intel Extended Page Tables) / <strong>NPT/RVI</strong> (AMD Nested Page Tables): phần cứng làm dịch hai cấp. MMU đi qua bảng trang guest (GVA→GPA) rồi qua bảng EPT (GPA→HPA) hoàn toàn bằng phần cứng. Bảng EPT là cấu trúc 4 cấp (PML4 → PDPT → PD → PT), mỗi mục 64 bit.</p>
+<p>Cấu trúc một <strong>EPT entry (PTE cấp lá)</strong> 64 bit (mô tả các bit quan trọng):</p>
+<table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1 bit</td>
+<td>Read access cho phép</td>
+<td>1 = guest đọc được GPA này</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1 bit</td>
+<td>Write access</td>
+<td>1 = guest ghi được</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 bit</td>
+<td>Execute access</td>
+<td>0 = không thực thi (chống chạy code)</td>
+</tr>
+<tr>
+<td>3–5</td>
+<td>3 bit</td>
+<td>EPT memory type (giống PAT: WB=6, UC=0)</td>
+<td>6 = write-back</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1 bit</td>
+<td>Ignore PAT</td>
+<td>0</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1 bit</td>
+<td>(cấp PD/PDPT) large page</td>
+<td>1 = trang 2MB/1GB</td>
+</tr>
+<tr>
+<td>12–51</td>
+<td>40 bit</td>
+<td>Physical frame number (HPA &gt;&gt; 12)</td>
+<td>địa chỉ trang host</td>
+</tr>
+</tbody>
+</table>
+<p><strong>EPT violation</strong> (exit reason 48) xảy ra khi guest truy cập vi phạm quyền R/W/X trong EPT — đây là cơ chế nền cho cô lập bộ nhớ giữa các VM: VM A không có bất kỳ EPT entry nào trỏ vào RAM của VM B.</p>
+<blockquote>
+<p>Lưu ý bảo mật: chính lớp dịch hai cấp này là biên giới cô lập phần cứng mạnh nhất giữa các VM. Các lỗ hổng nghiêm trọng (ví dụ họ tấn công kiểu Foreshadow/L1TF, hay lỗi VENOM CVE-2015-3456 ở floppy controller QEMU) đều nhắm vào việc phá vỡ ranh giới này. Vá microcode + vá hypervisor là bắt buộc.</p>
+</blockquote>
+<h3 id="ch14-1415-paravirtualization-pv-va-virtio">14.1.5. Paravirtualization (PV) và virtio</h3>
+<p>Thay vì giả lập phần cứng đầy đủ (tốn VM-exit), PV sửa guest để nó "biết mình đang ảo hóa" và gọi thẳng hypervisor qua <strong>hypercall</strong>. Xen là đại diện kinh điển. Trong KVM, mô hình thực tế là <strong>virtio</strong>: guest dùng driver <code>virtio-net</code>, <code>virtio-blk</code>, <code>virtio-scsi</code> nói chuyện với host qua <strong>virtqueue</strong> — vùng nhớ chia sẻ dạng ring buffer gồm 3 phần:</p>
+<pre><code>Descriptor Table  -&gt;  mảng phần tử {addr(64bit), len(32bit), flags(16bit), next(16bit)}
+Available Ring    -&gt;  guest đẩy index descriptor &quot;đã sẵn sàng cho host&quot;
+Used Ring         -&gt;  host đẩy index descriptor &quot;đã xử lý xong&quot;
+</code></pre>
+<p>Cơ chế này giảm số VM-exit (gom nhiều I/O, "notify" theo lô), nên throughput gần native. Đây là lý do máy ảo Linux trên KVM/Proxmox nên dùng disk bus <code>virtio-scsi</code> và NIC model <code>virtio</code> thay vì giả lập <code>e1000</code>/<code>IDE</code>.</p>
+<p>Tới đây ta đã thấy ảo hóa dựng biên giới cô lập bằng phần cứng (VT-x/EPT) và một kernel riêng cho mỗi VM. Container chọn cách khác: chia sẻ kernel host. Phần 14.4 sẽ đặt hai mô hình cạnh nhau để thấy rõ đánh đổi cô lập; trước đó, 14.2–14.3 đi qua hai hypervisor thực tế là Proxmox và VMware.</p>
+<hr />
+<h2 id="ch14-142-proxmox-ve">14.2. Proxmox VE</h2>
+<h3 id="ch14-1421-kien-truc">14.2.1. Kiến trúc</h3>
+<p>Proxmox VE = Debian + kernel Ubuntu + KVM/QEMU (cho VM) + LXC (cho container hệ điều hành). Các thành phần cốt lõi:</p>
+<ul>
+<li><strong>pve-cluster (<code>pmxcfs</code>)</strong>: một filesystem phân tán gắn ở <code>/etc/pve</code>, đồng bộ qua <strong>Corosync</strong>. Mọi file cấu hình (VM, ACL, storage) nằm ở đây và tự nhân bản giữa các node.</li>
+<li><strong>Corosync</strong>: lớp truyền thông cluster, dùng giao thức <strong>Totem</strong> (token ring ảo) qua UDP/multicast hoặc unicast. Quyết định quorum.</li>
+<li><strong>pvedaemon / pveproxy</strong>: API REST (cổng 8006/TCP, HTTPS) và web UI.</li>
+<li><strong>qemu-server</strong>, <strong>pve-container</strong>: quản lý VM và LXC.</li>
+</ul>
+<h3 id="ch14-1422-file-cau-hinh-vm-thuc-te">14.2.2. File cấu hình VM thực tế</h3>
+<p>Mỗi VM có file <code>/etc/pve/qemu-server/&lt;vmid&gt;.conf</code>. Ví dụ thật:</p>
+<pre><code class="language-ini"># /etc/pve/qemu-server/100.conf
+boot: order=scsi0;net0
+cores: 4
+cpu: host
+memory: 8192
+name: web-prod-01
+net0: virtio=DE:AD:BE:EF:00:01,bridge=vmbr0,firewall=1
+scsi0: local-lvm:vm-100-disk-0,size=40G,iothread=1
+scsihw: virtio-scsi-single
+machine: q35
+bios: ovmf            # UEFI thay vì SeaBIOS
+efidisk0: local-lvm:vm-100-disk-1,size=4M
+agent: 1              # bật QEMU guest agent
+smbios1: uuid=...
+</code></pre>
+<p>Giải thích tham số quan trọng:
+- <code>cpu: host</code> — phơi toàn bộ cờ CPU vật lý cho guest (nhanh nhất, nhưng cản trở live-migrate giữa CPU khác đời). Dùng <code>cpu: x86-64-v2-AES</code> nếu cần tương thích migrate.
+- <code>net0: ...,firewall=1</code> — bật firewall Proxmox cho NIC này (xem 14.2.4).
+- <code>iothread=1</code> — tách luồng I/O riêng cho disk, giảm chèn ép vCPU.
+- <code>machine: q35</code> — chipset PCIe hiện đại (cần cho passthrough).</p>
+<h3 id="ch14-1423-snapshot-backup">14.2.3. Snapshot &amp; backup</h3>
+<p>Proxmox snapshot phụ thuộc storage backend:
+- <strong>LVM-thin / ZFS / qcow2</strong>: hỗ trợ snapshot (copy-on-write). ZFS snapshot ở mức block, gần như tức thời.
+- <strong>LVM dày / raw trên iSCSI</strong>: KHÔNG snapshot được ở mức storage.</p>
+<p>Lệnh thật:</p>
+<pre><code class="language-bash"># Tạo snapshot có lưu RAM (vmstate) để rollback về trạng thái đang chạy
+qm snapshot 100 before-upgrade --vmstate 1 --description &quot;Trước khi vá kernel&quot;
+
+# Liệt kê
+qm listsnapshot 100
+
+# Rollback
+qm rollback 100 before-upgrade
+
+# Backup nén zstd ra Proxmox Backup Server hoặc NFS
+vzdump 100 --storage pbs-main --mode snapshot --compress zstd
+</code></pre>
+<p><code>--mode snapshot</code> dùng cơ chế <strong>dirty bitmap</strong> của QEMU: chỉ các block thay đổi kể từ backup trước được gửi (incremental), giúp backup nhanh và nhỏ.</p>
+<h3 id="ch14-1424-proxmox-firewall-co-che">14.2.4. Proxmox Firewall — cơ chế</h3>
+<p>Firewall Proxmox là một lớp sinh ra rule <strong>iptables/nftables</strong> từ file cấu hình ở ba mức: datacenter (<code>/etc/pve/firewall/cluster.fw</code>), node (<code>/etc/pve/nodes/&lt;node&gt;/host.fw</code>), và VM (<code>/etc/pve/firewall/&lt;vmid&gt;.fw</code>). Ví dụ:</p>
+<pre><code class="language-ini"># /etc/pve/firewall/100.fw
+[OPTIONS]
+enable: 1
+policy_in: DROP
+
+[RULES]
+IN SSH(ACCEPT) -source 10.0.0.0/24 -log nolog
+IN ACCEPT -p tcp -dport 443 -source +web_clients
+</code></pre>
+<blockquote>
+<p>Lưu ý bảo mật: LXC container của Proxmox dùng chung kernel với host (không phải VM thật). Một LXC chạy <strong>privileged</strong> (<code>unprivileged: 0</code>) có user root ánh xạ thẳng UID 0 trên host → escape rất nguy hiểm. Luôn ưu tiên <code>unprivileged: 1</code> (user namespace remap, root trong container = UID cao như 100000 trên host). Với workload không tin cậy, dùng VM (KVM) thay vì LXC.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-143-vmware-vsphereesxi">14.3. VMware vSphere/ESXi</h2>
+<h3 id="ch14-1431-kien-truc-esxi">14.3.1. Kiến trúc ESXi</h3>
+<p>ESXi là hypervisor Type 1 với kernel độc quyền <strong>VMkernel</strong> (POSIX-like nhưng không phải Linux). Tiến trình quan trọng:
+- <strong>VMM</strong>: một instance trên mỗi VM, dùng VT-x/EPT.
+- <strong>VMX (<code>vmx</code> process)</strong>: xử lý giả lập thiết bị, I/O không hiệu năng cao, kết nối console.
+- <strong>hostd</strong>: agent quản lý local (API cho vSphere Client trực tiếp).
+- <strong>vpxa</strong>: agent kết nối tới vCenter Server.</p>
+<p>File định nghĩa VM là <code>&lt;vm&gt;.vmx</code> (text), disk là <code>&lt;vm&gt;.vmdk</code> (descriptor) + <code>-flat.vmdk</code> (dữ liệu) hoặc <code>-sparse</code>.</p>
+<h3 id="ch14-1432-vmfs-snapshot-delta-disk">14.3.2. VMFS, snapshot delta disk</h3>
+<p>VMFS là filesystem cụm có khóa phân tán (SCSI reservations / ATS - Atomic Test and Set). Khi tạo snapshot, ESXi đóng băng disk gốc (read-only) và tạo <strong>delta disk</strong> (<code>-000001.vmdk</code>) ghi mọi thay đổi mới theo cơ chế redo-log. Chuỗi snapshot là một cây; mỗi delta trỏ về parent. Xóa snapshot = consolidate (merge delta vào base).</p>
+<blockquote>
+<p>Lưu ý bảo mật / vận hành: delta disk phình to vô hạn nếu để snapshot lâu ngày → đầy datastore → toàn bộ VM trên datastore treo. Snapshot KHÔNG phải backup. Về bảo mật, các lỗ hổng nghiêm trọng của ESXi thường ở dịch vụ <strong>SLP</strong> (CVE-2021-21974 — ransomware ESXiArgs) và <strong>OpenSLP</strong> cổng 427; vô hiệu hóa SLP và đóng cổng quản lý là biện pháp cứng hóa cơ bản.</p>
+</blockquote>
+<h3 id="ch14-1433-cluster-ha-drs-vmotion">14.3.3. Cluster: HA, DRS, vMotion</h3>
+<ul>
+<li><strong>vMotion</strong>: di chuyển VM đang chạy giữa host. Cơ chế: copy trước toàn bộ RAM qua mạng, rồi lặp copy các trang "dirty" (pre-copy iterative), cuối cùng đóng băng vài chục ms để copy phần dirty còn lại và chuyển quyền. Cần mạng vMotion riêng (khuyến nghị mã hóa — Encrypted vMotion).</li>
+<li><strong>HA (High Availability)</strong>: nếu host chết, VM được khởi động lại trên host khác (không phải zero-downtime).</li>
+<li><strong>DRS</strong>: cân bằng tải tự động bằng vMotion.</li>
+</ul>
+<hr />
+<h2 id="ch14-144-vm-vs-container-so-sanh-toi-goc">14.4. VM vs Container — so sánh tới gốc</h2>
+<p>Sơ đồ stack hai mô hình cho thấy khác biệt cốt lõi: VM nhân bản cả kernel + OS cho mỗi workload (cô lập bằng hypervisor/phần cứng), còn container chia sẻ một kernel host (cô lập bằng namespaces/cgroups của chính kernel đó).</p>
+<pre><code>          VIRTUAL MACHINES                         CONTAINERS
+  +------+ +------+ +------+             +------+ +------+ +------+
+  | App  | | App  | | App  |            | App  | | App  | | App  |
+  | Libs | | Libs | | Libs |            | Libs | | Libs | | Libs |
+  +------+ +------+ +------+             +------+ +------+ +------+
+  |Guest | |Guest | |Guest | &lt;- kernel   |   Container Runtime  |
+  |  OS  | |  OS  | |  OS  |    riêng    |   (containerd/CRI-O) |
+  +------+-+------+-+------+   mỗi VM    +----------------------+
+  |       Hypervisor      |             |  Kernel host (CHUNG) | &lt;- 1 kernel
+  +-----------------------+             +----------------------+    cho tất cả
+  |  Host OS (Type 2) /   |             |        Host OS       |
+  |    none (Type 1)      |             +----------------------+
+  +-----------------------+             |   Phần cứng vật lý   |
+  |    Phần cứng vật lý   |             +----------------------+
+  +-----------------------+
+</code></pre>
+<p>Biên giới cô lập của VM nằm ở hypervisor + VT-x/EPT (mỗi VM một kernel độc lập); biên giới của container là namespaces + cgroups + capabilities trên một kernel dùng chung — mỏng hơn, bề mặt escape là toàn bộ syscall của kernel host.</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Virtual Machine</th>
+<th>Container</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cô lập bằng</td>
+<td>VT-x/EPT (phần cứng), kernel riêng mỗi VM</td>
+<td>namespaces + cgroups + capabilities (kernel host CHUNG)</td>
+</tr>
+<tr>
+<td>Kernel</td>
+<td>Mỗi VM 1 kernel độc lập</td>
+<td>Tất cả container dùng chung 1 kernel host</td>
+</tr>
+<tr>
+<td>Khởi động</td>
+<td>Giây → phút (boot OS)</td>
+<td>Mili giây (chỉ là tiến trình + namespace)</td>
+</tr>
+<tr>
+<td>Overhead RAM</td>
+<td>Cao (full OS mỗi VM)</td>
+<td>Rất thấp (chỉ binary + lib)</td>
+</tr>
+<tr>
+<td>Bề mặt tấn công escape</td>
+<td>Hypervisor (mỏng)</td>
+<td>Toàn bộ kernel syscall → bề mặt lớn hơn</td>
+</tr>
+<tr>
+<td>Ranh giới bảo mật</td>
+<td>Mạnh (mặc định an toàn cho multi-tenant)</td>
+<td>Yếu hơn — KHÔNG nên coi là biên giới bảo mật cho tenant không tin cậy nếu không có thêm gVisor/Kata</td>
+</tr>
+</tbody>
+</table>
+<p>Điểm mấu chốt bảo mật: container chia sẻ kernel. Một lỗ hổng kernel (ví dụ Dirty COW CVE-2016-5195, Dirty Pipe CVE-2022-0847) bị khai thác trong container có thể leo thẳng lên host. Đây là lý do "container không phải VM về mặt cô lập". Với workload không tin cậy, dùng <strong>gVisor</strong> (kernel user-space chặn syscall) hoặc <strong>Kata Containers</strong> (mỗi container một microVM KVM).</p>
+<hr />
+<h2 id="ch14-145-docker-internals">14.5. Docker internals</h2>
+<h3 id="ch14-1451-namespaces-co-lap-gi">14.5.1. Namespaces — cô lập gì</h3>
+<p>Namespace là cơ chế kernel Linux cô lập một <strong>tài nguyên toàn cục</strong> sao cho tiến trình bên trong chỉ thấy view riêng. Mỗi namespace có một file ở <code>/proc/&lt;pid&gt;/ns/</code>. Có 8 loại (kernel hiện đại):</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Cô lập</th>
+<th>Container thấy gì khác host</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PID</strong></td>
+<td>Cây tiến trình</td>
+<td>Tiến trình đầu tiên trong container là PID 1; không thấy PID host</td>
+</tr>
+<tr>
+<td><strong>NET</strong></td>
+<td>Stack mạng</td>
+<td>Interface, bảng định tuyến, iptables, cổng, <code>/proc/net</code> riêng</td>
+</tr>
+<tr>
+<td><strong>MNT</strong></td>
+<td>Mount point</td>
+<td>Cây thư mục riêng (rootfs của image), không thấy mount host</td>
+</tr>
+<tr>
+<td><strong>UTS</strong></td>
+<td>hostname &amp; domainname</td>
+<td><code>hostname</code> riêng (UTS = Unix Time-sharing System)</td>
+</tr>
+<tr>
+<td><strong>IPC</strong></td>
+<td>System V IPC, POSIX message queue</td>
+<td>Shared memory / semaphore riêng</td>
+</tr>
+<tr>
+<td><strong>USER</strong></td>
+<td>UID/GID mapping</td>
+<td>root (UID 0) trong container có thể map sang UID không-đặc-quyền trên host</td>
+</tr>
+<tr>
+<td><strong>CGROUP</strong></td>
+<td>View của cgroup hierarchy</td>
+<td>Ẩn đường dẫn cgroup thật của host</td>
+</tr>
+<tr>
+<td><strong>TIME</strong></td>
+<td>CLOCK_MONOTONIC/BOOTTIME offset</td>
+<td>(ít dùng) lệch đồng hồ boot</td>
+</tr>
+</tbody>
+</table>
+<p>Quan sát thực tế:</p>
+<pre><code class="language-bash"># Chạy container, xem các namespace của nó
+docker run -d --name demo alpine sleep 3600
+PID=$(docker inspect -f '{{.State.Pid}}' demo)
+ls -l /proc/$PID/ns/
+# lrwxrwxrwx ... net -&gt; 'net:[4026532567]'   &lt;- inode namespace
+# lrwxrwxrwx ... pid -&gt; 'pid:[4026532569]'
+
+# So sánh với host: số inode khác nhau =&gt; khác namespace
+ls -l /proc/1/ns/net
+# net -&gt; 'net:[4026531840]'   &lt;- inode khác hẳn
+
+# Tự tạo namespace bằng unshare (không cần Docker)
+sudo unshare --pid --fork --mount-proc bash
+# Trong shell mới: ps aux chỉ thấy vài tiến trình, bash là PID 1
+</code></pre>
+<p>Syscall nền: <code>clone()</code> với cờ <code>CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWCGROUP</code>; <code>unshare()</code> tách namespace cho tiến trình hiện tại; <code>setns()</code> gia nhập namespace có sẵn (đây chính là cái <code>docker exec</code> và <code>nsenter</code> dùng).</p>
+<h3 id="ch14-1452-cgroups-v1-vs-v2-gioi-han-tai-nguyen">14.5.2. cgroups v1 vs v2 — giới hạn tài nguyên</h3>
+<p>cgroups (control groups) <strong>giới hạn và hạch toán</strong> tài nguyên (CPU, RAM, I/O, PID count). Namespace cô lập <em>view</em>, cgroups giới hạn <em>lượng</em>.</p>
+<p><strong>cgroups v1</strong>: mỗi controller (cpu, memory, blkio, pids...) là một cây phân cấp RIÊNG, gắn ở <code>/sys/fs/cgroup/&lt;controller&gt;/</code>. Phức tạp vì một tiến trình ở nhiều cây.</p>
+<p><strong>cgroups v2</strong>: một cây thống nhất (unified hierarchy) ở <code>/sys/fs/cgroup/</code>, mỗi cgroup bật controller qua file <code>cgroup.subtree_control</code>. Đây là mặc định trên distro hiện đại (systemd).</p>
+<p>Ví dụ giới hạn thật với cgroup v2:</p>
+<pre><code class="language-bash"># Docker tạo cgroup ở /sys/fs/cgroup/system.slice/docker-&lt;id&gt;.scope/
+docker run -d --name limited --memory=256m --cpus=1.5 nginx
+
+ID=$(docker inspect -f '{{.Id}}' limited)
+CG=/sys/fs/cgroup/system.slice/docker-$ID.scope
+
+cat $CG/memory.max        # 268435456  (256*1024*1024 byte)
+cat $CG/cpu.max           # 150000 100000  -&gt; (quota 150000us / period 100000us) = 1.5 CPU
+cat $CG/pids.max          # giới hạn số PID (chống fork bomb)
+</code></pre>
+<p>Giải thích <code>cpu.max</code>: định dạng <code>&lt;quota&gt; &lt;period&gt;</code>, đơn vị microgiây. <code>150000 100000</code> nghĩa là mỗi chu kỳ 100ms, tiến trình được dùng tối đa 150ms CPU-time → tương đương 1.5 lõi. Khi vượt, scheduler <strong>throttle</strong> (chặn) tiến trình tới chu kỳ sau.</p>
+<p><code>memory.max</code> là hard limit. Vượt qua → kernel <strong>OOM killer</strong> giết tiến trình trong cgroup (xem <code>dmesg</code>, exit code 137 = 128+SIGKILL(9)).</p>
+<blockquote>
+<p>Lưu ý bảo mật: KHÔNG đặt giới hạn → một container có thể nuốt hết RAM/CPU host (DoS nội bộ). Đặt <code>--memory</code>, <code>--cpus</code>, <code>--pids-limit</code> cho mọi workload. <code>--pids-limit</code> chặn fork bomb.</p>
+</blockquote>
+<h3 id="ch14-1453-overlayfs-lower-upper-merged">14.5.3. OverlayFS — lower / upper / merged</h3>
+<p>Docker image gồm nhiều <strong>layer</strong> chỉ-đọc. Khi chạy container, Docker xếp chồng chúng bằng <strong>overlay2</strong> storage driver dựa trên OverlayFS của kernel:</p>
+<pre><code>              merged/   (cái container nhìn thấy = union)
+                 ^
+        +--------+--------+
+        |                 |
+     upperdir         lowerdir(s)
+   (read-write,     (read-only, các image layer
+    thay đổi của      xếp chồng, lower nhất ở cuối)
+    container)
+        |
+     workdir  (kernel dùng để thực hiện copy-up nguyên tử)
+</code></pre>
+<p>Cơ chế <strong>copy-up</strong>: khi container ghi vào một file đang nằm ở lowerdir (read-only), kernel sao chép file đó lên upperdir rồi mới ghi. Lowerdir không bao giờ thay đổi → image bất biến, nhiều container chia sẻ chung layer (tiết kiệm đĩa). Xóa file ở lower → tạo một <strong>whiteout</strong> (file thiết bị ký tự đặc biệt <code>c 0 0</code>) ở upper để "che" file đó trong merged.</p>
+<pre><code class="language-bash">docker inspect -f '{{json .GraphDriver.Data}}' limited | python3 -m json.tool
+# {
+#   &quot;LowerDir&quot;: &quot;/var/lib/docker/overlay2/&lt;l1&gt;/diff:/var/lib/docker/overlay2/&lt;l2&gt;/diff&quot;,
+#   &quot;UpperDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/diff&quot;,
+#   &quot;MergedDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/merged&quot;,
+#   &quot;WorkDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/work&quot;
+# }
+mount | grep overlay   # thấy filesystem type 'overlay'
+</code></pre>
+<blockquote>
+<p>Lưu ý bảo mật: dữ liệu "đã xóa" ở layer dưới VẪN nằm trong image (chỉ bị whiteout che). <code>docker history</code> và việc giải nén từng layer (<code>tar</code>) có thể phục hồi secret bị <code>RUN rm</code> ở instruction sau. Đây là lỗi rò rỉ secret kinh điển — phải dùng multi-stage build hoặc BuildKit secrets, không bao giờ COPY secret rồi xóa.</p>
+<p>Lưu ý vận hành (kinh nghiệm thực tế): image và build cache tích luỹ ở <code>/var/lib/docker/overlay2/</code> là thủ phạm đầy đĩa số một trên máy chạy Docker lâu ngày. Ở một máy dev mình vận hành, root FS đầy mỗi 1–2 ngày chỉ vì mỗi lần CI build lại đẻ ra image mới mà không ai dọn image cũ. Dùng <code>docker system df</code> để xem dung lượng tách theo Images / Containers / Local Volumes / Build Cache (thêm <code>-v</code> để liệt kê chi tiết từng image) trước khi quyết định xoá gì. Cảnh báo quan trọng: <code>docker system prune</code> mặc định <em>không</em> đụng volume, nhưng <code>docker system prune --volumes</code> (hoặc <code>docker volume prune</code>) sẽ <strong>xoá volume không được container nào tham chiếu</strong> — trên máy có volume chứa data (DB, upload) mà container tạm thời dừng, đây là đường xoá nhầm dữ liệu. An toàn hơn: chỉ dọn image không dùng bằng <code>docker image prune -a --filter "until=72h"</code> chạy định kỳ (cron 3h sáng), và tránh <code>--volumes</code> trừ khi đã chắc chắn không còn data cần giữ.</p>
+</blockquote>
+<h3 id="ch14-1454-image-layer-digest-đinh-dang">14.5.4. Image, layer, digest — định dạng</h3>
+<p>Một Docker/OCI image gồm: <strong>manifest</strong> (JSON), <strong>config</strong> (JSON), và các <strong>layer blob</strong> (tar.gz). Mỗi đối tượng được định danh bằng <strong>digest</strong> = <code>sha256:</code> + hash SHA-256 của nội dung (content-addressable). Vì địa chỉ = hash, nội dung bất biến: đổi 1 byte → đổi digest → là object khác.</p>
+<p><strong>OCI Image Manifest</strong> (ví dụ rút gọn):</p>
+<pre><code class="language-json">{
+  &quot;schemaVersion&quot;: 2,
+  &quot;mediaType&quot;: &quot;application/vnd.oci.image.manifest.v1+json&quot;,
+  &quot;config&quot;: {
+    &quot;mediaType&quot;: &quot;application/vnd.oci.image.config.v1+json&quot;,
+    &quot;size&quot;: 7023,
+    &quot;digest&quot;: &quot;sha256:b5b2b2c5...e3a&quot;
+  },
+  &quot;layers&quot;: [
+    { &quot;mediaType&quot;: &quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;,
+      &quot;size&quot;: 32654, &quot;digest&quot;: &quot;sha256:9f0c...4d&quot; },
+    { &quot;mediaType&quot;: &quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;,
+      &quot;size&quot;: 16724, &quot;digest&quot;: &quot;sha256:3c3a...91&quot; }
+  ]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.digest</code></td>
+<td>Trỏ tới image config JSON (chứa ENV, CMD, history, <code>rootfs.diff_ids</code>)</td>
+</tr>
+<tr>
+<td><code>layers[].digest</code></td>
+<td>Digest của layer blob (đã nén) — dùng để pull/dedup</td>
+</tr>
+<tr>
+<td><code>rootfs.diff_ids</code> (trong config)</td>
+<td>Digest của layer <strong>chưa nén</strong> — dùng để khớp layer trên đĩa</td>
+</tr>
+</tbody>
+</table>
+<p>Khác biệt <strong>image tag vs digest</strong>: <code>nginx:1.25</code> là tag <em>có thể thay đổi</em> (publisher push lại). <code>nginx@sha256:abc...</code> là digest <em>bất biến</em>. Để bảo mật supply chain, <strong>pin theo digest</strong> trong production.</p>
+<pre><code class="language-bash">docker pull nginx@sha256:0d17b565c37bcbd895e9d92315a05c1c3c9a29f762b011a10c54a66cd53c9b31
+docker inspect --format '{{index .RepoDigests 0}}' nginx
+</code></pre>
+<h3 id="ch14-1455-dockerfile-tung-instruction-caching">14.5.5. Dockerfile — từng instruction &amp; caching</h3>
+<p>Mỗi instruction tạo (hoặc không) một layer. BuildKit cache theo nội dung instruction + ngữ cảnh.</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Vai trò</th>
+<th>Tạo layer?</th>
+<th>Ghi chú caching/bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FROM</code></td>
+<td>Base image</td>
+<td>(kế thừa)</td>
+<td>Pin digest. Dùng image tối thiểu (alpine/distroless)</td>
+</tr>
+<tr>
+<td><code>RUN</code></td>
+<td>Chạy lệnh build</td>
+<td>Có</td>
+<td>Gộp <code>apt-get update &amp;&amp; install &amp;&amp; rm -rf /var/lib/apt/lists/*</code> trong 1 RUN</td>
+</tr>
+<tr>
+<td><code>COPY</code></td>
+<td>Sao chép từ context</td>
+<td>Có</td>
+<td>Cache invalidate nếu file nguồn đổi (theo checksum)</td>
+</tr>
+<tr>
+<td><code>ADD</code></td>
+<td>Như COPY + giải nén tar + URL</td>
+<td>Có</td>
+<td>Tránh — COPY rõ ràng hơn, ADD URL gây bất ngờ</td>
+</tr>
+<tr>
+<td><code>ENV</code></td>
+<td>Biến môi trường</td>
+<td>Metadata</td>
+<td>KHÔNG đặt secret ở ENV (nằm trong image config, ai cũng đọc)</td>
+</tr>
+<tr>
+<td><code>ARG</code></td>
+<td>Biến build-time</td>
+<td>Metadata</td>
+<td>Cũng lưu trong history nếu dùng sai; không cho secret</td>
+</tr>
+<tr>
+<td><code>USER</code></td>
+<td>Đổi user chạy</td>
+<td>Metadata</td>
+<td>Đặt non-root TRƯỚC ENTRYPOINT</td>
+</tr>
+<tr>
+<td><code>WORKDIR</code></td>
+<td>Thư mục làm việc</td>
+<td>Metadata</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EXPOSE</code></td>
+<td>Tài liệu hóa cổng</td>
+<td>Metadata</td>
+<td>Chỉ ghi chú, không mở cổng thật</td>
+</tr>
+<tr>
+<td><code>ENTRYPOINT</code></td>
+<td>Lệnh cố định khi chạy</td>
+<td>Metadata</td>
+<td>Dạng exec <code>["nginx","-g","daemon off;"]</code> để nhận tín hiệu đúng (PID 1)</td>
+</tr>
+<tr>
+<td><code>CMD</code></td>
+<td>Tham số mặc định</td>
+<td>Metadata</td>
+<td>Bị override bởi <code>docker run ... &lt;cmd&gt;</code></td>
+</tr>
+<tr>
+<td><code>HEALTHCHECK</code></td>
+<td>Kiểm tra sống</td>
+<td>Metadata</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Caching</strong>: build đi tuần tự; nếu một instruction cache-hit, các instruction sau vẫn dùng cache cho tới khi gặp thay đổi. Vì vậy đặt thứ ít đổi (cài dependency) TRƯỚC, thứ hay đổi (copy source code) SAU:</p>
+<pre><code class="language-dockerfile"># Sai thứ tự: mỗi lần đổi code phải cài lại deps
+COPY . .
+RUN npm ci
+
+# Đúng: tách package.json -&gt; cache npm ci được giữ khi chỉ đổi src
+COPY package*.json ./
+RUN npm ci
+COPY . .
+</code></pre>
+<p><strong>Multi-stage build</strong> thật (Go) — chỉ giữ binary, bỏ toolchain:</p>
+<pre><code class="language-dockerfile"># ---- Stage build ----
+FROM golang:1.22 AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags=&quot;-s -w&quot; -o /app ./cmd/server
+
+# ---- Stage runtime: distroless, non-root ----
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=builder /app /app
+USER 65532:65532          # nonroot uid của distroless
+ENTRYPOINT [&quot;/app&quot;]
+</code></pre>
+<p>Vì sao distroless: không có shell, không có package manager, không có coreutils → kẻ tấn công vào container không có <code>sh</code>, <code>curl</code>, <code>cat</code> để xoay sở; bề mặt tấn công nhỏ; ít CVE từ thư viện thừa.</p>
+<p><strong>BuildKit secret</strong> (không để lại dấu vết trong layer):</p>
+<pre><code class="language-dockerfile"># syntax=docker/dockerfile:1
+RUN --mount=type=secret,id=npmtoken \
+    NPM_TOKEN=$(cat /run/secrets/npmtoken) npm ci
+</code></pre>
+<pre><code class="language-bash">DOCKER_BUILDKIT=1 docker build --secret id=npmtoken,src=./.npmtoken -t app .
+</code></pre>
+<p>Secret được mount tạm vào RUN, không ghi vào layer.</p>
+<p><strong><code>.dockerignore</code></strong> — chống nuốt nhầm secret/file thừa vào context:</p>
+<pre><code>.git
+node_modules
+*.pem
+*.key
+.env
+Dockerfile
+</code></pre>
+<h3 id="ch14-1456-registry-content-trust">14.5.6. Registry &amp; content trust</h3>
+<ul>
+<li><strong>Docker Registry / OCI Distribution</strong>: API HTTP (<code>/v2/</code>). Pull = GET manifest theo tag/digest, rồi GET từng layer blob theo digest.</li>
+<li><strong>Cosign / Notary (DCT)</strong>: ký image. <code>cosign sign</code> tạo chữ ký lưu cạnh image; <code>cosign verify</code> kiểm tra trước khi deploy.</li>
+</ul>
+<pre><code class="language-bash">cosign generate-key-pair
+cosign sign --key cosign.key registry.example.com/app@sha256:...
+cosign verify --key cosign.pub registry.example.com/app@sha256:...
+</code></pre>
+<blockquote>
+<p>Lưu ý bảo mật supply chain: bật admission policy chỉ cho phép image đã ký (cosign + Kyverno/Gatekeeper), pin digest, quét trước khi push.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-146-quet-image-voi-trivy">14.6. Quét image với Trivy</h2>
+<p>Trivy quét: lỗ hổng OS package + lib ứng dụng (đọc lockfile), misconfig (Dockerfile/K8s/Terraform), secret hardcode, license.</p>
+<pre><code class="language-bash"># Quét image, chỉ báo HIGH/CRITICAL, fail CI nếu có CRITICAL
+trivy image --severity HIGH,CRITICAL --exit-code 1 \
+      --ignore-unfixed nginx:1.25
+
+# Quét filesystem / Dockerfile misconfig
+trivy fs --scanners vuln,secret,misconfig .
+
+# Xuất SARIF cho GitLab/GitHub code scanning
+trivy image --format sarif -o trivy.sarif app:latest
+</code></pre>
+<p>Giải thích tham số:
+- <code>--ignore-unfixed</code>: bỏ qua CVE chưa có bản vá (giảm nhiễu, tập trung cái fix được).
+- <code>--exit-code 1</code>: trả mã lỗi để pipeline CI fail → gate bảo mật.
+- <code>--scanners vuln,secret,misconfig</code>: bật đồng thời nhiều bộ quét.</p>
+<p>Output mẫu (rút gọn):</p>
+<pre><code>nginx:1.25 (debian 12.4)
+Total: 2 (HIGH: 1, CRITICAL: 1)
+┌────────────┬────────────────┬──────────┬───────────────┬───────────────┐
+│  Library   │ Vulnerability  │ Severity │ Installed Ver │ Fixed Version │
+├────────────┼────────────────┼──────────┼───────────────┼───────────────┤
+│ libssl3    │ CVE-2024-XXXX  │ CRITICAL │ 3.0.11-1      │ 3.0.13-1      │
+│ zlib1g     │ CVE-2023-YYYY  │ HIGH     │ 1:1.2.13      │               │ (unfixed)
+└────────────┴────────────────┴──────────┴───────────────┴───────────────┘
+</code></pre>
+<p>Tích hợp GitLab CI (đúng môi trường DevSecOps):</p>
+<pre><code class="language-yaml">trivy_scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy image --exit-code 0 --format sarif -o gl-trivy.sarif &quot;$IMAGE&quot;
+    - trivy image --exit-code 1 --severity CRITICAL &quot;$IMAGE&quot;
+  artifacts:
+    reports: { container_scanning: gl-trivy.sarif }
+</code></pre>
+<hr />
+<h2 id="ch14-147-container-escape-co-che-cu-the">14.7. Container escape — cơ chế cụ thể</h2>
+<p>Container escape = vượt khỏi cô lập namespace/cgroup để truy cập host. Ba lớp phổ biến:</p>
+<h3 id="ch14-1471---privileged">14.7.1. <code>--privileged</code></h3>
+<p><code>docker run --privileged</code> tắt gần như mọi cô lập: cấp <strong>tất cả capabilities</strong>, vô hiệu seccomp/AppArmor mặc định, cho truy cập <strong>mọi device</strong> ở <code>/dev</code>. Hệ quả: container thấy đĩa host (<code>/dev/sda</code>) → mount → đọc/ghi rootfs host.</p>
+<pre><code class="language-bash"># Bên trong container privileged
+fdisk -l                       # thấy /dev/sda của host
+mkdir /hostroot
+mount /dev/sda1 /hostroot      # mount rootfs host
+echo 'attacker ALL=(ALL) NOPASSWD:ALL' &gt;&gt; /hostroot/etc/sudoers
+# hoặc ghi /hostroot/root/.ssh/authorized_keys -&gt; escape hoàn toàn
+</code></pre>
+<p>Một biến thể kinh điển dùng <code>release_agent</code> của cgroup v1 (khi privileged + cgroup v1): ghi vào file <code>release_agent</code> một script chạy với quyền host khi cgroup rỗng → thực thi lệnh trên host.</p>
+<h3 id="ch14-1472-mount-dockersock">14.7.2. Mount <code>docker.sock</code></h3>
+<p><code>/var/run/docker.sock</code> là Unix socket nói chuyện với Docker daemon (chạy quyền root). Ai truy cập được socket = điều khiển daemon = tạo container privileged mới mount <code>/</code> của host → root host.</p>
+<pre><code class="language-bash"># Nếu container bị mount nhầm -v /var/run/docker.sock:/var/run/docker.sock
+docker -H unix:///var/run/docker.sock run -v /:/host -it alpine chroot /host sh
+# giờ là root trên host
+</code></pre>
+<p>Đây là lý do KHÔNG bao giờ mount docker.sock vào container untrusted (CI runner, app). Tương đương trao root host.</p>
+<h3 id="ch14-1473-cap_sys_admin-va-capability-thua">14.7.3. <code>CAP_SYS_ADMIN</code> và capability thừa</h3>
+<p>Linux chia quyền root thành nhiều <strong>capabilities</strong> (bitmask trong cred của tiến trình). Docker mặc định giữ một tập nhỏ và bỏ phần nguy hiểm. <code>CAP_SYS_ADMIN</code> là "root mới" — cho phép <code>mount</code>, <code>pivot_root</code>, thao tác namespace... → con đường escape phổ biến.</p>
+<pre><code class="language-bash"># Xem capabilities hiện có trong container
+grep Cap /proc/1/status
+# CapEff: 00000000a80425fb   &lt;- bitmask, giải mã:
+capsh --decode=00000000a80425fb
+# cap_chown,cap_dac_override,...,cap_net_raw,cap_setuid,...
+
+# Nguyên tắc: drop tất cả, thêm lại cái cần
+docker run --cap-drop=ALL --cap-add=NET_BIND_SERVICE nginx
+</code></pre>
+<p><strong>Phòng thủ tổng hợp cho container:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Biện pháp</th>
+<th>Lệnh / hiệu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Non-root</td>
+<td><code>USER 65532</code> trong Dockerfile + <code>--user 65532</code></td>
+</tr>
+<tr>
+<td>Read-only rootfs</td>
+<td><code>--read-only</code> (chỉ ghi vào volume/tmpfs khai báo)</td>
+</tr>
+<tr>
+<td>Drop caps</td>
+<td><code>--cap-drop=ALL</code> rồi add tối thiểu</td>
+</tr>
+<tr>
+<td>No new privileges</td>
+<td><code>--security-opt=no-new-privileges</code> (chặn setuid leo quyền)</td>
+</tr>
+<tr>
+<td>Seccomp</td>
+<td>Mặc định Docker chặn một loạt syscall nguy hiểm; viết profile custom</td>
+</tr>
+<tr>
+<td>AppArmor/SELinux</td>
+<td>MAC giới hạn truy cập file/cap</td>
+</tr>
+<tr>
+<td>User namespace</td>
+<td><code>--userns-remap</code> → root container = UID cao trên host</td>
+</tr>
+<tr>
+<td>Không privileged</td>
+<td>KHÔNG dùng <code>--privileged</code>; không mount docker.sock</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ seccomp profile JSON (allowlist tối thiểu):</p>
+<pre><code class="language-json">{
+  &quot;defaultAction&quot;: &quot;SCMP_ACT_ERRNO&quot;,
+  &quot;architectures&quot;: [&quot;SCMP_ARCH_X86_64&quot;],
+  &quot;syscalls&quot;: [
+    { &quot;names&quot;: [&quot;read&quot;,&quot;write&quot;,&quot;openat&quot;,&quot;close&quot;,&quot;fstat&quot;,&quot;mmap&quot;,&quot;execve&quot;,
+                &quot;brk&quot;,&quot;arch_prctl&quot;,&quot;exit_group&quot;],
+      &quot;action&quot;: &quot;SCMP_ACT_ALLOW&quot; }
+  ]
+}
+</code></pre>
+<pre><code class="language-bash">docker run --security-opt seccomp=./profile.json myapp
+</code></pre>
+<p><code>SCMP_ACT_ERRNO</code> = syscall không có trong allowlist sẽ trả <code>EPERM</code> thay vì thực thi.</p>
+<hr />
+<h2 id="ch14-148-kubernetes">14.8. Kubernetes</h2>
+<h3 id="ch14-1481-kien-truc-control-plane-node">14.8.1. Kiến trúc: control plane &amp; node</h3>
+<pre><code>                 CONTROL PLANE (master)
+   +-----------------------------------------------+
+   |  kube-apiserver  &lt;---&gt;  etcd (key-value store) |
+   |        ^   ^                                    |
+   |        |   +-- kube-scheduler                   |
+   |        +------ kube-controller-manager          |
+   +-----------------------------------------------+
+                 |  (API: HTTPS 6443)
+        +--------+----------------+
+        |                         |
+     NODE 1                    NODE 2
+   kubelet                   kubelet
+   kube-proxy                kube-proxy
+   container runtime (CRI)   container runtime
+   (containerd/CRI-O)        (containerd/CRI-O)
+        |
+     Pods (1..n container/pod)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Vai trò</th>
+<th>Chi tiết bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>kube-apiserver</strong></td>
+<td>Cổng duy nhất vào cluster; mọi thao tác qua REST API; xác thực + authz + admission</td>
+<td>Cổng 6443/TCP TLS. Là mục tiêu số 1</td>
+</tr>
+<tr>
+<td><strong>etcd</strong></td>
+<td>Lưu TOÀN BỘ state cluster (kể cả Secret) dạng key-value</td>
+<td>Phải mã hóa at-rest + mTLS + chỉ apiserver truy cập</td>
+</tr>
+<tr>
+<td><strong>kube-scheduler</strong></td>
+<td>Quyết định Pod chạy node nào (theo resource, taint/toleration, affinity)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>kube-controller-manager</strong></td>
+<td>Vòng lặp điều hòa (reconcile) đưa trạng thái thực về trạng thái mong muốn</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>kubelet</strong></td>
+<td>Agent trên mỗi node; nói với CRI để chạy Pod; báo cáo trạng thái</td>
+<td>API kubelet (10250) phải xác thực — nếu mở anonymous = RCE node</td>
+</tr>
+<tr>
+<td><strong>kube-proxy</strong></td>
+<td>Cài rule iptables/IPVS để hiện thực Service (cân bằng tải tới Pod)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>CRI runtime</strong></td>
+<td>containerd / CRI-O thực sự chạy container qua runc</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Luồng một request</strong> (ví dụ <code>kubectl apply -f deploy.yaml</code>):</p>
+<ol>
+<li>kubectl → HTTPS POST tới apiserver (cổng 6443), kèm client cert/token.</li>
+<li><strong>Authentication</strong>: apiserver xác định "ai" (cert CN, ServiceAccount JWT, OIDC).</li>
+<li><strong>Authorization (RBAC)</strong>: kiểm "user này được làm verb <code>create</code> trên resource <code>deployments</code> trong namespace này không?".</li>
+<li><strong>Admission controllers</strong>: mutating (sửa object, vd tiêm sidecar, set default) rồi validating (chấp nhận/từ chối, vd OPA/Gatekeeper, Pod Security).</li>
+<li>apiserver ghi object vào <strong>etcd</strong>.</li>
+<li>controller-manager thấy Deployment mới → tạo ReplicaSet → tạo Pod object.</li>
+<li>scheduler gán Pod vào node (ghi <code>nodeName</code>).</li>
+<li>kubelet node đó watch thấy Pod của mình → gọi CRI → containerd → runc tạo container.</li>
+</ol>
+<h3 id="ch14-1482-đoi-tuong-cot-loi-manifest-that">14.8.2. Đối tượng cốt lõi (manifest thật)</h3>
+<p><strong>Pod</strong> — đơn vị nhỏ nhất, một hoặc nhiều container chia sẻ NET namespace (cùng IP, cùng localhost) và volume:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  namespace: app
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+  - name: nginx
+    image: nginx@sha256:0d17b565...   # pin digest
+    ports: [{ containerPort: 8080 }]
+    resources:
+      requests: { cpu: &quot;100m&quot;, memory: &quot;128Mi&quot; }
+      limits:   { cpu: &quot;500m&quot;, memory: &quot;256Mi&quot; }
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities: { drop: [&quot;ALL&quot;] }
+</code></pre>
+<p><code>100m</code> = 100 millicores = 0.1 CPU. <code>128Mi</code> = 128 mebibyte = 128*2^20 byte. <code>requests</code> dùng để scheduler đặt chỗ; <code>limits</code> là cgroup hard cap.</p>
+<p><strong>Deployment</strong> (quản lý ReplicaSet, rolling update):</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata: { name: web, namespace: app }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: web } }
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+      - name: web
+        image: registry.example.com/web@sha256:...
+</code></pre>
+<p>Quan hệ: <strong>Deployment</strong> → tạo/quản lý <strong>ReplicaSet</strong> → giữ đúng số <strong>Pod</strong>. Rolling update: tạo ReplicaSet mới, tăng dần Pod mới, giảm dần Pod cũ theo <code>maxSurge</code>/<code>maxUnavailable</code>.</p>
+<p><strong>Service</strong> — IP/DNS ổn định cho tập Pod (Pod IP thay đổi liên tục):</p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Cơ chế</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ClusterIP</strong></td>
+<td>IP ảo nội cụm, kube-proxy DNAT tới Pod</td>
+<td>Service nội bộ (mặc định)</td>
+</tr>
+<tr>
+<td><strong>NodePort</strong></td>
+<td>Mở cùng một cổng (30000–32767) trên MỌI node</td>
+<td>Truy cập từ ngoài đơn giản</td>
+</tr>
+<tr>
+<td><strong>LoadBalancer</strong></td>
+<td>Gọi cloud provider tạo LB ngoài trỏ vào NodePort</td>
+<td>Cloud production</td>
+</tr>
+<tr>
+<td><strong>ExternalName</strong></td>
+<td>Trả CNAME DNS</td>
+<td>Trỏ tới dịch vụ ngoài</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-yaml">apiVersion: v1
+kind: Service
+metadata: { name: web, namespace: app }
+spec:
+  type: ClusterIP
+  selector: { app: web }     # chọn Pod theo label
+  ports:
+  - port: 80           # cổng của Service (ClusterIP:80)
+    targetPort: 8080   # cổng container đích
+</code></pre>
+<p>Cơ chế kube-proxy (chế độ iptables): cho mỗi Service tạo chuỗi <code>KUBE-SERVICES</code> → <code>KUBE-SVC-xxx</code> → DNAT ngẫu nhiên (xác suất đều) tới một trong các <code>KUBE-SEP-xxx</code> (mỗi SEP = một Pod endpoint). Đây là cân bằng tải L4.</p>
+<p><strong>Ingress</strong> — định tuyến HTTP(S) L7 (host/path) vào các Service, do Ingress Controller (nginx, traefik) hiện thực:</p>
+<pre><code class="language-yaml">apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  annotations: { nginx.ingress.kubernetes.io/ssl-redirect: &quot;true&quot; }
+spec:
+  tls: [{ hosts: [&quot;app.example.com&quot;], secretName: web-tls }]
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend: { service: { name: web, port: { number: 80 } } }
+</code></pre>
+<p><strong>ConfigMap &amp; Secret</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: ConfigMap
+metadata: { name: app-cfg, namespace: app }
+data:
+  LOG_LEVEL: &quot;info&quot;
+  config.yaml: |
+    server: { port: 8080 }
+---
+apiVersion: v1
+kind: Secret
+metadata: { name: db-cred, namespace: app }
+type: Opaque
+data:
+  password: c3VwZXJzZWNyZXQ=   # base64(&quot;supersecret&quot;) — KHÔNG mã hóa
+</code></pre>
+<h3 id="ch14-1483-rbac-role-rolebinding">14.8.3. RBAC — Role / RoleBinding</h3>
+<p>RBAC trả lời: "subject (user/group/ServiceAccount) được làm <code>verb</code> gì trên <code>resource</code> nào, ở đâu". <code>Role</code>/<code>RoleBinding</code> = phạm vi 1 namespace; <code>ClusterRole</code>/<code>ClusterRoleBinding</code> = toàn cụm.</p>
+<pre><code class="language-yaml"># Role: chỉ đọc pod &amp; log trong namespace app
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: pod-reader, namespace: app }
+rules:
+- apiGroups: [&quot;&quot;]                 # &quot;&quot; = core group
+  resources: [&quot;pods&quot;, &quot;pods/log&quot;]
+  verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: bind-pod-reader, namespace: app }
+subjects:
+- kind: ServiceAccount
+  name: viewer
+  namespace: app
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+</code></pre>
+<p>Kiểm tra quyền thực tế:</p>
+<pre><code class="language-bash">kubectl auth can-i create deployments --namespace app --as system:serviceaccount:app:viewer
+# no
+kubectl auth can-i get pods --namespace app --as system:serviceaccount:app:viewer
+# yes
+</code></pre>
+<blockquote>
+<p>Lưu ý bảo mật: tránh <code>verbs: ["*"]</code>, <code>resources: ["*"]</code>. Đặc biệt nguy hiểm: quyền <code>create</code> trên <code>pods</code> (có thể tạo Pod mount host hoặc privileged để escape), quyền <code>get</code>/<code>create</code> trên <code>secrets</code>, quyền <code>escalate</code>/<code>bind</code> trên RBAC, quyền <code>create</code> trên <code>pods/exec</code>. Cấp theo least-privilege.</p>
+</blockquote>
+<h3 id="ch14-1484-networkpolicy">14.8.4. NetworkPolicy</h3>
+<p>Mặc định trong K8s mọi Pod nói chuyện được với mọi Pod (flat network). NetworkPolicy (cần CNI hỗ trợ: Calico, Cilium...) áp firewall L3/L4 theo label. Quy tắc: một khi có policy chọn một Pod, Pod đó chuyển sang <strong>default-deny</strong> cho chiều được khai báo.</p>
+<pre><code class="language-yaml"># Default deny mọi ingress trong namespace app
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny-ingress, namespace: app }
+spec:
+  podSelector: {}            # áp cho MỌI pod
+  policyTypes: [&quot;Ingress&quot;]
+---
+# Chỉ cho frontend gọi backend:8080
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-frontend-to-backend, namespace: app }
+spec:
+  podSelector: { matchLabels: { app: backend } }
+  policyTypes: [&quot;Ingress&quot;]
+  ingress:
+  - from:
+    - podSelector: { matchLabels: { app: frontend } }
+    ports:
+    - { protocol: TCP, port: 8080 }
+</code></pre>
+<blockquote>
+<p>Lưu ý: NetworkPolicy chỉ có hiệu lực nếu CNI cài đặt thực thi nó. Trên cluster dùng CNI không hỗ trợ (vd flannel thuần), manifest được chấp nhận nhưng KHÔNG chặn gì → ảo giác an toàn. Kiểm chứng bằng test thực tế (<code>kubectl exec</code> curl giữa các pod).</p>
+</blockquote>
+<h3 id="ch14-1485-secret-base64-ma-hoa-ma-hoa-etcd">14.8.5. Secret — base64 ≠ mã hóa &amp; mã hóa etcd</h3>
+<p>Trường <code>data</code> của Secret chỉ là <strong>base64 encode</strong> (để đựng nhị phân trong YAML), KHÔNG phải mã hóa:</p>
+<pre><code class="language-bash">echo 'c3VwZXJzZWNyZXQ=' | base64 -d     # supersecret  &lt;- ai cũng giải được
+</code></pre>
+<p>Theo mặc định, Secret nằm trong etcd dưới dạng <strong>plaintext</strong> (chỉ base64). Ai đọc được etcd (backup etcd, node control plane) = đọc mọi secret. Bật <strong>encryption at rest</strong> bằng <code>EncryptionConfiguration</code> cho apiserver:</p>
+<pre><code class="language-yaml">apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+- resources: [&quot;secrets&quot;]
+  providers:
+  - aescbc:                 # hoặc aesgcm; tốt nhất là kms: (KMS ngoài)
+      keys:
+      - name: key1
+        secret: &lt;32-byte base64 key&gt;
+  - identity: {}            # fallback đọc dữ liệu cũ chưa mã hóa
+</code></pre>
+<p>Cờ apiserver: <code>--encryption-provider-config=/etc/kubernetes/enc.yaml</code>. Khuyến nghị provider <code>kms:</code> (envelope encryption với HSM/cloud KMS) thay vì để khóa trong file.</p>
+<blockquote>
+<p>Lưu ý bảo mật: ngoài mã hóa etcd, hạn chế ai <code>get secrets</code> qua RBAC; tránh để Secret thành ENV (lộ qua <code>/proc/&lt;pid&gt;/environ</code>, crash dump, logs) — ưu tiên mount dạng file (tmpfs). Cân nhắc external secret (Vault, External Secrets Operator).</p>
+</blockquote>
+<h3 id="ch14-1486-pod-security-standards-pss-admission">14.8.6. Pod Security Standards (PSS) &amp; Admission</h3>
+<p>PSS thay thế PodSecurityPolicy (đã bỏ ở v1.25). Ba mức:</p>
+<table>
+<thead>
+<tr>
+<th>Mức</th>
+<th>Cho phép</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>privileged</strong></td>
+<td>Không giới hạn (chỉ cho hệ thống)</td>
+</tr>
+<tr>
+<td><strong>baseline</strong></td>
+<td>Chặn các cấu hình nguy hiểm rõ ràng (privileged, hostNetwork, hostPID, capabilities thêm nguy hiểm)</td>
+</tr>
+<tr>
+<td><strong>restricted</strong></td>
+<td>Cứng nhất: bắt buộc runAsNonRoot, drop ALL caps, seccomp RuntimeDefault, không privilege escalation</td>
+</tr>
+</tbody>
+</table>
+<p>Bật bằng nhãn namespace (Pod Security Admission — built-in):</p>
+<pre><code class="language-bash">kubectl label namespace app \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/warn=restricted
+</code></pre>
+<p>Pod không đạt <code>restricted</code> sẽ bị apiserver TỪ CHỐI tạo.</p>
+<p><strong>Admission controller tùy biến — OPA/Gatekeeper</strong> (chính sách phức tạp hơn PSS):</p>
+<pre><code class="language-yaml"># ConstraintTemplate: định nghĩa policy bằng Rego
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata: { name: k8sallowedrepos }
+spec:
+  crd:
+    spec:
+      names: { kind: K8sAllowedRepos }
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: { repos: { type: array, items: { type: string } } }
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sallowedrepos
+      violation[{&quot;msg&quot;: msg}] {
+        c := input.review.object.spec.containers[_]
+        not startswith(c.image, input.parameters.repos[_])
+        msg := sprintf(&quot;image %v không từ registry tin cậy&quot;, [c.image])
+      }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedRepos
+metadata: { name: only-trusted-registry }
+spec:
+  match: { kinds: [{ apiGroups: [&quot;&quot;], kinds: [&quot;Pod&quot;] }] }
+  parameters: { repos: [&quot;registry.example.com/&quot;] }
+</code></pre>
+<p>Gatekeeper là một <strong>validating admission webhook</strong>: apiserver gọi nó (HTTPS) trước khi lưu object; trả về allow/deny + lý do. Kyverno là lựa chọn tương đương dùng YAML thay Rego.</p>
+<h3 id="ch14-1487-serviceaccount-token-api-kubelet-be-mat-tan-cong">14.8.7. ServiceAccount token &amp; API kubelet — bề mặt tấn công</h3>
+<p>Mỗi Pod (mặc định) được gắn token ServiceAccount tại <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code> (JWT). Nếu attacker chiếm Pod, token này dùng để gọi apiserver với quyền của SA đó.</p>
+<p>Cấu trúc JWT (3 phần Base64URL ngăn bởi <code>.</code>): <code>header.payload.signature</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>header</td>
+<td><code>{"alg":"RS256","kid":"..."}</code> — thuật toán ký + key id</td>
+</tr>
+<tr>
+<td>payload (claims)</td>
+<td><code>iss</code>, <code>sub</code> (vd <code>system:serviceaccount:app:viewer</code>), <code>aud</code>, <code>exp</code>, <code>kubernetes.io</code> (namespace, pod, sa)</td>
+</tr>
+<tr>
+<td>signature</td>
+<td>RS256 ký bởi khóa riêng của apiserver — chống giả mạo</td>
+</tr>
+</tbody>
+</table>
+<p>Token hiện đại là <strong>bound token</strong> (projected): có <code>exp</code> ngắn, gắn với vòng đời Pod và audience cụ thể.</p>
+<blockquote>
+<p>Cứng hóa: đặt <code>automountServiceAccountToken: false</code> cho Pod không cần gọi API; khóa API kubelet (<code>--anonymous-auth=false</code>, <code>--authorization-mode=Webhook</code>); chặn metadata cloud (169.254.169.254) bằng NetworkPolicy để tránh đánh cắp credential IAM của node.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-149-falco-runtime-threat-detection">14.9. Falco — runtime threat detection</h2>
+<p>Falco là engine phát hiện hành vi bất thường <strong>theo thời gian thực</strong> bằng cách đọc <strong>syscall</strong> của kernel (qua eBPF probe hoặc kernel module) và đối chiếu với luật. Nó thấy: tiến trình mới, mở file, kết nối mạng, exec vào container...</p>
+<p>Kiến trúc: kernel → (eBPF/modern_ebpf probe) → vùng ring buffer → libsinsp parse thành "event có ngữ cảnh container" → rule engine → output (stderr/JSON/gRPC/Falcosidekick → Slack, SIEM).</p>
+<p>Một rule Falco thật:</p>
+<pre><code class="language-yaml">- rule: Shell vào container (đáng ngờ)
+  desc: Phát hiện bash/sh được spawn bên trong container
+  condition: &gt;
+    spawned_process and container
+    and proc.name in (bash, sh, zsh)
+    and not container.image.repository in (allowed_debug_images)
+  output: &gt;
+    Shell mở trong container (user=%user.name container=%container.name
+    image=%container.image.repository proc=%proc.cmdline)
+  priority: WARNING
+  tags: [container, shell, mitre_execution]
+</code></pre>
+<p>Giải thích trường:
+- <code>condition</code>: biểu thức trên các field sysdig (<code>proc.name</code>, <code>container.id</code>, <code>fd.name</code>, <code>evt.type</code>...). <code>spawned_process</code> là macro = <code>evt.type=execve and evt.dir=&lt;</code>.
+- <code>output</code>: template log, <code>%proc.cmdline</code> v.v. nội suy từ event.
+- <code>priority</code>: mức nghiêm trọng.</p>
+<p>Các rule mặc định hữu ích: "Write below /etc", "Read sensitive file (<code>/etc/shadow</code>)", "Container drift (binary mới không có trong image)", "Outbound connection to C2", "Launch privileged container".</p>
+<pre><code class="language-bash"># Chạy thử trong container, theo dõi sự kiện
+docker exec -it web sh        # -&gt; Falco bắn alert &quot;Shell vào container&quot;
+cat /etc/shadow               # -&gt; &quot;Read sensitive file&quot;
+</code></pre>
+<blockquote>
+<p>Lưu ý bảo mật: Falco là <strong>detective control</strong> (phát hiện) bổ sung cho <strong>preventive control</strong> (PSS, seccomp, NetworkPolicy). eBPF probe cần kernel hỗ trợ (BTF). Gửi output sang SIEM và đặt alert; rule cần tinh chỉnh để giảm false positive (whitelist image debug hợp lệ).</p>
+</blockquote>
+<hr />
+<h2 id="ch14-1410-checklist-cung-hoa-tong-hop">14.10. Checklist cứng hóa tổng hợp</h2>
+<table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Kiểm soát chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hypervisor (ESXi/Proxmox)</td>
+<td>Vá hypervisor + microcode (L1TF/MDS); tách mạng quản lý; tắt SLP; mã hóa vMotion; LXC unprivileged</td>
+</tr>
+<tr>
+<td>Image</td>
+<td>Distroless/minimal, multi-stage, non-root USER, pin digest, ký cosign, quét Trivy gate CI, .dockerignore, BuildKit secret</td>
+</tr>
+<tr>
+<td>Container runtime</td>
+<td><code>--cap-drop=ALL</code>, <code>--read-only</code>, <code>no-new-privileges</code>, seccomp/AppArmor, không <code>--privileged</code>, không mount docker.sock, <code>--pids-limit</code>, userns-remap</td>
+</tr>
+<tr>
+<td>K8s control plane</td>
+<td>etcd mTLS + encryption at rest (KMS), apiserver authz=RBAC, audit log bật, kubelet auth</td>
+</tr>
+<tr>
+<td>K8s workload</td>
+<td>securityContext restricted, PSS=restricted, resource limits, NetworkPolicy default-deny, RBAC least-privilege, automountServiceAccountToken=false</td>
+</tr>
+<tr>
+<td>Admission</td>
+<td>Pod Security + Gatekeeper/Kyverno (chỉ image đã ký từ registry tin cậy)</td>
+</tr>
+<tr>
+<td>Runtime detect</td>
+<td>Falco + Falcosidekick → SIEM; audit log apiserver → SIEM</td>
+</tr>
+<tr>
+<td>Supply chain</td>
+<td>SBOM (syft), ký + verify (cosign), pin digest, quét định kỳ lại image đang chạy</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch14-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch13.html"><span>← Chương trước</span><b>13 · Bảo mật Đám mây</b></a><a class="pg next" href="ch15.html"><span>Chương sau →</span><b>15 · Threat Intel &amp; Khung tấn công</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

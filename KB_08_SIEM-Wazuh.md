@@ -2,25 +2,13 @@
 
 ## Tổng quan
 
-Chương này trình bày cách một tổ chức thu thập và phân tích log để phát hiện tấn công và sự cố trên toàn hạ tầng. Hai trọng tâm: **SIEM** — lớp phần mềm thu gom, chuẩn hóa, tương quan và lưu trữ log bảo mật — và **Wazuh**, nền tảng SIEM/HIDS mã nguồn mở triển khai đầy đủ pipeline đó. Khả năng quan sát (visibility) là điều kiện tiên quyết của phòng thủ: không thu được log dò mật khẩu hay thay đổi file trên máy chủ thì không thể phát hiện và phản ứng.
+Hồi mới học SIEM, mình cứ nghĩ giá trị của nó nằm ở dashboard đẹp và cảnh báo chạy realtime. Đến lần đầu ngồi điều tra một đợt quét thật, mình mới hiểu giá trị lớn nhất nằm ở chỗ khác hẳn: khả năng đặt câu hỏi lên dữ liệu log đã được gom về một chỗ. Chương này viết theo đúng mạch đó — **SIEM** là lớp phần mềm thu gom, chuẩn hóa, tương quan và lưu trữ log bảo mật từ khắp hạ tầng, còn **Wazuh** là nền tảng SIEM/HIDS mã nguồn mở hiện thực đầy đủ pipeline đó. Không thu được log thì không có gì để phát hiện hay điều tra — khả năng quan sát (visibility) luôn đi trước mọi khả năng phòng thủ.
 
-Dưới đây là "bản đồ" các khái niệm cốt lõi; định nghĩa đầy đủ nằm ở mục tương ứng trong thân chương.
+Nửa đầu chương đi từ khái niệm nền tới cách phân biệt công cụ. **Pipeline dữ liệu** (collect → parse → normalize → enrich → correlate → alert → store) biến log thô hỗn tạp từ nhiều nguồn thành dạng đồng nhất để một rule dùng được cho mọi nguồn, còn ranh giới giữa **AV, EDR, NDR, SIEM, SOAR và XDR** là chỗ hay bị nhầm nhất — chọn sai lớp công cụ để lại điểm mù mà thường chỉ lộ ra khi đã bị khai thác. Từ đó chương đi sâu vào kiến trúc **Wazuh**: bốn thành phần agent/manager/indexer/dashboard, cơ chế **enrollment** để chỉ host hợp lệ mới gửi được dữ liệu, và file cấu hình `ossec.conf` điều khiển toàn bộ hành vi đó.
 
-- **SIEM** — lớp phần mềm tập trung log từ nhiều nguồn, đồng bộ thời gian, chuẩn hóa về một mô hình chung và tương quan để sinh cảnh báo. Giải bài toán dấu vết tấn công nằm rải rác, khối lượng vượt sức đọc thủ công. (8.1)
-- **Pipeline dữ liệu** — chuỗi bước cố định mọi event đi qua: collect → parse → normalize → enrich → correlate → alert → store. Biến log thô hỗn tạp thành dạng có cấu trúc, đồng nhất để một rule áp dụng được cho mọi nguồn. (8.2)
-- **AV / EDR / NDR / SIEM / SOAR / XDR** — các lớp công cụ phòng thủ khác nhau về phạm vi quan sát; chọn sai để lại điểm mù. Wazuh kiêm vai trò agent kiểu EDR nhẹ và SIEM. (8.3)
-- **Wazuh** — nền tảng mã nguồn mở đóng vai trò SIEM kèm giám sát endpoint, gồm bốn thành phần: agent (thu log/telemetry), manager (decode, áp rule, sinh alert), indexer (lưu trữ + tìm kiếm, OpenSearch), dashboard (giao diện web). (8.4)
-- **Enrollment** — agent đăng ký với manager để nhận khóa bí mật (pre-shared key) rồi dùng khóa đó mã hóa, truyền log qua kênh riêng; chỉ host hợp lệ mới gửi được dữ liệu. (8.5)
-- **ossec.conf** — file cấu hình XML khai báo hành vi Wazuh (đọc nguồn log nào, gửi về đâu, ngưỡng báo động), dùng cho cả manager lẫn agent. (8.6)
-- **Decoder** — quy tắc trích các trường có nghĩa (user, IP nguồn, hành động) ra khỏi dòng log thô; chuẩn bị dữ liệu, không sinh alert. (8.7)
-- **Rule** — quyết định event nào trở thành alert và ở mức (level) nào, dựa trên trường đã decode; tầng quyết định phân biệt bình thường với nguy hiểm. (8.8)
-- **FIM / Syscheck** — theo dõi tạo/sửa/xóa file quan trọng bằng hash nội dung, bắt được cả khi attacker (kẻ tấn công) làm giả mtime. (8.9)
-- **Active Response** — tự thực thi hành động khi rule khớp (vd chặn IP rồi tự gỡ sau timeout). (8.10)
-- **Vulnerability Detection** — đối chiếu package đã cài với CVE feed để xác định host chạy phiên bản có lỗ hổng. (8.11)
-- **SCA** — kiểm tra cấu hình so với baseline an toàn (vd CIS Benchmark), báo pass/fail từng kiểm tra. (8.12)
-- **MITRE ATT&CK & Detection Engineering** — khung chuẩn hóa kỹ thuật của attacker (`T####`) và công việc viết/tinh chỉnh rule để cân bằng false negative với false positive. (8.13–8.14)
+Phần còn lại là cách Wazuh biến log thành hành động cụ thể: **decoder** trích các trường có nghĩa, **rule** quyết định event nào thành alert và ở mức nào, **FIM/Syscheck** bắt thay đổi file quan trọng kể cả khi kẻ tấn công làm giả mtime, **Active Response** tự chặn rồi tự gỡ sau timeout, còn **Vulnerability Detection** và **SCA** lần lượt rà theo CVE feed và baseline cấu hình an toàn. Khung **MITRE ATT&CK** giúp gọi tên kỹ thuật tấn công bằng một ngôn ngữ chung cho việc viết và tinh chỉnh rule; quy trình điều tra ở 8.16 là cách lặp lại được để đi từ một cảnh báo tới bằng chứng cụ thể trên `full_log`; và **SOAR** đóng vai trò lớp tự động hóa phía trên cùng — bổ sung chứ không thay thế SIEM.
 
-> Tài liệu tham chiếu chuyên sâu dành cho kỹ sư Blue Team / AppSec / DevSecOps. Mỗi mục đi từ **là gì → cơ chế bên trong (tới mức bit/byte/bước/tham số) → ví dụ thực tế → lưu ý bảo mật**.
+> Mỗi mục trong chương đi kèm ví dụ chạy được trên Wazuh thật; phần nào là quan sát riêng của mình sẽ ghi rõ, không lẫn với nội dung đã kiểm chứng.
 
 ---
 
@@ -1124,6 +1112,14 @@ Vấn đề: rule 100110 nổ khi proxy/NAT làm nhiều user thật cùng srcip
 | Gắn `<mitre>` đúng | Đo coverage |
 | Có cả test case dương tính và âm tính | Đảm bảo không FN và không FP |
 
+### 8.14.5. Kinh nghiệm tuning từ vận hành thật
+
+Vài điều mình rút ra sau một thời gian trực hệ thống giám sát thật (không phải lab):
+
+- **Whitelist dải IP quản trị nội bộ trước tiên.** Phần lớn alert authentication/web lặp đi lặp lại hóa ra đến từ chính đội vận hành: SSH qua VPN, healthcheck, job CI. Một rule level 0 có điều kiện `srcip` cho dải quản trị (đúng kiểu 8.8.6) cắt được lượng nhiễu lớn nhất với ít công nhất. Lưu ý: chỉ whitelist dải quản trị/hạ tầng cho đúng nhóm rule gây nhiễu — đừng whitelist cả mạng văn phòng cho mọi loại rule, vì máy văn phòng dính malware là chuyện hoàn toàn có thể xảy ra.
+- **Chuẩn hóa nội dung alert: phải tự trả lời "máy nào, chuyện gì, từ đâu".** Alert mà người trực còn phải mở dashboard chỉ để biết nó xảy ra trên host nào là alert viết chưa xong. Nội suy field vào `<description>` (`$(srcip)`, agent name trong kênh notify) — thời gian triage giảm rõ rệt.
+- **Thêm alert cho triệu chứng tài nguyên, không chỉ log.** Mình có thêm cảnh báo CPU cao bất thường kéo dài (từ metric node_exporter, hoặc `log_format command` chạy lệnh định kỳ) — cryptominer thường lộ bằng CPU trước khi lộ bằng dòng log nào đó. SIEM bắt sự kiện; hệ metric bắt triệu chứng; hai nguồn bổ khuyết cho nhau (giám sát metric xem [Chương 9](#sec-09)).
+
 ---
 
 ## 8.15. Ví dụ end-to-end: SSH brute-force từ log thô tới alert dashboard
@@ -1245,7 +1241,203 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ---
 
-## 8.16. Tổng kết vận hành & checklist bảo mật Wazuh
+## 8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được
+
+Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: **từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận**. Đây là quy trình mình đã dùng để điều tra một đợt quét thật trên hệ thống mình vận hành (giữa 2026); chi tiết nội bộ đã được ẩn danh, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: *bị cái gì, thủng chưa, làm gì tiếp* — kèm bằng chứng, không phải cảm giác.
+
+### 8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo
+
+Điểm khởi đầu là panel **Top source IPs** (mình tự dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — `45.148.10.80` — chiếm **536** cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: `web`, `attack`. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.
+
+Bài học ngay ở bước này: dashboard không trả lời câu hỏi — nó chỉ **chỉ chỗ đáng để hỏi**. Toàn bộ kết luận phía sau đến từ query.
+
+### 8.16.2. Bước 2 — Khoanh vùng bằng Dev Tools: ba query tổng hợp
+
+Wazuh dashboard có **Dev Tools** (console gửi query thẳng vào indexer — cú pháp OpenSearch/Elasticsearch DSL) trên index `wazuh-alerts-*`. Ba aggregation trả lời ba câu hỏi khoanh vùng.
+
+**(a) Nó đập máy nào?** — `terms` theo `agent.name`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"by_agent":{"terms":{"field":"agent.name","size":10}}}}
+```
+
+Kết quả: toàn bộ 536 alert nằm trên **một máy dev chạy web API** (nginx làm reverse proxy, phơi Internet). Phạm vi gọn lại còn đúng một host.
+
+**(b) Nó sinh ra rule gì?** — `terms` theo `rule.id`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"rules":{"terms":{"field":"rule.id","size":15}}}}
+```
+
+Kết quả: `31516` (URL đáng ngờ — 230), `31104` (pattern web attack — 218), `31151`/`31153` (nhiều lỗi 400/404) — toàn bộ thuộc nhóm "dò và bị từ chối". Quan trọng không kém là rule **không** xuất hiện: không có `31106` — rule "web attack **trả về 200**" (tức tấn công mà server đáp thành công). Chi tiết vắng mặt này là mấu chốt của bước kết luận (8.16.5). Các ID trên thuộc ruleset web access-log mặc định của Wazuh — đối chiếu lại với phiên bản ruleset đang chạy (cần kiểm chứng).
+
+**(c) Nhịp độ ra sao?** — `date_histogram` theo `timestamp`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"timeline":{"date_histogram":{"field":"timestamp","fixed_interval":"5m"}}}}
+```
+
+Kết quả: mở màn bằng 1 request lẻ (thăm dò), ~35 phút sau leo đỉnh **58 request/5 phút** (xấp xỉ 1 request mỗi 5 giây), giữ đều ~2 giờ rồi tắt hẳn. Nhịp đều tăm tắp như vậy không phải người bấm trình duyệt — là scanner tự động. Nhận định này về sau trở thành cơ sở kỹ thuật để đề xuất rate-limit ở reverse proxy.
+
+### 8.16.3. Bước 3 — Đọc bằng chứng gốc: trường `full_log`
+
+Aggregation cho *hình dạng* của sự việc; muốn *bằng chứng* phải đọc document đầy đủ:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":1,"query":{"bool":{"filter":[
+   {"term":{"data.srcip":"45.148.10.80"}},{"term":{"rule.id":"31516"}}]}},
+ "_source":["timestamp","rule.description","full_log","data.url","GeoLocation"],
+ "sort":[{"timestamp":"desc"}]}
+```
+
+Trường `full_log` giữ nguyên vẹn dòng access log mà agent đã đọc:
+
+```
+45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&v=zte2h HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
+```
+
+Một chi tiết đáng kể: khi mình SSH vào máy để `grep` IP này trong `/var/log/nginx/access.log` thì **không còn dòng nào** — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ `full_log` trong index. Đây là lần mình thấy giá trị của log tập trung bằng mắt thường: **bằng chứng không phụ thuộc log thô trên máy còn hay mất** — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: `sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*` trên các file đã nén.)
+
+### 8.16.4. Bước 4 — Diễn giải dòng log: nó đang làm gì, nhắm cái gì
+
+Đọc từng phần của dòng log (kết hợp thêm `terms` theo `data.url` để xem toàn bộ danh sách path bị dò):
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"urls":{"terms":{"field":"data.url","size":25}}}}
+```
+
+| Thành phần quan sát được | Nhận định |
+|---|---|
+| `/....//....//....//home/admin/.ssh/id_rsa` | **Path traversal** — cố thoát web root để đọc file hệ thống |
+| `....//` và (request khác) `%252e%252e` | **Double-encoding** — né các bộ lọc chỉ bắt `../` dạng thô |
+| Nhắm `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` | Săn **SSH key + secret ứng dụng + lịch sử DB** — trúng phát nào ăn phát đó |
+| Thử lần lượt `root/admin/ubuntu/deploy/ec2-user/git/www-data` | Dò theo **danh sách user phổ biến** — hành vi wordlist tự động |
+| Status toàn `301`/`400`/`404` | Proxy/app **từ chối hết**, không thấy dấu hiệu rò rỉ |
+| Referer `https://www.bing.com/search?q=...` (chuỗi ngẫu nhiên) | **Referer giả** — ngụy trang thành traffic từ search engine |
+| User-Agent xoay vòng (Safari/Mac, Chrome/Windows, Android...) | **Xoay UA** — công cụ tự động né chặn theo UA |
+| GeoIP: VPS tại một hosting nước ngoài | Không phải người dùng thật của hệ thống |
+
+### 8.16.5. Bước 5 — Kết luận dựa trên rule có / không xuất hiện
+
+Kết luận "**chưa thủng**" của mình đứng trên hai chân bằng chứng:
+
+1. Toàn bộ rule đã nổ đều thuộc nhóm "dò và bị từ chối" (URL đáng ngờ, 400/404); nhóm rule "**web attack trả về 200**" — dấu hiệu tấn công *thành công* — hoàn toàn vắng mặt với IP này.
+2. Status code trong các `full_log` mẫu đều là 301/400/404, khớp với (1).
+
+Hai lưu ý về cách lập luận:
+
+- **Vắng alert không đồng nghĩa vắng sự cố** — kết luận chỉ có giá trị trong phạm vi telemetry đang thu (nếu decoder/rule không phủ một dạng tấn công thì SIEM im lặng dù có chuyện). Vì vậy kết luận nên phát biểu kèm phạm vi: "trong dữ liệu alert hiện có, không thấy dấu hiệu thành công".
+- Chính nhờ soi theo tiêu chí "trả 200" mà khi mở rộng ra toàn fleet (bước 6), mình phát hiện một nhóm nhỏ alert "attack trả 200" ở **nơi khác** — được tách thành một cuộc điều tra riêng, ưu tiên cao. Một cuộc điều tra tốt thường đẻ ra việc mới có phạm vi rõ ràng, thay vì phình vô hạn.
+
+### 8.16.6. Bước 6 — Mở rộng: từ một IP ra bức tranh fleet
+
+Bỏ filter theo IP, giữ filter theo nhóm rule — hỏi ba câu ở tầm toàn hệ thống:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"terms":{"rule.groups":["attack"]}},
+ "aggs":{"ips":{"terms":{"field":"data.srcip","size":20}}}}
+```
+
+Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng **thứ ba** về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo **cụm subnet** (`185.177.72.x` với năm địa chỉ khác nhau, `45.148.10.x`, `195.178.110.x`...). Tương tự, `terms` theo `agent.name` (lọc `rule.groups: ["attack","web"]`) cho thấy **mọi máy web-facing đều bị quét**, không riêng máy ban đầu; và `terms` theo `rule.description` lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.
+
+Hệ quả cho phản ứng: **chặn từng IP là "đập chuột chũi"** — scanner đổi địa chỉ liên tục theo cả dải. Biện pháp đúng tầng là kiểm soát *hành vi* tại reverse proxy (rate-limit, chặn tên tệp nhạy cảm, `default_server` ngắt Host lạ) và thu hẹp bề mặt (môi trường dev không phơi công khai); phòng thủ tầng mạng/WAF xem [Chương 11](#sec-11).
+
+### 8.16.7. Tóm tắt phương pháp — checklist tái dùng
+
+| Bước | Câu hỏi | Công cụ / Query |
+|------|---------|------------------|
+| 1. Phát hiện | Có nguồn/nhóm nào bất thường không? | Dashboard (Top source IPs, Security Events) |
+| 2. Khoanh vùng | Máy nào? Rule gì? Nhịp độ nào? | `terms` theo `agent.name`, `rule.id` + `date_histogram` theo `timestamp`, filter `data.srcip` |
+| 3. Bằng chứng | Thực sự nó gửi cái gì? | Đọc document đầy đủ, trường `full_log` (+ `data.url`, `GeoLocation`) |
+| 4. Diễn giải | Kỹ thuật gì, nhắm cái gì? | Đọc từng phần dòng log; `terms` theo `data.url` |
+| 5. Kết luận | Thủng chưa? Bằng chứng đâu? | Rule "thành công" có/không xuất hiện + status code; phát biểu kèm phạm vi telemetry |
+| 6. Mở rộng | Chỉ IP này? Chỉ máy này? | Bỏ filter srcip, aggs theo `data.srcip` / `agent.name` / `rule.description` trên nhóm `attack`/`web` |
+
+---
+
+## 8.17. SOAR — tự động hóa phía trên SIEM
+
+### 8.17.1. SOAR là gì, giải bài toán gì
+
+**SOAR (Security Orchestration, Automation and Response)** là nền tảng nhận alert từ SIEM và chạy các **playbook** (luồng xử lý định nghĩa trước): làm giàu (enrich) alert bằng nguồn dữ liệu ngoài, thông báo, mở case, và — khi quy trình đủ chín — thực thi phản ứng.
+
+Bài toán gốc: một SIEM được tuning tốt vẫn sinh alert **nhiều hơn sức người đọc**. Quan sát của mình khi trực: phần lớn thời gian triage một alert web không nằm ở phán đoán, mà ở thao tác lặp — copy IP nguồn → mở 2–3 tab tra reputation → nhìn kết quả → quyết định bỏ qua hay đào tiếp. Chuỗi thao tác đó máy làm được toàn bộ, và SOAR sinh ra đúng để làm việc đó: **tự động hóa phần lặp lại, để dành người cho phần phán đoán**.
+
+### 8.17.2. Chọn công cụ: Shuffle vs TheHive vs n8n
+
+| Công cụ | Bản chất | Điểm mạnh | Cân nhắc |
+|---------|----------|-----------|----------|
+| **Shuffle** | SOAR mã nguồn mở, workflow kéo-thả, kho app connector thiên về security | Sinh ra cho use case SOC: có sẵn app cho Wazuh, các nguồn threat intel phổ biến; nhận webhook dễ | Cộng đồng nhỏ hơn n8n; UI/docs còn thô ở vài chỗ |
+| **TheHive (+ Cortex)** | Nền tảng **case management** + engine phân tích observable (Cortex analyzer) | Quản lý vòng đời case, phân công, lưu evidence — đúng nghĩa quy trình SOC | Nặng so với nhu cầu "chỉ cần enrich + notify" ở giai đoạn đầu |
+| **n8n** | Automation tổng quát (không riêng security) | Connector rất nhiều, dev nào cũng dùng được | Không có khái niệm alert/case/observable sẵn — phần security phải tự chế |
+
+Ở hệ thống mình vận hành, mình chọn **Shuffle** cho giai đoạn đầu: bài toán trước mắt là *enrich + notify* (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.
+
+### 8.17.3. Kiến trúc Wazuh → SOAR: lọc trước khi đẩy
+
+```
+Wazuh manager ──(integration/webhook, CHỈ alert level ≥ N)──▶ SOAR (Shuffle)
+                                                                 │
+                                          ┌──────────────────────┤
+                                          ▼                      ▼
+                                [playbook enrich IP]     [playbook khác...]
+                                          │
+                                          ▼
+                                kênh chat vận hành (kèm link về alert gốc trong SIEM)
+```
+
+Điểm thiết kế quan trọng nhất nằm ngay cạnh Wazuh: **lọc theo severity trước khi đẩy**. Chỉ những alert từ một mức level nhất định (ví dụ ≥ 7) mới sang SOAR; đẩy tất cả thì SOAR chỉ là bản sao ồn ào của SIEM và quota API threat intel cạn trong một buổi. Wazuh hỗ trợ việc này bằng khối `<integration>` trong `ossec.conf` — gọi webhook khi alert thỏa điều kiện:
+
+```xml
+<integration>
+  <name>custom-soar</name>                    <!-- script custom-* trong /var/ossec/integrations/ -->
+  <hook_url>https://soar.example.internal/api/v1/hooks/webhook_xxx</hook_url>
+  <level>7</level>                            <!-- chỉ đẩy alert level >= 7 -->
+  <alert_format>json</alert_format>
+</integration>
+```
+
+(Ngoài `<level>` còn lọc được theo `<rule_id>` / `<group>`; cú pháp đối chiếu theo phiên bản đang chạy — cần kiểm chứng.)
+
+### 8.17.4. Playbook đầu tiên: enrich IP + notify
+
+Luồng enrich mình chạy thực tế, theo thứ tự:
+
+```
+alert JSON từ Wazuh
+   │
+   ▼
+1. Trích data.srcip
+2. Lọc: IP có phải public không?
+      ├─ private (RFC 1918) / IP hạ tầng của mình → dừng (tra threat intel IP private vừa vô nghĩa vừa tốn quota)
+      └─ public → tiếp
+3. Tra threat intel song song hai nguồn:
+      ├─ nguồn kiểu AbuseIPDB  → abuse confidence score (0–100), số report, ISP, usage type
+      └─ nguồn kiểu VirusTotal → bao nhiêu engine gắn cờ malicious
+4. Ghép thành message chuẩn: MÁY NÀO, rule gì (id + description), IP, score, số engine gắn cờ
+5. Notify kênh chat vận hành — luôn kèm link quay về alert gốc trong SIEM
+```
+
+Giá trị thấy ngay trong tuần đầu: **phân biệt được scanner có tiền sử với truy cập hợp lệ bị ghi nhận nhầm**. Cùng một alert brute-force, IP có confidence score 100% với hàng nghìn report là chuyện khác hẳn IP score 0 hóa ra là đối tác đổi dải mạng. Người trực nhìn message là quyết định được ngay, không phải mở ba tab tra tay — alert nhiễu giảm theo đúng nghĩa "giảm chi phí xử lý một alert", chứ không phải giấu bớt alert đi.
+
+### 8.17.5. Nguyên tắc: SOAR là lớp bổ sung, không thay thế SIEM
+
+- **Alert gốc và bằng chứng vẫn nằm trong SIEM.** SOAR chỉ giữ bản sao phục vụ playbook. SOAR chết thì mất tiện nghi, không mất dữ liệu; mọi notify đều có đường dẫn quay về SIEM để điều tra sâu (quy trình ở 8.16).
+- **Chưa vội tự động hóa phản ứng.** Lộ trình mình theo: (1) enrich + notify — máy chỉ *đọc*, chưa *làm*; (2) case management (kiểu TheHive) khi số vụ việc cần theo dấu tăng; (3) phản ứng có **human approval** — playbook chuẩn bị sẵn hành động (chặn IP, cô lập host), người bấm duyệt; (4) cuối cùng mới là tự động hoàn toàn cho một nhóm hẹp tình huống rất chắc chắn — với tinh thần y như Active Response (8.10): allowlist hạ tầng + timeout tự gỡ.
+
+---
+
+## 8.18. Tổng kết vận hành & checklist bảo mật Wazuh
 
 | Hạng mục | Khuyến nghị |
 |----------|-------------|
@@ -1256,7 +1448,8 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 | Active Response | Allowlist IP hạ tầng; ưu tiên `local`; `timeout` để tự gỡ; script quyền chặt |
 | Vuln/SCA | Đối chiếu version đúng feed; đọc theo từng CVE/check, không chỉ điểm tổng |
 | Lưu trữ | `logall=no` trừ khi forensic; chính sách retention rõ ràng (hot/warm/cold) |
-| Tuning | Vòng lặp đo FP/FN; nâng level dần; review định kỳ |
+| Tuning | Vòng lặp đo FP/FN; nâng level dần; review định kỳ; whitelist dải quản trị đúng nhóm rule |
+| SOAR | Lọc theo level trước khi đẩy; alert gốc luôn ở SIEM; phản ứng tự động đi sau human approval |
 | API 55000 | Đổi credential mặc định, bật RBAC, giới hạn network |
 
 ---
@@ -1269,3 +1462,10 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- Hồi mới học SIEM, mình nghĩ giá trị của nó nằm ở dashboard đẹp và alert realtime. Sau lần đầu điều tra một đợt quét thật (mục 8.16), mình mới thấy giá trị lớn nhất nằm ở chỗ khác: **khả năng đặt câu hỏi lên dữ liệu đã tập trung**. Dashboard chỉ chỉ chỗ bất thường; toàn bộ kết luận đến từ vài query aggregation trên `wazuh-alerts-*`.
+- Bài học đắt nhất về log tập trung: khi mình SSH vào máy để grep access.log thì log đã xoay, **không còn dòng nào** — nhưng `full_log` trong index vẫn giữ nguyên vẹn từng dòng bằng chứng. Nếu chỉ giám sát bằng cách "có chuyện thì SSH vào xem log", mình đã tay trắng. Log tập trung không phải để cho sang — nó là nơi duy nhất bằng chứng sống sót qua logrotate (và qua cả attacker xóa log trên host).
+- Mình từng mặc định phản ứng đúng với IP tấn công là chặn nó. Đến khi bỏ filter IP và aggs theo `data.srcip` toàn fleet, thấy hàng chục IP đi theo cả cụm subnet, mình mới hiểu vì sao chặn từng IP là "đập chuột chũi". Giờ mình xếp thứ tự khác: thu hẹp bề mặt (dev không phơi công khai) → kiểm soát hành vi ở proxy (rate-limit, chặn tên tệp nhạy cảm) → cuối cùng mới đến chặn IP như biện pháp tạm.
+- Điều bất ngờ khi nối SIEM với luồng enrich threat intel (8.17): giá trị đầu tiên không phải "bắt thêm được attacker" mà là **phân biệt nhanh scanner có tiền sử với false positive** — IP confidence score 100% với hàng nghìn report khác hẳn IP score 0 hóa ra là truy cập hợp lệ. Đỡ hẳn những cuộc tranh luận "IP này là của ai" trong kênh vận hành.
+- Một kết luận "chưa thủng" mà mình dám viết vào báo cáo là kết luận có hai chân bằng chứng: rule "tấn công trả 200" vắng mặt *và* status code trong full_log khớp. Mình cũng học được cách phát biểu kèm phạm vi ("trong telemetry hiện có...") — vắng alert không đồng nghĩa vắng sự cố.
+- Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng bằng fail2ban kết hợp Wazuh (mới ở mức nghiên cứu, chưa dám bật vì sợ self-DoS — xem cảnh báo 8.10); đưa case management vào quy trình khi số vụ việc cần theo dấu tăng; và WAF (ModSecurity + OWASP CRS) làm lớp chặn traversal triệt để mà nginx thuần không làm được.

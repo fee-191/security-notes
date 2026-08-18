@@ -1,0 +1,1824 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 11 — Network Defense: IDS/IPS, WAF, Firewall &amp;amp; VPN — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 11 — Network Defense: IDS/IPS, WAF, Firewall &amp;amp; VPN — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch10.html"><link rel="next" href="ch12.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter open active" data-ch="11"><a class="nav-ch-title" href="#top"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch11-overview">Overview</a><a class="nav-sub" href="#ch11-sections-marked-demo-are-trimmed-configs-illustrating-syntax-dont-lift-them-into-production-the-version-meant-for-real-use-is-always-right-next-to-them">&amp;gt; Sections marked [DEMO] are trimmed configs illustrating syntax — don&#x27;t lift them into production; the version meant for real use is always right next to them.</a><a class="nav-sub" href="#ch11-111-the-network-defense-model-and-where-idsipswaf-fit">11.1. The network defense model and where IDS/IPS/WAF fit</a><a class="nav-sub" href="#ch11-112-snort-suricata-signature-based-nidsips">11.2. Snort &amp;amp; Suricata — signature-based NIDS/IPS</a><a class="nav-sub" href="#ch11-113-modsecurity-owasp-crs-a-layer-7-waf">11.3. ModSecurity + OWASP CRS — a layer-7 WAF</a><a class="nav-sub" href="#ch11-114-pfsense-firewallrouter-pf-nat-state-vpn">11.4. pfSense — firewall/router (pf, NAT, state, VPN)</a><a class="nav-sub" href="#ch11-115-vpn-ipsec-openvpn-wireguard-deep-dive">11.5. VPN — IPsec, OpenVPN, WireGuard (deep dive)</a><a class="nav-sub" href="#ch11-116-proxy-reverse-proxy-and-hardening-nginx-as-a-reverse-proxy">11.6. Proxy, reverse proxy, and hardening NGINX as a reverse proxy</a><a class="nav-sub" href="#ch11-117-zeek-behavior-based-traffic-analysis-network-security-monitor">11.7. Zeek — behavior-based traffic analysis (network security monitor)</a><a class="nav-sub" href="#ch11-118-putting-the-defense-architecture-together-and-operational-notes">11.8. Putting the defense architecture together and operational notes</a><a class="nav-sub" href="#ch11-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-11" data-ch="11">
+<h1 id="ch11-chapter-11-network-defense-idsips-waf-firewall-vpn">Chapter 11 — Network Defense: IDS/IPS, WAF, Firewall &amp; VPN</h1>
+<h2 id="ch11-overview">Overview</h2>
+<p>What got me interested in this area was something entirely mundane: scanners out on the Internet don't care who you are — leave a port open and they knock on it all day. Protecting a network is therefore not about building one very thick wall, but about stacking layers of control that each <em>see</em> a different slice of the data — that is <strong>defense in depth</strong>: some devices only see addresses and ports at L3/L4, others read HTTP content at L7, and none of them covers what the others miss.</p>
+<p>The chapter follows those layers in order. Outermost is the <strong>firewall</strong>, here <strong>pfSense</strong> (built on FreeBSD's <code>pf</code>, stateful so it remembers open connections, doubling as VLAN segmentation and VPN endpoint) — the cheapest blocking layer, dropping the obviously invalid before it gets any deeper. Further in are <strong>IDS/IPS</strong>: the same engine, deployed differently — IDS sits out-of-band and only alerts, IPS sits inline and actually blocks, at the cost of false positives becoming outages (which is why you run IDS first to tune it, and only then dare to switch to blocking). Two complementary vantage points: <strong>NIDS</strong> sees traffic between hosts, so it catches lateral movement and scanning; <strong>HIDS</strong> sees syscalls and files on one host, so it catches persistence and privilege escalation. The engine deep-dive covers <strong>Snort</strong> and <strong>Suricata</strong> — signature matching, strong against known attacks, blind to anything without a signature.</p>
+<p>Up at the application layer sits the <strong>WAF</strong> — something an L3/L4 firewall cannot do, since it has to parse method, URI, headers and body before it can tell a legitimate request from one carrying a payload — with <strong>ModSecurity</strong> and the ready-made <strong>OWASP CRS</strong> rule set. Running alongside is the <strong>VPN</strong> section (IPsec, OpenVPN, WireGuard — same goal, differing in key exchange and complexity) for joining two ends across the Internet as if they shared a network. The chapter closes with the two things I use most in practice: <strong>hardening nginx as a reverse proxy</strong> (11.6 — rate limiting, blocking sensitive filenames, <code>default_server</code>, and nginx's own limits), and <strong>Zeek</strong>, which matches no signatures at all but records network behaviour as structured logs for later analysis.</p>
+<h2 id="ch11-sections-marked-demo-are-trimmed-configs-illustrating-syntax-dont-lift-them-into-production-the-version-meant-for-real-use-is-always-right-next-to-them">&gt; Sections marked [DEMO] are trimmed configs illustrating syntax — don't lift them into production; the version meant for real use is always right next to them.</h2>
+<h2 id="ch11-111-the-network-defense-model-and-where-idsipswaf-fit">11.1. The network defense model and where IDS/IPS/WAF fit</h2>
+<h3 id="ch11-1111-defense-in-depth-and-a-map-of-the-osi-layers">11.1.1. Defense in depth and a map of the OSI layers</h3>
+<p>Every defensive device acts at one (or more) OSI layers. Understanding precisely how far down into a packet a device can "read" is the root of knowing what it can block and what it is blind to.</p>
+<table>
+<thead>
+<tr>
+<th>OSI layer</th>
+<th>Data unit (PDU)</th>
+<th>Device reads up to</th>
+<th>Decision based on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L2 Data Link</td>
+<td>Frame (Ethernet)</td>
+<td>Switch, MACsec</td>
+<td>MAC src/dst, 802.1Q VLAN tag</td>
+</tr>
+<tr>
+<td>L3 Network</td>
+<td>Packet (IP)</td>
+<td>Router, L3 firewall (packet filter)</td>
+<td>IP src/dst, protocol number</td>
+</tr>
+<tr>
+<td>L4 Transport</td>
+<td>Segment (TCP) / Datagram (UDP)</td>
+<td>Stateful firewall (pfSense/pf), L4 LB</td>
+<td>Port, TCP flags, connection state</td>
+</tr>
+<tr>
+<td>L5-L7 App</td>
+<td>Message (HTTP, DNS, TLS)</td>
+<td>WAF (ModSecurity), L7 proxy, NGFW DPI</td>
+<td>URI, header, body, application signature</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why:</strong> an L3/L4 firewall only sees <code>IP/port/flags</code>, so it can allow <code>tcp dst port 443</code> but has absolutely no idea whether that HTTPS flow contains <code>UNION SELECT</code>. That is why the WAF exists — it has to terminate TLS (TLS termination) to read the plaintext HTTP. Conversely, a WAF is ineffective at blocking a SYN flood, because that should be stopped at L3/L4 before resources are spent decrypting TLS.</p>
+<h3 id="ch11-1112-ids-vs-ips">11.1.2. IDS vs IPS</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>IDS (Detection)</th>
+<th>IPS (Prevention)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role</td>
+<td>Detect + alert</td>
+<td>Detect + block</td>
+</tr>
+<tr>
+<td>Network position</td>
+<td>Out-of-band (SPAN/TAP)</td>
+<td>Inline (packets pass through)</td>
+</tr>
+<tr>
+<td>Effect on packets</td>
+<td>None (copy only)</td>
+<td>Yes (drop/reset/modify)</td>
+</tr>
+<tr>
+<td>Risk when wrong</td>
+<td>False negative = missed detection</td>
+<td>False positive = wrongly blocked legitimate traffic</td>
+</tr>
+<tr>
+<td>Availability risk</td>
+<td>No effect on the link if the IDS dies</td>
+<td>Single point of failure; needs fail-open/fail-close</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>0 (in parallel)</td>
+<td>Adds processing latency to every packet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why:</strong> the distinction matters because an IPS sits on the data path, so a bad rule (a catastrophic regex, or a drop based on anomalies) can cause a loss of service. An IDS is safer for availability but is only useful when there is a response process (SOAR/SOC). In practice you typically deploy the IDS first (tuning rules in alert mode), and only after reducing false positives do you switch to IPS (inline-block).</p>
+<h3 id="ch11-1113-nids-vs-hids">11.1.3. NIDS vs HIDS</h3>
+<ul>
+<li>NIDS (Network IDS): placed at the network edge/core, analyzing packets on the wire (Snort, Suricata, Zeek). Sees all traffic but is blind to encrypted traffic without the keys.</li>
+<li>HIDS (Host IDS): runs on the host, seeing syscalls, file integrity, logs, processes (OSSEC/Wazuh, auditd, Sysmon, Falco). Can see behavior after decryption (e.g., a shell command), but only sees that one host.</li>
+</ul>
+<p>NIDS and HIDS complement each other: NIDS catches lateral movement/scanning; HIDS catches persistence/privilege escalation. A SIEM aggregates both.</p>
+<h3 id="ch11-1114-packet-capture-inline-vs-span-vs-tap">11.1.4. Packet capture: inline vs SPAN vs TAP</h3>
+<pre><code>SPAN (port mirroring):  Switch copies traffic from the ports → 1 monitor port → NIDS
+   Pro: cheap, software config.  Con: an overloaded switch will DROP the copy first (packet loss), does not see physical-layer errors, and the copy may discard CRC-error frames.
+
+TAP (Test Access Point): a hardware device cut into the wire, copying 100% of the bits (including errors).
+   Pro: full-fidelity, fail-safe.  Con: consumes ports (separate TX/RX in two directions needs aggregation), requires cutting the cable.
+
+INLINE (IPS): traffic passes THROUGH the device.  Can drop. But is a potential point of failure / chokepoint.
+</code></pre>
+<p><strong>Note:</strong>
+- With full-duplex 10G traffic, a TAP splits RX/TX into two 10G flows; the NIDS needs a NIC that receives 20G in total, or a packet broker to aggregate.
+- SPAN on the same switch can silently drop packets under high load, missing an attack without anyone knowing.</p>
+<hr />
+<h2 id="ch11-112-snort-suricata-signature-based-nidsips">11.2. Snort &amp; Suricata — signature-based NIDS/IPS</h2>
+<h3 id="ch11-1121-the-packet-processing-architecture">11.2.1. The packet-processing architecture</h3>
+<p>Both Snort (2.x/3.x) and Suricata divide the pipeline into stages:</p>
+<pre><code>[ Capture ] → [ Decode L2/L3/L4 ] → [ Preprocessors / App-layer parsers ]
+   → [ Detection engine: rule matching ] → [ Output: alert/log/drop ]
+</code></pre>
+<ul>
+<li>Decode: parse Ethernet → IP → TCP/UDP, build a struct describing the packet.</li>
+<li>Preprocessors (Snort) / app-layer (Suricata): reassemble the TCP stream (stream reassembly), defend against evasion via IP fragmentation (frag3), normalize HTTP (http_inspect), decode, and track flow state.</li>
+<li>Detection engine: uses a multi-pattern algorithm (Aho-Corasick) to match the <code>content</code> of thousands of rules in parallel, and only then runs the expensive <code>pcre</code> on the rules that passed the fast content step.</li>
+</ul>
+<p><strong>Why</strong> put <code>content</code> before <code>pcre</code>: regex is CPU-intensive; the engine uses <code>content</code> (fixed-string matching via Aho-Corasick, O(n)) as a "fast pattern" to quickly eliminate the majority of packets, so only packets containing that string incur the regex cost. This is why every good rule should have at least one <code>content</code> to provide a fast pattern.</p>
+<p>Key difference: Suricata is multi-threaded by design, supports compatibility with most of the Snort rule syntax, adds <code>app-layer</code> keywords (http.uri, tls.sni, dns.query), and exports EVE JSON. Snort 3 has also been rewritten to be multi-threaded. The rule syntax below is compatible with both unless noted otherwise.</p>
+<h3 id="ch11-1122-the-structure-of-a-rule-broken-down-part-by-part">11.2.2. The structure of a rule — broken down part by part</h3>
+<p>A rule consists of a RULE HEADER + RULE OPTIONS (in parentheses).</p>
+<pre><code>alert tcp $EXTERNAL_NET any -&gt; $HOME_NET 80 ( msg:&quot;...&quot;; content:&quot;...&quot;; sid:1000001; rev:1; )
+└─┬─┘ └┬┘ └─────┬──────┘└┬┘ └┬┘ └──┬───┘ └┬┘  └────────────── OPTIONS ──────────────┘
+action proto   src_ip  sp dir dst_ip dp
+</code></pre>
+<h4 id="ch11-rule-header-each-field">Rule Header — each field</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Valid values</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>action</td>
+<td>alert, log, pass, drop, reject, sdrop</td>
+<td>Action taken on a match</td>
+<td><code>alert</code> (log+alert), <code>drop</code> (block, inline IPS only)</td>
+</tr>
+<tr>
+<td>protocol</td>
+<td>tcp, udp, icmp, ip (Suricata adds: http, tls, dns, ssh...)</td>
+<td>Protocol</td>
+<td><code>tcp</code></td>
+</tr>
+<tr>
+<td>src_ip</td>
+<td>IP/CIDR, the <code>$HOME_NET</code> variable, a list <code>[a,b]</code>, negation <code>!</code></td>
+<td>Source</td>
+<td><code>$EXTERNAL_NET</code>, <code>![10.0.0.0/8]</code></td>
+</tr>
+<tr>
+<td>src_port</td>
+<td>a number, a range <code>1:1024</code>, <code>any</code>, <code>!80</code>, <code>[80,443]</code></td>
+<td>Source port</td>
+<td><code>any</code></td>
+</tr>
+<tr>
+<td>direction</td>
+<td><code>-&gt;</code> one-way, <code>&lt;&gt;</code> two-way</td>
+<td>Direction</td>
+<td><code>-&gt;</code></td>
+</tr>
+<tr>
+<td>dst_ip</td>
+<td>same as src_ip</td>
+<td>Destination</td>
+<td><code>$HOME_NET</code></td>
+</tr>
+<tr>
+<td>dst_port</td>
+<td>same as src_port</td>
+<td>Destination port</td>
+<td><code>80</code></td>
+</tr>
+</tbody>
+</table>
+<p>The actions in detail:
+- <code>alert</code>: generate an alert and log the packet.
+- <code>log</code>: log only, no alert.
+- <code>pass</code>: skip the packet (whitelist), stop further evaluation.
+- <code>drop</code> (inline): block the packet + log. Sends nothing to the client.
+- <code>reject</code>: block + send a TCP RST (or ICMP unreachable for UDP) to close the connection immediately.
+- <code>sdrop</code>: silent drop, block without logging.</p>
+<p>The variables <code>$HOME_NET</code>, <code>$EXTERNAL_NET</code> are defined in <code>snort.conf</code>/<code>suricata.yaml</code>:</p>
+<pre><code>ipvar HOME_NET [10.0.0.0/8,192.168.0.0/16,172.16.0.0/12]
+ipvar EXTERNAL_NET !$HOME_NET
+portvar HTTP_PORTS [80,81,8080,8000]
+</code></pre>
+<h4 id="ch11-rule-options-full-reference-table">Rule Options — full reference table</h4>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg</code></td>
+<td>metadata</td>
+<td>Descriptive string written into the alert</td>
+<td><code>msg:"SQLi UNION SELECT";</code></td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>payload</td>
+<td>Match a byte string (text or hex <code>\|41 42\|</code>)</td>
+<td><code>content:"UNION";</code></td>
+</tr>
+<tr>
+<td><code>nocase</code></td>
+<td>modifier</td>
+<td>content is case-insensitive</td>
+<td><code>content:"union"; nocase;</code></td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td>modifier</td>
+<td>Start searching for content from byte N (0-based)</td>
+<td><code>offset:4;</code></td>
+</tr>
+<tr>
+<td><code>depth</code></td>
+<td>modifier</td>
+<td>Search only within the first N bytes (from the offset)</td>
+<td><code>depth:20;</code></td>
+</tr>
+<tr>
+<td><code>distance</code></td>
+<td>modifier</td>
+<td>Minimum distance after the previous content</td>
+<td><code>distance:0;</code></td>
+</tr>
+<tr>
+<td><code>within</code></td>
+<td>modifier</td>
+<td>The next content must fall within N bytes after the previous content</td>
+<td><code>within:10;</code></td>
+</tr>
+<tr>
+<td><code>pcre</code></td>
+<td>payload</td>
+<td>Perl-compatible regex</td>
+<td><code>pcre:"/union\s+select/i";</code></td>
+</tr>
+<tr>
+<td><code>flow</code></td>
+<td>state</td>
+<td>Flow direction/state</td>
+<td><code>flow:established,to_server;</code></td>
+</tr>
+<tr>
+<td><code>flowbits</code></td>
+<td>state</td>
+<td>Set/check a flag on the flow (correlate across packets)</td>
+<td><code>flowbits:set,logged_in;</code></td>
+</tr>
+<tr>
+<td><code>threshold</code>/<code>detection_filter</code></td>
+<td>rate</td>
+<td>Limit alert frequency</td>
+<td><code>detection_filter:track by_src, count 5, seconds 60;</code></td>
+</tr>
+<tr>
+<td><code>sid</code></td>
+<td>metadata</td>
+<td>Signature ID (unique; &gt;1,000,000 for local)</td>
+<td><code>sid:1000001;</code></td>
+</tr>
+<tr>
+<td><code>rev</code></td>
+<td>metadata</td>
+<td>The rule's revision number</td>
+<td><code>rev:1;</code></td>
+</tr>
+<tr>
+<td><code>classtype</code></td>
+<td>metadata</td>
+<td>Classification (maps to priority)</td>
+<td><code>classtype:web-application-attack;</code></td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td>metadata</td>
+<td>A CVE/URL link</td>
+<td><code>reference:cve,2021-44228;</code></td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>metadata</td>
+<td>Manual priority (1 highest)</td>
+<td><code>priority:1;</code></td>
+</tr>
+<tr>
+<td><code>http_uri</code>/<code>http.uri</code></td>
+<td>sticky buffer</td>
+<td>Restrict content to the normalized URI</td>
+<td><code>http.uri; content:"/admin";</code></td>
+</tr>
+<tr>
+<td><code>dsize</code></td>
+<td>payload</td>
+<td>Payload size</td>
+<td><code>dsize:&gt;100;</code></td>
+</tr>
+<tr>
+<td><code>byte_test</code>/<code>byte_jump</code></td>
+<td>payload</td>
+<td>Compare/jump based on byte values</td>
+<td><code>byte_test:2,&gt;,1000,0;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Explaining <code>offset</code>/<code>depth</code> and <code>distance</code>/<code>within</code> (very commonly confused):
+- <code>offset</code>/<code>depth</code> measure ABSOLUTELY from the start of the payload. <code>offset:4; depth:20;</code> = search within bytes 4..23.
+- <code>distance</code>/<code>within</code> measure RELATIVE to the end of the previous content's match. Use them to match several fragments close together without knowing the absolute position.</p>
+<p><strong>Why</strong> have both: a real payload has a fixed-length header portion (use offset/depth) and a variable portion that needs relative matching (use distance/within). Constraining the search region also reduces false positives and speeds things up.</p>
+<h3 id="ch11-1123-a-real-rule-example-explaining-each-parameter">11.2.3. A real rule example — explaining each parameter</h3>
+<p>Detecting a <code>UNION SELECT</code> SQLi in an HTTP request:</p>
+<pre><code># [PROD] has a fast pattern + a normalized sticky buffer + a refining pcre; still tune against real traffic
+alert http $EXTERNAL_NET any -&gt; $HOME_NET $HTTP_PORTS (
+    msg:&quot;WEB SQLi UNION SELECT in URI&quot;;
+    flow:established,to_server;
+    http.uri;
+    content:&quot;union&quot;; nocase;
+    content:&quot;select&quot;; nocase; distance:0; within:100;
+    pcre:&quot;/union\s+(all\s+)?select/i&quot;;
+    classtype:web-application-attack;
+    reference:url,owasp.org/sqli;
+    sid:1000001; rev:2;
+)
+</code></pre>
+<ul>
+<li><code>flow:established,to_server</code>: only consider packets in a TCP connection that has completed its handshake, in the client→server direction. Avoids matching on a single spoofed packet and reduces load.</li>
+<li><code>http.uri</code> (sticky buffer): restricts the <code>content</code>/<code>pcre</code> that follow it to the NORMALIZED URI (decoding <code>%55</code> → <code>U</code>). This is anti-evasion: an attacker sends <code>%75nion</code> to evade the raw content match, but the normalized buffer has already decoded it.</li>
+<li><code>content:"union"; nocase</code>: fast pattern. <code>content:"select"; distance:0; within:100</code>: "select" must appear after "union", within 100 bytes.</li>
+<li><code>pcre</code>: refinement to reduce false positives (requires whitespace in between, allows <code>union all select</code>).</li>
+</ul>
+<p>Detecting an nmap SYN scan (many SYNs to many ports in a short period):</p>
+<pre><code># [PROD] the count/seconds threshold must be calibrated to the network baseline to avoid false positives
+alert tcp $EXTERNAL_NET any -&gt; $HOME_NET any (
+    msg:&quot;SCAN nmap SYN scan&quot;;
+    flags:S;
+    detection_filter:track by_src, count 20, seconds 5;
+    classtype:attempted-recon;
+    sid:1000010; rev:1;
+)
+</code></pre>
+<ul>
+<li><code>flags:S</code>: only packets with the SYN FLAG set (see the TCP flags section, 11.2.5).</li>
+<li><code>detection_filter:track by_src, count 20, seconds 5</code>: only alert when the same src produces ≥20 matches within 5 seconds — characteristic of a scan, without alerting on a single normal SYN.</li>
+</ul>
+<p>Detecting a C2 beacon via a suspicious User-Agent:</p>
+<pre><code># [DEMO] illustrates the mechanism only: it relies on a default artifact, so an attacker who changes their profile evades it — do NOT use directly in production
+alert http $HOME_NET any -&gt; $EXTERNAL_NET any (
+    msg:&quot;MALWARE Suspicious User-Agent C2 beacon&quot;;
+    flow:established,to_server;
+    http.user_agent; content:&quot;Mozilla/5.0 (compatible; MSIE 9.0&quot;;
+    http.uri; content:&quot;/submit.php&quot;; nocase;
+    detection_filter:track by_src, count 3, seconds 30;
+    classtype:trojan-activity;
+    reference:url,attack.mitre.org/techniques/T1071/001;
+    sid:1000020; rev:1;
+)
+</code></pre>
+<p><strong>Note:</strong> the rule relies on a default artifact; a threat actor can easily change their profile → this illustrates the mechanism, it is not a durable signature.</p>
+<p>Using <code>flowbits</code> to correlate across packets (only alert on exfil after a login has been observed):</p>
+<pre><code># [DEMO] the sample URIs /login, /export?all=1 only illustrate the flowbits mechanism — replace with real routes before use
+alert http any any -&gt; any any ( msg:&quot;login seen&quot;; http.uri; content:&quot;/login&quot;; flowbits:set,auth; flowbits:noalert; sid:1000030; )
+alert http any any -&gt; any any ( msg:&quot;download after login&quot;; http.uri; content:&quot;/export?all=1&quot;; flowbits:isset,auth; sid:1000031; )
+</code></pre>
+<ul>
+<li><code>flowbits:set,auth</code> attaches a flag to the flow; <code>flowbits:noalert</code> keeps the first rule from alerting on its own. The second rule only matches once <code>auth</code> has been set.</li>
+</ul>
+<h3 id="ch11-1124-signature-vs-anomaly-detection">11.2.4. Signature vs anomaly detection</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Signature-based</th>
+<th>Anomaly-based</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Principle</td>
+<td>Compare against a known pattern (rule/IOC)</td>
+<td>Build a "normal" baseline, alert on deviations</td>
+</tr>
+<tr>
+<td>Catches 0-day</td>
+<td>Poorly (no signature yet)</td>
+<td>Better (if the behavior deviates)</td>
+</tr>
+<tr>
+<td>False positives</td>
+<td>Low (if the rule is sound)</td>
+<td>High (a baseline is hard to get right)</td>
+</tr>
+<tr>
+<td>Example tools</td>
+<td>Snort/Suricata rules</td>
+<td>statistics, ML, some preprocessors</td>
+</tr>
+</tbody>
+</table>
+<p>Snort/Suricata are primarily signature-based, but the preprocessors have an anomaly element (e.g., alerting on TCP packets with illegal flags or anomalous headers).</p>
+<h3 id="ch11-1125-tcp-flags-needed-for-the-flags-rule">11.2.5. TCP flags — needed for the <code>flags:</code> rule</h3>
+<p>TCP defines 9 control flags. 8 of them fit within 1 byte at offset 13 of the TCP header (the 6 classic flags FIN..URG plus the 2 ECN flags ECE/CWR per RFC 3168); the 9th, NS (Nonce Sum, RFC 3540), resides in the lowest bit of the byte at offset 12 (sharing that byte with the Data Offset field), so it is not in the same byte as the other 8:</p>
+<table>
+<thead>
+<tr>
+<th>Bit (byte offset 13)</th>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x01</td>
+<td>FIN</td>
+<td>Terminate the connection</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>SYN</td>
+<td>Open a connection</td>
+</tr>
+<tr>
+<td>0x04</td>
+<td>RST</td>
+<td>Reset the connection</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>PSH</td>
+<td>Push the buffer to the application immediately</td>
+</tr>
+<tr>
+<td>0x10</td>
+<td>ACK</td>
+<td>Acknowledge (the Acknowledgment field is valid)</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td>URG</td>
+<td>Urgent (the Urgent Pointer field is valid)</td>
+</tr>
+<tr>
+<td>0x40</td>
+<td>ECE</td>
+<td>ECN-Echo — signals congestion (RFC 3168)</td>
+</tr>
+<tr>
+<td>0x80</td>
+<td>CWR</td>
+<td>Congestion Window Reduced (RFC 3168)</td>
+</tr>
+<tr>
+<td>— (low bit of byte offset 12)</td>
+<td>NS</td>
+<td>Nonce Sum — ECN nonce (RFC 3540; rarely implemented, moved to experimental by RFC 8311)</td>
+</tr>
+</tbody>
+</table>
+<p><code>flags</code> syntax: <code>flags:S</code> (SYN only), <code>flags:SA</code> (SYN+ACK), <code>flags:S,CE</code> (SYN set, ignore the CWR/ECE bits when matching — equivalent to the numeric form <code>flags:S,12</code>), <code>flags:!R</code> (no RST). NULL scan = <code>flags:0</code>; XMAS = <code>flags:FPU</code>. Flag letters in a Snort/Suricata rule: <code>C</code>=CWR, <code>E</code>=ECE, <code>U</code>=URG, <code>A</code>=ACK, <code>P</code>=PSH, <code>R</code>=RST, <code>S</code>=SYN, <code>F</code>=FIN.</p>
+<h3 id="ch11-1126-install-run-and-test-that-a-rule-triggers">11.2.6. Install, run, and TEST that a rule triggers</h3>
+<pre><code class="language-bash"># Suricata: check the configuration and the rules
+suricata -T -c /etc/suricata/suricata.yaml -S /etc/suricata/rules/local.rules
+
+# Run the IDS reading from interface eth0
+sudo suricata -c /etc/suricata/suricata.yaml -i eth0
+
+# Analyze a pcap file offline (great for testing rules)
+suricata -r capture.pcap -S local.rules -l ./out/
+cat ./out/fast.log         # alerts in text form
+jq . ./out/eve.json | less # full JSON alerts
+
+# Snort 3 testing a rule on a pcap
+snort -c /etc/snort/snort.lua -R local.rules -r capture.pcap -A alert_fast
+</code></pre>
+<p>TEST that the SQLi rule above triggers using curl (lab only):</p>
+<pre><code class="language-bash">curl &quot;http://victim.lab/search?q=1%20union%20select%20password%20from%20users&quot;
+# → fast.log:
+# 06/19/2026-10:00:00.123456  [**] [1:1000001:2] WEB SQLi UNION SELECT in URI [**]
+#   [Classification: Web Application Attack] [Priority: 1] {TCP} 203.0.113.5:51234 -&gt; 10.0.0.10:80
+</code></pre>
+<p>Test the scan rule:</p>
+<pre><code class="language-bash">nmap -sS -p1-1000 10.0.0.10    # generates many SYNs → triggers sid:1000010
+</code></pre>
+<p><strong>Note:</strong>
+- Always test a rule on a pcap before pushing it to an inline IPS.
+- An unanchored <code>pcre</code> (with no <code>content</code> fast pattern) running on every packet can drive CPU to 100% — a DoS against the defense system itself (ReDoS).
+- Set local <code>sid</code>s ≥ 1,000,000 so they do not collide with community rules (ET/Talos).</p>
+<hr />
+<h2 id="ch11-113-modsecurity-owasp-crs-a-layer-7-waf">11.3. ModSecurity + OWASP CRS — a layer-7 WAF</h2>
+<h3 id="ch11-1131-what-a-waf-is-and-why-it-differs-from-an-l3l4-firewall">11.3.1. What a WAF is and why it differs from an L3/L4 firewall</h3>
+<p>A WAF (Web Application Firewall) operates at L7: it parses the HTTP request (method, URI, headers, body, cookies, params) after TLS has been terminated, then applies rules to the application CONTENT.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>L3/L4 firewall (pf, iptables)</th>
+<th>L7 WAF (ModSecurity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads up to</td>
+<td>IP/port/flags</td>
+<td>URI, header, body, JSON, multipart</td>
+</tr>
+<tr>
+<td>Can block</td>
+<td>Port 22 from the internet</td>
+<td><code>' OR 1=1--</code> in the <code>id</code> parameter</td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>Not required</td>
+<td>Must be terminated to read plaintext</td>
+</tr>
+<tr>
+<td>Understands application context</td>
+<td>No</td>
+<td>Yes (per-param, per-route)</td>
+</tr>
+</tbody>
+</table>
+<p>ModSecurity is a rule engine that runs as an embedded module (Apache <code>mod_security2</code>, the NGINX <code>ModSecurity-nginx</code> connector) or as a reverse proxy. The OWASP CRS (Core Rule Set) is the standard rule set that runs on that engine. (For the classes of web vulnerability a WAF aims to block — SQLi, XSS, the OWASP Top 10 — see <a href="ch05.html">Chapter 5</a>.)</p>
+<p>A note on the project's lifecycle: Trustwave ended commercial support for ModSecurity and handed the project over to OWASP in 2024; ModSecurity (v2/v3) is now maintained by the OWASP community (needs verification). The CRS itself was renamed from "OWASP ModSecurity Core Rule Set" to simply <strong>OWASP CRS</strong> as of the 4.x line — because the rule set is no longer tied to the ModSecurity engine: the same SecLang syntax runs on compatible engines such as <strong>Coraza</strong> (written in Go, commonly paired with Caddy/Envoy, with full CRS support). For a new project, Coraza is worth considering too (needs verification at time of reading).</p>
+<h3 id="ch11-1132-the-five-processing-phases-of-modsecurity">11.3.2. The five processing phases of ModSecurity</h3>
+<p>ModSecurity attaches rules to 5 phases along the lifecycle of an HTTP transaction:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Name</th>
+<th>When</th>
+<th>Data available</th>
+<th>Used to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Request Headers</td>
+<td>After receiving headers</td>
+<td>method, URI, headers, cookies</td>
+<td>block early based on header/URI</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Request Body</td>
+<td>After receiving the body</td>
+<td>ARGS (POST), JSON, multipart</td>
+<td>block SQLi/XSS in the body</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Response Headers</td>
+<td>Before sending response headers</td>
+<td>status, response headers</td>
+<td>mask the server banner, check for leaks</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Response Body</td>
+<td>Before sending the response body</td>
+<td>the response content</td>
+<td>data leaks, hiding SQL errors</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Logging</td>
+<td>When writing the log</td>
+<td>everything</td>
+<td>decide whether to write the audit log</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> split into phases: a body can be very large; blocking at phase 1 (headers only) is much cheaper. Phase 4 makes it possible to detect sensitive data leaking out (e.g., a MySQL error message revealing the schema).</p>
+<h3 id="ch11-1133-the-secrule-directive-breaking-down-the-syntax">11.3.3. The SecRule directive — breaking down the syntax</h3>
+<pre><code>SecRule VARIABLES &quot;OPERATOR&quot; &quot;ACTIONS&quot;
+</code></pre>
+<p>Example:</p>
+<pre><code># [DEMO] illustrates the SecRule syntax; in production prefer the OWASP CRS with anomaly scoring rather than denying on the first rule match
+SecRule ARGS &quot;@detectSQLi&quot; &quot;id:1001,phase:2,deny,status:403,log,msg:'SQLi detected',t:none,t:urlDecodeUni,t:lowercase&quot;
+</code></pre>
+<p>The components:</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Role</th>
+<th>Example values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VARIABLES</td>
+<td>The data source to inspect</td>
+<td><code>ARGS</code>, <code>ARGS:id</code>, <code>REQUEST_URI</code>, <code>REQUEST_HEADERS:User-Agent</code>, <code>REQUEST_BODY</code>, <code>XML</code>, <code>FILES</code></td>
+</tr>
+<tr>
+<td>OPERATOR</td>
+<td>The test</td>
+<td><code>@rx &lt;regex&gt;</code>, <code>@detectSQLi</code>, <code>@detectXSS</code>, <code>@contains</code>, <code>@eq</code>, <code>@ipMatch</code>, <code>@pmFromFile</code></td>
+</tr>
+<tr>
+<td>ACTIONS</td>
+<td>The action + metadata</td>
+<td><code>id</code>, <code>phase</code>, <code>deny/pass/block/drop</code>, <code>status</code>, <code>log/nolog</code>, <code>msg</code>, <code>t:</code> (transform), <code>setvar</code>, <code>ctl</code>, <code>chain</code></td>
+</tr>
+</tbody>
+</table>
+<p>Commonly used variables:
+- <code>ARGS</code> = all parameters (GET+POST). <code>ARGS:id</code> = only the <code>id</code> parameter. <code>ARGS_NAMES</code> = the parameter names.
+- <code>REQUEST_URI</code> = path + query (raw). <code>REQUEST_FILENAME</code> = path only.
+- <code>REQUEST_HEADERS</code>, <code>REQUEST_HEADERS:Host</code>.
+- <code>REQUEST_BODY</code>, <code>XML:/*</code>, <code>FILES</code>, <code>FILES_TMPNAMES</code>.</p>
+<p>The main operators:
+- <code>@rx</code>: regex (PCRE). <code>@detectSQLi</code>: uses libinjection (tokenizes the SQL, fewer false positives than plain regex). <code>@detectXSS</code>: libinjection XSS. <code>@pmFromFile</code>: matches many strings from a file (Aho-Corasick, fast).</p>
+<p>Transformations (<code>t:</code>) normalize before matching — anti-evasion:
+- <code>t:none</code> (clear inherited transforms), <code>t:urlDecodeUni</code> (decode <code>%XX</code> and <code>%uXXXX</code>), <code>t:htmlEntityDecode</code>, <code>t:lowercase</code>, <code>t:removeNulls</code>, <code>t:compressWhitespace</code>, <code>t:cmdLine</code>.</p>
+<p><strong>Why</strong> transform: an attacker sends <code>%27</code> instead of <code>'</code>, or <code>SeLeCt</code>. Without normalization, regex is easy to evade. The order of the transforms matters (they are applied in sequence).</p>
+<p>Disruptive actions (only ONE per rule chain): <code>deny</code>, <code>drop</code>, <code>block</code>, <code>pass</code>, <code>allow</code>, <code>redirect</code>. <code>block</code> delegates the decision to <code>SecDefaultAction</code>.</p>
+<p><code>chain</code> joins multiple SecRules into an AND condition:</p>
+<pre><code>SecRule REQUEST_METHOD &quot;@streq POST&quot; &quot;id:1002,phase:2,deny,status:403,chain&quot;
+    SecRule REQUEST_HEADERS:Content-Type &quot;!@rx ^application/json&quot; &quot;t:lowercase&quot;
+</code></pre>
+<p>→ blocks a POST whose Content-Type is not JSON.</p>
+<h3 id="ch11-1134-detectiononly-vs-on-and-a-real-config-file">11.3.4. DetectionOnly vs On, and a real config file</h3>
+<p><code>modsecurity.conf</code> (excerpt, with explanations):</p>
+<pre><code class="language-apache"># DetectionOnly = log only, do NOT block (the tuning phase).  On = enforce blocking.
+SecRuleEngine DetectionOnly
+
+# Enable reading the request body so phase 2 has the POST ARGS
+SecRequestBodyAccess On
+SecRequestBodyLimit 13107200          # 12.5MB; over this → SecRequestBodyLimitAction
+SecRequestBodyLimitAction Reject
+
+# Read the response body (phase 4) only for a few content-types to avoid wasting RAM
+SecResponseBodyAccess On
+SecResponseBodyMimeType text/plain text/html application/json
+
+# The default action when a rule uses &quot;block&quot;
+SecDefaultAction &quot;phase:1,log,auditlog,pass&quot;
+SecDefaultAction &quot;phase:2,log,auditlog,pass&quot;
+
+# Audit log: records the details of a flagged transaction
+SecAuditEngine RelevantOnly           # only record when a rule matches / on errors
+SecAuditLogParts ABIJDEFHZ            # A=audit header, B=req headers, C=req body, F=resp headers...
+SecAuditLog /var/log/modsec_audit.log
+</code></pre>
+<p><strong>Why:</strong> a safe deployment process is to run <code>DetectionOnly</code> for a few days, read <code>modsec_audit.log</code> to find rules wrongly blocking legitimate traffic → create exclusions → only then switch to <code>SecRuleEngine On</code>. Switching straight to On easily causes an outage due to CRS false positives.</p>
+<h3 id="ch11-1135-owasp-crs-anomaly-scoring-paranoia-level">11.3.5. OWASP CRS — anomaly scoring &amp; paranoia level</h3>
+<p>CRS does not block immediately when a single rule matches. It ADDS SCORE (anomaly scoring):</p>
+<pre><code>Each matching rule → add a score by severity:
+   CRITICAL = 5, ERROR = 4, WARNING = 3, NOTICE = 2 (verify against your CRS version)
+Finally: if tx.anomaly_score &gt;= tx.inbound_anomaly_score_threshold (default 5) → deny
+</code></pre>
+<p><strong>Why</strong> scoring instead of block-on-first-match: it reduces false positives. A weak signal (e.g., the presence of a <code>'</code> character) is not enough to block; multiple signals must accumulate to cross the threshold. An administrator lowers the threshold to be stricter, raises it to loosen.</p>
+<p>Paranoia Level (PL1–PL4): the "suspicion" level.
+- PL1 (default): high-confidence rules, few false positives.
+- PL2–PL4: add increasingly sensitive rules (catching more variants) but false positives rise sharply.</p>
+<p><code>crs-setup.conf</code>:</p>
+<pre><code class="language-apache">SecAction &quot;id:900000,phase:1,nolog,pass,t:none,setvar:tx.paranoia_level=1&quot;
+SecAction &quot;id:900110,phase:1,nolog,pass,t:none,\
+   setvar:tx.inbound_anomaly_score_threshold=5,\
+   setvar:tx.outbound_anomaly_score_threshold=4&quot;
+</code></pre>
+<p>An example CRS rule blocking SQLi (illustrating the scoring mechanism):</p>
+<pre><code class="language-apache"># [PROD] this is the official CRS rule (942100): uses libinjection + anomaly scoring, production-ready after tuning exclusions
+SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES &quot;@detectSQLi&quot; \
+    &quot;id:942100,phase:2,block,capture,t:none,t:urlDecodeUni,\
+     msg:'SQL Injection Attack Detected via libinjection',\
+     logdata:'Matched Data: %{TX.0} found within %{MATCHED_VAR_NAME}',\
+     severity:'CRITICAL',\
+     setvar:'tx.sql_injection_score=+%{tx.critical_anomaly_score}',\
+     setvar:'tx.anomaly_score_pl1=+%{tx.critical_anomaly_score}'&quot;
+</code></pre>
+<ul>
+<li><code>block</code>: follows SecDefaultAction (accumulate score or block).</li>
+<li><code>capture</code> + <code>%{TX.0}</code>: stores the matched portion for logging (forensics).</li>
+<li><code>setvar:tx.anomaly_score_pl1=+...</code>: adds to the score; the final "blocking evaluation" rule compares the total against the threshold.</li>
+</ul>
+<p>Creating an exclusion (removing a false positive for one route):</p>
+<pre><code class="language-apache"># [DEMO] the route /api/free-text-comment and rule id 942100 are examples only — substitute the real route and rule id
+SecRule REQUEST_URI &quot;@beginsWith /api/free-text-comment&quot; \
+    &quot;id:1000100,phase:1,pass,nolog,ctl:ruleRemoveTargetById=942100;ARGS:comment&quot;
+</code></pre>
+<p>→ for that route, do not apply rule 942100 to <code>ARGS:comment</code>.</p>
+<h3 id="ch11-1136-an-end-to-end-sqli-blocking-example-and-its-output">11.3.6. An end-to-end SQLi-blocking example and its output</h3>
+<pre><code class="language-bash"># The attack request
+curl &quot;http://app.lab/product?id=1' OR '1'='1&quot;
+# The response when SecRuleEngine is On and the threshold is exceeded:
+# HTTP/1.1 403 Forbidden
+</code></pre>
+<p>Excerpt from <code>modsec_audit.log</code>:</p>
+<pre><code>--a1b2c3-H--
+Message: Access denied with code 403 (phase 2). detected SQLi via libinjection.
+   [id &quot;942100&quot;] [msg &quot;SQL Injection Attack Detected via libinjection&quot;]
+   [data &quot;Matched Data: 1' OR '1'='1 found within ARGS:id&quot;] [severity &quot;CRITICAL&quot;]
+Action: Intercepted (phase 2)
+Apache-Error: ModSecurity: Access denied with code 403
+</code></pre>
+<p><strong>Note:</strong>
+- A WAF is a compensating control; it does NOT replace fixing the code (prepared statements, output encoding).
+- WAF bypass is feasible (unusual encodings, HTTP parameter pollution, request smuggling).
+- Always use anomaly scoring and tune for your specific application.
+- Enable response-body inspection to defend against data leaks, but weigh the RAM/latency cost.
+- The WAF should not be the FIRST blocking layer: cheap patterns (sensitive filenames, per-IP rate limits, unknown Hosts) should be rejected at the reverse proxy in front (see 11.6) — save the WAF's resources for the hard part: every encoding variant, injection in the body/parameters.</p>
+<hr />
+<h2 id="ch11-114-pfsense-firewallrouter-pf-nat-state-vpn">11.4. pfSense — firewall/router (pf, NAT, state, VPN)</h2>
+<p>pfSense is based on FreeBSD + <code>pf</code> (Packet Filter). To understand pf is to understand pfSense.</p>
+<h3 id="ch11-1141-the-stateful-firewall-and-the-state-table-the-mechanism">11.4.1. The stateful firewall and the state table — the mechanism</h3>
+<p>pf is STATEFUL: when a packet matches a rule with <code>keep state</code> (the default on pfSense), pf creates an entry in the STATE TABLE. A reply packet is matched against the state table before even the ruleset → no reverse rule is needed.</p>
+<pre><code>Client 192.168.1.10:51000 ──SYN──► Server 203.0.113.9:443
+   pf: the &quot;pass out&quot; rule matches → creates state:
+   proto tcp, 192.168.1.10:51000 ↔ 203.0.113.9:443, state SYN_SENT
+Server ──SYN/ACK──► Client
+   pf: looks up the state table → MATCH → allowed through, state → ESTABLISHED
+</code></pre>
+<p>A state table entry (the concept of each field):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>proto</td>
+<td>tcp/udp/icmp</td>
+</tr>
+<tr>
+<td>src host:port</td>
+<td>source address/port (after NAT, stores the original too)</td>
+</tr>
+<tr>
+<td>dst host:port</td>
+<td>destination</td>
+</tr>
+<tr>
+<td>direction</td>
+<td>the direction that created the state</td>
+</tr>
+<tr>
+<td>state</td>
+<td>TCP: SYN_SENT, ESTABLISHED, FIN_WAIT...; UDP: SINGLE/MULTIPLE</td>
+</tr>
+<tr>
+<td>expire</td>
+<td>the remaining timeout</td>
+</tr>
+<tr>
+<td>packets/bytes</td>
+<td>a counter for each direction</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> stateful is better than stateless: stateless needs a rule for both directions and is easily fooled by a spoofed ACK packet slipping through. Stateful tracks the whole handshake sequence; only a packet matching a legitimate connection gets through. View the state: <code>pfctl -ss</code>. Count: <code>pfctl -si</code>.</p>
+<h3 id="ch11-1142-firewall-rules-on-pfsense-the-fields">11.4.2. Firewall rules on pfSense — the fields</h3>
+<p>Each rule on an interface has:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Action</td>
+<td>Pass / Block (silent drop) / Reject (send RST/ICMP)</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Interface</td>
+<td>The NIC the rule applies to (WAN, LAN, OPT1/VLAN)</td>
+<td>LAN</td>
+</tr>
+<tr>
+<td>Direction</td>
+<td>in / out (default is in in the pfSense GUI)</td>
+<td>in</td>
+</tr>
+<tr>
+<td>Address Family</td>
+<td>IPv4 / IPv6</td>
+<td>IPv4</td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>TCP/UDP/ICMP/...</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>host/net/alias/<code>any</code>, can use <code>!</code></td>
+<td>LAN net</td>
+</tr>
+<tr>
+<td>Source port</td>
+<td>usually <code>any</code> for a client</td>
+<td>any</td>
+</tr>
+<tr>
+<td>Destination</td>
+<td>host/net/alias</td>
+<td>any</td>
+</tr>
+<tr>
+<td>Dest port</td>
+<td>the service port</td>
+<td>443</td>
+</tr>
+<tr>
+<td>Gateway</td>
+<td>policy-based routing</td>
+<td>default</td>
+</tr>
+<tr>
+<td>State type</td>
+<td>keep state / sloppy / none</td>
+<td>keep state</td>
+</tr>
+</tbody>
+</table>
+<p>pf's evaluation order: native pf uses "LAST MATCH WINS" unless there is a <code>quick</code>. The pfSense GUI adds <code>quick</code>, so the FIRST matching rule (top to bottom) decides. Default block: pfSense has default-deny inbound on the WAN.</p>
+<p>Block vs Reject — <strong>why</strong> choose one: Block = silent drop → a scanner has to wait for a timeout (slowing them down). Reject = returns a RST → closes quickly (good for internal UX) but helps an attacker map ports faster. Rule of thumb: Reject on the LAN, Block on the WAN.</p>
+<h3 id="ch11-1143-alias">11.4.3. Alias</h3>
+<p>An alias = a named group (hosts/networks/ports/URLs) for reuse and rule consolidation.</p>
+<pre><code>Alias  WebServers     = 10.0.0.10, 10.0.0.11
+Alias  AdminPorts     = 22, 3389, 8443
+Rule:  Pass LAN → WebServers proto TCP dst AdminPorts  (source: AdminPCs)
+</code></pre>
+<p><strong>Why:</strong> 1 rule instead of N×M rules; updating one alias applies to every rule. A URL alias (pfBlockerNG) can automatically load a list of malicious IPs.</p>
+<h3 id="ch11-1144-nat-port-forward-and-outbound">11.4.4. NAT — port forward and outbound</h3>
+<p>Port Forward (DNAT — inbound):</p>
+<pre><code>WAN  TCP  any:any  →  203.0.113.9:443   (NAT: redirect to 10.0.0.10:443)
+   + accompanying firewall rule: Pass WAN proto TCP dst 10.0.0.10:443
+</code></pre>
+<ul>
+<li>pf rewrites the DESTINATION address of a packet arriving from the public IP to the internal IP. pfSense auto-generates the accompanying firewall rule (the "Associated filter rule" option).</li>
+</ul>
+<p>Outbound NAT (SNAT/masquerade): pfSense defaults to "Automatic outbound NAT" — rewriting the SOURCE IP of LAN→WAN traffic to the WAN IP.</p>
+<pre><code>192.168.1.10:51000  ──►  (SNAT)  203.0.113.1:51000  ──►  internet
+   pf stores the mapping in state to translate the reply back.
+</code></pre>
+<p>1:1 NAT: maps a whole public IP ↔ a single internal IP (both in and out).</p>
+<p><strong>Why</strong> NAT + state go together: to translate a reply packet back, pf must remember the mapping (original port ↔ translated port) in the state table. This is also why PAT (port address translation) needs to track the source port.</p>
+<h3 id="ch11-1145-vlan">11.4.5. VLAN</h3>
+<p>An 802.1Q VLAN inserts a 4-byte tag into the Ethernet frame (the structure):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TPID</td>
+<td>16 bit</td>
+<td>Tag Protocol ID = 0x8100</td>
+<td>0x8100</td>
+</tr>
+<tr>
+<td>PCP</td>
+<td>3 bit</td>
+<td>Priority (802.1p QoS)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>DEI</td>
+<td>1 bit</td>
+<td>Drop Eligible Indicator</td>
+<td>0</td>
+</tr>
+<tr>
+<td>VID</td>
+<td>12 bit</td>
+<td>VLAN ID (1–4094)</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>pfSense creates a VLAN interface on one physical NIC (router-on-a-stick): each VLAN = one subnet/interface with its own ruleset → network segmentation to defend against lateral movement. <strong>Why</strong> at most 4094 usable VLANs: the VID is 12 bits (0 and 4095 are reserved).</p>
+<hr />
+<h2 id="ch11-115-vpn-ipsec-openvpn-wireguard-deep-dive">11.5. VPN — IPsec, OpenVPN, WireGuard (deep dive)</h2>
+<p>A VPN creates an encrypted "tunnel": the original packet is wrapped in a new packet with authentication + encryption. The core difference between the three technologies lies in: how keys are exchanged, the structure of the wrapping packet, and complexity. (For the cryptographic foundations — Diffie-Hellman key exchange, AEAD, PFS — see <a href="ch04.html">Chapter 4</a>.)</p>
+<h3 id="ch11-1151-ipsec-the-architecture">11.5.1. IPsec — the architecture</h3>
+<p>IPsec consists of: a data-protection protocol (AH or ESP) + a key-exchange protocol (IKE). Every protected relationship is defined by an SA (Security Association).</p>
+<h4 id="ch11-sa-security-association">SA (Security Association)</h4>
+<p>An SA is a one-way relationship describing: the algorithm, the key, the SPI, the lifetime. Two directions = 2 SAs. Each SA is identified by the tuple:</p>
+<pre><code>SA = ( SPI, destination IP, protocol[AH/ESP] )
+</code></pre>
+<ul>
+<li>SPI (Security Parameters Index): 32 bits, an index for the receiver to look up the correct SA/decryption key.</li>
+</ul>
+<h4 id="ch11-ah-vs-esp">AH vs ESP</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>AH (Protocol 51)</th>
+<th>ESP (Protocol 50)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confidentiality (encryption)</td>
+<td>NO</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>Integrity + authentication</td>
+<td>YES (including the immutable parts of the IP header)</td>
+<td>YES (only the ESP payload, not the outer IP header)</td>
+</tr>
+<tr>
+<td>NAT compatibility</td>
+<td>POOR (the hash includes the IP header → NAT breaks it)</td>
+<td>GOOD (with NAT-T, UDP 4500 encapsulation)</td>
+</tr>
+<tr>
+<td>Real-world use</td>
+<td>Rare</td>
+<td>Common (almost always uses ESP)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> ESP wins: AH authenticates the outer IP header → NAT changing the IP corrupts the ICV → it breaks. ESP only protects the payload, and NAT-T wraps an additional UDP/4500 layer so it can traverse NAT. Most VPNs use ESP with encryption + authentication (AES-GCM combines both).</p>
+<h4 id="ch11-tunnel-vs-transport-mode">Tunnel vs Transport mode</h4>
+<pre><code>Original packet:   [ IP_orig | TCP | Data ]
+
+TRANSPORT mode (ESP):  [ IP_orig | ESP_hdr | TCP | Data | ESP_trailer | ESP_ICV ]
+   → protects the payload, KEEPS the original IP header. Used host-to-host.
+
+TUNNEL mode (ESP):     [ IP_new | ESP_hdr | IP_orig | TCP | Data | ESP_trailer | ESP_ICV ]
+   → wraps the ENTIRE original packet in a new IP packet. Used gateway-to-gateway (site-to-site).
+</code></pre>
+<p><strong>Why</strong> tunnel for site-to-site: the two gateways have public IPs; the original internal IP is hidden inside the encrypted payload → it conceals the internal topology and routes over the internet using the gateway IPs.</p>
+<h4 id="ch11-esp-headertrailer-structure-each-field-rfc-4303">ESP header/trailer structure — each field (RFC 4303)</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPI</td>
+<td>32 bit (4 byte)</td>
+<td>Indicates the SA for decryption</td>
+<td>Start of ESP</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>32 bit (4 byte)</td>
+<td>Anti-replay (incrementing)</td>
+<td>After SPI</td>
+</tr>
+<tr>
+<td>Payload Data</td>
+<td>variable</td>
+<td>The encrypted data (the original packet in tunnel mode)</td>
+<td>Middle</td>
+</tr>
+<tr>
+<td>Padding</td>
+<td>0–255 byte</td>
+<td>Aligns the block cipher + hides the length</td>
+<td>In the trailer</td>
+</tr>
+<tr>
+<td>Pad Length</td>
+<td>8 bit (1 byte)</td>
+<td>The number of padding bytes</td>
+<td>Trailer</td>
+</tr>
+<tr>
+<td>Next Header</td>
+<td>8 bit (1 byte)</td>
+<td>The payload type (4=IP, 6=TCP)</td>
+<td>Trailer</td>
+</tr>
+<tr>
+<td>ICV</td>
+<td>variable (e.g., 16 bytes with AES-GCM)</td>
+<td>Integrity Check Value (authentication)</td>
+<td>Last</td>
+</tr>
+</tbody>
+</table>
+<p>Sequence Number + the anti-replay window (default 64 packets): the receiver rejects a packet whose seq has been seen or is too old → defending against replay.</p>
+<h4 id="ch11-ikev2-key-exchange-rfc-7296">IKEv2 — key exchange (RFC 7296)</h4>
+<p>IKEv2 runs over UDP/500 (or UDP/4500 under NAT-T). Setup consists of 2 initial message pairs:</p>
+<pre><code>Phase 1 (IKE_SA_INIT):  negotiate crypto + Diffie-Hellman
+   Init → Resp:  HDR, SAi1 (proposed algorithms), KEi (DH public), Ni (nonce)
+   Resp → Init:  HDR, SAr1 (chosen algorithms), KEr (DH public), Nr (nonce)
+   → both compute SKEYSEED from the DH shared secret + nonces → derive keys.
+
+Phase 2 (IKE_AUTH):  authenticate identities + create the CHILD_SA (for ESP)
+   Init → Resp:  HDR, [IDi], [AUTH], SAi2, TSi, TSr   (encrypted with the IKE key)
+   Resp → Init:  HDR, [IDr], [AUTH], SAr2, TSi, TSr
+   → AUTH = a signature/PSK proving identity; TS = traffic selector (the protected subnet).
+</code></pre>
+<p>Compared to IKEv1: IKEv1 has Phase 1 (Main mode 6 messages / Aggressive 3 messages) then Phase 2 (Quick mode 3 messages). IKEv2 is more compact (4 messages to set up), supports MOBIKE, integrated NAT-T, and EAP. The "phase 1/phase 2" terminology is still used: phase 1 = the IKE SA (protects the control channel), phase 2 = the CHILD SA = the ESP SA (protects the data).</p>
+<p>The IKE header (the main fields):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initiator SPI</td>
+<td>64 bit</td>
+<td>Identifies the initiating side</td>
+</tr>
+<tr>
+<td>Responder SPI</td>
+<td>64 bit</td>
+<td>Identifies the responding side</td>
+</tr>
+<tr>
+<td>Next Payload</td>
+<td>8 bit</td>
+<td>The type of the next payload</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>8 bit</td>
+<td>Major/Minor (2.0)</td>
+</tr>
+<tr>
+<td>Exchange Type</td>
+<td>8 bit</td>
+<td>IKE_SA_INIT(34), IKE_AUTH(35)...</td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>8 bit</td>
+<td>Initiator/Response/Version</td>
+</tr>
+<tr>
+<td>Message ID</td>
+<td>32 bit</td>
+<td>Anti-replay, ordering</td>
+</tr>
+<tr>
+<td>Length</td>
+<td>32 bit</td>
+<td>The total length</td>
+</tr>
+</tbody>
+</table>
+<p>An example IPsec site-to-site configuration using strongSwan (<code>/etc/swanctl/swanctl.conf</code>):</p>
+<pre><code>connections {
+   site-a-to-b {
+      version = 2                       # IKEv2
+      local_addrs  = 203.0.113.1
+      remote_addrs = 198.51.100.1
+      proposals = aes256gcm16-prfsha384-ecp384   # phase1 crypto
+      local  { auth = psk; id = 203.0.113.1 }
+      remote { auth = psk; id = 198.51.100.1 }
+      children {
+         net-net {
+            local_ts  = 10.10.0.0/16    # internal subnet A (TS)
+            remote_ts = 10.20.0.0/16    # internal subnet B
+            esp_proposals = aes256gcm16  # phase2/ESP crypto, AEAD combining encryption+authentication
+            mode = tunnel
+            start_action = trap          # auto-establish the SA when traffic matching the TS appears
+         }
+      }
+   }
+}
+secrets { ike-psk { id = 203.0.113.1; secret = &quot;S3cretPSK!&quot; } }
+</code></pre>
+<pre><code class="language-bash">swanctl --load-all
+swanctl --initiate --child net-net
+swanctl --list-sas         # view the established SAs, SPI, algorithms, byte count
+</code></pre>
+<p><strong>Note:</strong>
+- A weak PSK is the break point (IKEv1 Aggressive mode leaks the PSK hash for offline cracking).
+- Prefer digital certificates or EAP, AEAD (AES-GCM), and DH groups ≥ ecp256/Group 19.
+- Enable PFS (Perfect Forward Secrecy) so each CHILD_SA has its own DH; leaking one key then does not leak past sessions.</p>
+<h3 id="ch11-1152-openvpn-a-tls-based-vpn">11.5.2. OpenVPN — a TLS-based VPN</h3>
+<p>OpenVPN runs in user space, using TLS to exchange keys and a separate data channel. It runs over UDP/1194 (default) or TCP/443 (to traverse firewalls/proxies).</p>
+<p>The dual-channel architecture:
+- Control channel: TLS handshake (X.509 cert) → negotiates the session key.
+- Data channel: packets are encrypted with the session key (AES-GCM/CBC + HMAC), wrapped in UDP.</p>
+<pre><code>[ IP_outer | UDP(1194) | OpenVPN hdr | (opcode/key-id) | encrypted{ IP_inner | TCP | Data } ]
+</code></pre>
+<p>OpenVPN creates a virtual <code>tun</code> interface (L3, IP routing) or <code>tap</code> (L2, Ethernet bridge).</p>
+<p>Server configuration (<code>server.conf</code>):</p>
+<pre><code>port 1194
+proto udp
+dev tun                         # L3 tunnel
+ca   ca.crt
+cert server.crt
+key  server.key                 # keep secret
+dh   dh2048.pem
+tls-auth ta.key 0               # HMAC on the control channel to defend against DoS/scanning
+cipher AES-256-GCM              # data channel AEAD
+auth  SHA256
+server 10.8.0.0 255.255.255.0   # assign IPs to clients in this subnet
+push &quot;route 10.0.0.0 255.255.0.0&quot;   # push the internal network route
+push &quot;dhcp-option DNS 10.0.0.53&quot;
+keepalive 10 120                # ping every 10s, restart after 120s of silence
+persist-key
+persist-tun
+verb 3
+</code></pre>
+<p>Client (<code>client.ovpn</code>):</p>
+<pre><code>client
+dev tun
+proto udp
+remote vpn.example.com 1194
+ca ca.crt
+cert client.crt
+key client.key
+tls-auth ta.key 1
+cipher AES-256-GCM
+remote-cert-tls server          # require the server cert to have the server EKU → anti-MITM
+verb 3
+</code></pre>
+<pre><code class="language-bash">openvpn --config server.conf      # start the server
+openvpn --config client.ovpn      # the client connects
+# Check: ip addr show tun0 ; ping 10.8.0.1
+</code></pre>
+<p><strong>Why</strong> <code>tls-auth</code>/<code>tls-crypt</code>: adds an HMAC layer (or full encryption with tls-crypt) on the control channel → a packet without the correct HMAC is dropped before TLS is even processed → defends against port scans, DoS, and makes service fingerprinting harder. <code>remote-cert-tls server</code> prevents a client from being tricked into connecting to a rogue server.</p>
+<h3 id="ch11-1153-wireguard-a-modern-vpn-the-noise-protocol">11.5.3. WireGuard — a modern VPN, the Noise protocol</h3>
+<p>WireGuard is minimalist (~4000 lines of kernel code), runs in the kernel, and uses a fixed crypto suite (no negotiation):
+- AEAD encryption: ChaCha20-Poly1305
+- Key exchange: Curve25519 ECDH
+- Hash: BLAKE2s
+- Handshake framework: the Noise Protocol Framework (Noise_IK)</p>
+<p><strong>Why</strong> no algorithm negotiation: it eliminates the "downgrade attack" and the complexity of IKE. To change an algorithm → bump the protocol version, not negotiate at runtime.</p>
+<h4 id="ch11-the-key-model">The key model</h4>
+<p>Each peer has a Curve25519 key pair (private 32 bytes, public 32 bytes). "Cryptokey routing": each peer declares an <code>AllowedIPs</code> — a list of IPs that peer is allowed to send/receive. Public key ↔ AllowedIPs is the entirety of "routing + authentication".</p>
+<h4 id="ch11-handshake-noise-ik-2-messages-1-rtt">Handshake (Noise IK) — 2 messages, 1-RTT</h4>
+<pre><code>Initiator → Responder:  Handshake Initiation
+   - contains: the ephemeral public, the static public (encrypted), a timestamp (TAI64N, anti-replay), a MAC
+Responder → Initiator:  Handshake Response
+   - contains: the ephemeral public, empty (encrypted), a MAC
+→ after 2 messages: both sides have a symmetric session key. The key rotates after ~2 minutes (rekey).
+</code></pre>
+<p>The structure of the handshake initiation message (per the whitepaper — cross-check the spec when implementing):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>message type</td>
+<td>1 byte</td>
+<td>=1 (initiation)</td>
+</tr>
+<tr>
+<td>reserved</td>
+<td>3 byte</td>
+<td>0</td>
+</tr>
+<tr>
+<td>sender index</td>
+<td>4 byte</td>
+<td>the sender's session index</td>
+</tr>
+<tr>
+<td>unencrypted ephemeral</td>
+<td>32 byte</td>
+<td>ephemeral public key</td>
+</tr>
+<tr>
+<td>encrypted static</td>
+<td>32+16 byte</td>
+<td>static public + Poly1305 tag</td>
+</tr>
+<tr>
+<td>encrypted timestamp</td>
+<td>12+16 byte</td>
+<td>TAI64N + tag</td>
+</tr>
+<tr>
+<td>mac1</td>
+<td>16 byte</td>
+<td>a MAC using the destination's public key (defends against junk packets)</td>
+</tr>
+<tr>
+<td>mac2</td>
+<td>16 byte</td>
+<td>a MAC using a cookie (defends against DoS under overload)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> mac1/mac2 + cookie: WireGuard is "silent" — it does not respond to invalid packets (stealth, anti-scanning). mac1 proves the sender knows the destination's public key (defends against random floods). When under load, the responder issues a cookie; the initiator must compute the correct mac2 → defending against DoS amplification.</p>
+<h4 id="ch11-a-practical-configuration">A practical configuration</h4>
+<p>Server (<code>/etc/wireguard/wg0.conf</code>):</p>
+<pre><code class="language-ini">[Interface]
+Address = 10.9.0.1/24
+ListenPort = 51820
+PrivateKey = &lt;server_private_key&gt;      # generate: wg genkey
+# (do not declare a PublicKey in Interface; it is derived from the private key)
+
+[Peer]                                  # client 1
+PublicKey = &lt;client1_public_key&gt;
+AllowedIPs = 10.9.0.2/32                # only this IP is accepted from the peer
+</code></pre>
+<p>Client (<code>wg0.conf</code>):</p>
+<pre><code class="language-ini">[Interface]
+Address = 10.9.0.2/24
+PrivateKey = &lt;client1_private_key&gt;
+DNS = 10.0.0.53
+
+[Peer]
+PublicKey = &lt;server_public_key&gt;
+Endpoint = vpn.example.com:51820
+AllowedIPs = 0.0.0.0/0                  # full tunnel: route all traffic through the VPN
+PersistentKeepalive = 25               # keep the NAT mapping (send a keepalive every 25s)
+</code></pre>
+<pre><code class="language-bash">wg genkey | tee privatekey | wg pubkey &gt; publickey   # generate the key pair
+wg-quick up wg0          # bring up the interface + route per AllowedIPs
+wg show                  # view peers, last handshake, transfer bytes
+wg-quick down wg0
+</code></pre>
+<p><strong>Why</strong> <code>PersistentKeepalive</code>: WireGuard sends nothing while idle → a NAT/firewall in between expires the mapping, and the server cannot reach the client back. A 25s keepalive keeps the NAT "hole" open.</p>
+<p>A comparison of the three VPNs:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>IPsec/IKEv2</th>
+<th>OpenVPN</th>
+<th>WireGuard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Layer/deployment</td>
+<td>Kernel (L3)</td>
+<td>User-space (tun/tap)</td>
+<td>Kernel (L3)</td>
+</tr>
+<tr>
+<td>Key exchange</td>
+<td>IKEv2 (negotiated)</td>
+<td>TLS (X.509)</td>
+<td>Noise IK (fixed)</td>
+</tr>
+<tr>
+<td>Crypto agility</td>
+<td>High (negotiated)</td>
+<td>High</td>
+<td>None (fixed, bump the version)</td>
+</tr>
+<tr>
+<td>Default port</td>
+<td>UDP 500/4500</td>
+<td>UDP 1194 / TCP 443</td>
+<td>UDP 51820</td>
+</tr>
+<tr>
+<td>Traversing restrictive firewalls</td>
+<td>NAT-T</td>
+<td>good (TCP/443 mimics HTTPS)</td>
+<td>UDP, can be blocked</td>
+</tr>
+<tr>
+<td>Codebase</td>
+<td>large, complex</td>
+<td>medium</td>
+<td>very small (easy to audit)</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>high (kernel)</td>
+<td>lower (user-space)</td>
+<td>the highest</td>
+</tr>
+<tr>
+<td>Roaming (changing IP)</td>
+<td>MOBIKE</td>
+<td>reconnect</td>
+<td>seamless (by public key)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong> (common to all three VPNs):
+- Protect the private key (file permission 600), enable PFS/rekey.
+- Pin the peer identity (cert/public key) and monitor for anomalous handshakes.
+- WireGuard treats allowed-IPs as the trust boundary — a wrong AllowedIPs is a routing/spoofing hole.</p>
+<hr />
+<h2 id="ch11-116-proxy-reverse-proxy-and-hardening-nginx-as-a-reverse-proxy">11.6. Proxy, reverse proxy, and hardening NGINX as a reverse proxy</h2>
+<h3 id="ch11-1161-forward-proxy-vs-reverse-proxy">11.6.1. Forward proxy vs reverse proxy</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Forward proxy</th>
+<th>Reverse proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Acts on behalf of</td>
+<td>The client (hides the client from the server)</td>
+<td>The server (hides the server from the client)</td>
+</tr>
+<tr>
+<td>Position</td>
+<td>At the client edge (egress)</td>
+<td>At the server edge (ingress)</td>
+</tr>
+<tr>
+<td>Used for</td>
+<td>Content filtering, egress cache, anonymity, outbound access control</td>
+<td>TLS termination, load balancing, WAF, cache, hiding the backend</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>Squid</td>
+<td>NGINX, HAProxy, Envoy</td>
+</tr>
+</tbody>
+</table>
+<p>A reverse proxy is the ideal place to attach a WAF: it terminates TLS (reading plaintext), then applies ModSecurity, then forwards to the backend.</p>
+<p>An example NGINX reverse proxy + ModSecurity:</p>
+<pre><code class="language-nginx">server {
+    listen 443 ssl;
+    server_name app.example.com;
+    ssl_certificate     /etc/nginx/ssl/app.crt;
+    ssl_certificate_key /etc/nginx/ssl/app.key;
+
+    modsecurity on;
+    modsecurity_rules_file /etc/nginx/modsec/main.conf;   # load CRS
+
+    location / {
+        proxy_pass http://10.0.0.10:8080;                 # the internal backend
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+</code></pre>
+<p><strong>Why:</strong> behind a reverse proxy, the backend sees the proxy's IP. The <code>X-Forwarded-For</code> header carries the real client IP for logging/rate-limiting.</p>
+<p><strong>Note:</strong>
+- The backend should only trust XFF when it comes from a trusted proxy; otherwise a client can set a fake XFF and bypass an IP allowlist/rate-limit.
+- A reverse proxy also helps hide the backend version (reducing the attack surface).
+- It is also the place to defend against HTTP request smuggling, by strictly normalizing the <code>Content-Length</code>/<code>Transfer-Encoding</code> headers.</p>
+<h3 id="ch11-1162-the-problem-with-the-default-config-location-proxies-everything">11.6.2. The problem with the default config: <code>location /</code> proxies everything</h3>
+<p>A reverse proxy is not just for "forwarding so things work" — it is the ideal home for the <strong>early-rejection layer</strong> in defense-in-depth. Yet the most common template for standing up nginx as a reverse proxy leaves that role completely empty:</p>
+<pre><code class="language-nginx"># [ANTI-PATTERN] a server block that &quot;works&quot; but has not a single defensive layer
+server {
+    listen 443 ssl;
+    server_name api-dev.example.com;
+    client_max_body_size 4G;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+</code></pre>
+<p>This is almost verbatim a server block I found while auditing a dev machine running a web API on a system I operate (anonymized). It serves normal users just fine, but faced with an automated scan:</p>
+<table>
+<thead>
+<tr>
+<th>Missing</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No <code>limit_req</code>/<code>limit_conn</code></td>
+<td>No brakes — however much the scanner sends, nginx accepts</td>
+</tr>
+<tr>
+<td><code>location /</code> proxies EVERY path to the app</td>
+<td>Scan requests (<code>/.ssh/id_rsa</code>, <code>/.env</code>...) get pushed down to the app before the app rejects them</td>
+</tr>
+<tr>
+<td><code>client_max_body_size 4G</code></td>
+<td>Any IP is allowed to push a 4GB body → risk of RAM/disk-exhaustion DoS (11.6.6)</td>
+</tr>
+<tr>
+<td>No dedicated <code>default_server</code></td>
+<td>Requests by bare IP / unknown Host are still served by the "real" server block (11.6.5)</td>
+</tr>
+</tbody>
+</table>
+<p>The issue is that <strong>"returning an error still costs resources."</strong> Every junk request still walks the full chain: TLS handshake (the most expensive part — asymmetric crypto), nginx parsing the request, opening a socket/connection to the backend, the app receiving the request, running the router, producing a 404/500. The app "rejecting" does not mean it was free — and more dangerously, it means the entire defense rests on the app protecting itself, with no layer in front. 536 scan requests over two-plus hours (the real case in 11.6.8) is 536 TLS handshakes + parses + a portion touching the app. The principle: whatever is clearly junk must be dropped as early as possible — right at the proxy, before it touches the app. Sections 11.6.3–11.6.7 are those early layers, ordered from "behavioral" to "root-cause."</p>
+<h3 id="ch11-1163-rate-limiting-limit_req-leaky-bucket-and-limit_conn">11.6.3. Rate limiting — <code>limit_req</code> (leaky bucket) and <code>limit_conn</code></h3>
+<p><strong>Built to solve:</strong> a real human does not send one request every few seconds steadily for two hours; a scanner does. Rate-limiting by source IP blocks that <em>behavior</em> without needing to know in advance which IPs are bad — which matters when the scanning source rotates IPs constantly (11.6.8).</p>
+<pre><code class="language-nginx"># In http {} — declare the shared-memory zone holding counters
+limit_req_zone  $binary_remote_addr zone=perip:10m  rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=connperip:10m;
+
+# In server {} or location {}
+limit_req        zone=perip burst=20 nodelay;
+limit_req_status 429;      # default is 503; 429 Too Many Requests is semantically correct
+limit_conn       connperip 20;
+</code></pre>
+<p>Parameter by parameter:
+- <code>$binary_remote_addr</code>: the client IP in binary form (IPv4 = 4 bytes) instead of a text string — each zone entry is smaller, so the zone holds more IPs.
+- <code>zone=perip:10m</code>: 10MB of shared memory storing per-IP counters; roughly 160,000 states (~64 bytes per state — needs verification per version). When full, nginx evicts the oldest entries.
+- <code>rate=10r/s</code>: the <strong>leaky bucket</strong> mechanism — each IP gets a "leaking bucket" that drains at a fixed 10 requests/second (nginx tracks it at millisecond granularity: 1 request/100ms). Requests arriving when the bucket is full are rejected.
+- <code>burst=20</code>: lets the bucket hold up to 20 requests above the rate. Real traffic "bursts" in clusters (opening one page fires dozens of near-simultaneous resource requests) — without burst you would false-positive immediately.
+- <code>nodelay</code>: process requests within the burst allowance immediately instead of queueing and releasing them at the <code>rate</code> cadence; only requests exceeding even the burst get the error. Without <code>nodelay</code>, legitimate clients get artificial added latency.
+- <code>limit_conn connperip 20</code>: at most 20 simultaneous open connections per IP — blocks the attack style of opening many connections and holding them (slow attacks), which <code>limit_req</code> (counting requests) cannot see.</p>
+<p><strong>How to pick the threshold:</strong> do not guess — measure real load. Count requests/second per IP from peak-hour access logs (<code>awk</code> over the IP + timestamp columns, or an existing panel on your monitoring stack), take the peak of your <em>busiest</em> legitimate client, and multiply by a 2–3x safety factor. The right threshold is one that real clients never touch and scanners hit immediately.</p>
+<p><strong>Trade-off:</strong> many clients behind one NAT (an office, mobile CGNAT) share a single source IP — too low a threshold blocks the whole building; heavy legitimate API clients need a separate zone (keyed by API key/token instead of IP) or the <code>geo</code> module mapping trusted ranges to a variable that exempts them from the limit.</p>
+<h3 id="ch11-1164-blocking-sensitive-filenamespaths-and-nginxs-limits">11.6.4. Blocking sensitive filenames/paths — and nginx's limits</h3>
+<p><strong>Built to solve:</strong> scanners probe for secret files from a familiar list — <code>.env</code>, <code>.git/config</code>, <code>.ssh/id_rsa</code>, <code>.sql</code> dumps, <code>.bak</code> backups, <code>.mysql_history</code>. There is no reason for those paths to ever reach the app; block them right at nginx with one regex location:</p>
+<pre><code class="language-nginx">location ~* (?:\.env|\.git|/\.ssh/|id_rsa|id_ed25519|\.mysql_history|\.sql|\.bak)(?:$|/) {
+    return 403;
+}
+</code></pre>
+<p>A (Note: <code>location</code> matches the URI path only — the query string is not part of it, so there is no point trying to match <code>?</code> here.)</p>
+<p><code>return 403</code> at nginx is nearly free: no proxying, no touching the app, no 500 errors generated on the backend.</p>
+<p><strong>The important technical point — why block by FILENAME rather than the <code>../</code> pattern:</strong> before matching <code>location</code>, nginx <strong>normalizes the URI</strong>: it decodes percent-encoding (<code>%2e</code> → <code>.</code>), merges redundant slashes (<code>merge_slashes</code>), and resolves <code>./</code> and <code>../</code> components. The consequence is that blocking traversal syntax at the location layer is <strong>unreliable</strong>: a <code>../</code> pattern written in your regex — the URI has already had it resolved away by nginx before the match; a <code>%2e%2e</code> pattern — it has already been decoded to <code>..</code>; and the double-encoded variant <code>%252e%252e</code> gets decoded only once, to <code>%2e%2e</code> — matching neither spelling. But no matter how the scanner encodes the journey, <strong>the final target is always a specific filename</strong> (<code>id_rsa</code>, <code>.env</code>, <code>.mysql_history</code>) — and after normalization that filename always appears in plain form in the URI. Blocking by filename catches the majority of scans at near-zero cost. <em>Thoroughly</em> blocking traversal (every encoding variant, including in POST bodies/parameters) is the WAF's job — ModSecurity + OWASP CRS with the <code>t:urlDecodeUni</code> transform chain and the dedicated traversal/LFI rules (see 11.3.3 on transforms, 11.3.5 on the CRS).</p>
+<h3 id="ch11-1165-default_server-cutting-off-unknown-hosts-bare-ips-with-return-444">11.6.5. <code>default_server</code> — cutting off unknown Hosts / bare IPs with <code>return 444</code></h3>
+<p><strong>Built to solve:</strong> most scanners sweep IP ranges, sending requests by bare IP or with a random Host header — they do not know your domain. If you do not declare a <code>default_server</code> explicitly, nginx takes the <strong>first</strong> server block on each address:port pair as the default — meaning your "real" vhost ends up greeting all of that junk traffic.</p>
+<pre><code class="language-nginx">server {
+    listen 80  default_server;
+    listen 443 ssl default_server;
+    server_name _;                                   # catches every Host matching no other block
+    ssl_certificate     /etc/nginx/ssl/dummy.crt;    # throwaway self-signed cert
+    ssl_certificate_key /etc/nginx/ssl/dummy.key;
+    return 444;                                      # close the connection, send not one byte
+}
+</code></pre>
+<p><strong>Why <code>444</code>:</strong> it is an nginx-specific code (not a standard HTTP status) — nginx <strong>closes the connection immediately without sending a response</strong>. Compared to <code>403</code>: a 403 response is still a complete HTTP exchange (status line, headers, body) that confirms "there is a live web server here" for the scanner to record; <code>444</code> means the scanning side only sees the connection drop — as little information as possible.</p>
+<p><strong>Why the 443 block needs a dummy cert:</strong> with HTTPS, the TLS handshake happens <em>before</em> nginx can read the request. A client connecting by bare IP sends no SNI → nginx picks the <code>default_server</code>'s cert; a <code>listen 443 ssl</code> block with no cert is an invalid configuration. A self-signed cert is enough — we do not need the scanner to trust it, only for the handshake not to fall through to the real vhost.</p>
+<h3 id="ch11-1166-client_max_body_size-never-leave-it-at-4g-globally">11.6.6. <code>client_max_body_size</code> — never leave it at 4G globally</h3>
+<p>The familiar scenario: an upload fails with <code>413 Request Entity Too Large</code> (the nginx default allows only 1m) → someone sets <code>client_max_body_size 4G;</code> at the server level to "fix the error." The consequence: <strong>any IP</strong> is now allowed to push a 4GB body at <strong>every endpoint</strong>. Large bodies get buffered by nginx into RAM (<code>client_body_buffer_size</code>) and then spill into temp files on disk — a few parallel connections are enough to exhaust disk/RAM. This is a cheap DoS requiring no vulnerability in the app at all.</p>
+<p>The right way: a small default, overridden exactly where needed:</p>
+<pre><code class="language-nginx"># http {} or server {}
+client_max_body_size 20m;
+
+# only the location that genuinely accepts large uploads
+location /api/upload {
+    client_max_body_size 200m;
+    proxy_pass http://localhost:5000;
+}
+</code></pre>
+<p><strong>Trade-off:</strong> you have to survey which endpoints genuinely need large uploads to override them — doing it backwards (loosening globally, forgetting to tighten) is the anti-pattern from 11.6.2.</p>
+<h3 id="ch11-1167-devstaging-environments-allowdeny-by-ip-killing-the-root-cause">11.6.7. Dev/staging environments: allow/deny by IP — killing the root cause</h3>
+<p>Everything above is <em>mitigation</em>; for dev/staging environments there is also a <em>root-cause</em> fix: those domains have no reason to be exposed to the entire Internet. A bot can only scan what it can reach — restrict access to the office/VPN IP ranges and the whole external scanning campaign stops at this layer:</p>
+<pre><code class="language-nginx"># in the server {} of the dev/staging environment
+allow 203.0.113.0/24;   # office IP range (placeholder — substitute the real range)
+allow 10.8.0.0/24;      # internal VPN subnet
+deny  all;              # everyone else: 403
+</code></pre>
+<p>If you need coarse country-level filtering (a service serving a single market), the <code>geoip2</code> module maps IP → country code as a conditional variable. <strong>Trade-off:</strong> you have to maintain the list of valid IPs; remote dev/QA must go through the VPN — but that is the right price for an environment not meant for the public.</p>
+<h3 id="ch11-1168-lessons-from-a-real-scanning-campaign">11.6.8. Lessons from a real scanning campaign</h3>
+<p>The chain of measures in 11.6.2–11.6.7 is not theory — it came out of an investigation on a system I operate (July 2026), retold here anonymized.</p>
+<p>On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: <code>45.148.10.80</code> (a VPS in Amsterdam) — <strong>536 requests in ~2 hours 15 minutes</strong> aimed at a dev machine running a web API, all path traversal probing for secret files. A typical raw access-log line:</p>
+<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15&quot;
+</code></pre>
+<p>What the logs revealed: the <code>....//</code> variant and double-encoded <code>%252e%252e</code> to evade ordinary <code>../</code> filters (exactly the trap from 11.6.4); targeting <code>.ssh/id_rsa</code>, <code>.ssh/id_ed25519</code>, <code>.env</code>, <code>.mysql_history</code> in turn for every common user (root/admin/ubuntu/deploy/www-data...); a fake Bing referer plus a constantly rotating user-agent to evade detection; a steady cadence of ~1 request every 5 seconds for two hours — unmistakably a machine, not a person. The outcome: all 301/400/404, not a single request returning 200 — <strong>not breached</strong>, but all 536 requests were accepted and a portion touched the app (the config was exactly the anti-pattern from 11.6.2).</p>
+<p>Widening the query to the whole fleet changed the picture entirely: <strong>dozens of IPs across multiple subnets</strong> (<code>185.177.72.x</code>, <code>45.148.10.x</code>, <code>195.178.110.x</code>...) scanning every web-facing machine, with IPs rotating constantly. The lessons:</p>
+<ol>
+<li><strong>Blocking individual IPs is whack-a-mole</strong>: block <code>.80</code> and <code>.62</code>, <code>.42</code>, and other subnets arrive right behind it. Blocking IPs/subnets is only a stopgap while under sustained pressure.</li>
+<li><strong>Prioritize behavioral measures, applied fleet-wide</strong>: rate limiting (11.6.3), filename blocking (11.6.4), the 444 <code>default_server</code> (11.6.5), tightened body size (11.6.6) — none depend on the source IP, so you stop chasing the scanner. For dev/staging, allow/deny by IP (11.6.7) kills the root cause outright.</li>
+<li><strong>The automation direction (still researching)</strong>: wiring up fail2ban or the SIEM's active-response mechanism to auto-block IPs that exceed an alert threshold (the SIEM counts alerts per <code>srcip</code> → pushes a block down to the firewall). Thresholds and ban durations need care so you do not auto-block a partner sharing a NAT'ed IP.</li>
+</ol>
+<hr />
+<h2 id="ch11-117-zeek-behavior-based-traffic-analysis-network-security-monitor">11.7. Zeek — behavior-based traffic analysis (network security monitor)</h2>
+<p>Zeek (formerly Bro) is DIFFERENT from Snort/Suricata: it does not primarily match signatures, but rather produces CONTEXT-RICH LOGS for every connection and protocol event, used for threat hunting and anomaly detection. It runs scripts on events (connection_established, dns_request, http_request).</p>
+<p>The main logs (TSV, one line per event):
+- <code>conn.log</code>: every L3/L4 connection.
+- <code>dns.log</code>: DNS queries/responses.
+- <code>http.log</code>: each HTTP request/response.
+- <code>ssl.log</code>/<code>x509.log</code>: TLS handshakes, certs.
+- <code>files.log</code>, <code>notice.log</code>, <code>weird.log</code>.</p>
+<p>Typical fields in <code>conn.log</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ts</td>
+<td>timestamp</td>
+<td>1718780400.123</td>
+</tr>
+<tr>
+<td>uid</td>
+<td>a unique connection ID (links logs together)</td>
+<td>CwjjYf3</td>
+</tr>
+<tr>
+<td>id.orig_h / id.orig_p</td>
+<td>source IP/port</td>
+<td>10.0.0.5 / 51234</td>
+</tr>
+<tr>
+<td>id.resp_h / id.resp_p</td>
+<td>destination IP/port</td>
+<td>8.8.8.8 / 53</td>
+</tr>
+<tr>
+<td>proto</td>
+<td>tcp/udp/icmp</td>
+<td>udp</td>
+</tr>
+<tr>
+<td>service</td>
+<td>the identified L7 protocol</td>
+<td>dns</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>the duration</td>
+<td>0.034</td>
+</tr>
+<tr>
+<td>orig_bytes/resp_bytes</td>
+<td>bytes per direction</td>
+<td>31 / 75</td>
+</tr>
+<tr>
+<td>conn_state</td>
+<td>the state (S0, SF, REJ, RSTO...)</td>
+<td>SF</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>uid</code> is the key: the same <code>uid</code> appearing in <code>conn.log</code>, <code>dns.log</code>, <code>http.log</code> → pivot across the entire activity of one connection.</p>
+<p>Running Zeek offline on a pcap and querying:</p>
+<pre><code class="language-bash">zeek -r capture.pcap                  # generates conn.log, dns.log, http.log...
+zeek-cut id.orig_h id.resp_h id.resp_p service &lt; conn.log | sort | uniq -c | sort -rn
+# Find DNS exfil: very long queries / many random subdomains
+zeek-cut query &lt; dns.log | awk '{ if (length($1) &gt; 50) print }'
+</code></pre>
+<p>A Zeek script detecting connections to an unusual port (an illustrative example):</p>
+<pre><code class="language-zeek">event connection_established(c: connection) {
+    if (c$id$resp_p == 4444/tcp)
+        NOTICE([$note=Weird::Activity,
+                $msg=fmt(&quot;Possible reverse shell to %s:%s&quot;, c$id$resp_h, c$id$resp_p),
+                $conn=c]);
+}
+</code></pre>
+<p><strong>Why</strong> Zeek complements Suricata: Suricata answers "did a signature match?"; Zeek answers "what happened on the network" — enabling hunting for threats that have no signature yet (regular beaconing, DNS tunneling, anomalous TLS JA3 fingerprints). Combined: Suricata for fast alerts, Zeek for investigative context, feeding both into the SIEM.</p>
+<hr />
+<h2 id="ch11-118-putting-the-defense-architecture-together-and-operational-notes">11.8. Putting the defense architecture together and operational notes</h2>
+<p>A typical organizational layout:</p>
+<pre><code>Internet
+  │
+[ pfSense / NGFW ]  ── L3/L4 stateful filter, NAT, anti-DDoS, VPN termination (IPsec/WG/OVPN)
+  │  (SPAN/TAP) ───────────────► [ Suricata IDS ]  +  [ Zeek ]  ──► SIEM
+  │
+[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination, rate-limit + early rejection (11.6)
+  │
+[ App servers ]  ── HIDS (Wazuh/auditd), prepared statements (the root is still secure code)
+</code></pre>
+<p>The core operational principles:
+1. Tune first, enforce later: IDS alert-only and WAF DetectionOnly during the baseline phase; measure false positives before going inline/On.
+2. The right layer for the job: block L3/L4 at the firewall (cheap), L7 at the WAF; do not use a WAF to fight floods or a firewall to fight SQLi. Junk requests identifiable by cheap patterns (sensitive filenames, request rate, unknown Hosts) should be cut off right at the reverse proxy (11.6) before they reach the WAF/app.
+3. Defense in depth: WAF/IDS are compensating controls; they do not replace secure code, patching, and least-privilege.
+4. The availability of the defensive device: an inline IPS/WAF is a potential point of failure / chokepoint — design fail-open/fail-close deliberately, HA, and limit regex/ReDoS.
+5. Encryption blinds the NIDS: consider TLS inspection at the reverse proxy (where the keys already are) instead of decrypting mid-path.
+6. Protect the VPN keys and peer identities: private key permission 600, PFS/rekey, pin the cert/public key, monitor handshakes.
+7. Correlate multiple sources: NIDS (Suricata) + NSM (Zeek) + HIDS (Wazuh) + WAF audit logs → SIEM to see the full attack chain instead of disjointed alerts.</p>
+<hr />
+<h2 id="ch11-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li>I rewrote section 11.6 after auditing the nginx configs across the whole fleet of web machines on a system I operate. A quick audit trick I found valuable: run <code>sudo nginx -T 2&gt;/dev/null | grep -cE "limit_req|limit_conn|default_server"</code> on each machine — a single number tells you how many defensive config lines that machine has. My result: 5 out of 6 machines returned <strong>0</strong>. That zero is more persuasive than any presentation about defense-in-depth.</li>
+<li>The one machine that already had a partial good config became my <strong>standardization template</strong> for the rest — no writing from scratch, and "machine X has been running stably with this config" is an argument DevOps accepts far more readily than a brand-new config I invented myself.</li>
+<li>Something I used to get wrong: seeing the scanner eat nothing but 301/400/404, I felt reassured that "the app is blocking it." Wrong on two counts — returning an error still costs the full TLS + parse + a portion touching the app; and more importantly, it means the whole system is leaning on exactly one layer, the app protecting itself, with nothing in front.</li>
+<li>I also used to believe a <code>../</code> regex block in nginx would stop traversal — wrong again, because nginx normalizes the URI before matching locations (11.6.4). Fortunately I figured that out before declaring "traversal is blocked" anywhere.</li>
+<li>Deployment experience: propose measures in priority order (root-cause allow/deny for dev first, then rate limiting, filename blocking, default_server, body size), and <strong>trial on ONE dev machine first</strong> — watch for a few days whether <code>limit_req</code> false-positives on legitimate clients (count 429/503 in the logs) before rolling out to the fleet.</li>
+<li>Still exploring: auto-blocking IPs by threshold via fail2ban or the SIEM's active response, and putting a WAF (ModSecurity/CRS or Coraza) on the reverse proxy — my machines currently stop at the cheap plain-nginx blocking layer.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch10.html"><span>← Previous</span><b>10 · SOC &amp; Incident Response</b></a><a class="pg next" href="ch12.html"><span>Next →</span><b>12 · Pentest &amp; Vuln Assessment</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1824 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 11 — Phòng thủ mạng: IDS/IPS, WAF, Firewall &amp;amp; VPN — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 11 — Phòng thủ mạng: IDS/IPS, WAF, Firewall &amp;amp; VPN — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch10.html"><link rel="next" href="ch12.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter open active" data-ch="11"><a class="nav-ch-title" href="#top"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch11-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch11-cac-muc-co-nhan-demo-la-cau-hinh-rut-gon-đe-minh-hoa-cu-phap-đung-be-thang-len-production-ban-dung-that-luon-nam-o-phan-ke-ben">&amp;gt; Các mục có nhãn [DEMO] là cấu hình rút gọn để minh hoạ cú pháp, đừng bê thẳng lên production — bản dùng thật luôn nằm ở phần kế bên.</a><a class="nav-sub" href="#ch11-111-mo-hinh-phong-thu-mang-va-vi-tri-cua-idsipswaf">11.1. Mô hình phòng thủ mạng và vị trí của IDS/IPS/WAF</a><a class="nav-sub" href="#ch11-112-snort-suricata-nidsips-dua-tren-chu-ky">11.2. Snort &amp;amp; Suricata — NIDS/IPS dựa trên chữ ký</a><a class="nav-sub" href="#ch11-113-modsecurity-owasp-crs-waf-tang-7">11.3. ModSecurity + OWASP CRS — WAF tầng 7</a><a class="nav-sub" href="#ch11-114-pfsense-firewallrouter-pf-nat-state-vpn">11.4. pfSense — firewall/router (pf, NAT, state, VPN)</a><a class="nav-sub" href="#ch11-115-vpn-ipsec-openvpn-wireguard-cuc-sau">11.5. VPN — IPsec, OpenVPN, WireGuard (cực sâu)</a><a class="nav-sub" href="#ch11-116-proxy-reverse-proxy-va-hardening-nginx-lam-reverse-proxy">11.6. Proxy, Reverse proxy và hardening NGINX làm reverse proxy</a><a class="nav-sub" href="#ch11-117-zeek-phan-tich-luu-luong-dua-hanh-vi-network-security-monitor">11.7. Zeek — phân tích lưu lượng dựa hành vi (network security monitor)</a><a class="nav-sub" href="#ch11-118-tong-hop-kien-truc-phong-thu-va-luu-y-van-hanh">11.8. Tổng hợp kiến trúc phòng thủ và lưu ý vận hành</a><a class="nav-sub" href="#ch11-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-11" data-ch="11">
+<h1 id="ch11-chuong-11-phong-thu-mang-idsips-waf-firewall-vpn">Chương 11 — Phòng thủ mạng: IDS/IPS, WAF, Firewall &amp; VPN</h1>
+<h2 id="ch11-tong-quan">Tổng quan</h2>
+<p>Thứ khiến mình để tâm tới mảng này là một chuyện rất tầm thường: đám scanner ngoài Internet không cần biết bạn là ai, cứ có cổng mở là chúng gõ cửa suốt ngày. Bảo vệ một mạng vì thế không phải là dựng một bức tường thật dày, mà là xếp nhiều lớp kiểm soát mà mỗi lớp "nhìn" được một phạm vi dữ liệu khác nhau — đó là <strong>phòng thủ theo chiều sâu</strong>: có thiết bị chỉ thấy địa chỉ và cổng ở L3/L4, có thiết bị đọc được cả nội dung HTTP ở L7, và không lớp nào bao phủ hết phần còn lại.</p>
+<p>Chương đi theo đúng thứ tự các lớp đó. Ngoài cùng là <strong>firewall</strong> với <strong>pfSense</strong> (dựa trên <code>pf</code> của FreeBSD, stateful nên nhớ được kết nối đang mở, kiêm luôn phân đoạn VLAN và làm điểm cuối VPN) — lớp chặn rẻ nhất, loại bỏ thứ rõ ràng không hợp lệ trước khi nó đi sâu hơn. Sâu vào trong là <strong>IDS/IPS</strong>: cùng một engine nhưng khác cách đặt — IDS đứng out-of-band chỉ cảnh báo, IPS nằm inline và chặn thật, đổi lại chặn nhầm là gián đoạn dịch vụ (nên thực tế luôn chạy IDS để tinh chỉnh trước rồi mới dám chuyển sang chặn). Hai góc nhìn bổ khuyết nhau: <strong>NIDS</strong> thấy traffic giữa các host nên bắt được lateral movement và quét mạng, <strong>HIDS</strong> thấy syscall và file trên một host nên bắt được persistence và leo thang đặc quyền. Phần engine đi sâu vào <strong>Snort</strong> và <strong>Suricata</strong> — khớp theo chữ ký, mạnh với đòn đã biết, mù với đòn chưa có chữ ký.</p>
+<p>Lên tới tầng ứng dụng là <strong>WAF</strong> — thứ mà firewall L3/L4 không làm được, vì nó phải parse method, URI, header, body mới phân biệt nổi request hợp lệ với request mang payload — với <strong>ModSecurity</strong> và bộ luật soạn sẵn <strong>OWASP CRS</strong>. Song song đó là <strong>VPN</strong> (IPsec, OpenVPN, WireGuard — cùng mục tiêu, khác nhau ở cách trao khoá và độ phức tạp) cho nhu cầu nối hai đầu qua Internet như thể chung một mạng. Cuối chương là hai thứ mình dùng nhiều nhất trong thực tế: <strong>hardening nginx làm reverse proxy</strong> (11.6 — rate limit, chặn tên tệp nhạy cảm, <code>default_server</code>, và cả giới hạn của chính nginx), và <strong>Zeek</strong> — công cụ không khớp chữ ký mà ghi lại hành vi mạng thành log có cấu trúc để phân tích sau.</p>
+<h2 id="ch11-cac-muc-co-nhan-demo-la-cau-hinh-rut-gon-đe-minh-hoa-cu-phap-đung-be-thang-len-production-ban-dung-that-luon-nam-o-phan-ke-ben">&gt; Các mục có nhãn [DEMO] là cấu hình rút gọn để minh hoạ cú pháp, đừng bê thẳng lên production — bản dùng thật luôn nằm ở phần kế bên.</h2>
+<h2 id="ch11-111-mo-hinh-phong-thu-mang-va-vi-tri-cua-idsipswaf">11.1. Mô hình phòng thủ mạng và vị trí của IDS/IPS/WAF</h2>
+<h3 id="ch11-1111-phong-thu-theo-chieu-sau-defense-in-depth-va-ban-đo-tang-osi">11.1.1. Phòng thủ theo chiều sâu (defense-in-depth) và bản đồ tầng OSI</h3>
+<p>Mọi thiết bị phòng thủ đều hành động ở một (hoặc nhiều) tầng OSI. Hiểu chính xác thiết bị "đọc" được tới byte nào của gói tin là gốc rễ để biết nó chặn được gì và mù với cái gì.</p>
+<table>
+<thead>
+<tr>
+<th>Tầng OSI</th>
+<th>Đơn vị dữ liệu (PDU)</th>
+<th>Thiết bị đọc tới</th>
+<th>Quyết định dựa trên</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L2 Data Link</td>
+<td>Frame (Ethernet)</td>
+<td>Switch, MACsec</td>
+<td>MAC src/dst, VLAN tag 802.1Q</td>
+</tr>
+<tr>
+<td>L3 Network</td>
+<td>Packet (IP)</td>
+<td>Router, firewall L3 (packet filter)</td>
+<td>IP src/dst, protocol number</td>
+</tr>
+<tr>
+<td>L4 Transport</td>
+<td>Segment (TCP) / Datagram (UDP)</td>
+<td>Stateful firewall (pfSense/pf), L4 LB</td>
+<td>Port, TCP flags, trạng thái kết nối</td>
+</tr>
+<tr>
+<td>L5-L7 App</td>
+<td>Message (HTTP, DNS, TLS)</td>
+<td>WAF (ModSecurity), L7 proxy, NGFW DPI</td>
+<td>URI, header, body, chữ ký ứng dụng</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao:</strong> một firewall L3/L4 chỉ thấy <code>IP/port/flags</code> nên có thể cho phép <code>tcp dst port 443</code> nhưng hoàn toàn không biết trong luồng HTTPS đó có <code>UNION SELECT</code>. Đó là lý do WAF tồn tại — nó phải kết thúc TLS (TLS termination) để đọc plaintext HTTP. Ngược lại WAF không hiệu quả để chặn SYN flood vì việc đó nên dừng ở L3/L4 trước khi tốn tài nguyên giải mã TLS.</p>
+<h3 id="ch11-1112-ids-vs-ips">11.1.2. IDS vs IPS</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>IDS (Detection)</th>
+<th>IPS (Prevention)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vai trò</td>
+<td>Phát hiện + cảnh báo</td>
+<td>Phát hiện + chặn</td>
+</tr>
+<tr>
+<td>Vị trí mạng</td>
+<td>Out-of-band (SPAN/TAP)</td>
+<td>Inline (gói đi xuyên qua)</td>
+</tr>
+<tr>
+<td>Tác động lên gói</td>
+<td>Không (chỉ copy)</td>
+<td>Có (drop/reset/modify)</td>
+</tr>
+<tr>
+<td>Rủi ro khi sai</td>
+<td>False negative = bỏ lọt</td>
+<td>False positive = chặn nhầm traffic hợp lệ</td>
+</tr>
+<tr>
+<td>Rủi ro khả dụng</td>
+<td>Không ảnh hưởng đường truyền nếu IDS chết</td>
+<td>Single point of failure; cần fail-open/fail-close</td>
+</tr>
+<tr>
+<td>Độ trễ</td>
+<td>0 (song song)</td>
+<td>Thêm latency xử lý mỗi gói</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao:</strong> phân biệt này quan trọng vì IPS nằm trên đường dữ liệu, nên một rule kém (regex thảm hoạ, hay drop dựa trên anomaly) có thể gây mất dịch vụ. IDS an toàn hơn về khả dụng nhưng chỉ hữu ích khi có quy trình phản ứng (SOAR/SOC). Trong thực tế thường triển khai IDS trước (tuning rules ở chế độ alert), sau khi giảm false positive mới chuyển sang IPS (inline-block).</p>
+<h3 id="ch11-1113-nids-vs-hids">11.1.3. NIDS vs HIDS</h3>
+<ul>
+<li>NIDS (Network IDS): đặt ở biên/lõi mạng, phân tích gói tin trên dây (Snort, Suricata, Zeek). Thấy toàn bộ traffic nhưng mù với traffic mã hoá nếu không có khoá.</li>
+<li>HIDS (Host IDS): chạy trên host, thấy syscall, file integrity, log, process (OSSEC/Wazuh, auditd, Sysmon, Falco). Thấy được hành vi sau giải mã (vd: lệnh shell), nhưng chỉ thấy host đó.</li>
+</ul>
+<p>NIDS và HIDS bù trừ nhau: NIDS bắt lateral movement/scan; HIDS bắt persistence/privilege escalation. SIEM tổng hợp cả hai.</p>
+<h3 id="ch11-1114-lay-goi-inline-vs-span-vs-tap">11.1.4. Lấy gói: inline vs SPAN vs TAP</h3>
+<pre><code>SPAN (port mirroring):  Switch copy traffic của các port → 1 monitor port → NIDS
+   Ưu: rẻ, cấu hình mềm.  Nhược: switch quá tải sẽ DROP bản copy trước (mất gói), không thấy lỗi tầng vật lý, copy có thể bỏ frame lỗi CRC.
+
+TAP (Test Access Point): thiết bị phần cứng cắt vào dây, copy 100% bit (kể cả lỗi).
+   Ưu: full-fidelity, fail-safe.  Nhược: tốn cổng (TX/RX tách 2 chiều cần aggregation), phải cắt dây.
+
+INLINE (IPS): traffic đi XUYÊN qua thiết bị.  Drop được. Nhưng là một điểm nghẽn/điểm có thể gây gián đoạn (chokepoint - điểm thắt cổ chai).
+</code></pre>
+<p><strong>Lưu ý:</strong>
+- Với traffic full-duplex 10G, một TAP tách RX/TX thành 2 luồng 10G; NIDS cần NIC nhận tổng 20G, hoặc cần packet broker để aggregate.
+- SPAN trên cùng switch có thể mất gói âm thầm khi tải cao, dẫn tới bỏ lọt tấn công mà không ai biết.</p>
+<hr />
+<h2 id="ch11-112-snort-suricata-nidsips-dua-tren-chu-ky">11.2. Snort &amp; Suricata — NIDS/IPS dựa trên chữ ký</h2>
+<h3 id="ch11-1121-kien-truc-xu-ly-goi">11.2.1. Kiến trúc xử lý gói</h3>
+<p>Cả Snort (2.x/3.x) và Suricata chia pipeline thành các giai đoạn:</p>
+<pre><code>[ Capture ] → [ Decode L2/L3/L4 ] → [ Preprocessors / App-layer parsers ]
+   → [ Detection engine: so khớp rule ] → [ Output: alert/log/drop ]
+</code></pre>
+<ul>
+<li>Decode: parse Ethernet → IP → TCP/UDP, dựng struct mô tả gói.</li>
+<li>Preprocessors (Snort) / app-layer (Suricata): tái lắp luồng TCP (stream reassembly), chống evasion bằng phân mảnh IP (frag3), chuẩn hoá HTTP (http_inspect), giải mã, theo dõi trạng thái flow.</li>
+<li>Detection engine: dùng thuật toán đa mẫu (Aho-Corasick) để so <code>content</code> của hàng nghìn rule song song, rồi mới chạy <code>pcre</code> đắt đỏ trên các rule đã lọt qua bước content nhanh.</li>
+</ul>
+<p><strong>Vì sao</strong> đặt <code>content</code> trước <code>pcre</code>: regex tốn CPU; engine dùng <code>content</code> (so chuỗi cố định bằng Aho-Corasick O(n)) làm "fast pattern" để loại nhanh đa số gói, chỉ những gói chứa chuỗi đó mới chịu chi phí regex. Đây là lý do mọi rule tốt nên có ít nhất một <code>content</code> để có fast pattern.</p>
+<p>Khác biệt then chốt: Suricata đa luồng (multi-thread) bản thiết kế, hỗ trợ tương thích phần lớn cú pháp rule Snort, có thêm <code>app-layer</code> keywords (http.uri, tls.sni, dns.query) và xuất EVE JSON. Snort 3 cũng đã viết lại đa luồng. Cú pháp rule dưới đây tương thích cả hai trừ khi ghi chú.</p>
+<h3 id="ch11-1122-cau-truc-mot-rule-phan-ra-tung-phan">11.2.2. Cấu trúc một rule — phân rã từng phần</h3>
+<p>Một rule gồm RULE HEADER + RULE OPTIONS (trong ngoặc đơn).</p>
+<pre><code>alert tcp $EXTERNAL_NET any -&gt; $HOME_NET 80 ( msg:&quot;...&quot;; content:&quot;...&quot;; sid:1000001; rev:1; )
+└─┬─┘ └┬┘ └─────┬──────┘└┬┘ └┬┘ └──┬───┘ └┬┘  └────────────── OPTIONS ──────────────┘
+action proto   src_ip  sp dir dst_ip dp
+</code></pre>
+<h4 id="ch11-rule-header-tung-truong">Rule Header — từng trường</h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Giá trị hợp lệ</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>action</td>
+<td>alert, log, pass, drop, reject, sdrop</td>
+<td>Hành động khi khớp</td>
+<td><code>alert</code> (log+cảnh báo), <code>drop</code> (chặn, chỉ IPS inline)</td>
+</tr>
+<tr>
+<td>protocol</td>
+<td>tcp, udp, icmp, ip (Suricata thêm: http, tls, dns, ssh...)</td>
+<td>Giao thức</td>
+<td><code>tcp</code></td>
+</tr>
+<tr>
+<td>src_ip</td>
+<td>IP/CIDR, biến <code>$HOME_NET</code>, list <code>[a,b]</code>, phủ định <code>!</code></td>
+<td>Nguồn</td>
+<td><code>$EXTERNAL_NET</code>, <code>![10.0.0.0/8]</code></td>
+</tr>
+<tr>
+<td>src_port</td>
+<td>số, dải <code>1:1024</code>, <code>any</code>, <code>!80</code>, <code>[80,443]</code></td>
+<td>Cổng nguồn</td>
+<td><code>any</code></td>
+</tr>
+<tr>
+<td>direction</td>
+<td><code>-&gt;</code> một chiều, <code>&lt;&gt;</code> hai chiều</td>
+<td>Hướng</td>
+<td><code>-&gt;</code></td>
+</tr>
+<tr>
+<td>dst_ip</td>
+<td>như src_ip</td>
+<td>Đích</td>
+<td><code>$HOME_NET</code></td>
+</tr>
+<tr>
+<td>dst_port</td>
+<td>như src_port</td>
+<td>Cổng đích</td>
+<td><code>80</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ý nghĩa action chi tiết:
+- <code>alert</code>: tạo cảnh báo và log gói.
+- <code>log</code>: chỉ log, không cảnh báo.
+- <code>pass</code>: bỏ qua gói (whitelist), dừng đánh giá thêm.
+- <code>drop</code> (inline): chặn gói + log. Không gửi gì cho client.
+- <code>reject</code>: chặn + gửi TCP RST (hoặc ICMP unreachable cho UDP) để đóng kết nối ngay.
+- <code>sdrop</code>: silent drop, chặn mà không log.</p>
+<p>Biến <code>$HOME_NET</code>, <code>$EXTERNAL_NET</code> định nghĩa trong <code>snort.conf</code>/<code>suricata.yaml</code>:</p>
+<pre><code>ipvar HOME_NET [10.0.0.0/8,192.168.0.0/16,172.16.0.0/12]
+ipvar EXTERNAL_NET !$HOME_NET
+portvar HTTP_PORTS [80,81,8080,8000]
+</code></pre>
+<h4 id="ch11-rule-options-bang-tham-chieu-đay-đu">Rule Options — bảng tham chiếu đầy đủ</h4>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Loại</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg</code></td>
+<td>metadata</td>
+<td>Chuỗi mô tả ghi vào alert</td>
+<td><code>msg:"SQLi UNION SELECT";</code></td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>payload</td>
+<td>So khớp chuỗi byte (text hoặc hex <code>\|41 42\|</code>)</td>
+<td><code>content:"UNION";</code></td>
+</tr>
+<tr>
+<td><code>nocase</code></td>
+<td>modifier</td>
+<td>content không phân biệt hoa thường</td>
+<td><code>content:"union"; nocase;</code></td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td>modifier</td>
+<td>Bắt đầu tìm content từ byte thứ N (0-based)</td>
+<td><code>offset:4;</code></td>
+</tr>
+<tr>
+<td><code>depth</code></td>
+<td>modifier</td>
+<td>Chỉ tìm trong N byte đầu (kể từ offset)</td>
+<td><code>depth:20;</code></td>
+</tr>
+<tr>
+<td><code>distance</code></td>
+<td>modifier</td>
+<td>Khoảng cách tối thiểu sau content trước đó</td>
+<td><code>distance:0;</code></td>
+</tr>
+<tr>
+<td><code>within</code></td>
+<td>modifier</td>
+<td>content kế tiếp phải nằm trong N byte sau content trước</td>
+<td><code>within:10;</code></td>
+</tr>
+<tr>
+<td><code>pcre</code></td>
+<td>payload</td>
+<td>Perl-compatible regex</td>
+<td><code>pcre:"/union\s+select/i";</code></td>
+</tr>
+<tr>
+<td><code>flow</code></td>
+<td>state</td>
+<td>Chiều/trạng thái luồng</td>
+<td><code>flow:established,to_server;</code></td>
+</tr>
+<tr>
+<td><code>flowbits</code></td>
+<td>state</td>
+<td>Đặt/kiểm cờ trên luồng (correlate đa gói)</td>
+<td><code>flowbits:set,logged_in;</code></td>
+</tr>
+<tr>
+<td><code>threshold</code>/<code>detection_filter</code></td>
+<td>rate</td>
+<td>Giới hạn tần suất alert</td>
+<td><code>detection_filter:track by_src, count 5, seconds 60;</code></td>
+</tr>
+<tr>
+<td><code>sid</code></td>
+<td>metadata</td>
+<td>Signature ID (duy nhất; &gt;1.000.000 cho local)</td>
+<td><code>sid:1000001;</code></td>
+</tr>
+<tr>
+<td><code>rev</code></td>
+<td>metadata</td>
+<td>Số revision của rule</td>
+<td><code>rev:1;</code></td>
+</tr>
+<tr>
+<td><code>classtype</code></td>
+<td>metadata</td>
+<td>Phân loại (ánh xạ priority)</td>
+<td><code>classtype:web-application-attack;</code></td>
+</tr>
+<tr>
+<td><code>reference</code></td>
+<td>metadata</td>
+<td>Liên kết CVE/URL</td>
+<td><code>reference:cve,2021-44228;</code></td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>metadata</td>
+<td>Ưu tiên thủ công (1 cao nhất)</td>
+<td><code>priority:1;</code></td>
+</tr>
+<tr>
+<td><code>http_uri</code>/<code>http.uri</code></td>
+<td>sticky buffer</td>
+<td>Giới hạn content vào URI đã chuẩn hoá</td>
+<td><code>http.uri; content:"/admin";</code></td>
+</tr>
+<tr>
+<td><code>dsize</code></td>
+<td>payload</td>
+<td>Kích thước payload</td>
+<td><code>dsize:&gt;100;</code></td>
+</tr>
+<tr>
+<td><code>byte_test</code>/<code>byte_jump</code></td>
+<td>payload</td>
+<td>So sánh/nhảy theo giá trị byte</td>
+<td><code>byte_test:2,&gt;,1000,0;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Giải thích <code>offset</code>/<code>depth</code> và <code>distance</code>/<code>within</code> (rất hay nhầm):
+- <code>offset</code>/<code>depth</code> đo TUYỆT ĐỐI từ đầu payload. <code>offset:4; depth:20;</code> = tìm trong byte 4..23.
+- <code>distance</code>/<code>within</code> đo TƯƠNG ĐỐI so với cuối match của content liền trước. Dùng để khớp nhiều mẩu gần nhau mà không cần biết vị trí tuyệt đối.</p>
+<p><strong>Vì sao</strong> có cả hai: payload thực tế có phần header độ dài cố định (dùng offset/depth) và phần biến thiên cần khớp tương đối (dùng distance/within). Giới hạn vùng tìm cũng giảm false positive và tăng tốc.</p>
+<h3 id="ch11-1123-vi-du-rule-that-giai-thich-tung-tham-so">11.2.3. Ví dụ rule thật — giải thích từng tham số</h3>
+<p>Phát hiện SQLi <code>UNION SELECT</code> trong HTTP request:</p>
+<pre><code># [PROD] rule có fast pattern + sticky buffer chuẩn hoá + pcre tinh lọc; vẫn cần tuning theo lưu lượng thực tế
+alert http $EXTERNAL_NET any -&gt; $HOME_NET $HTTP_PORTS (
+    msg:&quot;WEB SQLi UNION SELECT in URI&quot;;
+    flow:established,to_server;
+    http.uri;
+    content:&quot;union&quot;; nocase;
+    content:&quot;select&quot;; nocase; distance:0; within:100;
+    pcre:&quot;/union\s+(all\s+)?select/i&quot;;
+    classtype:web-application-attack;
+    reference:url,owasp.org/sqli;
+    sid:1000001; rev:2;
+)
+</code></pre>
+<ul>
+<li><code>flow:established,to_server</code>: chỉ xét gói trong kết nối TCP đã bắt tay xong, hướng client→server. Tránh khớp trên gói đơn lẻ giả mạo và giảm tải.</li>
+<li><code>http.uri</code> (sticky buffer): giới hạn các <code>content</code>/<code>pcre</code> sau nó vào URI ĐÃ CHUẨN HOÁ (decode <code>%55</code> → <code>U</code>). Đây là chống evasion: kẻ tấn công gửi <code>%75nion</code> để né content thô, nhưng buffer chuẩn hoá đã decode.</li>
+<li><code>content:"union"; nocase</code>: fast pattern. <code>content:"select"; distance:0; within:100</code>: "select" phải xuất hiện sau "union", trong vòng 100 byte.</li>
+<li><code>pcre</code>: tinh lọc để giảm false positive (yêu cầu khoảng trắng giữa, cho phép <code>union all select</code>).</li>
+</ul>
+<p>Phát hiện nmap SYN scan (nhiều SYN tới nhiều cổng trong thời gian ngắn):</p>
+<pre><code># [PROD] ngưỡng count/seconds cần hiệu chỉnh theo baseline mạng để tránh false positive
+alert tcp $EXTERNAL_NET any -&gt; $HOME_NET any (
+    msg:&quot;SCAN nmap SYN scan&quot;;
+    flags:S;
+    detection_filter:track by_src, count 20, seconds 5;
+    classtype:attempted-recon;
+    sid:1000010; rev:1;
+)
+</code></pre>
+<ul>
+<li><code>flags:S</code>: chỉ gói có CỜ SYN bật (xem mục TCP flags 11.2.5).</li>
+<li><code>detection_filter:track by_src, count 20, seconds 5</code>: chỉ alert khi cùng một src tạo ≥20 lần khớp trong 5 giây — đặc trưng scan, không alert cho 1 SYN bình thường.</li>
+</ul>
+<p>Phát hiện C2 beacon qua User-Agent đáng ngờ:</p>
+<pre><code># [DEMO] chỉ minh hoạ cơ chế: dựa vào artefact mặc định, attacker đổi profile là né được — KHÔNG dùng thẳng production
+alert http $HOME_NET any -&gt; $EXTERNAL_NET any (
+    msg:&quot;MALWARE Suspicious User-Agent C2 beacon&quot;;
+    flow:established,to_server;
+    http.user_agent; content:&quot;Mozilla/5.0 (compatible; MSIE 9.0&quot;;
+    http.uri; content:&quot;/submit.php&quot;; nocase;
+    detection_filter:track by_src, count 3, seconds 30;
+    classtype:trojan-activity;
+    reference:url,attack.mitre.org/techniques/T1071/001;
+    sid:1000020; rev:1;
+)
+</code></pre>
+<p><strong>Lưu ý:</strong> rule dựa vào artefact mặc định; threat actor đổi profile dễ dàng, nên đây chỉ là minh hoạ cơ chế, không phải chữ ký bền vững.</p>
+<p>Dùng <code>flowbits</code> để tương quan đa gói (chỉ alert exfil sau khi đã thấy đăng nhập):</p>
+<pre><code># [DEMO] URI mẫu /login, /export?all=1 chỉ minh hoạ cơ chế flowbits — thay bằng route thật trước khi dùng
+alert http any any -&gt; any any ( msg:&quot;login seen&quot;; http.uri; content:&quot;/login&quot;; flowbits:set,auth; flowbits:noalert; sid:1000030; )
+alert http any any -&gt; any any ( msg:&quot;download after login&quot;; http.uri; content:&quot;/export?all=1&quot;; flowbits:isset,auth; sid:1000031; )
+</code></pre>
+<ul>
+<li><code>flowbits:set,auth</code> gắn cờ lên flow; <code>flowbits:noalert</code> để rule đầu không tự cảnh báo. Rule sau chỉ khớp khi <code>auth</code> đã set.</li>
+</ul>
+<h3 id="ch11-1124-signature-vs-anomaly-detection">11.2.4. Signature vs Anomaly detection</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Signature-based</th>
+<th>Anomaly-based</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nguyên lý</td>
+<td>So với mẫu đã biết (rule/IOC)</td>
+<td>Xây baseline "bình thường", báo lệch chuẩn</td>
+</tr>
+<tr>
+<td>Bắt 0-day</td>
+<td>Kém (chưa có chữ ký)</td>
+<td>Tốt hơn (nếu hành vi lệch)</td>
+</tr>
+<tr>
+<td>False positive</td>
+<td>Thấp (nếu rule chuẩn)</td>
+<td>Cao (baseline khó đúng)</td>
+</tr>
+<tr>
+<td>Ví dụ công cụ</td>
+<td>Snort/Suricata rule</td>
+<td>thống kê, ML, một số preprocessor</td>
+</tr>
+</tbody>
+</table>
+<p>Snort/Suricata chủ yếu signature-based, nhưng preprocessors có yếu tố anomaly (vd: cảnh báo gói TCP có flag bất hợp lệ, header dị thường).</p>
+<h3 id="ch11-1125-tcp-flags-can-cho-rule-flags">11.2.5. TCP flags — cần cho rule <code>flags:</code></h3>
+<p>TCP định nghĩa 9 cờ điều khiển. 8 cờ nằm gọn trong 1 byte tại offset 13 của TCP header (gồm 6 cờ cổ điển FIN..URG cộng 2 cờ ECN là ECE/CWR theo RFC 3168); cờ thứ 9 là NS (Nonce Sum, RFC 3540) nằm ở bit thấp nhất của byte offset 12 (dùng chung byte với trường Data Offset), nên không cùng byte với 8 cờ còn lại:</p>
+<table>
+<thead>
+<tr>
+<th>Bit (byte offset 13)</th>
+<th>Cờ</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x01</td>
+<td>FIN</td>
+<td>Kết thúc kết nối</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>SYN</td>
+<td>Mở kết nối</td>
+</tr>
+<tr>
+<td>0x04</td>
+<td>RST</td>
+<td>Reset kết nối</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>PSH</td>
+<td>Đẩy buffer lên ứng dụng ngay</td>
+</tr>
+<tr>
+<td>0x10</td>
+<td>ACK</td>
+<td>Xác nhận (trường Acknowledgment hợp lệ)</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td>URG</td>
+<td>Khẩn (trường Urgent Pointer hợp lệ)</td>
+</tr>
+<tr>
+<td>0x40</td>
+<td>ECE</td>
+<td>ECN-Echo — báo hiệu tắc nghẽn (RFC 3168)</td>
+</tr>
+<tr>
+<td>0x80</td>
+<td>CWR</td>
+<td>Congestion Window Reduced (RFC 3168)</td>
+</tr>
+<tr>
+<td>— (bit thấp byte offset 12)</td>
+<td>NS</td>
+<td>Nonce Sum — ECN nonce (RFC 3540; ít triển khai, được RFC 8311 chuyển sang thử nghiệm)</td>
+</tr>
+</tbody>
+</table>
+<p>Cú pháp <code>flags</code>: <code>flags:S</code> (chỉ SYN), <code>flags:SA</code> (SYN+ACK), <code>flags:S,CE</code> (SYN bật, bỏ qua hai bit CWR/ECE khi so — tương đương ký pháp số <code>flags:S,12</code>), <code>flags:!R</code> (không RST). NULL scan = <code>flags:0</code>; XMAS = <code>flags:FPU</code>. Ký hiệu cờ trong rule Snort/Suricata: <code>C</code>=CWR, <code>E</code>=ECE, <code>U</code>=URG, <code>A</code>=ACK, <code>P</code>=PSH, <code>R</code>=RST, <code>S</code>=SYN, <code>F</code>=FIN.</p>
+<h3 id="ch11-1126-cai-đat-chay-va-test-trigger-rule">11.2.6. Cài đặt, chạy, và TEST trigger rule</h3>
+<pre><code class="language-bash"># Suricata: kiểm tra cấu hình và rule
+suricata -T -c /etc/suricata/suricata.yaml -S /etc/suricata/rules/local.rules
+
+# Chạy IDS đọc từ interface eth0
+sudo suricata -c /etc/suricata/suricata.yaml -i eth0
+
+# Phân tích offline một file pcap (rất hợp để test rule)
+suricata -r capture.pcap -S local.rules -l ./out/
+cat ./out/fast.log         # alert dạng text
+jq . ./out/eve.json | less # alert JSON đầy đủ
+
+# Snort 3 test rule trên pcap
+snort -c /etc/snort/snort.lua -R local.rules -r capture.pcap -A alert_fast
+</code></pre>
+<p>TEST trigger rule SQLi ở trên bằng curl (chỉ trong lab):</p>
+<pre><code class="language-bash">curl &quot;http://victim.lab/search?q=1%20union%20select%20password%20from%20users&quot;
+# → fast.log:
+# 06/19/2026-10:00:00.123456  [**] [1:1000001:2] WEB SQLi UNION SELECT in URI [**]
+#   [Classification: Web Application Attack] [Priority: 1] {TCP} 203.0.113.5:51234 -&gt; 10.0.0.10:80
+</code></pre>
+<p>Test scan rule:</p>
+<pre><code class="language-bash">nmap -sS -p1-1000 10.0.0.10    # tạo nhiều SYN → trigger sid:1000010
+</code></pre>
+<p><strong>Lưu ý:</strong>
+- Luôn test rule trên pcap trước khi đẩy lên IPS inline.
+- Một <code>pcre</code> không neo (không có <code>content</code> fast pattern) chạy trên mọi gói có thể đẩy CPU lên 100%, tự gây DoS cho chính hệ thống phòng thủ (ReDoS).
+- Đặt <code>sid</code> local ≥ 1.000.000 để không đụng rule cộng đồng (ET/Talos).</p>
+<hr />
+<h2 id="ch11-113-modsecurity-owasp-crs-waf-tang-7">11.3. ModSecurity + OWASP CRS — WAF tầng 7</h2>
+<h3 id="ch11-1131-waf-la-gi-va-vi-sao-khac-firewall-l3l4">11.3.1. WAF là gì và vì sao khác firewall L3/L4</h3>
+<p>WAF (Web Application Firewall) hoạt động ở L7: nó parse HTTP request (method, URI, headers, body, cookies, params) sau khi TLS đã được kết thúc, rồi áp luật lên NỘI DUNG ứng dụng.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Firewall L3/L4 (pf, iptables)</th>
+<th>WAF L7 (ModSecurity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đọc tới</td>
+<td>IP/port/flags</td>
+<td>URI, header, body, JSON, multipart</td>
+</tr>
+<tr>
+<td>Chặn được</td>
+<td>Port 22 từ internet</td>
+<td><code>' OR 1=1--</code> trong tham số <code>id</code></td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>Không cần</td>
+<td>Phải termination để đọc plaintext</td>
+</tr>
+<tr>
+<td>Hiểu ngữ cảnh ứng dụng</td>
+<td>Không</td>
+<td>Có (per-param, per-route)</td>
+</tr>
+</tbody>
+</table>
+<p>ModSecurity là một engine rule chạy như module embedded (Apache <code>mod_security2</code>, NGINX <code>ModSecurity-nginx</code> connector) hoặc reverse proxy. OWASP CRS (Core Rule Set) là bộ rule chuẩn chạy trên engine đó. (Các lớp lỗ hổng web mà WAF nhắm chặn — SQLi, XSS, OWASP Top 10 — xem <a href="ch05.html">Chương 5</a>.)</p>
+<p>Lưu ý về vòng đời dự án: Trustwave đã kết thúc hỗ trợ thương mại ModSecurity và chuyển giao dự án về OWASP từ 2024; hiện ModSecurity (v2/v3) do cộng đồng OWASP duy trì (cần kiểm chứng). Bản thân CRS từ dòng 4.x cũng đổi tên từ "OWASP ModSecurity Core Rule Set" thành <strong>OWASP CRS</strong> — vì bộ rule không còn gắn riêng với engine ModSecurity: cùng cú pháp SecLang chạy được trên engine tương thích như <strong>Coraza</strong> (viết bằng Go, hay dùng với Caddy/Envoy, hỗ trợ CRS đầy đủ). Bắt đầu dự án mới thì nên cân nhắc cả Coraza (cần kiểm chứng theo thời điểm đọc).</p>
+<h3 id="ch11-1132-nam-phase-xu-ly-cua-modsecurity">11.3.2. Năm phase xử lý của ModSecurity</h3>
+<p>ModSecurity gắn rule vào 5 phase theo vòng đời transaction HTTP:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Tên</th>
+<th>Khi nào</th>
+<th>Dữ liệu sẵn có</th>
+<th>Dùng để</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Request Headers</td>
+<td>Sau khi nhận headers</td>
+<td>method, URI, headers, cookies</td>
+<td>chặn sớm dựa header/URI</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Request Body</td>
+<td>Sau khi nhận body</td>
+<td>ARGS (POST), JSON, multipart</td>
+<td>chặn SQLi/XSS trong body</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Response Headers</td>
+<td>Trước khi gửi resp headers</td>
+<td>status, resp headers</td>
+<td>che server banner, kiểm leak</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Response Body</td>
+<td>Trước khi gửi resp body</td>
+<td>nội dung response</td>
+<td>data leak, ẩn lỗi SQL</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Logging</td>
+<td>Khi ghi log</td>
+<td>toàn bộ</td>
+<td>quyết định ghi audit log</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> tách phase: body có thể rất lớn; chặn ở phase 1 (chỉ header) rẻ hơn nhiều. Phase 4 cho phép phát hiện dữ liệu nhạy cảm rò ra (vd thông báo lỗi MySQL lộ schema).</p>
+<h3 id="ch11-1133-directive-secrule-phan-ra-cu-phap">11.3.3. Directive SecRule — phân rã cú pháp</h3>
+<pre><code>SecRule VARIABLES &quot;OPERATOR&quot; &quot;ACTIONS&quot;
+</code></pre>
+<p>Ví dụ:</p>
+<pre><code># [DEMO] minh hoạ cú pháp SecRule; production nên dùng OWASP CRS với anomaly scoring thay vì deny ngay khi một rule khớp
+SecRule ARGS &quot;@detectSQLi&quot; &quot;id:1001,phase:2,deny,status:403,log,msg:'SQLi detected',t:none,t:urlDecodeUni,t:lowercase&quot;
+</code></pre>
+<p>Thành phần:</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Vai trò</th>
+<th>Ví dụ giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VARIABLES</td>
+<td>Nguồn dữ liệu để kiểm</td>
+<td><code>ARGS</code>, <code>ARGS:id</code>, <code>REQUEST_URI</code>, <code>REQUEST_HEADERS:User-Agent</code>, <code>REQUEST_BODY</code>, <code>XML</code>, <code>FILES</code></td>
+</tr>
+<tr>
+<td>OPERATOR</td>
+<td>Phép kiểm</td>
+<td><code>@rx &lt;regex&gt;</code>, <code>@detectSQLi</code>, <code>@detectXSS</code>, <code>@contains</code>, <code>@eq</code>, <code>@ipMatch</code>, <code>@pmFromFile</code></td>
+</tr>
+<tr>
+<td>ACTIONS</td>
+<td>Hành động + metadata</td>
+<td><code>id</code>, <code>phase</code>, <code>deny/pass/block/drop</code>, <code>status</code>, <code>log/nolog</code>, <code>msg</code>, <code>t:</code> (transform), <code>setvar</code>, <code>ctl</code>, <code>chain</code></td>
+</tr>
+</tbody>
+</table>
+<p>Các biến hay dùng:
+- <code>ARGS</code> = tất cả tham số (GET+POST). <code>ARGS:id</code> = chỉ tham số <code>id</code>. <code>ARGS_NAMES</code> = tên tham số.
+- <code>REQUEST_URI</code> = đường dẫn + query (raw). <code>REQUEST_FILENAME</code> = chỉ path.
+- <code>REQUEST_HEADERS</code>, <code>REQUEST_HEADERS:Host</code>.
+- <code>REQUEST_BODY</code>, <code>XML:/*</code>, <code>FILES</code>, <code>FILES_TMPNAMES</code>.</p>
+<p>Operators chính:
+- <code>@rx</code>: regex (PCRE). <code>@detectSQLi</code>: dùng libinjection (tokenize SQL, ít false positive hơn regex thuần). <code>@detectXSS</code>: libinjection XSS. <code>@pmFromFile</code>: so khớp nhiều chuỗi từ file (Aho-Corasick, nhanh).</p>
+<p>Transformations (<code>t:</code>) chuẩn hoá trước khi so — chống evasion:
+- <code>t:none</code> (xoá transform kế thừa), <code>t:urlDecodeUni</code> (decode <code>%XX</code> và <code>%uXXXX</code>), <code>t:htmlEntityDecode</code>, <code>t:lowercase</code>, <code>t:removeNulls</code>, <code>t:compressWhitespace</code>, <code>t:cmdLine</code>.</p>
+<p><strong>Vì sao</strong> cần transform: kẻ tấn công gửi <code>%27</code> thay <code>'</code>, hay <code>SeLeCt</code>. Không chuẩn hoá thì regex né dễ. Thứ tự transform quan trọng (áp tuần tự).</p>
+<p>Actions disruptive (chỉ MỘT trên mỗi rule chain): <code>deny</code>, <code>drop</code>, <code>block</code>, <code>pass</code>, <code>allow</code>, <code>redirect</code>. <code>block</code> ủy quyền quyết định cho <code>SecDefaultAction</code>.</p>
+<p><code>chain</code> nối nhiều SecRule thành điều kiện AND:</p>
+<pre><code>SecRule REQUEST_METHOD &quot;@streq POST&quot; &quot;id:1002,phase:2,deny,status:403,chain&quot;
+    SecRule REQUEST_HEADERS:Content-Type &quot;!@rx ^application/json&quot; &quot;t:lowercase&quot;
+</code></pre>
+<p>→ chặn POST mà Content-Type không phải JSON.</p>
+<h3 id="ch11-1134-detectiononly-vs-on-va-file-cau-hinh-that">11.3.4. DetectionOnly vs On, và file cấu hình thật</h3>
+<p><code>modsecurity.conf</code> (trích, có giải thích):</p>
+<pre><code class="language-apache"># DetectionOnly = chỉ log, KHÔNG chặn (giai đoạn tuning).  On = thực thi chặn.
+SecRuleEngine DetectionOnly
+
+# Bật đọc request body để phase 2 có ARGS POST
+SecRequestBodyAccess On
+SecRequestBodyLimit 13107200          # 12.5MB; vượt → SecRequestBodyLimitAction
+SecRequestBodyLimitAction Reject
+
+# Đọc response body (phase 4) chỉ với vài content-type để khỏi tốn RAM
+SecResponseBodyAccess On
+SecResponseBodyMimeType text/plain text/html application/json
+
+# Hành động mặc định khi rule dùng &quot;block&quot;
+SecDefaultAction &quot;phase:1,log,auditlog,pass&quot;
+SecDefaultAction &quot;phase:2,log,auditlog,pass&quot;
+
+# Audit log: ghi chi tiết transaction bị đánh dấu
+SecAuditEngine RelevantOnly           # chỉ ghi khi có rule khớp / lỗi
+SecAuditLogParts ABIJDEFHZ            # A=audit header, B=req headers, C=req body, F=resp headers...
+SecAuditLog /var/log/modsec_audit.log
+</code></pre>
+<p>Quy trình triển khai an toàn. <strong>Vì sao:</strong> bật <code>DetectionOnly</code> vài ngày, đọc <code>modsec_audit.log</code> để tìm rule chặn nhầm traffic hợp lệ → tạo exclusion → mới chuyển <code>SecRuleEngine On</code>. Chuyển thẳng sang On dễ gây outage do CRS false positive.</p>
+<h3 id="ch11-1135-owasp-crs-anomaly-scoring-paranoia-level">11.3.5. OWASP CRS — anomaly scoring &amp; paranoia level</h3>
+<p>CRS không chặn ngay khi một rule khớp. Nó CỘNG ĐIỂM (anomaly scoring):</p>
+<pre><code>Mỗi rule khớp → cộng điểm theo severity:
+   CRITICAL = 5, ERROR = 4, WARNING = 3, NOTICE = 2 (cần kiểm chứng theo version CRS)
+Cuối cùng: nếu tx.anomaly_score &gt;= tx.inbound_anomaly_score_threshold (mặc định 5) → deny
+</code></pre>
+<p><strong>Vì sao</strong> dùng scoring thay vì block-on-first-match: để giảm false positive. Một tín hiệu yếu (vd có ký tự <code>'</code>) không đủ chặn; nhiều tín hiệu cộng dồn mới vượt ngưỡng. Quản trị viên hạ ngưỡng để chặt hơn, nâng để nới.</p>
+<p>Paranoia Level (PL1–PL4): mức "đa nghi".
+- PL1 (mặc định): rule chắc chắn, ít false positive.
+- PL2–PL4: thêm rule ngày càng nhạy (bắt nhiều biến thể hơn) nhưng false positive tăng mạnh.</p>
+<p><code>crs-setup.conf</code>:</p>
+<pre><code class="language-apache">SecAction &quot;id:900000,phase:1,nolog,pass,t:none,setvar:tx.paranoia_level=1&quot;
+SecAction &quot;id:900110,phase:1,nolog,pass,t:none,\
+   setvar:tx.inbound_anomaly_score_threshold=5,\
+   setvar:tx.outbound_anomaly_score_threshold=4&quot;
+</code></pre>
+<p>Ví dụ rule CRS chặn SQLi (minh hoạ cơ chế scoring):</p>
+<pre><code class="language-apache"># [PROD] đây là rule CRS chính thức (942100): dùng libinjection + cộng điểm anomaly, chạy được trong production sau khi tuning exclusion
+SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES &quot;@detectSQLi&quot; \
+    &quot;id:942100,phase:2,block,capture,t:none,t:urlDecodeUni,\
+     msg:'SQL Injection Attack Detected via libinjection',\
+     logdata:'Matched Data: %{TX.0} found within %{MATCHED_VAR_NAME}',\
+     severity:'CRITICAL',\
+     setvar:'tx.sql_injection_score=+%{tx.critical_anomaly_score}',\
+     setvar:'tx.anomaly_score_pl1=+%{tx.critical_anomaly_score}'&quot;
+</code></pre>
+<ul>
+<li><code>block</code>: tuân theo SecDefaultAction (cộng điểm hoặc chặn).</li>
+<li><code>capture</code> + <code>%{TX.0}</code>: lưu phần khớp để log (forensics).</li>
+<li><code>setvar:tx.anomaly_score_pl1=+...</code>: cộng điểm; rule "blocking evaluation" cuối cùng so tổng với ngưỡng.</li>
+</ul>
+<p>Tạo exclusion (gỡ false positive cho một route):</p>
+<pre><code class="language-apache"># [DEMO] route /api/free-text-comment và rule id 942100 chỉ là ví dụ — thay bằng route và rule id thực tế
+SecRule REQUEST_URI &quot;@beginsWith /api/free-text-comment&quot; \
+    &quot;id:1000100,phase:1,pass,nolog,ctl:ruleRemoveTargetById=942100;ARGS:comment&quot;
+</code></pre>
+<p>→ với route đó, không áp rule 942100 lên <code>ARGS:comment</code>.</p>
+<h3 id="ch11-1136-vi-du-chan-sqli-end-to-end-va-output">11.3.6. Ví dụ chặn SQLi end-to-end và output</h3>
+<pre><code class="language-bash"># Request tấn công
+curl &quot;http://app.lab/product?id=1' OR '1'='1&quot;
+# Phản hồi khi SecRuleEngine On và vượt ngưỡng:
+# HTTP/1.1 403 Forbidden
+</code></pre>
+<p>Trích <code>modsec_audit.log</code>:</p>
+<pre><code>--a1b2c3-H--
+Message: Access denied with code 403 (phase 2). detected SQLi via libinjection.
+   [id &quot;942100&quot;] [msg &quot;SQL Injection Attack Detected via libinjection&quot;]
+   [data &quot;Matched Data: 1' OR '1'='1 found within ARGS:id&quot;] [severity &quot;CRITICAL&quot;]
+Action: Intercepted (phase 2)
+Apache-Error: ModSecurity: Access denied with code 403
+</code></pre>
+<p><strong>Lưu ý:</strong>
+- WAF là lớp bù (compensating control), không thay thế việc sửa code (prepared statements, output encoding).
+- WAF bypass vẫn khả thi (encoding lạ, HTTP parameter pollution, request smuggling).
+- Luôn dùng anomaly scoring và tuning theo ứng dụng cụ thể.
+- Bật response-body inspection để chống data leak, nhưng cân nhắc chi phí RAM/latency.
+- WAF không nên là lớp chặn ĐẦU TIÊN: những pattern rẻ tiền (tên tệp nhạy cảm, rate-limit theo IP, Host lạ) nên bị loại ngay ở reverse proxy phía trước (xem 11.6) — để WAF dành tài nguyên cho phần khó: mọi biến thể encoding, injection trong body/tham số.</p>
+<hr />
+<h2 id="ch11-114-pfsense-firewallrouter-pf-nat-state-vpn">11.4. pfSense — firewall/router (pf, NAT, state, VPN)</h2>
+<p>pfSense dựa trên FreeBSD + <code>pf</code> (Packet Filter). Hiểu pf là hiểu pfSense.</p>
+<h3 id="ch11-1141-stateful-firewall-va-state-table-co-che">11.4.1. Stateful firewall và state table — cơ chế</h3>
+<p>pf là STATEFUL: khi một gói khớp rule có <code>keep state</code> (mặc định trên pfSense), pf tạo một entry trong STATE TABLE. Gói trả về (reply) được khớp với state table trước cả ruleset → không cần rule ngược.</p>
+<pre><code>Client 192.168.1.10:51000 ──SYN──► Server 203.0.113.9:443
+   pf: rule &quot;pass out&quot; khớp → tạo state:
+   proto tcp, 192.168.1.10:51000 ↔ 203.0.113.9:443, state SYN_SENT
+Server ──SYN/ACK──► Client
+   pf: tra state table → MATCH → cho qua, state → ESTABLISHED
+</code></pre>
+<p>State table entry (khái niệm các trường):</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>proto</td>
+<td>tcp/udp/icmp</td>
+</tr>
+<tr>
+<td>src host:port</td>
+<td>địa chỉ/cổng nguồn (sau NAT lưu cả original)</td>
+</tr>
+<tr>
+<td>dst host:port</td>
+<td>đích</td>
+</tr>
+<tr>
+<td>direction</td>
+<td>chiều tạo state</td>
+</tr>
+<tr>
+<td>state</td>
+<td>TCP: SYN_SENT, ESTABLISHED, FIN_WAIT...; UDP: SINGLE/MULTIPLE</td>
+</tr>
+<tr>
+<td>expire</td>
+<td>timeout còn lại</td>
+</tr>
+<tr>
+<td>packets/bytes</td>
+<td>đếm cho mỗi chiều</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> stateful tốt hơn stateless: stateless cần rule cho cả hai chiều và dễ bị giả mạo gói ACK lọt qua. Stateful theo dõi cả chuỗi handshake; chỉ gói khớp với một kết nối hợp lệ mới qua. Xem state: <code>pfctl -ss</code>. Đếm: <code>pfctl -si</code>.</p>
+<h3 id="ch11-1142-rule-firewall-tren-pfsense-cac-truong">11.4.2. Rule firewall trên pfSense — các trường</h3>
+<p>Mỗi rule trên một interface có:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Action</td>
+<td>Pass / Block (im lặng drop) / Reject (gửi RST/ICMP)</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>Interface</td>
+<td>NIC áp rule (WAN, LAN, OPT1/VLAN)</td>
+<td>LAN</td>
+</tr>
+<tr>
+<td>Direction</td>
+<td>in / out (mặc định in trên pfSense GUI)</td>
+<td>in</td>
+</tr>
+<tr>
+<td>Address Family</td>
+<td>IPv4 / IPv6</td>
+<td>IPv4</td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>TCP/UDP/ICMP/...</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>host/net/alias/<code>any</code>, có thể <code>!</code></td>
+<td>LAN net</td>
+</tr>
+<tr>
+<td>Source port</td>
+<td>thường <code>any</code> cho client</td>
+<td>any</td>
+</tr>
+<tr>
+<td>Destination</td>
+<td>host/net/alias</td>
+<td>any</td>
+</tr>
+<tr>
+<td>Dest port</td>
+<td>cổng dịch vụ</td>
+<td>443</td>
+</tr>
+<tr>
+<td>Gateway</td>
+<td>định tuyến policy-based</td>
+<td>default</td>
+</tr>
+<tr>
+<td>State type</td>
+<td>keep state / sloppy / none</td>
+<td>keep state</td>
+</tr>
+</tbody>
+</table>
+<p>Thứ tự đánh giá pf: pf gốc dùng "LAST MATCH WINS" trừ khi có <code>quick</code>. pfSense GUI thêm <code>quick</code> nên rule khớp ĐẦU TIÊN (từ trên xuống) quyết định. Block mặc định: pfSense có default-deny inbound trên WAN.</p>
+<p>Block vs Reject. <strong>Vì sao</strong> chọn cái nào: Block = drop âm thầm → kẻ scan phải chờ timeout (làm chậm họ). Reject = trả RST → đóng nhanh (tốt cho UX nội bộ) nhưng giúp attacker map cổng nhanh hơn. Quy tắc: Reject trong LAN, Block ngoài WAN.</p>
+<h3 id="ch11-1143-alias">11.4.3. Alias</h3>
+<p>Alias = nhóm có tên (hosts/networks/ports/URLs) để tái sử dụng và gom rule.</p>
+<pre><code>Alias  WebServers     = 10.0.0.10, 10.0.0.11
+Alias  AdminPorts     = 22, 3389, 8443
+Rule:  Pass LAN → WebServers proto TCP dst AdminPorts  (source: AdminPCs)
+</code></pre>
+<p><strong>Vì sao:</strong> 1 rule thay vì N×M rule; cập nhật một alias áp dụng mọi rule. Alias URL (pfBlockerNG) có thể nạp danh sách IP độc hại tự động.</p>
+<h3 id="ch11-1144-nat-port-forward-va-outbound">11.4.4. NAT — port forward và outbound</h3>
+<p>Port Forward (DNAT — inbound):</p>
+<pre><code>WAN  TCP  any:any  →  203.0.113.9:443   (NAT: redirect tới 10.0.0.10:443)
+   + Firewall rule kèm theo: Pass WAN proto TCP dst 10.0.0.10:443
+</code></pre>
+<ul>
+<li>pf viết lại địa chỉ ĐÍCH gói đến từ IP công khai sang IP nội bộ. pfSense tự sinh rule firewall đi kèm (tùy chọn "Associated filter rule").</li>
+</ul>
+<p>Outbound NAT (SNAT/masquerade): pfSense mặc định "Automatic outbound NAT" — viết lại IP NGUỒN của traffic LAN→WAN thành IP WAN.</p>
+<pre><code>192.168.1.10:51000  ──►  (SNAT)  203.0.113.1:51000  ──►  internet
+   pf lưu mapping trong state để dịch ngược reply.
+</code></pre>
+<p>1:1 NAT: ánh xạ trọn một IP công khai ↔ một IP nội bộ (cả in và out).</p>
+<p><strong>Vì sao</strong> NAT và state gắn nhau: để dịch ngược gói trả về, pf phải nhớ mapping (port gốc ↔ port dịch) trong state table. Đây cũng là lý do PAT (port address translation) cần theo dõi cổng nguồn.</p>
+<h3 id="ch11-1145-vlan">11.4.5. VLAN</h3>
+<p>VLAN 802.1Q chèn tag 4 byte vào Ethernet frame (cấu trúc):</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TPID</td>
+<td>16 bit</td>
+<td>Tag Protocol ID = 0x8100</td>
+<td>0x8100</td>
+</tr>
+<tr>
+<td>PCP</td>
+<td>3 bit</td>
+<td>Priority (QoS 802.1p)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>DEI</td>
+<td>1 bit</td>
+<td>Drop Eligible Indicator</td>
+<td>0</td>
+</tr>
+<tr>
+<td>VID</td>
+<td>12 bit</td>
+<td>VLAN ID (1–4094)</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>pfSense tạo interface VLAN trên một NIC vật lý (router-on-a-stick): mỗi VLAN = một subnet/interface với ruleset riêng → phân đoạn mạng (segmentation) chống lateral movement. <strong>Vì sao</strong> tối đa 4094 VLAN: VID dài 12 bit (0 và 4095 dành riêng nên không dùng được).</p>
+<hr />
+<h2 id="ch11-115-vpn-ipsec-openvpn-wireguard-cuc-sau">11.5. VPN — IPsec, OpenVPN, WireGuard (cực sâu)</h2>
+<p>VPN tạo "đường hầm" mã hoá: gói gốc được bọc trong gói mới có xác thực + mã hoá. Khác biệt cốt lõi giữa ba công nghệ nằm ở: cách trao khoá, cấu trúc gói bọc, và độ phức tạp. (Nền tảng mật mã — trao khoá Diffie-Hellman, AEAD, PFS — xem <a href="ch04.html">Chương 4</a>.)</p>
+<h3 id="ch11-1151-ipsec-kien-truc">11.5.1. IPsec — kiến trúc</h3>
+<p>IPsec gồm: giao thức bảo vệ dữ liệu (AH hoặc ESP) + giao thức trao khoá (IKE). Mọi liên kết bảo vệ định nghĩa bằng SA (Security Association).</p>
+<h4 id="ch11-sa-security-association">SA (Security Association)</h4>
+<p>Một SA là quan hệ một chiều mô tả: thuật toán, khoá, SPI, lifetime. Hai chiều = 2 SA. Mỗi SA định danh bởi tuple:</p>
+<pre><code>SA = ( SPI, IP đích, giao thức[AH/ESP] )
+</code></pre>
+<ul>
+<li>SPI (Security Parameters Index): 32 bit, chỉ mục để bên nhận tra đúng SA/khoá giải mã.</li>
+</ul>
+<h4 id="ch11-ah-vs-esp">AH vs ESP</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>AH (Protocol 51)</th>
+<th>ESP (Protocol 50)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confidentiality (bí mật)</td>
+<td>KHÔNG</td>
+<td>CÓ</td>
+</tr>
+<tr>
+<td>Toàn vẹn + xác thực</td>
+<td>CÓ (kể cả phần IP header bất biến)</td>
+<td>CÓ (chỉ payload ESP, không gồm IP header ngoài)</td>
+</tr>
+<tr>
+<td>Tương thích NAT</td>
+<td>KÉM (hash gồm IP header → NAT làm hỏng)</td>
+<td>TỐT (với NAT-T, đóng gói UDP 4500)</td>
+</tr>
+<tr>
+<td>Dùng thực tế</td>
+<td>Hiếm</td>
+<td>Phổ biến (gần như luôn dùng ESP)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> ESP thắng: AH xác thực cả IP header ngoài → NAT đổi IP làm sai ICV → gãy. ESP chỉ bảo vệ payload, và NAT-T bọc thêm UDP/4500 nên xuyên NAT được. Hầu hết VPN dùng ESP với mã hoá + xác thực (AES-GCM gộp cả hai).</p>
+<h4 id="ch11-tunnel-vs-transport-mode">Tunnel vs Transport mode</h4>
+<pre><code>Gói gốc:           [ IP_orig | TCP | Data ]
+
+TRANSPORT mode (ESP):  [ IP_orig | ESP_hdr | TCP | Data | ESP_trailer | ESP_ICV ]
+   → bảo vệ payload, GIỮ IP header gốc. Dùng host-to-host.
+
+TUNNEL mode (ESP):     [ IP_new | ESP_hdr | IP_orig | TCP | Data | ESP_trailer | ESP_ICV ]
+   → bọc TOÀN BỘ gói gốc trong gói IP mới. Dùng gateway-to-gateway (site-to-site).
+</code></pre>
+<p><strong>Vì sao</strong> dùng tunnel cho site-to-site: hai gateway có IP công khai; IP nội bộ gốc được giấu trong payload mã hoá → ẩn topology nội bộ và định tuyến qua internet bằng IP gateway.</p>
+<h4 id="ch11-cau-truc-esp-headertrailer-tung-truong-rfc-4303">Cấu trúc ESP header/trailer — từng trường (RFC 4303)</h4>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Vị trí</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPI</td>
+<td>32 bit (4 byte)</td>
+<td>Chỉ SA để giải mã</td>
+<td>Đầu ESP</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>32 bit (4 byte)</td>
+<td>Chống replay (tăng dần)</td>
+<td>Sau SPI</td>
+</tr>
+<tr>
+<td>Payload Data</td>
+<td>thay đổi</td>
+<td>Dữ liệu mã hoá (gói gốc trong tunnel mode)</td>
+<td>Giữa</td>
+</tr>
+<tr>
+<td>Padding</td>
+<td>0–255 byte</td>
+<td>Căn block cipher + ẩn độ dài</td>
+<td>Trong trailer</td>
+</tr>
+<tr>
+<td>Pad Length</td>
+<td>8 bit (1 byte)</td>
+<td>Số byte padding</td>
+<td>Trailer</td>
+</tr>
+<tr>
+<td>Next Header</td>
+<td>8 bit (1 byte)</td>
+<td>Loại payload (4=IP, 6=TCP)</td>
+<td>Trailer</td>
+</tr>
+<tr>
+<td>ICV</td>
+<td>thay đổi (vd 16 byte với AES-GCM)</td>
+<td>Integrity Check Value (xác thực)</td>
+<td>Cuối cùng</td>
+</tr>
+</tbody>
+</table>
+<p>Sequence Number + cửa sổ chống replay (anti-replay window, mặc định 64 gói): bên nhận từ chối gói có seq đã thấy hoặc quá cũ → chống phát lại.</p>
+<h4 id="ch11-ikev2-trao-khoa-rfc-7296">IKEv2 — trao khoá (RFC 7296)</h4>
+<p>IKEv2 chạy trên UDP/500 (hoặc UDP/4500 khi NAT-T). Thiết lập gồm 2 cặp message ban đầu:</p>
+<pre><code>Phase 1 (IKE_SA_INIT):  thoả thuận crypto + Diffie-Hellman
+   Init → Resp:  HDR, SAi1 (đề xuất thuật toán), KEi (DH public), Ni (nonce)
+   Resp → Init:  HDR, SAr1 (chọn thuật toán), KEr (DH public), Nr (nonce)
+   → cả hai tính SKEYSEED từ DH shared secret + nonce → dẫn xuất khoá.
+
+Phase 2 (IKE_AUTH):  xác thực danh tính + tạo CHILD_SA (cho ESP)
+   Init → Resp:  HDR, [IDi], [AUTH], SAi2, TSi, TSr   (mã hoá bằng khoá IKE)
+   Resp → Init:  HDR, [IDr], [AUTH], SAr2, TSi, TSr
+   → AUTH = chữ ký/PSK chứng minh danh tính; TS = traffic selector (subnet được bảo vệ).
+</code></pre>
+<p>So với IKEv1: IKEv1 có Phase 1 (Main mode 6 message / Aggressive 3 message) rồi Phase 2 (Quick mode 3 message). IKEv2 gọn hơn (4 message thiết lập), hỗ trợ MOBIKE, NAT-T tích hợp, EAP. Thuật ngữ "phase 1/phase 2" vẫn dùng: phase 1 = IKE SA (bảo vệ kênh điều khiển), phase 2 = CHILD SA = ESP SA (bảo vệ dữ liệu).</p>
+<p>Header IKE (các trường chính):</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initiator SPI</td>
+<td>64 bit</td>
+<td>Định danh phía khởi tạo</td>
+</tr>
+<tr>
+<td>Responder SPI</td>
+<td>64 bit</td>
+<td>Định danh phía đáp</td>
+</tr>
+<tr>
+<td>Next Payload</td>
+<td>8 bit</td>
+<td>Loại payload kế</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>8 bit</td>
+<td>Major/Minor (2.0)</td>
+</tr>
+<tr>
+<td>Exchange Type</td>
+<td>8 bit</td>
+<td>IKE_SA_INIT(34), IKE_AUTH(35)...</td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>8 bit</td>
+<td>Initiator/Response/Version</td>
+</tr>
+<tr>
+<td>Message ID</td>
+<td>32 bit</td>
+<td>Chống replay, sắp thứ tự</td>
+</tr>
+<tr>
+<td>Length</td>
+<td>32 bit</td>
+<td>Độ dài tổng</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ cấu hình IPsec site-to-site bằng strongSwan (<code>/etc/swanctl/swanctl.conf</code>):</p>
+<pre><code>connections {
+   site-a-to-b {
+      version = 2                       # IKEv2
+      local_addrs  = 203.0.113.1
+      remote_addrs = 198.51.100.1
+      proposals = aes256gcm16-prfsha384-ecp384   # phase1 crypto
+      local  { auth = psk; id = 203.0.113.1 }
+      remote { auth = psk; id = 198.51.100.1 }
+      children {
+         net-net {
+            local_ts  = 10.10.0.0/16    # subnet nội bộ A (TS)
+            remote_ts = 10.20.0.0/16    # subnet nội bộ B
+            esp_proposals = aes256gcm16  # phase2/ESP crypto, AEAD gộp mã hoá+xác thực
+            mode = tunnel
+            start_action = trap          # tự lập SA khi có traffic khớp TS
+         }
+      }
+   }
+}
+secrets { ike-psk { id = 203.0.113.1; secret = &quot;S3cretPSK!&quot; } }
+</code></pre>
+<pre><code class="language-bash">swanctl --load-all
+swanctl --initiate --child net-net
+swanctl --list-sas         # xem SA đã thiết lập, SPI, thuật toán, byte count
+</code></pre>
+<p><strong>Lưu ý:</strong>
+- PSK yếu là điểm gãy (IKEv1 Aggressive mode lộ hash PSK cho offline crack).
+- Ưu tiên chứng thư số hoặc EAP, AEAD (AES-GCM), nhóm DH ≥ ecp256/Group 19.
+- Bật PFS (Perfect Forward Secrecy) để mỗi CHILD_SA có DH riêng, nhờ vậy lộ một khoá không kéo theo lộ phiên cũ.</p>
+<h3 id="ch11-1152-openvpn-vpn-dua-tls">11.5.2. OpenVPN — VPN dựa TLS</h3>
+<p>OpenVPN chạy trong user-space, dùng TLS để trao khoá và một kênh dữ liệu riêng. Chạy trên UDP/1194 (mặc định) hoặc TCP/443 (xuyên firewall/proxy).</p>
+<p>Kiến trúc kênh đôi:
+- Control channel: TLS handshake (X.509 cert) → thoả thuận khoá phiên.
+- Data channel: gói tin được mã hoá bằng khoá phiên (AES-GCM/CBC + HMAC), bọc trong UDP.</p>
+<pre><code>[ IP_outer | UDP(1194) | OpenVPN hdr | (opcode/key-id) | encrypted{ IP_inner | TCP | Data } ]
+</code></pre>
+<p>OpenVPN tạo interface ảo <code>tun</code> (L3, định tuyến IP) hoặc <code>tap</code> (L2, bridge Ethernet).</p>
+<p>Cấu hình server (<code>server.conf</code>):</p>
+<pre><code>port 1194
+proto udp
+dev tun                         # L3 tunnel
+ca   ca.crt
+cert server.crt
+key  server.key                 # giữ bí mật
+dh   dh2048.pem
+tls-auth ta.key 0               # HMAC trên control channel chống DoS/quét
+cipher AES-256-GCM              # data channel AEAD
+auth  SHA256
+server 10.8.0.0 255.255.255.0   # cấp IP cho client trong subnet này
+push &quot;route 10.0.0.0 255.255.0.0&quot;   # đẩy route mạng nội bộ
+push &quot;dhcp-option DNS 10.0.0.53&quot;
+keepalive 10 120                # ping mỗi 10s, restart sau 120s im lặng
+persist-key
+persist-tun
+verb 3
+</code></pre>
+<p>Client (<code>client.ovpn</code>):</p>
+<pre><code>client
+dev tun
+proto udp
+remote vpn.example.com 1194
+ca ca.crt
+cert client.crt
+key client.key
+tls-auth ta.key 1
+cipher AES-256-GCM
+remote-cert-tls server          # bắt buộc server cert có EKU server → chống MITM
+verb 3
+</code></pre>
+<pre><code class="language-bash">openvpn --config server.conf      # khởi động server
+openvpn --config client.ovpn      # client kết nối
+# Kiểm tra: ip addr show tun0 ; ping 10.8.0.1
+</code></pre>
+<p><strong>Vì sao</strong> cần <code>tls-auth</code>/<code>tls-crypt</code>: thêm một lớp HMAC (hoặc mã hoá toàn bộ với tls-crypt) lên control channel → gói không có HMAC đúng bị drop trước cả khi xử lý TLS → chống port-scan, DoS, và làm khó nhận dạng dịch vụ. <code>remote-cert-tls server</code> chống client bị lừa nối tới server giả.</p>
+<h3 id="ch11-1153-wireguard-vpn-hien-đai-noise-protocol">11.5.3. WireGuard — VPN hiện đại, Noise protocol</h3>
+<p>WireGuard tối giản (~4000 dòng kernel code), chạy trong kernel, dùng bộ crypto cố định (không thương lượng):
+- Mã hoá AEAD: ChaCha20-Poly1305
+- Trao khoá: Curve25519 ECDH
+- Hash: BLAKE2s
+- Khung handshake: Noise Protocol Framework (Noise_IK)</p>
+<p><strong>Vì sao</strong> không thương lượng thuật toán: loại bỏ "downgrade attack" và độ phức tạp của IKE. Muốn đổi thuật toán → nâng phiên bản giao thức, không thương lượng runtime.</p>
+<h4 id="ch11-mo-hinh-khoa">Mô hình khoá</h4>
+<p>Mỗi peer có cặp khoá Curve25519 (private 32 byte, public 32 byte). "Cryptokey routing": mỗi peer khai báo <code>AllowedIPs</code> — danh sách IP mà peer đó được phép gửi/nhận. Public key ↔ AllowedIPs là toàn bộ "định tuyến + xác thực".</p>
+<h4 id="ch11-handshake-noise-ik-2-message-1-rtt">Handshake (Noise IK) — 2 message, 1-RTT</h4>
+<pre><code>Initiator → Responder:  Handshake Initiation
+   - chứa: ephemeral public, static public (đã mã hoá), timestamp (TAI64N, chống replay), MAC
+Responder → Initiator:  Handshake Response
+   - chứa: ephemeral public, empty (đã mã hoá), MAC
+→ sau 2 message: cả hai có khoá phiên đối xứng. Khoá xoay sau ~2 phút (rekey).
+</code></pre>
+<p>Cấu trúc message handshake initiation (theo whitepaper — đối chiếu spec khi triển khai):</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>message type</td>
+<td>1 byte</td>
+<td>=1 (initiation)</td>
+</tr>
+<tr>
+<td>reserved</td>
+<td>3 byte</td>
+<td>0</td>
+</tr>
+<tr>
+<td>sender index</td>
+<td>4 byte</td>
+<td>chỉ số phiên phía gửi</td>
+</tr>
+<tr>
+<td>unencrypted ephemeral</td>
+<td>32 byte</td>
+<td>ephemeral public key</td>
+</tr>
+<tr>
+<td>encrypted static</td>
+<td>32+16 byte</td>
+<td>static public + tag Poly1305</td>
+</tr>
+<tr>
+<td>encrypted timestamp</td>
+<td>12+16 byte</td>
+<td>TAI64N + tag</td>
+</tr>
+<tr>
+<td>mac1</td>
+<td>16 byte</td>
+<td>MAC dùng public key đích (chống gói rác)</td>
+</tr>
+<tr>
+<td>mac2</td>
+<td>16 byte</td>
+<td>MAC dùng cookie (chống DoS khi quá tải)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> có mac1/mac2 + cookie: WireGuard "im lặng" — không phản hồi gói không hợp lệ (stealth, chống quét). mac1 chứng minh người gửi biết public key của đích (chống flood ngẫu nhiên). Khi bị tải, responder phát cookie; initiator phải tính mac2 đúng → chống DoS amplification.</p>
+<h4 id="ch11-cau-hinh-thuc-te">Cấu hình thực tế</h4>
+<p>Server (<code>/etc/wireguard/wg0.conf</code>):</p>
+<pre><code class="language-ini">[Interface]
+Address = 10.9.0.1/24
+ListenPort = 51820
+PrivateKey = &lt;server_private_key&gt;      # sinh: wg genkey
+# (không khai PublicKey ở Interface; nó dẫn xuất từ private)
+
+[Peer]                                  # client 1
+PublicKey = &lt;client1_public_key&gt;
+AllowedIPs = 10.9.0.2/32                # chỉ IP này được nhận từ peer
+</code></pre>
+<p>Client (<code>wg0.conf</code>):</p>
+<pre><code class="language-ini">[Interface]
+Address = 10.9.0.2/24
+PrivateKey = &lt;client1_private_key&gt;
+DNS = 10.0.0.53
+
+[Peer]
+PublicKey = &lt;server_public_key&gt;
+Endpoint = vpn.example.com:51820
+AllowedIPs = 0.0.0.0/0                  # full tunnel: route mọi traffic qua VPN
+PersistentKeepalive = 25               # giữ NAT mapping (gửi keepalive 25s)
+</code></pre>
+<pre><code class="language-bash">wg genkey | tee privatekey | wg pubkey &gt; publickey   # sinh cặp khoá
+wg-quick up wg0          # bật interface + route theo AllowedIPs
+wg show                  # xem peer, last handshake, transfer bytes
+wg-quick down wg0
+</code></pre>
+<p><strong>Vì sao</strong> cần <code>PersistentKeepalive</code>: WireGuard không gửi gì khi rảnh → NAT/firewall ở giữa hết hạn mapping, server không gọi ngược client được. Keepalive 25s giữ "lỗ" NAT mở.</p>
+<p>So sánh ba VPN:</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>IPsec/IKEv2</th>
+<th>OpenVPN</th>
+<th>WireGuard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tầng/triển khai</td>
+<td>Kernel (L3)</td>
+<td>User-space (tun/tap)</td>
+<td>Kernel (L3)</td>
+</tr>
+<tr>
+<td>Trao khoá</td>
+<td>IKEv2 (thương lượng)</td>
+<td>TLS (X.509)</td>
+<td>Noise IK (cố định)</td>
+</tr>
+<tr>
+<td>Crypto agility</td>
+<td>Cao (thương lượng)</td>
+<td>Cao</td>
+<td>Không (cố định, nâng version)</td>
+</tr>
+<tr>
+<td>Cổng mặc định</td>
+<td>UDP 500/4500</td>
+<td>UDP 1194 / TCP 443</td>
+<td>UDP 51820</td>
+</tr>
+<tr>
+<td>Xuyên firewall hạn chế</td>
+<td>NAT-T</td>
+<td>tốt (TCP/443 giả HTTPS)</td>
+<td>UDP, có thể bị chặn</td>
+</tr>
+<tr>
+<td>Codebase</td>
+<td>lớn, phức tạp</td>
+<td>trung bình</td>
+<td>rất nhỏ (audit dễ)</td>
+</tr>
+<tr>
+<td>Hiệu năng</td>
+<td>cao (kernel)</td>
+<td>thấp hơn (user-space)</td>
+<td>cao nhất</td>
+</tr>
+<tr>
+<td>Roaming (đổi IP)</td>
+<td>MOBIKE</td>
+<td>tái kết nối</td>
+<td>liền mạch (theo public key)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý</strong> (chung cho cả ba VPN):
+- Bảo vệ private key (quyền file 600), bật PFS/rekey.
+- Ghim danh tính peer (cert/public key) và giám sát handshake bất thường.
+- WireGuard coi allowed-IPs là biên giới tin cậy — sai AllowedIPs là một lỗ định tuyến/spoofing.</p>
+<hr />
+<h2 id="ch11-116-proxy-reverse-proxy-va-hardening-nginx-lam-reverse-proxy">11.6. Proxy, Reverse proxy và hardening NGINX làm reverse proxy</h2>
+<h3 id="ch11-1161-forward-proxy-vs-reverse-proxy">11.6.1. Forward proxy vs reverse proxy</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Forward proxy</th>
+<th>Reverse proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đại diện cho</td>
+<td>Client (ẩn client với server)</td>
+<td>Server (ẩn server với client)</td>
+</tr>
+<tr>
+<td>Vị trí</td>
+<td>Cạnh client (egress)</td>
+<td>Cạnh server (ingress)</td>
+</tr>
+<tr>
+<td>Dùng để</td>
+<td>Lọc nội dung, cache egress, ẩn danh, kiểm soát truy cập ra</td>
+<td>TLS termination, load balancing, WAF, cache, ẩn backend</td>
+</tr>
+<tr>
+<td>Ví dụ</td>
+<td>Squid</td>
+<td>NGINX, HAProxy, Envoy</td>
+</tr>
+</tbody>
+</table>
+<p>Reverse proxy là điểm gắn WAF lý tưởng: nó kết thúc TLS (đọc plaintext), rồi áp ModSecurity, rồi forward tới backend.</p>
+<p>Ví dụ NGINX reverse proxy + ModSecurity:</p>
+<pre><code class="language-nginx">server {
+    listen 443 ssl;
+    server_name app.example.com;
+    ssl_certificate     /etc/nginx/ssl/app.crt;
+    ssl_certificate_key /etc/nginx/ssl/app.key;
+
+    modsecurity on;
+    modsecurity_rules_file /etc/nginx/modsec/main.conf;   # nạp CRS
+
+    location / {
+        proxy_pass http://10.0.0.10:8080;                 # backend nội bộ
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+</code></pre>
+<p><strong>Vì sao</strong> cần <code>X-Forwarded-For</code>: sau reverse proxy, backend thấy IP của proxy. Header này chuyển IP client thật để logging/rate-limit.</p>
+<p><strong>Lưu ý:</strong>
+- Backend chỉ được tin XFF khi đến từ proxy đáng tin; nếu không, client tự đặt XFF giả sẽ bypass được IP allowlist/rate-limit.
+- Reverse proxy cũng giúp giấu phiên bản backend (giảm bề mặt tấn công).
+- Đây cũng là nơi chống HTTP request smuggling, bằng cách chuẩn hoá nghiêm ngặt header <code>Content-Length</code>/<code>Transfer-Encoding</code>.</p>
+<h3 id="ch11-1162-van-đe-cua-cau-hinh-mac-đinh-location-proxy-tat-ca">11.6.2. Vấn đề của cấu hình mặc định: <code>location /</code> proxy tất cả</h3>
+<p>Reverse proxy không chỉ để "chuyển tiếp cho chạy được" — nó là chỗ đứng lý tưởng cho <strong>lớp chặn sớm</strong> trong defense-in-depth. Nhưng template phổ biến nhất khi dựng nginx làm reverse proxy lại bỏ trống hoàn toàn vai trò đó:</p>
+<pre><code class="language-nginx"># [ANTI-PATTERN] server block &quot;chạy được&quot; nhưng không có một lớp phòng vệ nào
+server {
+    listen 443 ssl;
+    server_name api-dev.example.com;
+    client_max_body_size 4G;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+</code></pre>
+<p>Đây gần như nguyên văn một server block mình gặp khi audit một máy dev chạy web API ở hệ thống mình vận hành (đã ẩn danh hoá). Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:</p>
+<table>
+<thead>
+<tr>
+<th>Thiếu</th>
+<th>Hệ quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không <code>limit_req</code>/<code>limit_conn</code></td>
+<td>Không có phanh — scanner gửi bao nhiêu, nginx nhận bấy nhiêu</td>
+</tr>
+<tr>
+<td><code>location /</code> proxy MỌI path xuống app</td>
+<td>Request quét (<code>/.ssh/id_rsa</code>, <code>/.env</code>...) cũng được đẩy xuống app rồi mới bị app từ chối</td>
+</tr>
+<tr>
+<td><code>client_max_body_size 4G</code></td>
+<td>Bất kỳ IP nào cũng được phép đẩy body 4GB → nguy cơ DoS cạn RAM/disk (11.6.6)</td>
+</tr>
+<tr>
+<td>Không có <code>default_server</code> riêng</td>
+<td>Request bằng IP trần / Host lạ vẫn được server block "thật" tiếp đón (11.6.5)</td>
+</tr>
+</tbody>
+</table>
+<p>Vấn đề nằm ở chỗ <strong>"trả lỗi nhưng vẫn tốn tài nguyên"</strong>. Mỗi request rác vẫn đi đủ chuỗi: TLS handshake (phần đắt nhất — mật mã bất đối xứng), nginx parse request, mở socket/kết nối tới backend, app nhận request, chạy router, sinh 404/500. App "từ chối" không có nghĩa là miễn phí — và nguy hiểm hơn, nó nghĩa là toàn bộ phòng thủ đang dựa vào việc app tự bảo vệ, không có lớp nào phía trước. 536 request quét trong hơn 2 giờ (case thật ở 11.6.8) là 536 lần TLS + parse + một phần chạm app. Nguyên tắc: cái gì chắc chắn là rác thì phải bị loại càng sớm càng tốt — ngay tại proxy, trước khi chạm app. Các mục 11.6.3–11.6.7 là các lớp chặn sớm đó, xếp từ "hành vi" đến "diệt gốc".</p>
+<h3 id="ch11-1163-rate-limiting-limit_req-leaky-bucket-va-limit_conn">11.6.3. Rate limiting — <code>limit_req</code> (leaky bucket) và <code>limit_conn</code></h3>
+<p><strong>Sinh ra để giải quyết:</strong> người thật không gửi đều đặn một request mỗi vài giây suốt hai tiếng; scanner thì có. Giới hạn tốc độ theo IP nguồn chặn được <em>hành vi</em> đó mà không cần biết trước IP nào là xấu — quan trọng khi nguồn quét xoay IP liên tục (11.6.8).</p>
+<pre><code class="language-nginx"># Trong http {} — khai báo vùng nhớ đếm trạng thái
+limit_req_zone  $binary_remote_addr zone=perip:10m  rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=connperip:10m;
+
+# Trong server {} hoặc location {}
+limit_req        zone=perip burst=20 nodelay;
+limit_req_status 429;      # mặc định 503; 429 Too Many Requests đúng ngữ nghĩa hơn
+limit_conn       connperip 20;
+</code></pre>
+<p>Từng tham số:
+- <code>$binary_remote_addr</code>: IP client ở dạng nhị phân (IPv4 = 4 byte) thay vì chuỗi văn bản — mỗi entry trong zone nhỏ hơn, chứa được nhiều IP hơn.
+- <code>zone=perip:10m</code>: 10MB shared memory lưu bộ đếm cho từng IP; cỡ 160.000 trạng thái (mỗi state ~64 byte — cần kiểm chứng theo phiên bản). Hết chỗ thì nginx xoá entry cũ nhất.
+- <code>rate=10r/s</code>: cơ chế <strong>leaky bucket</strong> — mỗi IP có một "xô rò" thoát nước với tốc độ cố định 10 request/giây (nginx đo mịn theo mili giây: 1 request/100ms). Request đến khi xô đầy sẽ bị từ chối.
+- <code>burst=20</code>: cho xô chứa thêm tối đa 20 request vượt nhịp. Truy cập thật thường "bùng" theo cụm (mở một trang kéo theo hàng chục request tài nguyên gần như đồng thời) — không có burst sẽ chặn nhầm ngay.
+- <code>nodelay</code>: xử lý ngay các request trong hạn mức burst thay vì xếp hàng nhả dần theo nhịp <code>rate</code>; chỉ khi vượt cả burst mới bị trả lỗi. Thiếu <code>nodelay</code> thì client hợp lệ bị cộng trễ nhân tạo.
+- <code>limit_conn connperip 20</code>: tối đa 20 kết nối đồng thời mở từ một IP — chặn kiểu tấn công mở thật nhiều kết nối rồi giữ treo (slow attack), thứ <code>limit_req</code> (đếm request) không nhìn thấy.</p>
+<p><strong>Chọn ngưỡng thế nào:</strong> đừng đoán — đo tải thật. Đếm request/giây theo từng IP từ access log giờ cao điểm (<code>awk</code> cột IP + timestamp, hoặc panel sẵn có trên hệ giám sát), lấy đỉnh của client hợp lệ <em>bận nhất</em> rồi nhân hệ số an toàn 2–3 lần. Ngưỡng đúng là ngưỡng mà client thật không bao giờ chạm còn scanner thì chạm ngay.</p>
+<p><strong>Đánh đổi:</strong> nhiều client sau một NAT (văn phòng, CGNAT di động) dùng chung một IP nguồn — ngưỡng quá thấp chặn nhầm cả toà nhà; API client hợp lệ gọi dày cần zone riêng (key theo API key/token thay vì IP) hoặc dùng module <code>geo</code> ánh xạ dải IP tin cậy sang biến để miễn limit.</p>
+<h3 id="ch11-1164-chan-ten-tepđuong-dan-nhay-cam-va-gioi-han-cua-nginx">11.6.4. Chặn tên tệp/đường dẫn nhạy cảm — và giới hạn của nginx</h3>
+<p><strong>Sinh ra để giải quyết:</strong> scanner dò tệp bí mật theo danh sách quen thuộc — <code>.env</code>, <code>.git/config</code>, <code>.ssh/id_rsa</code>, dump <code>.sql</code>, backup <code>.bak</code>, <code>.mysql_history</code>. Không có lý do gì để những path đó đi xuống app; chặn ngay ở nginx bằng một location regex:</p>
+<pre><code class="language-nginx">location ~* (?:\.env|\.git|/\.ssh/|id_rsa|id_ed25519|\.mysql_history|\.sql|\.bak)(?:$|/) {
+    return 403;
+}
+</code></pre>
+<p>(Lưu ý: <code>location</code> chỉ so khớp phần <em>path</em> của URI — query string không nằm trong đó, nên đừng cố khớp <code>?</code> ở đây.)</p>
+<p><code>return 403</code> tại nginx gần như miễn phí: không proxy, không chạm app, không sinh lỗi 500 phía backend.</p>
+<p><strong>Điểm kỹ thuật quan trọng — vì sao chặn theo TÊN TỆP chứ không chặn pattern <code>../</code>:</strong> trước khi so khớp <code>location</code>, nginx <strong>chuẩn hoá URI</strong>: decode percent-encoding (<code>%2e</code> → <code>.</code>), gộp slash thừa (<code>merge_slashes</code>), phân giải các thành phần <code>./</code> và <code>../</code>. Hệ quả là chặn theo cú pháp traversal ở tầng location <strong>không đáng tin</strong>: pattern <code>../</code> viết trong regex thì URI đã bị nginx phân giải mất trước khi match; pattern <code>%2e%2e</code> thì đã bị decode thành <code>..</code>; còn biến thể double-encoding <code>%252e%252e</code> chỉ bị decode một lần thành <code>%2e%2e</code> — không khớp cả hai cách viết. Nhưng dù kẻ quét mã hoá đường đi kiểu gì, <strong>đích cuối vẫn là một tên tệp cụ thể</strong> (<code>id_rsa</code>, <code>.env</code>, <code>.mysql_history</code>) — và tên tệp đó sau chuẩn hoá luôn hiện nguyên hình trong URI. Chặn theo tên tệp bắt được đa số scan với chi phí gần bằng 0. Còn chặn traversal <em>triệt để</em> (mọi biến thể encoding, kể cả trong body/tham số POST) là việc của WAF — ModSecurity + OWASP CRS với chuỗi transform <code>t:urlDecodeUni</code> và các rule traversal/LFI chuyên dụng (xem 11.3.3 về transform, 11.3.5 về CRS).</p>
+<h3 id="ch11-1165-default_server-ngat-request-host-la-ip-tran-bang-return-444">11.6.5. <code>default_server</code> — ngắt request Host lạ / IP trần bằng <code>return 444</code></h3>
+<p><strong>Sinh ra để giải quyết:</strong> đa số scanner quét theo dải IP, gửi request bằng IP trần hoặc Host ngẫu nhiên chứ không biết domain của bạn. Nếu không khai báo <code>default_server</code> tường minh, nginx lấy server block <strong>đầu tiên</strong> trên mỗi cặp địa chỉ:port làm mặc định — nghĩa là vhost "thật" của bạn đứng ra tiếp đón toàn bộ request rác đó.</p>
+<pre><code class="language-nginx">server {
+    listen 80  default_server;
+    listen 443 ssl default_server;
+    server_name _;                                   # bắt mọi Host không khớp block nào khác
+    ssl_certificate     /etc/nginx/ssl/dummy.crt;    # cert self-signed &quot;vứt đi&quot;
+    ssl_certificate_key /etc/nginx/ssl/dummy.key;
+    return 444;                                      # đóng kết nối, không trả một byte
+}
+</code></pre>
+<p><strong>Vì sao <code>444</code>:</strong> đây là mã riêng của nginx (không phải HTTP status chuẩn) — nginx <strong>đóng kết nối ngay, không gửi response</strong>. So với <code>403</code>: một response 403 vẫn là HTTP hoàn chỉnh (status line, header, body), tự xác nhận "ở đây có web server sống" cho scanner ghi nhận; <code>444</code> khiến phía quét chỉ thấy kết nối bị ngắt — ít thông tin nhất có thể.</p>
+<p><strong>Vì sao cần cert dummy cho block 443:</strong> với HTTPS, TLS handshake diễn ra <em>trước khi</em> nginx đọc được request. Client vào bằng IP trần không gửi SNI → nginx chọn cert của <code>default_server</code>; block <code>listen 443 ssl</code> không có cert thì cấu hình không hợp lệ. Cert self-signed là đủ — ta không cần scanner tin cert, chỉ cần handshake không đổ lỗi sang vhost thật.</p>
+<h3 id="ch11-1166-client_max_body_size-đung-bao-gio-noi-4g-mac-đinh">11.6.6. <code>client_max_body_size</code> — đừng bao giờ nới 4G mặc định</h3>
+<p>Kịch bản quen thuộc: upload bị lỗi <code>413 Request Entity Too Large</code> (mặc định nginx chỉ cho 1m) → ai đó sửa thành <code>client_max_body_size 4G;</code> ở tầng server cho "hết lỗi". Hệ quả: <strong>bất kỳ IP nào</strong> cũng được phép đẩy body 4GB vào <strong>mọi endpoint</strong>. Body lớn được nginx buffer vào RAM (<code>client_body_buffer_size</code>) rồi tràn sang file tạm trên disk — vài kết nối song song đủ cạn disk/RAM. Đây là DoS rẻ tiền, không cần lỗ hổng nào trong app.</p>
+<p>Cách đúng: mặc định nhỏ, override đúng chỗ cần:</p>
+<pre><code class="language-nginx"># http {} hoặc server {}
+client_max_body_size 20m;
+
+# chỉ location thật sự nhận upload lớn
+location /api/upload {
+    client_max_body_size 200m;
+    proxy_pass http://localhost:5000;
+}
+</code></pre>
+<p><strong>Đánh đổi:</strong> phải rà xem endpoint nào thật sự cần upload lớn để override — làm ngược (nới toàn cục, quên siết) là anti-pattern ở 11.6.2.</p>
+<h3 id="ch11-1167-moi-truong-devstaging-allowdeny-theo-ip-diet-goc">11.6.7. Môi trường dev/staging: allow/deny theo IP — diệt gốc</h3>
+<p>Mọi biện pháp phía trên là <em>giảm thiểu</em>; với môi trường dev/staging còn có biện pháp <em>diệt gốc</em>: các domain này không có lý do phơi ra toàn Internet. Bot chỉ quét được thứ nó chạm tới được — giới hạn nguồn truy cập về dải IP office/VPN thì toàn bộ chiến dịch scan bên ngoài dừng ở tầng này:</p>
+<pre><code class="language-nginx"># trong server {} của môi trường dev/staging
+allow 203.0.113.0/24;   # dải IP office (placeholder — thay bằng dải thật)
+allow 10.8.0.0/24;      # subnet VPN nội bộ
+deny  all;              # còn lại: 403
+</code></pre>
+<p>Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trường) thì có module <code>geoip2</code> ánh xạ IP → mã quốc gia làm biến điều kiện. <strong>Đánh đổi:</strong> phải duy trì danh sách IP hợp lệ; dev/QA làm việc từ xa buộc phải qua VPN — nhưng đó là cái giá đúng cho môi trường không dành cho công chúng.</p>
+<h3 id="ch11-1168-bai-hoc-tu-mot-chien-dich-scan-thuc-te">11.6.8. Bài học từ một chiến dịch scan thực tế</h3>
+<p>Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả một cuộc điều tra ở hệ thống mình vận hành (7/2026), kể lại đã ẩn danh hoá.</p>
+<p>Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: <code>45.148.10.80</code> (VPS ở Amsterdam) — <strong>536 request trong ~2 giờ 15 phút</strong> nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Một dòng access log gốc điển hình:</p>
+<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15&quot;
+</code></pre>
+<p>Đặc điểm đọc ra từ log: biến thể <code>....//</code> và double-encoding <code>%252e%252e</code> để né bộ lọc <code>../</code> thông thường (đúng cái bẫy ở 11.6.4); nhắm <code>.ssh/id_rsa</code>, <code>.ssh/id_ed25519</code>, <code>.env</code>, <code>.mysql_history</code> lần lượt cho mọi user phổ biến (root/admin/ubuntu/deploy/www-data...); referer giả Bing + user-agent xoay liên tục để né phát hiện; nhịp đều ~1 request/5 giây suốt 2 giờ — chắc chắn là máy, không phải người. Kết quả: toàn 301/400/404, không request nào trả 200 — <strong>chưa thủng</strong>, nhưng toàn bộ 536 request đều được nhận và một phần chạm app (cấu hình đúng như anti-pattern 11.6.2).</p>
+<p>Mở rộng truy vấn ra cả fleet thì bức tranh đổi hẳn: <strong>hàng chục IP thuộc nhiều subnet</strong> (<code>185.177.72.x</code>, <code>45.148.10.x</code>, <code>195.178.110.x</code>...) quét tất cả các máy web-facing, IP xoay liên tục. Bài học rút ra:</p>
+<ol>
+<li><strong>Chặn IP đơn lẻ là "đập chuột chũi"</strong>: chặn xong <code>.80</code> thì <code>.62</code>, <code>.42</code> và subnet khác tới ngay. Chặn IP/subnet chỉ là biện pháp tình thế khi đang bị dồn dập.</li>
+<li><strong>Ưu tiên biện pháp theo hành vi, áp cho cả fleet</strong>: rate-limit (11.6.3), chặn tên tệp (11.6.4), <code>default_server</code> 444 (11.6.5), siết body size (11.6.6) — không phụ thuộc IP nguồn nên không phải chạy theo scanner. Với dev/staging, allow/deny theo IP (11.6.7) diệt gốc luôn.</li>
+<li><strong>Hướng tự động hoá (đang nghiên cứu)</strong>: nối fail2ban hoặc cơ chế active response của SIEM để tự chặn IP khi vượt ngưỡng cảnh báo (SIEM đếm alert theo <code>srcip</code> → đẩy lệnh chặn xuống firewall). Cần đặt ngưỡng và thời hạn chặn cẩn thận để không tự chặn nhầm đối tác NAT chung IP.</li>
+</ol>
+<hr />
+<h2 id="ch11-117-zeek-phan-tich-luu-luong-dua-hanh-vi-network-security-monitor">11.7. Zeek — phân tích lưu lượng dựa hành vi (network security monitor)</h2>
+<p>Zeek (trước là Bro) KHÁC Snort/Suricata: không chủ yếu khớp chữ ký, mà sinh LOG GIÀU NGỮ CẢNH cho mọi kết nối và sự kiện giao thức, dùng cho threat hunting và phát hiện bất thường. Nó chạy script trên các event (connection_established, dns_request, http_request).</p>
+<p>Các log chính (TSV, một dòng/sự kiện):
+- <code>conn.log</code>: mọi kết nối L3/L4.
+- <code>dns.log</code>: truy vấn/đáp DNS.
+- <code>http.log</code>: từng request/response HTTP.
+- <code>ssl.log</code>/<code>x509.log</code>: handshake TLS, cert.
+- <code>files.log</code>, <code>notice.log</code>, <code>weird.log</code>.</p>
+<p>Trường tiêu biểu <code>conn.log</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ts</td>
+<td>timestamp</td>
+<td>1718780400.123</td>
+</tr>
+<tr>
+<td>uid</td>
+<td>ID kết nối duy nhất (liên kết log)</td>
+<td>CwjjYf3</td>
+</tr>
+<tr>
+<td>id.orig_h / id.orig_p</td>
+<td>IP/port nguồn</td>
+<td>10.0.0.5 / 51234</td>
+</tr>
+<tr>
+<td>id.resp_h / id.resp_p</td>
+<td>IP/port đích</td>
+<td>8.8.8.8 / 53</td>
+</tr>
+<tr>
+<td>proto</td>
+<td>tcp/udp/icmp</td>
+<td>udp</td>
+</tr>
+<tr>
+<td>service</td>
+<td>giao thức L7 nhận dạng</td>
+<td>dns</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>thời lượng</td>
+<td>0.034</td>
+</tr>
+<tr>
+<td>orig_bytes/resp_bytes</td>
+<td>byte mỗi chiều</td>
+<td>31 / 75</td>
+</tr>
+<tr>
+<td>conn_state</td>
+<td>trạng thái (S0, SF, REJ, RSTO...)</td>
+<td>SF</td>
+</tr>
+</tbody>
+</table>
+<p><code>uid</code> là chìa khoá: cùng <code>uid</code> xuất hiện trong <code>conn.log</code>, <code>dns.log</code>, <code>http.log</code> → pivot toàn bộ hoạt động của một kết nối.</p>
+<p>Chạy Zeek offline trên pcap và truy vấn:</p>
+<pre><code class="language-bash">zeek -r capture.pcap                  # sinh conn.log, dns.log, http.log...
+zeek-cut id.orig_h id.resp_h id.resp_p service &lt; conn.log | sort | uniq -c | sort -rn
+# Tìm DNS exfil: truy vấn rất dài / nhiều subdomain ngẫu nhiên
+zeek-cut query &lt; dns.log | awk '{ if (length($1) &gt; 50) print }'
+</code></pre>
+<p>Script Zeek phát hiện kết nối tới cổng lạ (ví dụ minh hoạ):</p>
+<pre><code class="language-zeek">event connection_established(c: connection) {
+    if (c$id$resp_p == 4444/tcp)
+        NOTICE([$note=Weird::Activity,
+                $msg=fmt(&quot;Possible reverse shell to %s:%s&quot;, c$id$resp_h, c$id$resp_p),
+                $conn=c]);
+}
+</code></pre>
+<p><strong>Vì sao</strong> Zeek bổ sung Suricata: Suricata trả lời "có khớp chữ ký không"; Zeek trả lời "chuyện gì đã xảy ra trên mạng" — cho phép săn mối đe doạ chưa có chữ ký (beaconing đều đặn, DNS tunneling, JA3 fingerprint TLS bất thường). Kết hợp: Suricata cho alert nhanh, Zeek cho ngữ cảnh điều tra, đẩy cả hai vào SIEM.</p>
+<hr />
+<h2 id="ch11-118-tong-hop-kien-truc-phong-thu-va-luu-y-van-hanh">11.8. Tổng hợp kiến trúc phòng thủ và lưu ý vận hành</h2>
+<p>Bố trí điển hình một tổ chức:</p>
+<pre><code>Internet
+  │
+[ pfSense / NGFW ]  ── L3/L4 stateful filter, NAT, anti-DDoS, VPN termination (IPsec/WG/OVPN)
+  │  (SPAN/TAP) ───────────────► [ Suricata IDS ]  +  [ Zeek ]  ──► SIEM
+  │
+[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination, rate-limit + chặn sớm (11.6)
+  │
+[ App servers ]  ── HIDS (Wazuh/auditd), prepared statements (gốc vẫn là code an toàn)
+</code></pre>
+<p>Nguyên tắc vận hành cốt lõi:
+1. Tuning trước, enforce sau: IDS alert-only và WAF DetectionOnly trong giai đoạn baseline; đo false positive rồi mới inline/On.
+2. Lớp đúng việc: chặn L3/L4 ở firewall (rẻ), L7 ở WAF; đừng dùng WAF chống flood hay firewall chống SQLi. Request rác nhận diện được bằng pattern rẻ (tên tệp nhạy cảm, tần suất, Host lạ) thì ngắt ngay ở reverse proxy (11.6) trước khi chạm WAF/app.
+3. Defense-in-depth: WAF/IDS là compensating control; không thay thế code an toàn, patch, least-privilege.
+4. Khả dụng của thiết bị phòng thủ: IPS/WAF inline là điểm có thể gây gián đoạn / điểm thắt cổ chai (chokepoint) — thiết kế fail-open/fail-close có chủ đích, HA, và giới hạn regex/ReDoS.
+5. Mã hoá làm NIDS mù: cân nhắc TLS inspection ở reverse proxy (nơi đã có khoá) thay vì giải mã giữa đường.
+6. Bảo vệ khoá VPN và danh tính peer: private key quyền 600, PFS/rekey, ghim cert/public key, giám sát handshake.
+7. Tương quan đa nguồn: NIDS (Suricata) + NSM (Zeek) + HIDS (Wazuh) + WAF audit log → SIEM để thấy chuỗi tấn công đầy đủ thay vì cảnh báo rời rạc.</p>
+<hr />
+<h2 id="ch11-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li>Phần 11.6 mình viết lại sau một đợt audit cấu hình nginx trên cả fleet máy web ở hệ thống mình vận hành. Mẹo audit nhanh mà mình thấy đáng giá: chạy trên từng máy <code>sudo nginx -T 2&gt;/dev/null | grep -cE "limit_req|limit_conn|default_server"</code> — một con số duy nhất cho biết máy đó có bao nhiêu dòng cấu hình phòng vệ. Kết quả của mình: 5/6 máy trả về <strong>0</strong>. Con số 0 đó thuyết phục hơn mọi bài thuyết trình về defense-in-depth.</li>
+<li>Máy duy nhất có sẵn một phần cấu hình tốt được mình lấy làm <strong>mẫu chuẩn hoá</strong> cho các máy còn lại — đỡ viết từ đầu, và "máy X đang chạy ổn định với config này" là lập luận dễ được DevOps chấp nhận hơn một config mới tinh mình tự nghĩ ra.</li>
+<li>Từng hiểu sai: thấy scanner ăn toàn 301/400/404 thì yên tâm "app chặn được rồi". Sai ở hai chỗ — trả lỗi vẫn tốn đủ TLS + parse + một phần chạm app; và quan trọng hơn, nó nghĩa là cả hệ thống đang dựa vào đúng một lớp là app tự bảo vệ, không có gì phía trước.</li>
+<li>Cũng từng tin chặn regex <code>../</code> ở nginx là chống được traversal — sai nốt, vì nginx chuẩn hoá URI trước khi match location (11.6.4). May mà hiểu ra trước khi kịp tuyên bố "đã chặn traversal" ở đâu đó.</li>
+<li>Kinh nghiệm triển khai: đề xuất theo thứ tự ưu tiên (diệt gốc bằng allow/deny cho dev trước, rồi rate-limit, chặn tên tệp, default_server, body size), và <strong>thử trên MỘT máy dev trước</strong> — theo dõi vài ngày xem <code>limit_req</code> có chặn nhầm client hợp lệ không (đếm 429/503 trong log) rồi mới nhân bản ra cả fleet.</li>
+<li>Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng qua fail2ban hoặc active response của SIEM, và đưa WAF (ModSecurity/CRS hoặc Coraza) lên reverse proxy — hiện các máy của mình mới dừng ở lớp chặn rẻ tiền bằng nginx thuần.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch10.html"><span>← Chương trước</span><b>10 · Vận hành SOC &amp; Ứng phó sự cố</b></a><a class="pg next" href="ch12.html"><span>Chương sau →</span><b>12 · Kiểm thử &amp; Đánh giá lỗ hổng</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

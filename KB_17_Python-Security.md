@@ -2,29 +2,13 @@
 
 ## Tổng quan
 
-Chương này trình bày việc dùng **Python làm ngôn ngữ tự động hóa cho an ninh mạng**: thay thế các thao tác thủ công lặp lại bằng script và công cụ. Đây là nhu cầu bắt buộc vì khối lượng dữ liệu bảo mật vượt khả năng xử lý thủ công — log nhiều GB, hàng nghìn máy chủ, hàng triệu gói tin — trong khi Python cho tốc độ phát triển nhanh và hệ sinh thái thư viện bao phủ gần như mọi tác vụ.
+Viết script rà log thủ công tới lần thứ ba thì mình bắt đầu tự hỏi: sao không để máy làm chuyện lặp lại này? Đó cơ bản là lý do chương này tồn tại — dùng **Python làm ngôn ngữ tự động hóa cho an ninh mạng**, thay các thao tác tay chân lặp đi lặp lại bằng script. Khối lượng dữ liệu bảo mật (log nhiều GB, hàng nghìn máy chủ, hàng triệu gói tin) đã vượt quá khả năng xử lý thủ công từ lâu, còn Python thì vừa phát triển nhanh vừa có thư viện cho gần như mọi việc cần làm — nó đóng vai trò **glue language**: logic viết bằng Python, phần tính toán nặng giao cho thư viện C đã được tối ưu và audit kỹ.
 
-**Định nghĩa cốt lõi.** Tự động hóa bảo mật là quá trình chuyển các tác vụ thu thập, phân tích, ra quyết định và phản ứng sự cố thành mã chạy được, có thể lặp lại và kiểm chứng. Python đóng vai trò **glue language**: phần logic viết bằng Python, phần tính toán nặng giao cho thư viện C đã tối ưu và được audit.
+Chương bắt đầu từ nền tảng dễ vấp nhất: phân biệt `str` (văn bản) với `bytes` (dữ liệu nhị phân thật sự chạy trên mạng và trong crypto) — hồi mới học mình từng coi hai thứ này là một, tới lúc parse packet sai mới hiểu ra vấn đề — và cách `struct` bóc gói tin thành từng trường. Từ đó là bộ công cụ mạng và web: `socket` để tự viết port scanner từ số 0, `scapy` để dựng và soi gói tin tới từng field khi socket không đủ (quét kín đáo, phát hiện ARP spoofing), `requests` để gọi REST API tự động hóa ticket và cảnh báo, `paramiko` để SSH vào cả một fleet chạy audit config.
 
-**Các nhóm công cụ trong chương — khái niệm và vấn đề chúng giải quyết:**
+Phần giữa chương là các thư viện xử lý dữ liệu và hệ thống: `re` để lọc ra vài dòng đáng chú ý giữa hàng triệu dòng log, `json` làm ngôn ngữ chung với API và file cấu hình, `subprocess`/`os` để gọi chương trình ngoài và thao tác file — cũng chính là nơi command injection hay xảy ra nhất nên chương dành hẳn phần nói cách gọi an toàn, và `boto3` để audit cấu hình AWS (S3 public, security group hở) hay tự động phản ứng sự cố. Sau đó là crypto ứng dụng: `hashlib`/`hmac` cho toàn vẹn dữ liệu và xác thực nguồn gốc, `secrets` để sinh token không đoán được — tránh đúng cái bẫy kinh điển là dùng `random` (Mersenne Twister, đoán được) cho việc cần ngẫu nhiên thật. Chương khép lại bằng secure coding & SAST (Bandit dò anti-pattern tự động) và một ví dụ tổng hợp — IR Agent đóng gói trong Docker — ghép mọi mảnh trên thành một luồng đọc log → phát hiện → cảnh báo → phản ứng hoàn chỉnh.
 
-- **Nền tảng cú pháp (`bytes`/`str`, `struct`):** phân biệt dữ liệu văn bản (`str`) với dữ liệu nhị phân thô (`bytes`) mà mạng và crypto thực sự truyền; `struct` bóc tách gói tin thành từng trường. Giải quyết: nguồn lỗi số một khi parse packet và tính hash.
-- **`socket`:** tạo kết nối TCP/UDP cấp thấp. Giải quyết: xây port scanner — bước trinh sát cơ bản trong kiểm thử an ninh.
-- **`requests`:** HTTP client gọi REST API theo cách lập trình. Giải quyết: tự động tạo ticket, gửi cảnh báo, lấy dữ liệu từ Jira/Slack/SIEM.
-- **`re` (regex):** mô tả khuôn mẫu để trích thông tin từ văn bản phi cấu trúc. Giải quyết: lọc sự kiện cần thiết trong log hàng triệu dòng.
-- **`subprocess` & `os`:** gọi chương trình hệ thống và thao tác file/quyền. Giải quyết: tích hợp công cụ ngoài; đồng thời là điểm nóng số một của **command injection**, chương trình bày cách gọi an toàn.
-- **`json`:** định dạng trao đổi dữ liệu giữa các chương trình. Giải quyết: ngôn ngữ chung với API và file cấu hình mà cả người lẫn máy đọc được.
-- **`scapy`:** dựng, gửi và sniff gói tin tới từng trường header. Giải quyết: các tác vụ socket thường không làm được — quét kín đáo, phát hiện ARP spoofing.
-- **`paramiko`:** client SSHv2 thuần Python. Giải quyết: tự động đăng nhập, chạy lệnh audit cấu hình trên fleet hàng trăm máy chủ.
-- **`boto3`:** SDK AWS chính thức. Giải quyết: audit cấu hình cloud (S3 public, security group mở), thu thập log, phản ứng sự cố tự động.
-- **`hashlib` & `hmac`:** hàm băm mật mã và mã xác thực thông điệp có khóa. Giải quyết: kiểm tra toàn vẹn file và xác thực nguồn gốc thông điệp (webhook) chống giả mạo.
-- **`secrets`:** sinh giá trị ngẫu nhiên bằng CSPRNG của OS. Giải quyết: tạo token/session ID không đoán được, tránh bẫy `random` (Mersenne Twister) vốn dự đoán được.
-- **Secure coding & SAST:** tập thói quen viết mã không tạo lỗ hổng (injection, path traversal) và công cụ (Bandit) tự dò anti-pattern. Giải quyết: phát hiện sớm sai sót do con người bỏ sót.
-- **IR Agent & Docker:** IR Agent (Incident Response) là ví dụ tổng hợp ghép các phần trên thành luồng đọc log → phát hiện → cảnh báo → phản ứng; Docker đóng gói công cụ cùng dependency vào image bất biến, chạy nhất quán và cô lập khỏi host phân tích.
-
-Các mục sau đi sâu vào cơ chế kỹ thuật của từng thành phần.
-
-> Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo cấu trúc: **Là gì → Cơ chế bên trong (tới mức bit/byte/bước/tham số) → Ví dụ thực tế → Lưu ý bảo mật**. Các con số kỹ thuật đều cố gắng bám theo spec/RFC/manual chính thức; những điểm cần kiểm chứng đều được ghi rõ.
+> Mỗi mục đi theo cấu trúc: là gì → cơ chế bên trong (tới mức bit/byte/tham số) → ví dụ chạy được → lưu ý bảo mật. Số liệu kỹ thuật bám theo spec/RFC/manual chính thức; chỗ nào chưa chắc sẽ ghi rõ.
 
 ---
 

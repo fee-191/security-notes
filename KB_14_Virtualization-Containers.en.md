@@ -2,29 +2,15 @@
 
 ## Overview
 
-This chapter covers two models for isolating workloads on a single physical host: **virtualization** and **containers**. The isolation boundary between VMs or containers is itself the security boundary: when an attacker compromises one workload and **escapes** (breaks out of it), the entire host and all other workloads on it are threatened. A security engineer needs to understand by what mechanisms these boundaries are built and where they can break.
+One physical host running several unrelated things at once is entirely normal — and the safety of that arrangement rests on a single question: what is the boundary between them actually made of, and where does it break? Because once an attacker takes one workload and **escapes** it, the host and every other workload on it go with it. The two isolation models — **virtualization** and **containers** — are what this chapter examines, from exactly that angle.
 
-**Virtualization & Hypervisors.** Virtualization is the technique of emulating a complete computer inside another computer. Each **virtual machine (VM)** runs its own operating system with an independent kernel. The **hypervisor** is the software layer that partitions the real hardware (CPU, RAM, disk) among the VMs and enforces isolation between them. The problem it solves: running multiple independent operating systems on a single set of hardware, with safe isolation and optimized cost.
+Virtualization builds a thick boundary: each **VM** runs its own kernel, and a **hypervisor** sits underneath dividing the real hardware and enforcing isolation. This part covers **Proxmox VE** (open source, KVM-based) and **VMware ESXi/vSphere**, along with what makes them operationally valuable: snapshots for rollback, backups, and live migration of a running VM to another host.
 
-**Proxmox & VMware.** **Proxmox VE** (open source, built on Linux/KVM) and **VMware ESXi/vSphere** (commercial) are datacenter-grade hypervisors. They provide **backup**, **snapshots** (capturing a state for rollback), and **live migration** (vMotion — moving a running VM between hosts). This is the operational foundation of most modern infrastructure.
+Containers go the other way — a much thinner boundary, because every container **shares the host kernel**. In exchange they start in milliseconds and waste almost nothing. What gets called "isolation" here is really two kernel mechanisms working together: **namespaces** limit what a container can *see* (PIDs, network, mounts, hostname), while **cgroups** limit how much it can *use* (RAM, CPU, PID count) so one container cannot starve the machine. Then comes the **image/layer/registry** model with **Dockerfile**, and **Trivy** for scanning images for CVEs, misconfiguration and hardcoded secrets inside the pipeline.
 
-**Containers & Docker.** A container packages an application together with all its library dependencies into an immutable unit that runs identically in any environment. Unlike VMs, containers **share the host kernel**, so they start in milliseconds and consume very few resources. **Docker** is the most popular tool for building, packaging, and running containers. The security implication: because they share a kernel, a container's isolation boundary is thinner than a VM's.
+From that thin boundary the chapter moves straight into **container escape**: `--privileged`, a carelessly mounted `docker.sock`, excess capabilities — you have to know the exits to close them. At larger scale comes **Kubernetes** with its four critical security surfaces: **RBAC**, **NetworkPolicy** (an L3/L4 firewall between Pods), **Secrets** (base64 by default, which is not encryption — encryption-at-rest has to be turned on), and **Pod Security Standards**. Finally **Falco**, the runtime detection layer that watches syscalls and speaks up on odd behaviour like a shell opening inside a container or something reading `/etc/shadow`, usually forwarding alerts to the SIEM.
 
-The foundational kernel mechanisms:
-- **Namespaces**: isolate the *view* of resources (PID, network, mount, hostname, etc.) — a container only sees its own slice of the world.
-- **cgroups**: limit the *amount* of resources (RAM, CPU, PID count) each container may use, preventing one container from exhausting host resources.
-- **Image / layer / registry**: an *image* is an immutable packaged unit made of multiple stacked *layers* (reuse, dedup); a *registry* (e.g. Docker Hub) is the image store; a *Dockerfile* describes the steps to build an image.
-
-**Trivy.** A tool that scans images to detect libraries affected by CVEs, misconfigurations, and hardcoded secrets. Integrated into the **CI/CD** pipeline to gate (block) non-compliant images before deployment.
-
-**Container escape.** The scenario where an attacker breaks out of namespace/cgroup isolation to reach the host and other containers. Because containers share the host kernel, loose configurations (`--privileged` mode, mistakenly mounting `docker.sock`, granting excessive capabilities) open the path to escape. Understanding the escape paths is the prerequisite to closing them.
-
-**Kubernetes (K8s).** A large-scale container orchestrator across many nodes: scheduling, self-healing, load-based scaling, and non-disruptive rolling updates. The key security concepts: **RBAC** (authorization by subject/verb/resource), **NetworkPolicy** (L3/L4 firewall between Pods), **Secret** (storing keys/passwords — by default only base64-encoded, not truly encrypted, so encryption-at-rest must be enabled), and **Pod Security Standards** (constraints that force containers to run safely, e.g. forbidding running as root).
-
-**Falco.** A real-time runtime detection tool for containers and Kubernetes: it monitors **syscalls** and alerts on anomalous behavior (opening a shell inside a container, reading `/etc/shadow`, etc.). It is a detection layer that complements preventive measures (RBAC, firewall), and typically forwards alerts to a SIEM.
-
-> An in-depth reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the sequence: *what it is* → *internal mechanism* (down to the bit/byte/step/parameter level) → *real-world example* → *security notes*.
-
+> Each section runs: what it is → how it works internally (down to concrete parameters and steps) → a real example → security notes.
 ---
 
 ## 14.1. Virtualization foundations: why, and where the isolation lives
@@ -360,6 +346,8 @@ mount | grep overlay   # shows a filesystem of type 'overlay'
 ```
 
 > Security note: "deleted" data in a lower layer STILL resides in the image (it is only hidden by a whiteout). `docker history` and unpacking each layer (`tar`) can recover a secret that was `RUN rm`'d in a later instruction. This is the classic secret-leak bug — you must use a multi-stage build or BuildKit secrets, never COPY a secret and then delete it.
+
+> Operational note (real-world experience): images and build cache piling up in `/var/lib/docker/overlay2/` are the number-one cause of a full disk on a long-running Docker host. On a dev machine I run, the root FS filled up every 1–2 days simply because every CI build produced a new image and nobody cleaned up the old ones. Use `docker system df` to see space broken down by Images / Containers / Local Volumes / Build Cache (add `-v` to list each image in detail) before deciding what to remove. Important warning: `docker system prune` does *not* touch volumes by default, but `docker system prune --volumes` (or `docker volume prune`) will **delete volumes not referenced by any container** — on a machine with data volumes (DB, uploads) whose container is temporarily stopped, this is a path to accidentally wiping data. Safer: only clean unused images with `docker image prune -a --filter "until=72h"` on a schedule (a 3 a.m. cron), and avoid `--volumes` unless you are certain no data needs to be kept.
 
 ### 14.5.4. Image, layer, digest — the format
 

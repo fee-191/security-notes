@@ -1,0 +1,2102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 13 — Bảo mật Đám mây — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 13 — Bảo mật Đám mây — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch12.html"><link rel="next" href="ch14.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter open active" data-ch="13"><a class="nav-ch-title" href="#top"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"><a class="nav-sub" href="#ch13-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch13-131-mo-hinh-dich-vu-đam-may-iaas-paas-saas">13.1. Mô hình dịch vụ đám mây: IaaS / PaaS / SaaS</a><a class="nav-sub" href="#ch13-132-shared-responsibility-model-mo-hinh-trach-nhiem-chung">13.2. Shared Responsibility Model (Mô hình trách nhiệm chung)</a><a class="nav-sub" href="#ch13-133-aws-iam-identity-and-access-management">13.3. AWS IAM — Identity and Access Management</a><a class="nav-sub" href="#ch13-134-aws-vpc-virtual-private-cloud">13.4. AWS VPC — Virtual Private Cloud</a><a class="nav-sub" href="#ch13-135-security-group-stateful-vs-network-acl-stateless">13.5. Security Group (stateful) vs Network ACL (stateless)</a><a class="nav-sub" href="#ch13-136-amazon-s3-luu-tru-đoi-tuong">13.6. Amazon S3 — lưu trữ đối tượng</a><a class="nav-sub" href="#ch13-137-aws-kms-key-management-service">13.7. AWS KMS — Key Management Service</a><a class="nav-sub" href="#ch13-138-cloudtrail-nhat-ky-api">13.8. CloudTrail — nhật ký API</a><a class="nav-sub" href="#ch13-139-cloudwatch">13.9. CloudWatch</a><a class="nav-sub" href="#ch13-1310-guardduty">13.10. GuardDuty</a><a class="nav-sub" href="#ch13-1311-imds-instance-metadata-service-v1-vs-v2">13.11. IMDS — Instance Metadata Service (v1 vs v2)</a><a class="nav-sub" href="#ch13-1312-aws-organizations-scp-service-control-policy">13.12. AWS Organizations &amp;amp; SCP (Service Control Policy)</a><a class="nav-sub" href="#ch13-1313-gcp-tuong-đuong-aws">13.13. GCP — tương đương AWS</a><a class="nav-sub" href="#ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</a><a class="nav-sub" href="#ch13-1315-tan-cong-đam-may-va-cach-phat-hien">13.15. Tấn công đám mây và cách phát hiện</a><a class="nav-sub" href="#ch13-1316-cspm-cloud-security-posture-management">13.16. CSPM — Cloud Security Posture Management</a><a class="nav-sub" href="#ch13-1317-secret-manager">13.17. Secret Manager</a><a class="nav-sub" href="#ch13-1318-tong-ket-cac-nguyen-tac-phong-thu-cot-loi">13.18. Tổng kết các nguyên tắc phòng thủ cốt lõi</a><a class="nav-sub" href="#ch13-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-13" data-ch="13">
+<h1 id="ch13-chuong-13-bao-mat-đam-may">Chương 13 — Bảo mật Đám mây</h1>
+<h2 id="ch13-tong-quan">Tổng quan</h2>
+<p>Mình học mảng cloud security này không phải vì tò mò lý thuyết, mà vì công việc thật: hạ tầng nơi mình vận hành nằm cả trên AWS lẫn OCI, và sớm muộn cũng đụng tới GCP khi làm việc với đối tác dùng nền tảng đó. Đọc vài báo cáo lộ dữ liệu thực tế mới thấy một điểm chung đáng sợ: phần lớn không phải do nhà cung cấp bị hack, mà do chính khách hàng cấu hình sai — một bucket để public, một security group mở nhầm cổng quản trị, một IMDSv1 quên tắt. Nên câu hỏi mình cần trả lời trước tiên không phải "cloud có an toàn không", mà là "trong cả chồng hạ tầng này, đâu mới là phần việc của mình".</p>
+<p>Chương bắt đầu từ đúng ranh giới đó: mô hình IaaS/PaaS/SaaS và Shared Responsibility Model, hai thứ chỉ ra ai vá lỗi tầng nào và dập tắt luôn ngộ nhận "lên cloud là nhà cung cấp lo hết". Từ đó chương đi vào các khối mình phải tự quản — IAM và least privilege, VPC cùng Security Group/Network ACL, những dịch vụ dễ gây sự cố nhất trong thực tế như S3 và KMS, lớp giám sát CloudTrail/CloudWatch/GuardDuty, và IMDS, thứ hay bị khai thác qua SSRF nếu còn chạy bản v1. Organizations và SCP khép lại phần này bằng vai trò chốt guardrail ở cấp tổ chức, không phụ thuộc từng tài khoản con có cẩn thận hay không.</p>
+<p>Nửa sau chương bước ra ngoài AWS: trước là bảng ánh xạ dịch vụ sang GCP để học một nền tảng suy ra nền tảng kia, sau là hẳn một phần riêng cho OCI (13.14). Mình từng tưởng OCI chỉ đổi tên dịch vụ so với AWS, hoá ra nhiều khái niệm nền tảng thiết kế khác hẳn — cô lập bằng compartment thay vì account, policy viết dạng câu thay vì JSON, bucket private mặc định thay vì phải tự khoá lại. Đối chiếu xong cả ba nền tảng, chương khép bằng các đường tấn công cloud phổ biến, công cụ CSPM quét cấu hình sai liên tục, và Secret Manager để không phải hardcode bí mật trong code.</p>
+<blockquote>
+<p>Ví dụ trong chương là lệnh AWS CLI và OCI CLI thật kèm output mẫu; chỗ nào số liệu có thể đổi theo thời gian đều ghi "cần kiểm chứng".</p>
+</blockquote>
+<hr />
+<h2 id="ch13-131-mo-hinh-dich-vu-đam-may-iaas-paas-saas">13.1. Mô hình dịch vụ đám mây: IaaS / PaaS / SaaS</h2>
+<h3 id="ch13-1311-la-gi">13.1.1. Là gì</h3>
+<p>Điện toán đám mây phân tầng theo "ai vận hành tầng nào" trong ngăn xếp hạ tầng. Ba mô hình chuẩn (định nghĩa gốc: NIST SP 800-145):</p>
+<table>
+<thead>
+<tr>
+<th>Mô hình</th>
+<th>Nhà cung cấp quản lý</th>
+<th>Khách hàng quản lý</th>
+<th>Ví dụ AWS</th>
+<th>Ví dụ GCP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IaaS (Infrastructure)</td>
+<td>Hypervisor, host OS, mạng vật lý, lưu trữ vật lý</td>
+<td>Guest OS, runtime, app, data, cấu hình mạng ảo</td>
+<td>EC2, EBS, VPC</td>
+<td>Compute Engine, Persistent Disk</td>
+</tr>
+<tr>
+<td>PaaS (Platform)</td>
+<td>Cộng thêm: OS, runtime, patching</td>
+<td>App code + data + cấu hình ứng dụng</td>
+<td>Elastic Beanstalk, Lambda, RDS</td>
+<td>App Engine, Cloud Functions, Cloud SQL</td>
+</tr>
+<tr>
+<td>SaaS (Software)</td>
+<td>Toàn bộ ngăn xếp</td>
+<td>Chỉ dữ liệu người dùng + cấu hình trong app</td>
+<td>WorkMail, QuickSight</td>
+<td>Workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1312-co-che-ben-trong-ranh-gioi-tin-cay-thay-đoi-theo-tang">13.1.2. Cơ chế bên trong: ranh giới tin cậy thay đổi theo tầng</h3>
+<p>Điểm cốt lõi về bảo mật: <strong>bề mặt tấn công và nghĩa vụ vá lỗi dịch chuyển theo mô hình</strong>.</p>
+<pre><code>                 IaaS            PaaS            SaaS
+               +--------+      +--------+      +--------+
+   App         |   KH   |      |   KH   |      |  NCC   |
+   Data        |   KH   |      |   KH   |      |  KH*   |   *KH vẫn sở hữu/cấu hình truy cập dữ liệu
+   Runtime     |   KH   |      |  NCC   |      |  NCC   |
+   OS          |   KH   |      |  NCC   |      |  NCC   |
+   Hypervisor  |  NCC   |      |  NCC   |      |  NCC   |
+   Mạng vật lý  |  NCC   |      |  NCC   |      |  NCC   |
+               +--------+      +--------+      +--------+
+   KH = Khách hàng,  NCC = Nhà cung cấp
+</code></pre>
+<p><strong>Vì sao:</strong> với IaaS, một lỗ hổng kernel chưa vá trên guest OS là trách nhiệm của bạn; với PaaS như Lambda, AWS vá runtime nhưng <strong>một thư viện npm có lỗ hổng trong gói deploy vẫn là của bạn</strong>. Hiểu sai ranh giới này là gốc rễ của hầu hết sự cố misconfiguration (cấu hình sai).</p>
+<hr />
+<h2 id="ch13-132-shared-responsibility-model-mo-hinh-trach-nhiem-chung">13.2. Shared Responsibility Model (Mô hình trách nhiệm chung)</h2>
+<h3 id="ch13-1321-la-gi">13.2.1. Là gì</h3>
+<p>Khung phân định trách nhiệm bảo mật. AWS gọi tắt:</p>
+<ul>
+<li><strong>Security OF the cloud</strong> — của AWS: phần cứng, region/AZ, mạng vật lý, hypervisor, dịch vụ nền.</li>
+<li><strong>Security IN the cloud</strong> — của khách hàng: IAM, mã hóa dữ liệu, cấu hình Security Group, vá guest OS (với IaaS), phân loại dữ liệu.</li>
+</ul>
+<p>GCP dùng cụm "Shared fate" (số phận chung) — nhấn mạnh Google chủ động cung cấp blueprint an toàn mặc định, nhưng phân định trách nhiệm về cơ bản tương đương.</p>
+<p>Sơ đồ ranh giới trách nhiệm:</p>
+<pre><code>        ===== SECURITY IN THE CLOUD (Khách hàng) =====
+        +-----------------------------------------------+
+        |  Dữ liệu khách hàng + phân loại dữ liệu        |
+        |  IAM / policy / quản lý danh tính &amp; truy cập   |
+        |  Cấu hình Security Group, NACL, firewall       |
+        |  Mã hóa at-rest / in-transit (bật &amp; cấu hình)  |
+        |  Vá guest OS, runtime, ứng dụng (mức IaaS)     |
+        +-----------------------------------------------+
+                          | ranh giới phân định
+        +-----------------------------------------------+
+        |  Hypervisor / ảo hóa                           |
+        |  Dịch vụ nền (compute, storage, DB engine)     |
+        |  Mạng vật lý, region / AZ                       |
+        |  Phần cứng, cơ sở vật lý (datacenter)          |
+        +-----------------------------------------------+
+        ===== SECURITY OF THE CLOUD (Nhà cung cấp) =====
+</code></pre>
+<p>Đường phân định dịch chuyển lên/xuống theo mô hình dịch vụ (IaaS đẩy ranh giới xuống thấp, SaaS đẩy lên cao), nhưng dữ liệu và cấu hình truy cập luôn thuộc trách nhiệm khách hàng. Đây là lý do hầu hết sự cố rò rỉ nằm ở nửa trên của sơ đồ.</p>
+<h3 id="ch13-1322-bang-phan-đinh-chi-tiet-theo-dich-vu">13.2.2. Bảng phân định chi tiết theo dịch vụ</h3>
+<table>
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>EC2 (IaaS)</th>
+<th>RDS (PaaS)</th>
+<th>S3 (lưu trữ quản lý)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vá hypervisor</td>
+<td>AWS</td>
+<td>AWS</td>
+<td>AWS</td>
+</tr>
+<tr>
+<td>Vá OS</td>
+<td>Khách hàng</td>
+<td>AWS</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Vá DB engine</td>
+<td>Khách hàng</td>
+<td>AWS</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Mã hóa at-rest</td>
+<td>Khách hàng bật</td>
+<td>Khách hàng bật</td>
+<td>Khách hàng bật/SSE</td>
+</tr>
+<tr>
+<td>Mã hóa in-transit</td>
+<td>Khách hàng cấu hình</td>
+<td>Khách hàng (force SSL)</td>
+<td>Khách hàng (policy <code>aws:SecureTransport</code>)</td>
+</tr>
+<tr>
+<td>Cấu hình truy cập (IAM/policy)</td>
+<td>Khách hàng</td>
+<td>Khách hàng</td>
+<td>Khách hàng</td>
+</tr>
+<tr>
+<td>Phân loại dữ liệu</td>
+<td>Khách hàng</td>
+<td>Khách hàng</td>
+<td>Khách hàng</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> gần như <strong>toàn bộ sự cố rò rỉ dữ liệu đám mây nổi tiếng nằm ở phần "IN the cloud"</strong> — tức lỗi của khách hàng (bucket public, key lộ trong git, IAM quá rộng). AWS/GCP hiếm khi bị thủng ở tầng họ quản lý.</p>
+<hr />
+<h2 id="ch13-133-aws-iam-identity-and-access-management">13.3. AWS IAM — Identity and Access Management</h2>
+<h3 id="ch13-1331-cac-thuc-the-entities">13.3.1. Các thực thể (entities)</h3>
+<table>
+<thead>
+<tr>
+<th>Thực thể</th>
+<th>Định nghĩa</th>
+<th>ARN ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Root user</td>
+<td>Chủ tài khoản, toàn quyền tuyệt đối, không giới hạn được bằng IAM policy</td>
+<td><code>arn:aws:iam::123456789012:root</code></td>
+</tr>
+<tr>
+<td>IAM User</td>
+<td>Danh tính người/dịch vụ lâu dài, có credentials</td>
+<td><code>arn:aws:iam::123456789012:user/alice</code></td>
+</tr>
+<tr>
+<td>IAM Group</td>
+<td>Tập hợp user để gắn policy chung</td>
+<td><code>arn:aws:iam::123456789012:group/devs</code></td>
+</tr>
+<tr>
+<td>IAM Role</td>
+<td>Danh tính tạm thời, không có credential cố định, được "assume"</td>
+<td><code>arn:aws:iam::123456789012:role/app-role</code></td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>Tài liệu JSON định nghĩa quyền</td>
+<td><code>arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess</code></td>
+</tr>
+</tbody>
+</table>
+<p>Cấu trúc ARN (Amazon Resource Name) — từng trường:</p>
+<pre><code>arn : partition : service : region : account-id : resource-type / resource
+ |        |         |         |          |              |
+ |        |         |         |          |              +-- vd: user/alice, bucket/my-data
+ |        |         |         |          +-- 12 chữ số tài khoản
+ |        |         |         +-- vd: us-east-1 (S3/IAM thường để trống vì global)
+ |        |         +-- vd: iam, s3, ec2
+ |        +-- aws | aws-cn (Trung Quốc) | aws-us-gov
+ +-- hằng &quot;arn&quot;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường ARN</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arn</td>
+<td>cố định 3 ký tự</td>
+<td>literal</td>
+<td><code>arn</code></td>
+</tr>
+<tr>
+<td>partition</td>
+<td>chuỗi</td>
+<td>vùng pháp lý</td>
+<td><code>aws</code></td>
+</tr>
+<tr>
+<td>service</td>
+<td>chuỗi</td>
+<td>namespace dịch vụ</td>
+<td><code>s3</code></td>
+</tr>
+<tr>
+<td>region</td>
+<td>chuỗi</td>
+<td>region (trống nếu global)</td>
+<td><code>us-east-1</code> hoặc rỗng</td>
+</tr>
+<tr>
+<td>account-id</td>
+<td>12 chữ số</td>
+<td>ID tài khoản</td>
+<td><code>123456789012</code></td>
+</tr>
+<tr>
+<td>resource</td>
+<td>chuỗi</td>
+<td>định danh tài nguyên</td>
+<td><code>bucket/logs</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1332-policy-json-mo-xe-tung-truong">13.3.2. Policy JSON — mổ xẻ từng trường</h3>
+<p>Đây là cấu trúc trung tâm của toàn bộ ủy quyền AWS. Một policy là một tài liệu JSON.</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;AllowReadSpecificBucket&quot;,
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [
+        &quot;s3:GetObject&quot;,
+        &quot;s3:ListBucket&quot;
+      ],
+      &quot;Resource&quot;: [
+        &quot;arn:aws:s3:::company-reports&quot;,
+        &quot;arn:aws:s3:::company-reports/*&quot;
+      ],
+      &quot;Condition&quot;: {
+        &quot;StringEquals&quot;: { &quot;aws:PrincipalTag/team&quot;: &quot;finance&quot; },
+        &quot;IpAddress&quot;: { &quot;aws:SourceIp&quot;: &quot;203.0.113.0/24&quot; },
+        &quot;Bool&quot;: { &quot;aws:MultiFactorAuthPresent&quot;: &quot;true&quot; }
+      }
+    }
+  ]
+}
+</code></pre>
+<p>Mô tả từng trường:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Bắt buộc</th>
+<th>Ý nghĩa</th>
+<th>Giá trị ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Version</code></td>
+<td>Có</td>
+<td>Phiên bản ngôn ngữ policy. PHẢI là <code>2012-10-17</code> để dùng được biến/condition. <code>2008-10-17</code> là cũ, không hỗ trợ policy variables</td>
+<td><code>2012-10-17</code></td>
+</tr>
+<tr>
+<td><code>Statement</code></td>
+<td>Có</td>
+<td>Mảng các câu lệnh quyền</td>
+<td><code>[ {...} ]</code></td>
+</tr>
+<tr>
+<td><code>Sid</code></td>
+<td>Không</td>
+<td>Statement ID, nhãn để đọc/quản lý</td>
+<td><code>AllowReadSpecificBucket</code></td>
+</tr>
+<tr>
+<td><code>Effect</code></td>
+<td>Có</td>
+<td><code>Allow</code> hoặc <code>Deny</code></td>
+<td><code>Allow</code></td>
+</tr>
+<tr>
+<td><code>Action</code></td>
+<td>Có (hoặc NotAction)</td>
+<td>Hành động API, dạng <code>service:Operation</code>, hỗ trợ <code>*</code></td>
+<td><code>s3:GetObject</code></td>
+</tr>
+<tr>
+<td><code>Resource</code></td>
+<td>Có với policy gắn vào identity</td>
+<td>ARN tài nguyên áp dụng</td>
+<td><code>arn:aws:s3:::bucket/*</code></td>
+</tr>
+<tr>
+<td><code>Principal</code></td>
+<td>Chỉ trong resource-based/trust policy</td>
+<td>Ai được phép (user/role/service)</td>
+<td><code>{"AWS": "...role/x"}</code></td>
+</tr>
+<tr>
+<td><code>Condition</code></td>
+<td>Không</td>
+<td>Điều kiện bổ sung (khóa toán tử)</td>
+<td><code>StringEquals</code>, <code>IpAddress</code>, <code>Bool</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> <code>Version</code> lại là một ngày cố định: đó không phải ngày bạn viết policy mà là <strong>phiên bản của ngữ pháp policy language</strong>. AWS đóng băng giá trị này; ghi sai (vd ngày hôm nay) sẽ làm condition/variable không hoạt động đúng.</p>
+<p>Các khóa Condition toán tử thường gặp:</p>
+<table>
+<thead>
+<tr>
+<th>Toán tử</th>
+<th>Dùng cho</th>
+<th>Ví dụ key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StringEquals</code> / <code>StringLike</code></td>
+<td>so chuỗi (Like hỗ trợ <code>*</code>)</td>
+<td><code>aws:PrincipalTag/team</code></td>
+</tr>
+<tr>
+<td><code>IpAddress</code> / <code>NotIpAddress</code></td>
+<td>CIDR</td>
+<td><code>aws:SourceIp</code></td>
+</tr>
+<tr>
+<td><code>Bool</code></td>
+<td>true/false</td>
+<td><code>aws:MultiFactorAuthPresent</code>, <code>aws:SecureTransport</code></td>
+</tr>
+<tr>
+<td><code>DateGreaterThan</code></td>
+<td>thời gian</td>
+<td><code>aws:CurrentTime</code></td>
+</tr>
+<tr>
+<td><code>ArnLike</code></td>
+<td>so ARN</td>
+<td><code>aws:SourceArn</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1333-thuat-toan-đanh-gia-quyen-policy-evaluation-logic-tung-buoc">13.3.3. Thuật toán đánh giá quyền (Policy Evaluation Logic) — từng bước</h3>
+<p>Khi một request API tới, AWS chạy quy trình quyết định <strong>Allow / Deny</strong> như sau:</p>
+<pre><code>1. Mặc định: DENY ngầm (implicit deny) cho mọi thứ.
+2. Thu thập TẤT CẢ policy áp dụng: identity-based, resource-based,
+   permission boundary, SCP (Organizations), session policy.
+3. Có Explicit DENY ở bất kỳ policy nào?  --&gt; YES =&gt; DENY (kết thúc).
+4. SCP cho phép Action?                    --&gt; NO  =&gt; DENY.
+5. Permission boundary cho phép?           --&gt; NO  =&gt; DENY.
+6. Có Explicit ALLOW trong identity/resource policy? --&gt; YES =&gt; ALLOW.
+7. Ngược lại                                --&gt; DENY (implicit).
+</code></pre>
+<p>Sơ đồ state machine:</p>
+<pre><code>        +----------------+
+        | Implicit Deny  |  (trạng thái khởi đầu)
+        +-------+--------+
+                |
+        có Explicit Deny? --yes--&gt; [DENY] (luôn thắng)
+                | no
+        SCP allow &amp; Boundary allow &amp; Explicit Allow? --no--&gt; [DENY]
+                | yes
+              [ALLOW]
+</code></pre>
+<p><strong>Lưu ý:</strong> Explicit Deny luôn thắng mọi Allow. Đây là nền tảng để dựng guardrail (hàng rào) cho tài khoản: dù ai đó vô tình cấp <code>AdministratorAccess</code>, một Deny trong SCP/boundary vẫn chặn được.</p>
+<h3 id="ch13-1334-sts-assumerole-va-trust-policy">13.3.4. STS AssumeRole và Trust Policy</h3>
+<p>STS (Security Token Service) cấp <strong>credential tạm thời</strong>. Một Role có hai phần policy:</p>
+<ul>
+<li><strong>Permission policy</strong>: role <em>làm được gì</em>.</li>
+<li><strong>Trust policy</strong> (assume role policy document): <em>ai được phép assume</em> role này — đây là một resource-based policy đặc biệt với trường <code>Principal</code>.</li>
+</ul>
+<p>Trust policy mẫu (cho phép một role trong tài khoản khác assume, kèm ExternalId chống "confused deputy"):</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Principal&quot;: { &quot;AWS&quot;: &quot;arn:aws:iam::222233334444:role/partner-app&quot; },
+    &quot;Action&quot;: &quot;sts:AssumeRole&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringEquals&quot;: { &quot;sts:ExternalId&quot;: &quot;U7x-9213-secret&quot; }
+    }
+  }]
+}
+</code></pre>
+<p>Lệnh assume thật và output:</p>
+<pre><code class="language-bash">aws sts assume-role \
+  --role-arn arn:aws:iam::123456789012:role/app-role \
+  --role-session-name audit-2026 \
+  --external-id U7x-9213-secret \
+  --duration-seconds 3600
+</code></pre>
+<p>Output (rút gọn):</p>
+<pre><code class="language-json">{
+  &quot;Credentials&quot;: {
+    &quot;AccessKeyId&quot;: &quot;ASIA....EXAMPLE&quot;,
+    &quot;SecretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
+    &quot;SessionToken&quot;: &quot;FwoGZXIvYXdz....&lt;rất dài&gt;&quot;,
+    &quot;Expiration&quot;: &quot;2026-06-19T15:00:00Z&quot;
+  },
+  &quot;AssumedRoleUser&quot;: {
+    &quot;Arn&quot;: &quot;arn:aws:sts::123456789012:assumed-role/app-role/audit-2026&quot;
+  }
+}
+</code></pre>
+<p>Phân biệt qua <strong>prefix của AccessKeyId</strong> — đây là dấu hiệu nhận diện quan trọng khi điều tra log:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Loại credential</th>
+<th>Thời hạn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AKIA</code></td>
+<td>Long-term (IAM user access key)</td>
+<td>Vĩnh viễn tới khi xóa</td>
+</tr>
+<tr>
+<td><code>ASIA</code></td>
+<td>Temporary (STS)</td>
+<td>Có Expiration</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> cần ExternalId: chống tấn công confused deputy. Nếu một nhà cung cấp SaaS dùng cùng một role-arn cho nhiều khách hàng, kẻ tấn công biết role-arn của bạn có thể lừa SaaS assume role của bạn. ExternalId là bí mật chỉ bạn và SaaS biết, đính kèm trong condition để chặn.</p>
+<h3 id="ch13-1335-permission-boundary">13.3.5. Permission Boundary</h3>
+<p>Là một managed policy gắn vào user/role, đặt <strong>trần quyền tối đa</strong>. Quyền hiệu lực = giao (intersection) của permission policy AND boundary.</p>
+<pre><code>Quyền hiệu lực = (Identity policy ALLOW)  ∩  (Boundary ALLOW)  -  (mọi DENY)
+</code></pre>
+<p>Ví dụ: developer được gắn <code>AdministratorAccess</code> nhưng boundary chỉ cho <code>s3:*</code> và <code>ec2:*</code> =&gt; thực tế chỉ thao tác được S3 và EC2. Dùng để <strong>ủy quyền tạo IAM an toàn</strong> (cho dev tự tạo role nhưng không vượt quá boundary).</p>
+<h3 id="ch13-1336-mfa">13.3.6. MFA</h3>
+<p>MFA TOTP theo RFC 6238 (TOTP) dựa trên RFC 4226 (HOTP). Mã 6 chữ số tính từ:</p>
+<pre><code>TOTP = HOTP(K, T)  với  T = floor((UnixTime - T0) / X)
+   K  = shared secret (Base32), X = 30 giây (time step), T0 = 0
+   HOTP = Truncate( HMAC-SHA1(K, T) ) mod 10^6
+</code></pre>
+<p>Ép buộc MFA bằng condition <code>aws:MultiFactorAuthPresent</code> (như mục 13.3.2). <strong>Lưu ý:</strong> với root user, bật MFA phần cứng/ảo là biện pháp ưu tiên số một.</p>
+<hr />
+<h2 id="ch13-134-aws-vpc-virtual-private-cloud">13.4. AWS VPC — Virtual Private Cloud</h2>
+<p>Sơ đồ kiến trúc VPC điển hình (subnet public/private, IGW/NAT, vị trí SG và NACL):</p>
+<pre><code>                          Internet
+                             |
+                       +-----------+
+                       |    IGW    |  (Internet Gateway)
+                       +-----------+
+                             |
+   VPC 10.0.0.0/16           |
+   +-------------------------|-----------------------------------+
+   |   PUBLIC SUBNET 10.0.1.0/24                                  |
+   |   route: 0.0.0.0/0 -&gt; IGW          [NACL áp ở mức subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  NAT Gateway   |      |  Bastion/LB     | (SG ở mức ENI) |
+   |   +-------+--------+      +-----------------+                |
+   |           |                                                  |
+   |  ---------|------------------------------------------------  |
+   |   PRIVATE SUBNET 10.0.2.0/24                                 |
+   |   route: 0.0.0.0/0 -&gt; NAT GW       [NACL áp ở mức subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  App server    |-----&gt;|  Database (RDS) | (SG ở mức ENI) |
+   |   |  (SG)          |      |  (SG)           |                |
+   |   +----------------+      +-----------------+                |
+   |     không có public IP — chỉ ra Internet QUA NAT GW          |
+   +-------------------------------------------------------------+
+</code></pre>
+<p>Điểm then chốt: <strong>NACL lọc ở biên subnet (stateless)</strong>, còn <strong>Security Group lọc ngay tại ENI của từng instance (stateful)</strong>. Tài nguyên nhạy cảm (DB) đặt trong private subnet, chỉ ra Internet một chiều qua NAT Gateway và không nhận kết nối đến từ Internet.</p>
+<h3 id="ch13-1341-cidr-va-phan-bo-đia-chi">13.4.1. CIDR và phân bổ địa chỉ</h3>
+<p>VPC là mạng ảo cô lập L3. Bạn gán một khối CIDR (Classless Inter-Domain Routing).</p>
+<p>Ký hiệu CIDR <code>10.0.0.0/16</code>:</p>
+<pre><code>10.0.0.0/16  =&gt; 10.0.0.0 - 10.0.255.255
+  /16 = 32 - 16 = 16 bit host =&gt; 2^16 = 65536 địa chỉ
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Bit</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Địa chỉ IPv4</td>
+<td>32 bit</td>
+<td>4 octet</td>
+</tr>
+<tr>
+<td>Prefix <code>/n</code></td>
+<td>n bit network</td>
+<td>phần cố định</td>
+</tr>
+<tr>
+<td>Host bits</td>
+<td>32 - n</td>
+<td>số host</td>
+</tr>
+</tbody>
+</table>
+<p>AWS <strong>chiếm 5 địa chỉ đầu/cuối mỗi subnet</strong>: <code>.0</code> (network), <code>.1</code> (VPC router), <code>.2</code> (DNS Amazon-provided), <code>.3</code> (dự phòng tương lai), và <code>.255</code> (broadcast — dù VPC không broadcast, vẫn giữ chỗ). Nên subnet <code>/24</code> (256 địa chỉ) chỉ dùng được 251 host.</p>
+<h3 id="ch13-1342-subnet-public-vs-private">13.4.2. Subnet public vs private</h3>
+<p>Khác biệt <strong>không nằm ở cấu hình subnet</strong> mà ở <strong>route table</strong>:</p>
+<ul>
+<li><strong>Public subnet</strong>: route table có đường <code>0.0.0.0/0 -&gt; igw-xxxx</code> (Internet Gateway).</li>
+<li><strong>Private subnet</strong>: route mặc định trỏ <code>0.0.0.0/0 -&gt; nat-xxxx</code> (NAT Gateway) hoặc không có đường ra Internet.</li>
+</ul>
+<p>Route table mẫu:</p>
+<pre><code>Destination      Target            (public subnet)
+10.0.0.0/16      local
+0.0.0.0/0        igw-0abc123
+
+Destination      Target            (private subnet)
+10.0.0.0/16      local
+0.0.0.0/0        nat-0def456
+</code></pre>
+<h3 id="ch13-1343-igw-vs-nat-gateway">13.4.3. IGW vs NAT Gateway</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Hướng</th>
+<th>Chức năng</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internet Gateway (IGW)</td>
+<td>Hai chiều</td>
+<td>Cho phép instance có public IP nhận/gửi Internet, thực hiện NAT 1:1 với Elastic IP</td>
+<td>Không tính phí giờ</td>
+</tr>
+<tr>
+<td>NAT Gateway</td>
+<td>Một chiều (ra)</td>
+<td>Instance private ra Internet (update, gọi API) nhưng Internet KHÔNG vào được</td>
+<td>Tính phí theo giờ + theo GB; đặt trong public subnet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> NAT GW phải nằm trong public subnet: bản thân NAT GW cần đường ra qua IGW; instance private trỏ route về NAT GW, NAT GW trỏ route về IGW.</p>
+<h3 id="ch13-1344-vpc-flow-logs-đinh-dang-ban-ghi">13.4.4. VPC Flow Logs — định dạng bản ghi</h3>
+<p>Flow Logs ghi metadata luồng (không nội dung). Định dạng default (v2) gồm các trường theo thứ tự:</p>
+<pre><code>version account-id interface-id srcaddr dstaddr srcport dstport protocol packets bytes start end action log-status
+2 123456789012 eni-0abc 10.0.1.5 203.0.113.7 51000 443 6 20 4520 1655640000 1655640060 ACCEPT OK
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>phiên bản format</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>srcaddr</code>/<code>dstaddr</code></td>
+<td>IP nguồn/đích</td>
+<td><code>10.0.1.5</code></td>
+</tr>
+<tr>
+<td><code>srcport</code>/<code>dstport</code></td>
+<td>cổng</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>số IANA (6=TCP,17=UDP,1=ICMP)</td>
+<td><code>6</code></td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td><code>ACCEPT</code>/<code>REJECT</code> (theo SG/NACL)</td>
+<td><code>ACCEPT</code></td>
+</tr>
+<tr>
+<td><code>log-status</code></td>
+<td><code>OK</code>/<code>NODATA</code>/<code>SKIPDATA</code></td>
+<td><code>OK</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> <code>REJECT</code> lặp lại tới nhiều cổng từ một IP = dấu hiệu port scan; dùng làm nguồn cho GuardDuty và phân tích đe dọa.</p>
+<hr />
+<h2 id="ch13-135-security-group-stateful-vs-network-acl-stateless">13.5. Security Group (stateful) vs Network ACL (stateless)</h2>
+<h3 id="ch13-1351-so-sanh-co-che">13.5.1. So sánh cơ chế</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Security Group</th>
+<th>Network ACL (NACL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tầng áp dụng</td>
+<td>ENI (network interface của instance)</td>
+<td>Subnet</td>
+</tr>
+<tr>
+<td>Stateful?</td>
+<td>CÓ — trả lời tự động được phép</td>
+<td>KHÔNG — phải mở cả chiều vào và ra</td>
+</tr>
+<tr>
+<td>Rule</td>
+<td>Chỉ Allow (không có Deny)</td>
+<td>Allow VÀ Deny</td>
+</tr>
+<tr>
+<td>Đánh giá</td>
+<td>Tất cả rule cùng lúc (không thứ tự)</td>
+<td>Theo THỨ TỰ số rule (thấp -&gt; cao), dừng ở match đầu tiên</td>
+</tr>
+<tr>
+<td>Mặc định</td>
+<td>Deny inbound, Allow all outbound</td>
+<td>"default NACL": Allow tất cả; NACL mới tạo: Deny tất cả</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1352-stateful-nghia-la-gi-o-muc-goi-tin">13.5.2. Stateful nghĩa là gì (ở mức gói tin)</h3>
+<p>Khi instance gửi request ra <code>443</code> đến server bên ngoài:</p>
+<pre><code>Outbound: src 10.0.1.5:51000 -&gt; dst 1.2.3.4:443   (SG outbound rule cho phép)
+Inbound trả về: src 1.2.3.4:443 -&gt; dst 10.0.1.5:51000
+</code></pre>
+<ul>
+<li>Với <strong>SG (stateful)</strong>: AWS ghi nhớ "connection tracking", gói trả về tự động được phép — KHÔNG cần inbound rule cho port ephemeral 51000.</li>
+<li>Với <strong>NACL (stateless)</strong>: gói trả về về port ephemeral (1024-65535) phải có <strong>inbound rule cho phép dải ephemeral</strong>, nếu không bị chặn.</li>
+</ul>
+<p><strong>Vì sao</strong> phải mở ephemeral port range trên NACL: TCP client chọn port nguồn ngẫu nhiên trong dải ephemeral; phản hồi từ server đến đúng port đó. NACL không nhớ trạng thái nên phải khai báo tường minh.</p>
+<h3 id="ch13-1353-nacl-co-thu-tu-vi-du">13.5.3. NACL có thứ tự — ví dụ</h3>
+<pre><code>Rule#   Type    Protocol  Port      Source           Allow/Deny
+100     HTTP    TCP       80        0.0.0.0/0        ALLOW
+130     SSH     TCP       22        0.0.0.0/0        DENY     &lt;-- số 130 &lt; 200
+200     SSH     TCP       22        203.0.113.0/24   ALLOW
+*       ALL     ALL       ALL       0.0.0.0/0        DENY
+</code></pre>
+<p><strong>Lưu ý:</strong> NACL duyệt <strong>từ số nhỏ tới lớn, dừng ở match đầu tiên</strong>. Trong ví dụ trên, gói SSH từ <code>203.0.113.5</code> khớp rule 130 (DENY) TRƯỚC khi tới rule 200 (ALLOW) =&gt; bị chặn. Đây là lỗi sắp xếp số rule điển hình. Luôn để rule cụ thể (allow IP tin cậy) có số NHỎ hơn rule deny rộng.</p>
+<h3 id="ch13-1354-vi-du-thuc-te-tao-sg">13.5.4. Ví dụ thực tế tạo SG</h3>
+<pre><code class="language-bash">aws ec2 create-security-group --group-name web-sg \
+  --description &quot;Web tier&quot; --vpc-id vpc-0a1b2c3d
+
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-0123456789 \
+  --protocol tcp --port 443 --cidr 0.0.0.0/0
+
+# Cho phép tier app gọi DB chỉ từ SG của app (tham chiếu SG, không dùng IP)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-db-999 \
+  --protocol tcp --port 5432 --source-group sg-app-888
+</code></pre>
+<p><strong>Cảnh báo:</strong> tham chiếu <strong>SG-to-SG</strong> thay vì CIDR là best practice — khi IP instance thay đổi, rule vẫn đúng; và không vô tình mở cho IP lạ. Tuyệt đối tránh <code>--cidr 0.0.0.0/0</code> cho port 22/3389/3306/5432.</p>
+<hr />
+<h2 id="ch13-136-amazon-s3-luu-tru-đoi-tuong">13.6. Amazon S3 — lưu trữ đối tượng</h2>
+<h3 id="ch13-1361-mo-hinh-truy-cap-nhieu-lop">13.6.1. Mô hình truy cập nhiều lớp</h3>
+<p>Truy cập S3 được quyết định bởi tổ hợp: Block Public Access (BPA) &gt; IAM policy &gt; Bucket policy &gt; ACL. Một explicit Deny ở bất kỳ lớp nào thắng tất cả.</p>
+<h3 id="ch13-1362-block-public-access-4-co">13.6.2. Block Public Access — 4 cờ</h3>
+<table>
+<thead>
+<tr>
+<th>Cờ</th>
+<th>Tác dụng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BlockPublicAcls</code></td>
+<td>Chặn PUT ACL công khai mới</td>
+</tr>
+<tr>
+<td><code>IgnorePublicAcls</code></td>
+<td>Bỏ qua ACL công khai hiện có</td>
+</tr>
+<tr>
+<td><code>BlockPublicPolicy</code></td>
+<td>Chặn đặt bucket policy công khai</td>
+</tr>
+<tr>
+<td><code>RestrictPublicBuckets</code></td>
+<td>Hạn chế truy cập qua policy công khai chỉ còn principal cùng account/service</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">aws s3api put-public-access-block --bucket company-reports \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+</code></pre>
+<p>Từ tháng 4/2023, AWS bật BPA mặc định cho bucket mới. <strong>Vì sao</strong> 4 cờ riêng: ACL và policy là hai cơ chế độc lập lịch sử; cần chặn cả hai nguồn "public".</p>
+<h3 id="ch13-1363-bucket-policy-json-ep-ma-hoa-khi-truyen-va-chan-non-tls">13.6.3. Bucket policy JSON — ép mã hóa khi truyền và chặn non-TLS</h3>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;DenyInsecureTransport&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Principal&quot;: &quot;*&quot;,
+      &quot;Action&quot;: &quot;s3:*&quot;,
+      &quot;Resource&quot;: [
+        &quot;arn:aws:s3:::company-reports&quot;,
+        &quot;arn:aws:s3:::company-reports/*&quot;
+      ],
+      &quot;Condition&quot;: { &quot;Bool&quot;: { &quot;aws:SecureTransport&quot;: &quot;false&quot; } }
+    },
+    {
+      &quot;Sid&quot;: &quot;DenyUnEncryptedUploads&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Principal&quot;: &quot;*&quot;,
+      &quot;Action&quot;: &quot;s3:PutObject&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:s3:::company-reports/*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringNotEquals&quot;: { &quot;s3:x-amz-server-side-encryption&quot;: &quot;aws:kms&quot; }
+      }
+    }
+  ]
+}
+</code></pre>
+<p>Statement đầu chặn mọi request không qua HTTPS; statement hai từ chối upload không kèm header <code>x-amz-server-side-encryption: aws:kms</code>.</p>
+<h3 id="ch13-1364-ma-hoa-sse-cac-loai">13.6.4. Mã hóa SSE — các loại</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Key quản lý bởi</th>
+<th>Header request</th>
+<th>Audit qua CloudTrail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SSE-S3</td>
+<td>AWS (AES-256, key của S3)</td>
+<td><code>x-amz-server-side-encryption: AES256</code></td>
+<td>Không thấy từng lần dùng key</td>
+</tr>
+<tr>
+<td>SSE-KMS</td>
+<td>AWS KMS (CMK của bạn)</td>
+<td><code>...: aws:kms</code> + <code>x-amz-server-side-encryption-aws-kms-key-id</code></td>
+<td>CÓ — mỗi Decrypt ghi CloudTrail</td>
+</tr>
+<tr>
+<td>SSE-C</td>
+<td>Khách hàng cung cấp key mỗi request</td>
+<td>gửi key trong header</td>
+<td>Bạn tự quản key</td>
+</tr>
+<tr>
+<td>DSSE-KMS</td>
+<td>Mã hóa hai lớp KMS</td>
+<td><code>aws:kms:dsse</code></td>
+<td>Cho yêu cầu tuân thủ cao</td>
+</tr>
+</tbody>
+</table>
+<p>Từ đầu 2023, S3 áp dụng SSE-S3 mặc định cho mọi object mới (cần kiểm chứng phiên bản chính xác theo region). <strong>Vì sao</strong> chọn SSE-KMS: kiểm soát được ai dùng key (qua KMS key policy) và <strong>có dấu vết audit từng lần giải mã</strong> — cực kỳ giá trị cho điều tra.</p>
+<h3 id="ch13-1365-versioning">13.6.5. Versioning</h3>
+<p>Bật versioning giữ mọi phiên bản object; xóa chỉ đặt "delete marker". Chống ghi đè/xóa do mã độc (ransomware) và lỗi người dùng. Kết hợp với <strong>MFA Delete</strong> và <strong>Object Lock (WORM)</strong> cho bất biến.</p>
+<pre><code class="language-bash">aws s3api put-bucket-versioning --bucket company-reports \
+  --versioning-configuration Status=Enabled
+</code></pre>
+<h3 id="ch13-1366-mau-su-co-ro-ri-đien-hinh">13.6.6. Mẫu sự cố rò rỉ điển hình</h3>
+<p>Kịch bản lặp lại nhiều lần trong thực tế: bucket chứa backup/PII được đặt ACL <code>public-read</code> hoặc bucket policy <code>Principal:"*"</code> mà không có điều kiện. Bất kỳ ai có URL <code>https://bucket.s3.amazonaws.com/key</code> đọc được dữ liệu.</p>
+<p>Phát hiện bằng lệnh kiểm tra nhanh:</p>
+<pre><code class="language-bash"># Liệt kê bucket KHÔNG bật đủ Block Public Access
+for b in $(aws s3api list-buckets --query 'Buckets[].Name' --output text); do
+  echo &quot;== $b ==&quot;
+  aws s3api get-public-access-block --bucket &quot;$b&quot; \
+    --query 'PublicAccessBlockConfiguration' 2&gt;/dev/null \
+    || echo &quot;  !! KHONG CO public-access-block (rui ro)&quot;  # khong co Block Public Access
+done
+</code></pre>
+<hr />
+<h2 id="ch13-137-aws-kms-key-management-service">13.7. AWS KMS — Key Management Service</h2>
+<h3 id="ch13-1371-cmk-va-phan-loai-key">13.7.1. CMK và phân loại key</h3>
+<table>
+<thead>
+<tr>
+<th>Loại key</th>
+<th>Ai quản lý</th>
+<th>Rotation (xoay key) tự động</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS owned</td>
+<td>AWS dùng nội bộ, bạn không thấy</td>
+<td>Tự động</td>
+</tr>
+<tr>
+<td>AWS managed (<code>aws/s3</code>...)</td>
+<td>AWS thay mặt dịch vụ</td>
+<td>Tự động hàng năm</td>
+</tr>
+<tr>
+<td>Customer managed (CMK)</td>
+<td>Bạn (key policy, rotation, alias)</td>
+<td>Tùy chọn (mặc định 1 năm)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1372-envelope-encryption-tung-buoc">13.7.2. Envelope Encryption — từng bước</h3>
+<p>KMS không mã hóa khối dữ liệu lớn trực tiếp (giới hạn ~4 KB cho <code>Encrypt</code>). Thay vào đó dùng <strong>envelope encryption</strong> (nguyên lý AES, AES-GCM và quản lý khóa xem <a href="ch04.html">Chương 4</a>):</p>
+<pre><code>1. Client gọi KMS GenerateDataKey(KeyId=CMK, KeySpec=AES_256).
+2. KMS trả về:
+     - Plaintext data key (DEK) : 256-bit dùng mã hóa dữ liệu cục bộ
+     - CiphertextBlob           : chính DEK đó nhưng đã được CMK mã hóa
+3. Client dùng DEK plaintext (AES-256-GCM) mã hóa file lớn.
+4. Client GHI: ciphertext_file + CiphertextBlob(DEK đã mã hóa).
+5. Client XÓA DEK plaintext khỏi RAM.
+
+Giải mã:
+6. Client gọi KMS Decrypt(CiphertextBlob) -&gt; nhận lại DEK plaintext.
+7. Dùng DEK giải mã file.
+</code></pre>
+<p>Sơ đồ:</p>
+<pre><code>      [CMK trong KMS - không bao giờ rời HSM]
+              |  mã hóa/giải mã
+              v
+   [DEK đã mã hóa: CiphertextBlob]  &lt;-- lưu cạnh dữ liệu
+              |  Decrypt qua KMS
+              v
+   [DEK plaintext]  --AES-256-GCM--&gt;  [dữ liệu]
+</code></pre>
+<p><strong>Vì sao</strong> thiết kế envelope: (1) giảm số lần gọi KMS (mã hóa dữ liệu cục bộ nhanh); (2) CMK gốc không bao giờ rời khỏi HSM của KMS; (3) thu hồi quyền Decrypt CMK lập tức vô hiệu mọi DEK.</p>
+<p>Ví dụ thực tế:</p>
+<pre><code class="language-bash"># Tạo DEK
+aws kms generate-data-key --key-id alias/app-cmk --key-spec AES_256 \
+  --query '{plain:Plaintext, blob:CiphertextBlob}' --output json
+# Plaintext (base64) dùng để mã hóa; CiphertextBlob lưu cùng ciphertext.
+</code></pre>
+<h3 id="ch13-1373-kms-key-policy">13.7.3. KMS Key Policy</h3>
+<p>Khác IAM: KMS <strong>luôn cần key policy</strong> (resource-based). Một key policy phổ biến trao quyền quản trị cho account root rồi ủy quyền tiếp qua IAM:</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;EnableRootIAM&quot;,
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Principal&quot;: { &quot;AWS&quot;: &quot;arn:aws:iam::123456789012:root&quot; },
+    &quot;Action&quot;: &quot;kms:*&quot;,
+    &quot;Resource&quot;: &quot;*&quot;
+  }]
+}
+</code></pre>
+<p><strong>Lưu ý:</strong> xóa toàn bộ statement trao root quyền có thể khiến key <strong>không thể quản lý được nữa</strong> (cần mở ticket AWS Support để khôi phục).</p>
+<hr />
+<h2 id="ch13-138-cloudtrail-nhat-ky-api">13.8. CloudTrail — nhật ký API</h2>
+<h3 id="ch13-1381-la-gi">13.8.1. Là gì</h3>
+<p>Ghi lại mọi lệnh gọi API (management events) và tùy chọn data events (S3 object-level, Lambda invoke). Là nguồn dữ liệu điều tra số một trong AWS.</p>
+<h3 id="ch13-1382-cau-truc-mot-event-json-tung-truong">13.8.2. Cấu trúc một event JSON — từng trường</h3>
+<pre><code class="language-json">{
+  &quot;eventVersion&quot;: &quot;1.09&quot;,
+  &quot;userIdentity&quot;: {
+    &quot;type&quot;: &quot;AssumedRole&quot;,
+    &quot;principalId&quot;: &quot;AROAEXAMPLE:audit-2026&quot;,
+    &quot;arn&quot;: &quot;arn:aws:sts::123456789012:assumed-role/app-role/audit-2026&quot;,
+    &quot;accountId&quot;: &quot;123456789012&quot;,
+    &quot;accessKeyId&quot;: &quot;ASIA....EXAMPLE&quot;,
+    &quot;sessionContext&quot;: {
+      &quot;attributes&quot;: { &quot;mfaAuthenticated&quot;: &quot;false&quot;, &quot;creationDate&quot;: &quot;2026-06-19T14:00:00Z&quot; }
+    }
+  },
+  &quot;eventTime&quot;: &quot;2026-06-19T14:05:11Z&quot;,
+  &quot;eventSource&quot;: &quot;s3.amazonaws.com&quot;,
+  &quot;eventName&quot;: &quot;GetObject&quot;,
+  &quot;awsRegion&quot;: &quot;us-east-1&quot;,
+  &quot;sourceIPAddress&quot;: &quot;203.0.113.7&quot;,
+  &quot;userAgent&quot;: &quot;aws-cli/2.15.0&quot;,
+  &quot;requestParameters&quot;: { &quot;bucketName&quot;: &quot;company-reports&quot;, &quot;key&quot;: &quot;q1.pdf&quot; },
+  &quot;responseElements&quot;: null,
+  &quot;readOnly&quot;: true,
+  &quot;eventType&quot;: &quot;AwsApiCall&quot;,
+  &quot;recipientAccountId&quot;: &quot;123456789012&quot;,
+  &quot;eventID&quot;: &quot;a1b2c3d4-....&quot;,
+  &quot;managementEvent&quot;: false
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa điều tra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>userIdentity.type</code></td>
+<td><code>Root</code>, <code>IAMUser</code>, <code>AssumedRole</code>, <code>AWSService</code> — ai gọi</td>
+</tr>
+<tr>
+<td><code>userIdentity.accessKeyId</code></td>
+<td><code>ASIA</code>=tạm thời, <code>AKIA</code>=lâu dài (xem 13.3.4)</td>
+</tr>
+<tr>
+<td><code>sessionContext.mfaAuthenticated</code></td>
+<td><code>"false"</code> đáng nghi với hành động nhạy cảm</td>
+</tr>
+<tr>
+<td><code>eventSource</code> + <code>eventName</code></td>
+<td>dịch vụ + API cụ thể</td>
+</tr>
+<tr>
+<td><code>sourceIPAddress</code></td>
+<td>IP nguồn — đối chiếu IP lạ/quốc gia lạ</td>
+</tr>
+<tr>
+<td><code>errorCode</code> (nếu có)</td>
+<td><code>AccessDenied</code> lặp lại = dấu hiệu dò quyền</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> bật <strong>log file integrity validation</strong> (CloudTrail tạo digest ký số SHA-256) để phát hiện log bị giả mạo/xóa. Lưu log vào bucket riêng có Object Lock.</p>
+<hr />
+<h2 id="ch13-139-cloudwatch">13.9. CloudWatch</h2>
+<p>CloudWatch = metrics + logs + alarms. Liên quan bảo mật:</p>
+<ul>
+<li><strong>CloudWatch Logs</strong>: gom log ứng dụng/VPC Flow Logs.</li>
+<li><strong>Metric filter + Alarm</strong>: phát hiện hành vi từ CloudTrail. Ví dụ tạo alarm khi có <code>ConsoleLogin</code> thất bại nhiều lần hoặc khi root đăng nhập.</li>
+</ul>
+<pre><code class="language-bash">aws logs put-metric-filter \
+  --log-group-name CloudTrail/Logs \
+  --filter-name RootLogin \
+  --filter-pattern '{ $.userIdentity.type = &quot;Root&quot; &amp;&amp; $.eventName = &quot;ConsoleLogin&quot; }' \
+  --metric-transformations metricName=RootLoginCount,metricNamespace=Security,metricValue=1
+</code></pre>
+<p>Filter pattern dùng cú pháp JSON path; <code>$.userIdentity.type</code> trỏ vào trường lồng. Sau đó gắn <code>put-metric-alarm</code> để gửi SNS cảnh báo.</p>
+<hr />
+<h2 id="ch13-1310-guardduty">13.10. GuardDuty</h2>
+<h3 id="ch13-13101-la-gi">13.10.1. Là gì</h3>
+<p>Dịch vụ phát hiện mối đe dọa dựa trên ML + threat intel, phân tích <strong>CloudTrail, VPC Flow Logs, DNS logs, EKS audit logs, S3 data events</strong> — không cần cài agent.</p>
+<h3 id="ch13-13102-cac-ho-finding-đinh-dang-ten">13.10.2. Các họ finding (định dạng tên)</h3>
+<p>Tên finding theo cấu trúc <code>ThreatPurpose:ResourceType/ThreatFamilyName.DetectionMechanism!Artifact</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Finding ví dụ</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS</code></td>
+<td>Credential của EC2 role bị dùng từ ngoài AWS (dấu hiệu IMDS bị đánh cắp)</td>
+</tr>
+<tr>
+<td><code>Recon:IAMUser/MaliciousIPCaller</code></td>
+<td>API gọi từ IP độc hại đã biết</td>
+</tr>
+<tr>
+<td><code>CryptoCurrency:EC2/BitcoinTool.B!DNS</code></td>
+<td>EC2 truy vấn domain mining tiền số</td>
+</tr>
+<tr>
+<td><code>Backdoor:EC2/C&amp;CActivity.B</code></td>
+<td>EC2 liên lạc C2</td>
+</tr>
+<tr>
+<td><code>Exfiltration:S3/ObjectRead.Unusual</code></td>
+<td>Đọc S3 bất thường</td>
+</tr>
+<tr>
+<td><code>Policy:IAMUser/RootCredentialUsage</code></td>
+<td>Dùng credential root</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao</strong> <code>InstanceCredentialExfiltration.OutsideAWS</code> rất mạnh: nó tương quan vị trí — credential EC2 role <em>phải</em> được dùng từ trong AWS; nếu xuất hiện từ IP bên ngoài, gần như chắc chắn đã bị trích xuất qua SSRF/IMDS.</p>
+<hr />
+<h2 id="ch13-1311-imds-instance-metadata-service-v1-vs-v2">13.11. IMDS — Instance Metadata Service (v1 vs v2)</h2>
+<h3 id="ch13-13111-la-gi">13.11.1. Là gì</h3>
+<p>IMDS phục vụ metadata tại địa chỉ link-local cố định <strong><code>169.254.169.254</code></strong>. Quan trọng nhất: nó cấp <strong>credential tạm thời của IAM role gắn vào instance</strong>.</p>
+<pre><code class="language-bash"># Lấy tên role
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+# Lấy credential
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/app-role
+</code></pre>
+<p>Output credential:</p>
+<pre><code class="language-json">{
+  &quot;Code&quot;: &quot;Success&quot;,
+  &quot;AccessKeyId&quot;: &quot;ASIA....&quot;,
+  &quot;SecretAccessKey&quot;: &quot;....&quot;,
+  &quot;Token&quot;: &quot;....&quot;,
+  &quot;Expiration&quot;: &quot;2026-06-19T20:00:00Z&quot;
+}
+</code></pre>
+<h3 id="ch13-13112-imdsv1-requestresponse-đon-gian-va-lo-hong-ssrf">13.11.2. IMDSv1 (request/response đơn giản — và lỗ hổng SSRF)</h3>
+<p>IMDSv1: chỉ cần một HTTP GET tới <code>169.254.169.254</code>. KHÔNG cần token. Đây là gốc của vô số sự cố SSRF (cơ chế SSRF được trình bày ở <a href="ch05.html">Chương 5 — An ninh ứng dụng Web</a>).</p>
+<p>Kịch bản tấn công SSRF qua IMDSv1:</p>
+<pre><code>1. Ứng dụng web có tham số: https://app/fetch?url=&lt;URL&gt;  (server tự GET URL).
+2. Kẻ tấn công gửi: ?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/app-role
+3. Server (chạy trên EC2) GET hộ, trả về credential ASIA/Secret/Token.
+4. Kẻ tấn công dùng credential từ máy của họ (ngoài AWS) -&gt; GuardDuty
+   InstanceCredentialExfiltration.OutsideAWS.
+</code></pre>
+<h3 id="ch13-13113-imdsv2-session-token-tung-buoc">13.11.3. IMDSv2 — session token, từng bước</h3>
+<p>IMDSv2 yêu cầu quy trình hai bước <strong>PUT lấy token rồi GET kèm token</strong>:</p>
+<pre><code class="language-bash"># Bước 1: PUT lấy token (TTL tối đa 21600s = 6h)
+TOKEN=$(curl -X PUT &quot;http://169.254.169.254/latest/api/token&quot; \
+  -H &quot;X-aws-ec2-metadata-token-ttl-seconds: 21600&quot;)
+
+# Bước 2: GET kèm token trong header
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/ \
+  -H &quot;X-aws-ec2-metadata-token: $TOKEN&quot;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Cơ chế bảo vệ IMDSv2</th>
+<th>Vì sao chặn được SSRF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Yêu cầu <strong>PUT</strong> lấy token</td>
+<td>Đa số lỗ hổng SSRF chỉ cho GET, không gửi được PUT tùy ý có header</td>
+</tr>
+<tr>
+<td>Yêu cầu <strong>header tùy chỉnh</strong> <code>X-aws-ec2-metadata-token</code></td>
+<td>SSRF cơ bản không thêm được header này</td>
+</tr>
+<tr>
+<td>Mặc định <strong><code>X-Forwarded-For</code> =&gt; từ chối</strong></td>
+<td>Chặn khi request đi qua proxy/WAF/reverse proxy (dấu hiệu SSRF/relay)</td>
+</tr>
+<tr>
+<td>Giới hạn <strong>PUT response hop limit = 1</strong></td>
+<td>Token không "nhảy" qua container/route khác; gói có IP-TTL bị giảm sẽ bị từ chối</td>
+</tr>
+</tbody>
+</table>
+<p>Ép buộc IMDSv2 (chặn hẳn v1):</p>
+<pre><code class="language-bash">aws ec2 modify-instance-metadata-options \
+  --instance-id i-0123456789 \
+  --http-tokens required \
+  --http-put-response-hop-limit 1 \
+  --http-endpoint enabled
+</code></pre>
+<p><code>--http-tokens required</code> = bắt buộc token (tắt v1). <code>--http-put-response-hop-limit 1</code> = gói phản hồi metadata chỉ đi được 1 hop (IP TTL), ngăn container trên instance hoặc reverse proxy chuyển tiếp metadata.</p>
+<p><strong>Lưu ý:</strong> chặn IMDS ở tầng mạng cũng nên kèm — ví dụ iptables drop ra <code>169.254.169.254</code> cho user của ứng dụng web không cần metadata.</p>
+<hr />
+<h2 id="ch13-1312-aws-organizations-scp-service-control-policy">13.12. AWS Organizations &amp; SCP (Service Control Policy)</h2>
+<h3 id="ch13-13121-la-gi">13.12.1. Là gì</h3>
+<p>Organizations quản lý nhiều account theo cây OU (Organizational Unit). SCP là <strong>guardrail</strong> áp ở cấp org/OU/account — đặt <strong>trần quyền tối đa</strong>, KHÔNG tự cấp quyền.</p>
+<pre><code>Root
+ ├── OU: Security  (SCP: Deny tắt CloudTrail)
+ ├── OU: Prod      (SCP: chỉ cho region us-east-1, eu-west-1)
+ └── OU: Sandbox   (SCP: Deny dịch vụ đắt tiền)
+</code></pre>
+<h3 id="ch13-13122-scp-vi-du-khoa-region-va-chan-tat-audit">13.12.2. SCP ví dụ — khóa region và chặn tắt audit</h3>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;DenyOutsideAllowedRegions&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;NotAction&quot;: [ &quot;iam:*&quot;, &quot;sts:*&quot;, &quot;organizations:*&quot;, &quot;cloudfront:*&quot;, &quot;route53:*&quot; ],
+      &quot;Resource&quot;: &quot;*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringNotEquals&quot;: { &quot;aws:RequestedRegion&quot;: [ &quot;us-east-1&quot;, &quot;eu-west-1&quot; ] }
+      }
+    },
+    {
+      &quot;Sid&quot;: &quot;ProtectCloudTrail&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Action&quot;: [ &quot;cloudtrail:StopLogging&quot;, &quot;cloudtrail:DeleteTrail&quot; ],
+      &quot;Resource&quot;: &quot;*&quot;
+    }
+  ]
+}
+</code></pre>
+<p><strong>Vì sao</strong> <code>NotAction</code> chứa <code>iam</code>/<code>sts</code>: các dịch vụ này là global (region <code>us-east-1</code> ngầm); chặn theo region có thể khóa nhầm chúng. SCP áp cho cả <strong>root user của member account</strong> — đây là cách duy nhất hạn chế được root.</p>
+<hr />
+<h2 id="ch13-1313-gcp-tuong-đuong-aws">13.13. GCP — tương đương AWS</h2>
+<h3 id="ch13-13130-bang-anh-xa-aws-gcp">13.13.0. Bảng ánh xạ AWS ↔ GCP</h3>
+<p>Tra nhanh trước khi vào chi tiết: học một nền tảng rồi suy ra nền tảng còn lại.</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>AWS</th>
+<th>GCP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Danh tính người</td>
+<td>IAM User</td>
+<td>Google account / member</td>
+</tr>
+<tr>
+<td>Danh tính workload</td>
+<td>IAM Role</td>
+<td>Service Account</td>
+</tr>
+<tr>
+<td>Token tạm thời</td>
+<td>STS</td>
+<td>SA token qua metadata / STS API</td>
+</tr>
+<tr>
+<td>Mạng ảo</td>
+<td>VPC (theo region)</td>
+<td>VPC (global), subnet theo region</td>
+</tr>
+<tr>
+<td>Tường lửa instance</td>
+<td>Security Group (stateful)</td>
+<td>Firewall rule (stateful, có priority)</td>
+</tr>
+<tr>
+<td>ACL stateless</td>
+<td>NACL</td>
+<td>(không có tương đương trực tiếp; dùng firewall priority)</td>
+</tr>
+<tr>
+<td>Lưu trữ đối tượng</td>
+<td>S3</td>
+<td>Cloud Storage</td>
+</tr>
+<tr>
+<td>Quản lý khóa</td>
+<td>KMS</td>
+<td>Cloud KMS</td>
+</tr>
+<tr>
+<td>Audit API</td>
+<td>CloudTrail</td>
+<td>Cloud Audit Logs</td>
+</tr>
+<tr>
+<td>Metrics/log</td>
+<td>CloudWatch</td>
+<td>Cloud Monitoring / Logging</td>
+</tr>
+<tr>
+<td>Phát hiện mối đe dọa</td>
+<td>GuardDuty</td>
+<td>SCC / Event Threat Detection</td>
+</tr>
+<tr>
+<td>Guardrail tổ chức</td>
+<td>SCP</td>
+<td>Organization Policy</td>
+</tr>
+<tr>
+<td>Quản lý bí mật</td>
+<td>Secrets Manager</td>
+<td>Secret Manager</td>
+</tr>
+<tr>
+<td>Metadata service</td>
+<td>IMDS 169.254.169.254</td>
+<td>metadata.google.internal (169.254.169.254)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-13131-gcp-iam">13.13.1. GCP IAM</h3>
+<p>GCP IAM gắn quyền theo công thức <strong>binding</strong>: ai (member) + vai trò (role) + tài nguyên (qua hệ phân cấp).</p>
+<pre><code>who   = member  (user:, serviceAccount:, group:, domain:, allUsers, allAuthenticatedUsers)
+what  = role    (roles/storage.objectViewer ...)
+where = resource (Organization &gt; Folder &gt; Project &gt; Resource)  -- quyền KẾ THỪA xuống dưới
+</code></pre>
+<p>Phân loại role:</p>
+<table>
+<thead>
+<tr>
+<th>Loại role</th>
+<th>Mô tả</th>
+<th>Ví dụ</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primitive (basic)</td>
+<td>Owner/Editor/Viewer áp toàn project</td>
+<td><code>roles/owner</code></td>
+<td>Quá rộng — tránh dùng</td>
+</tr>
+<tr>
+<td>Predefined</td>
+<td>Do Google định nghĩa, hạt mịn theo dịch vụ</td>
+<td><code>roles/storage.objectAdmin</code></td>
+<td>Khuyến nghị</td>
+</tr>
+<tr>
+<td>Custom</td>
+<td>Bạn tự gộp permission</td>
+<td><code>projects/p/roles/myAuditor</code></td>
+<td>Least privilege thực sự</td>
+</tr>
+</tbody>
+</table>
+<p>IAM Policy binding ví dụ (định dạng JSON khi <code>getIamPolicy</code>):</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 3,
+  &quot;bindings&quot;: [
+    {
+      &quot;role&quot;: &quot;roles/storage.objectViewer&quot;,
+      &quot;members&quot;: [ &quot;user:alice@example.com&quot;, &quot;group:auditors@example.com&quot; ],
+      &quot;condition&quot;: {
+        &quot;title&quot;: &quot;only-prod-bucket&quot;,
+        &quot;expression&quot;: &quot;resource.name.startsWith('projects/_/buckets/prod-')&quot;
+      }
+    }
+  ],
+  &quot;etag&quot;: &quot;BwXyz...&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>Phiên bản schema policy (3 để dùng condition)</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>bindings[].role</code></td>
+<td>Vai trò gán</td>
+<td><code>roles/storage.objectViewer</code></td>
+</tr>
+<tr>
+<td><code>bindings[].members[]</code></td>
+<td>Danh sách thành viên (có prefix loại)</td>
+<td><code>user:</code>, <code>serviceAccount:</code></td>
+</tr>
+<tr>
+<td><code>condition.expression</code></td>
+<td>Biểu thức CEL (Common Expression Language)</td>
+<td>điều kiện theo tài nguyên/thời gian</td>
+</tr>
+<tr>
+<td><code>etag</code></td>
+<td>Khóa tránh ghi đè đồng thời (optimistic locking)</td>
+<td>base64</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cảnh báo:</strong> <code>allUsers</code> (bất kỳ ai trên Internet) và <code>allAuthenticatedUsers</code> (bất kỳ tài khoản Google nào) là tương đương "public" — nguồn rò rỉ Cloud Storage hàng đầu.</p>
+<h3 id="ch13-13132-service-account-service-account-key">13.13.2. Service Account &amp; Service Account Key</h3>
+<p>Service Account (SA) là danh tính cho workload. Có <strong>hai loại bí mật</strong>:</p>
+<ul>
+<li><strong>Google-managed key</strong>: Google tự xoay, dùng khi workload chạy trên GCP (Metadata server cấp token tự động — tương đương IAM role của AWS).</li>
+<li><strong>User-managed key (JSON)</strong>: file <code>.json</code> tải về — bí mật lâu dài, là <strong>rủi ro lớn nhất</strong> nếu lọt vào git.</li>
+</ul>
+<p>Cấu trúc file SA key JSON:</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;service_account&quot;,
+  &quot;project_id&quot;: &quot;my-project&quot;,
+  &quot;private_key_id&quot;: &quot;a1b2c3...&quot;,
+  &quot;private_key&quot;: &quot;-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n&quot;,
+  &quot;client_email&quot;: &quot;app-sa@my-project.iam.gserviceaccount.com&quot;,
+  &quot;client_id&quot;: &quot;10293847566...&quot;,
+  &quot;token_uri&quot;: &quot;https://oauth2.googleapis.com/token&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>luôn <code>service_account</code> — dấu hiệu nhận diện khi quét secret</td>
+</tr>
+<tr>
+<td><code>private_key</code></td>
+<td>RSA private key PEM — bí mật cốt lõi</td>
+</tr>
+<tr>
+<td><code>client_email</code></td>
+<td>định danh SA (kiểm tra quyền của email này)</td>
+</tr>
+<tr>
+<td><code>token_uri</code></td>
+<td>endpoint đổi JWT lấy access token OAuth2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> nên <strong>vô hiệu hóa tạo user-managed key</strong> qua Org Policy <code>iam.disableServiceAccountKeyCreation</code> và dùng Workload Identity Federation thay vì key file.</p>
+<h3 id="ch13-13133-gcp-vpc">13.13.3. GCP VPC</h3>
+<p>Khác AWS điểm then chốt: <strong>VPC của GCP là global</strong>, subnet thuộc region (AWS: VPC theo region, subnet theo AZ). Firewall rules áp ở mức VPC, theo network tag/SA, có priority (0-65535, nhỏ = ưu tiên cao), stateful.</p>
+<pre><code class="language-bash">gcloud compute firewall-rules create allow-https \
+  --network=prod-vpc --direction=INGRESS --action=ALLOW \
+  --rules=tcp:443 --source-ranges=0.0.0.0/0 \
+  --target-tags=web --priority=1000
+</code></pre>
+<h3 id="ch13-13134-cloud-storage-tuong-đuong-s3">13.13.4. Cloud Storage (tương đương S3)</h3>
+<ul>
+<li>Quyền: IAM (uniform bucket-level access — khuyến nghị) hoặc ACL (fine-grained — nên tắt).</li>
+<li>Bật <strong>Uniform bucket-level access</strong> để bỏ ACL, tránh nhầm lẫn ACL public.</li>
+<li>Mã hóa mặc định Google-managed; chọn CMEK (Customer-Managed Encryption Key qua Cloud KMS) hoặc CSEK.</li>
+</ul>
+<pre><code class="language-bash">gsutil uniformbucketlevelaccess set on gs://prod-data
+# Phát hiện public:
+gsutil iam get gs://prod-data | grep -E &quot;allUsers|allAuthenticatedUsers&quot;
+</code></pre>
+<h3 id="ch13-13135-cloud-logging-tuong-đuong-cloudtrailcloudwatch-logs">13.13.5. Cloud Logging (tương đương CloudTrail/CloudWatch Logs)</h3>
+<p>GCP ghi <strong>Audit Logs</strong> chia loại:</p>
+<table>
+<thead>
+<tr>
+<th>Loại Audit Log</th>
+<th>Nội dung</th>
+<th>Mặc định</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Admin Activity</td>
+<td>thay đổi cấu hình/IAM</td>
+<td>Luôn bật, không tắt được</td>
+</tr>
+<tr>
+<td>Data Access</td>
+<td>đọc/ghi dữ liệu</td>
+<td>Mặc định TẮT (trừ BigQuery) — phải bật</td>
+</tr>
+<tr>
+<td>System Event</td>
+<td>hành động hệ thống của Google</td>
+<td>Luôn bật</td>
+</tr>
+<tr>
+<td>Policy Denied</td>
+<td>bị từ chối do policy</td>
+<td>Tự động</td>
+</tr>
+</tbody>
+</table>
+<p>Một entry Cloud Audit Log (định dạng <code>protoPayload</code> kiểu AuditLog):</p>
+<pre><code class="language-json">{
+  &quot;protoPayload&quot;: {
+    &quot;@type&quot;: &quot;type.googleapis.com/google.cloud.audit.AuditLog&quot;,
+    &quot;authenticationInfo&quot;: { &quot;principalEmail&quot;: &quot;alice@example.com&quot; },
+    &quot;requestMetadata&quot;: { &quot;callerIp&quot;: &quot;203.0.113.7&quot; },
+    &quot;serviceName&quot;: &quot;storage.googleapis.com&quot;,
+    &quot;methodName&quot;: &quot;storage.objects.get&quot;,
+    &quot;resourceName&quot;: &quot;projects/_/buckets/prod-data/objects/q1.pdf&quot;
+  },
+  &quot;severity&quot;: &quot;INFO&quot;,
+  &quot;timestamp&quot;: &quot;2026-06-19T14:05:11Z&quot;,
+  &quot;logName&quot;: &quot;projects/my-project/logs/cloudaudit.googleapis.com%2Fdata_access&quot;
+}
+</code></pre>
+<p><strong>Lưu ý:</strong> Data Access log TẮT mặc định — nếu không bật, bạn <strong>không có dấu vết ai đọc object nào</strong> (khác AWS cần bật S3 data events). Đây là khoảng mù điều tra phổ biến.</p>
+<h3 id="ch13-13136-security-command-center-tuong-đuong-guardduty-security-hub-config">13.13.6. Security Command Center (tương đương GuardDuty + Security Hub + Config)</h3>
+<p>SCC là nền tảng quản lý tư thế bảo mật của GCP: phát hiện misconfig, lỗ hổng, mối đe dọa.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security Health Analytics</td>
+<td>Quét misconfig (bucket public, SA key, firewall mở) — kiểu CSPM</td>
+</tr>
+<tr>
+<td>Event Threat Detection</td>
+<td>Phân tích log phát hiện hành vi (brute force SSH, IAM bất thường)</td>
+</tr>
+<tr>
+<td>Container Threat Detection</td>
+<td>Phát hiện runtime trong GKE</td>
+</tr>
+<tr>
+<td>Web Security Scanner</td>
+<td>Quét app web</td>
+</tr>
+</tbody>
+</table>
+<p>Finding ví dụ: <code>PUBLIC_BUCKET_ACL</code>, <code>SERVICE_ACCOUNT_KEY_NOT_ROTATED</code>, <code>OPEN_FIREWALL</code>, <code>MFA_NOT_ENFORCED</code>.</p>
+<hr />
+<h2 id="ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</h2>
+<h3 id="ch13-13141-la-gi-va-vi-sao-minh-phai-hoc-no">13.14.1. Là gì và vì sao mình phải học nó</h3>
+<p>Mình vận hành thực tế hai đám mây: prod chạy trên AWS, còn dev (và một phần prod) chạy trên OCI (Oracle Cloud Infrastructure). Lý do phải nắm OCI: nó <strong>không phải bản sao đổi tên của AWS</strong> — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.</p>
+<p>Điểm khác biệt lớn nhất phải nắm trước: <strong>AWS cô lập bằng <em>account</em> (tài khoản), còn OCI cô lập bằng <em>compartment</em> (ngăn) bên trong một <em>tenancy</em>.</strong> Hiểu sai chỗ này là hiểu sai toàn bộ mô hình phân quyền của OCI.</p>
+<h3 id="ch13-13142-tenancy-va-compartment-cay-phan-quyen-logic">13.14.2. Tenancy và Compartment — cây phân quyền logic</h3>
+<ul>
+<li><strong>Tenancy</strong>: gốc của toàn bộ tài nguyên OCI của một tổ chức — tương đương "AWS Organizations + account gốc" gộp làm một. Mỗi tài nguyên OCI có một OCID (Oracle Cloud ID) dạng <code>ocid1.&lt;type&gt;.&lt;realm&gt;..&lt;hash&gt;</code>, luôn thuộc về một tenancy.</li>
+<li><strong>Compartment</strong>: một <strong>cây thư mục logic</strong> để nhóm tài nguyên và áp quyền. Đây là chỗ khác AWS nhiều nhất. Trên AWS, muốn tách môi trường/nhóm người ta thường tách <em>account</em> rồi ghép bằng Organizations; trên OCI, một tenancy duy nhất chứa nhiều compartment lồng nhau (<code>dev</code>, <code>prod</code>, <code>prod/db</code>, <code>shared-network</code>...), và quyền được cấp <em>theo compartment</em>.</li>
+</ul>
+<pre><code>Tenancy (gốc)
+ ├── Compartment: network-shared      (VCN, subnet dùng chung)
+ ├── Compartment: dev                 (tài nguyên môi trường dev)
+ │     └── Compartment: dev/app
+ └── Compartment: prod                (tài nguyên prod chạy trên OCI)
+       ├── Compartment: prod/app
+       └── Compartment: prod/data     (bucket, DB — siết chặt nhất)
+</code></pre>
+<p><strong>Vì sao compartment tiện:</strong> phân quyền, quota và cả bảng theo dõi chi phí đều gắn theo compartment; xóa compartment là dọn sạch mọi thứ bên trong. Nhưng cũng chính vì "một tenancy nhiều compartment", ranh giới cô lập <strong>yếu hơn tách account của AWS</strong> — nếu viết policy lỏng ở cấp tenancy, quyền có thể rò xuống mọi compartment. Đây là lý do phần prod chạy trên OCI phải đặt trong compartment riêng và siết policy đúng phạm vi (xem 13.14.9).</p>
+<h3 id="ch13-13143-iam-policy-dang-cau-lenh-khac-han-json-cua-aws">13.14.3. IAM policy dạng câu lệnh (khác hẳn JSON của AWS)</h3>
+<p>Chỗ này làm mình bỡ ngỡ nhất khi từ AWS sang. IAM policy của OCI <strong>không phải tài liệu JSON</strong> với <code>Effect/Action/Resource</code> như AWS — nó là <strong>những câu tiếng Anh gần như đọc được thành lời</strong>:</p>
+<pre><code>Allow group &lt;tên-group&gt; to &lt;động-từ&gt; &lt;loại-tài-nguyên&gt; in compartment &lt;tên&gt; [where &lt;điều-kiện&gt;]
+</code></pre>
+<p>Ví dụ thật:</p>
+<pre><code>Allow group Developers to manage object-family in compartment dev
+Allow group DBAdmins   to manage database-family in compartment prod:data
+Allow group Auditors   to read all-resources in tenancy
+Allow group AppOps     to use secret-family in compartment prod where request.region = 'ap-singapore-1'
+</code></pre>
+<p>Bốn <strong>động từ quyền</strong> xếp theo mức tăng dần (đây là điểm cần nhớ, khác cách liệt kê từng action của AWS):</p>
+<table>
+<thead>
+<tr>
+<th>Động từ</th>
+<th>Bao gồm</th>
+<th>Tương đương AWS (khái niệm)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inspect</code></td>
+<td>liệt kê tài nguyên (metadata, không nội dung nhạy cảm)</td>
+<td><code>List*</code></td>
+</tr>
+<tr>
+<td><code>read</code></td>
+<td>inspect + đọc nội dung/chi tiết</td>
+<td><code>List* + Get*/Describe*</code></td>
+</tr>
+<tr>
+<td><code>use</code></td>
+<td>read + thao tác/cập nhật hiện có (không tạo/xóa)</td>
+<td><code>Get* + Update*/thao tác chạy</code></td>
+</tr>
+<tr>
+<td><code>manage</code></td>
+<td>use + tạo và xóa</td>
+<td>quyền đầy đủ trên loại tài nguyên</td>
+</tr>
+</tbody>
+</table>
+<p><code>&lt;loại-tài-nguyên&gt;</code> là các "family" gộp sẵn: <code>object-family</code> (Object Storage), <code>instance-family</code> (Compute), <code>virtual-network-family</code> (VCN), <code>secret-family</code>, <code>vaults</code>, <code>keys</code>... Mệnh đề <code>where</code> gắn điều kiện (region, thời gian, <code>target.compartment.name</code>, tag...) — tương đương <code>Condition</code> của AWS nhưng viết chung trong câu.</p>
+<p><strong>Vì sao mình thích cú pháp này:</strong> đọc policy OCI gần như đọc chính sách bằng tiếng Anh, ít bị "JSON đúng cú pháp nhưng sai ý" như AWS. <strong>Chỗ dễ sai:</strong> không có <code>Deny</code> tường minh — OCI IAM chỉ có Allow (mặc định deny ngầm). Muốn "cấm" thì phải <em>không cấp</em>, hoặc siết bằng phạm vi compartment, hoặc dùng cơ chế khác (Network Sources, tag-based). Thói quen viết <code>Deny</code> guardrail như SCP của AWS <strong>không áp thẳng được</strong> — cần nghĩ lại theo hướng thu hẹp phạm vi cấp quyền.</p>
+<h3 id="ch13-13144-dynamic-group-instanceresource-principal-danh-tinh-workload-khong-cam-key-tinh">13.14.4. Dynamic Group + Instance/Resource Principal (danh tính workload, không cắm key tĩnh)</h3>
+<p>Đây là phần mình đánh giá cao nhất của OCI, và nó tương đương thẳng với "IAM role gắn vào EC2" của AWS: cho phép compute/function <strong>tự lấy credential tạm để gọi OCI API mà không cắm key tĩnh vào code</strong>.</p>
+<p>Cơ chế hai bước:</p>
+<ol>
+<li><strong>Dynamic Group</strong>: nhóm <em>các tài nguyên</em> (không phải người dùng) theo <em>quy tắc khớp</em> — ví dụ mọi instance trong một compartment, hoặc function cụ thể.</li>
+</ol>
+<p><code># Matching rule của một dynamic group
+   ALL {instance.compartment.id = 'ocid1.compartment.oc1..aaaa....dev'}</code></p>
+<ol start="2">
+<li><strong>Policy cấp quyền cho dynamic group đó</strong> (viết y như policy thường, chủ thể là <code>dynamic-group</code>):</li>
+</ol>
+<p><code>Allow dynamic-group DevInstances to read secret-family in compartment dev
+   Allow dynamic-group DevInstances to use keys        in compartment dev</code></p>
+<p>Sau đó code chạy trên instance dùng <strong>Instance Principal</strong> để tự xác thực (SDK tự lấy chứng chỉ tạm từ metadata endpoint), hoàn toàn không có key file:</p>
+<pre><code class="language-python">import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+secrets = oci.secrets.SecretsClient(config={}, signer=signer)
+# gọi API với danh tính máy — credential tạm, tự xoay, không nằm trên đĩa
+</code></pre>
+<ul>
+<li><strong>Instance Principal</strong>: cho VM/compute.</li>
+<li><strong>Resource Principal</strong>: cho serverless (OCI Functions) và một số dịch vụ managed — tương đương execution role của Lambda.</li>
+</ul>
+<p><strong>Vì sao quan trọng:</strong> giống AWS, mấu chốt là <strong>"danh tính máy, không phải key file"</strong>. Kể cả "secret để lấy secret" cũng không nằm trên đĩa: app dùng Instance Principal tự xác thực rồi mới fetch bí mật thật từ Vault lúc khởi động. Đây là cách đúng để service ở môi trường dev OCI truy cập Vault mà không hardcode credential.</p>
+<h3 id="ch13-13145-oci-vault-kms-secrets-gop-mot-cho">13.14.5. OCI Vault — KMS + Secrets gộp một chỗ</h3>
+<p>OCI Vault gộp hai vai trò mà AWS tách thành <strong>KMS</strong> (khóa) và <strong>Secrets Manager</strong> (bí mật):</p>
+<ul>
+<li><strong>Keys (khóa mã hóa)</strong>: master key bảo vệ trong HSM. Hai loại vault: <em>Default</em> (dùng chung phân vùng HSM với khách khác — rẻ, đủ cho hầu hết nhu cầu) và <em>Virtual Private Vault</em> (được cấp phân vùng HSM riêng, mức cô lập cao hơn, dành cho yêu cầu tuân thủ ngặt — cần kiểm chứng giá và giới hạn theo thời điểm). Dùng cho encryption at-rest của Block Volume, Object Storage, DB. Hỗ trợ rotation và envelope encryption y hệt nguyên lý KMS (mục 13.7.2).</li>
+<li><strong>Secrets (bí mật)</strong>: DB password, API key... lưu mã hóa bằng chính key trong Vault, quản theo <em>version</em> bất biến.</li>
+</ul>
+<pre><code class="language-bash"># Đọc một secret (bundle) — nội dung trả về ở dạng base64
+oci secrets secret-bundle get-secret-bundle-by-name \
+  --secret-name db-password --vault-id ocid1.vault.oc1..aaaa
+</code></pre>
+<p>Kiến trúc bí mật thực tế của mình: <strong>prod dùng AWS Secrets Manager, phần chạy trên OCI dùng OCI Vault</strong> — cùng một nguyên tắc: app không giữ key tĩnh để gọi secret store, nó dùng IAM role (AWS) / Instance Principal (OCI) tự xác thực rồi fetch bí mật lúc runtime.</p>
+<h3 id="ch13-13146-vcn-security-list-muc-subnet-vs-nsg-muc-vnic">13.14.6. VCN — Security List (mức subnet) vs NSG (mức VNIC)</h3>
+<p>VCN (Virtual Cloud Network) là mạng ảo cô lập của OCI, tương đương VPC. Nhưng cơ chế tường lửa của OCI có <strong>hai lớp cùng tồn tại</strong>, và ánh xạ sang AWS không hoàn toàn 1-1 nên rất dễ nhầm:</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Security List (OCI)</th>
+<th>Network Security Group / NSG (OCI)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gắn ở đâu</td>
+<td><strong>Subnet</strong> (áp cho MỌI VNIC trong subnet)</td>
+<td><strong>VNIC</strong> của từng tài nguyên (nhóm theo chức năng)</td>
+</tr>
+<tr>
+<td>Gần với AWS nào</td>
+<td>gần <strong>NACL</strong> (mức subnet) nhưng <strong>stateful mặc định</strong></td>
+<td>gần <strong>Security Group</strong> (mức interface)</td>
+</tr>
+<tr>
+<td>Stateful?</td>
+<td>Từng rule chọn được: <strong>stateful hoặc stateless</strong></td>
+<td>Stateful mặc định (chọn stateless được)</td>
+</tr>
+<tr>
+<td>Tham chiếu nguồn</td>
+<td>CIDR, hoặc Service (cho Service Gateway)</td>
+<td>CIDR <strong>hoặc chính NSG khác</strong> (như SG-to-SG của AWS)</td>
+</tr>
+</tbody>
+</table>
+<p>Điểm dễ sai nhất khi từ AWS sang: trên OCI, một gói tin phải <strong>qua CẢ Security List của subnet LẪN NSG của VNIC</strong> — cả hai đều phải cho phép thì gói mới đi được (giao AND). Người quen AWS hay chỉ chỉnh SG (nghĩ như Security Group) mà quên Security List ở subnet vẫn đang chặn, hoặc ngược lại.</p>
+<p>Khác AWS nữa: Security List <strong>mặc định stateful</strong> (không phải stateless như NACL), nên thường không phải mở tay dải ephemeral port cho gói trả về — trừ khi cố ý đặt rule stateless. Khuyến nghị thực tế: ưu tiên dùng <strong>NSG</strong> để phân quyền mạng theo chức năng (tham chiếu NSG-to-NSG, giống best practice SG-to-SG), giữ Security List ở mức tối giản/mặc định.</p>
+<h3 id="ch13-13147-object-storage-bucket-private-mac-đinh-par-thay-cho-public">13.14.7. Object Storage — bucket private mặc định, PAR thay cho public</h3>
+<p>Object Storage là kho đối tượng của OCI (tương đương S3). Có một điểm mình coi là <strong>điểm cộng thiết kế</strong> so với lịch sử S3:</p>
+<ul>
+<li><strong>Bucket mặc định là private.</strong> Muốn public phải <strong>chủ động</strong> đổi visibility sang Public. Khác S3 thời kỳ đầu (nơi cấu hình lỏng + ACL public-read là nguồn rò rỉ kinh điển), rủi ro "vô tình public" của OCI thấp hơn theo mặc định — nhưng <em>vẫn phải kiểm</em>, vì đổi nhầm sang public vẫn xảy ra.</li>
+<li><strong>Pre-Authenticated Request (PAR)</strong> thay cho việc mở public: tạo một URL có <strong>thời hạn hết hạn (expiry)</strong> và phạm vi (một object hoặc cả bucket, read/write) — tương đương pre-signed URL của S3. Cần chia sẻ file thì phát PAR có hạn, <strong>không</strong> để bucket public.</li>
+<li>Mã hóa at-rest bật mặc định (Oracle-managed key); dữ liệu nhạy cảm nên chuyển sang <strong>customer-managed key trong OCI Vault</strong> để kiểm soát rotation + audit ai dùng key.</li>
+</ul>
+<pre><code class="language-bash"># Tạo PAR đọc một object, hết hạn sau 24h — thay cho việc để bucket public
+oci os preauth-request create --namespace &lt;ns&gt; --bucket-name reports \
+  --name share-q1 --access-type ObjectRead \
+  --object-name q1.pdf --time-expires 2026-08-15T00:00:00Z
+</code></pre>
+<p><strong>Cloud Guard</strong> (mục 13.14.8) tự gắn cờ bucket public — nên bật sẵn như một lớp phát hiện.</p>
+<h3 id="ch13-13148-cloud-guard-cspm-cua-oci">13.14.8. Cloud Guard — CSPM của OCI</h3>
+<p>Cloud Guard là dịch vụ quản lý tư thế bảo mật (CSPM) của OCI, tương đương GuardDuty + Security Hub + Config gộp lại (hoặc SCC của GCP):</p>
+<ul>
+<li><strong>Detector</strong> quét cấu hình/hành vi rủi ro sinh ra <strong>Problem</strong>: bucket public, security rule mở <code>0.0.0.0/0</code> cổng quản trị, IAM policy quá rộng, instance thiếu bản vá, key/secret sắp hết hạn...</li>
+<li><strong>Responder</strong> cho phép xử lý tự động hoặc bán tự động (ví dụ tự đóng bucket public).</li>
+<li>Đối chiếu benchmark (CIS OCI Foundations).</li>
+</ul>
+<p>Ở hệ thống mình vận hành, Cloud Guard đóng vai trò cho môi trường OCI đúng như AWS Config + GuardDuty cho môi trường AWS: phát hiện drift cấu hình, bucket public, rule mạng nới rộng, hành vi bất thường — và đẩy cảnh báo về kênh vận hành thay vì để một người rà tay hàng tháng.</p>
+<h3 id="ch13-13149-metadata-endpoint-oci-imds-v2-yeu-cau-header-authorization-bearer-oracle">13.14.9. Metadata endpoint OCI — IMDS v2 yêu cầu header <code>Authorization: Bearer Oracle</code></h3>
+<p>OCI cũng có metadata service tại đúng địa chỉ link-local <strong><code>169.254.169.254</code></strong> như AWS/GCP, và Instance Principal lấy chứng chỉ tạm qua đây — nên <strong>cùng bề mặt tấn công SSRF</strong> như IMDS của AWS (cơ chế SSRF: <a href="ch05.html">Chương 5</a>).</p>
+<p>Điểm khác biệt phòng thủ đáng chú ý — cách chống SSRF của mỗi bên:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>AWS IMDSv2</th>
+<th>OCI IMDS v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đường dẫn</td>
+<td><code>/latest/meta-data/...</code></td>
+<td><code>/opc/v2/...</code></td>
+</tr>
+<tr>
+<td>Cơ chế bảo vệ</td>
+<td><strong>PUT</strong> lấy token trước, rồi GET kèm header token</td>
+<td>GET kèm <strong>header cố định</strong> <code>Authorization: Bearer Oracle</code></td>
+</tr>
+<tr>
+<td>Vì sao chặn SSRF ngây thơ</td>
+<td>SSRF cơ bản chỉ làm được GET, không PUT được token</td>
+<td>SSRF cơ bản không tự thêm được header <code>Authorization</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># OCI IMDS v2 — thiếu header sẽ bị từ chối
+curl -H &quot;Authorization: Bearer Oracle&quot; http://169.254.169.254/opc/v2/instance/
+curl -H &quot;Authorization: Bearer Oracle&quot; http://169.254.169.254/opc/v2/identity/cert.pem
+</code></pre>
+<p><strong>Lưu ý quan trọng:</strong> header <code>Authorization: Bearer Oracle</code> là <strong>hằng số cố định</strong>, không phải bí mật — nó chỉ nâng rào cho SSRF <em>ngây thơ</em> (loại chỉ chèn được URL, không thêm được header). Một SSRF cho phép điều khiển header vẫn vượt qua được. Vì vậy đừng coi metadata v2 (dù AWS hay OCI) là biện pháp đủ: vẫn phải áp đủ bộ SSRF defense ở tầng ứng dụng (allowlist domain, chặn IP private/link-local <code>169.254.0.0/16</code>, validate IP sau khi resolve DNS chống rebinding, tắt/validate redirect). OCI v1 (<code>/opc/v1/</code>) không yêu cầu header — nên ép dùng v2 giống như ép IMDSv2 trên AWS.</p>
+<h3 id="ch13-131410-bang-anh-xa-aws-oci-gcp">13.14.10. Bảng ánh xạ AWS ↔ OCI ↔ GCP</h3>
+<p>Tra nhanh khi nhảy giữa ba nền tảng — học một, suy ra hai cái còn lại:</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>AWS</th>
+<th>OCI</th>
+<th>GCP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ranh giới cô lập</td>
+<td>Account (+ Organizations)</td>
+<td><strong>Compartment</strong> (trong 1 tenancy)</td>
+<td>Project (+ Folder/Org)</td>
+</tr>
+<tr>
+<td>Cú pháp IAM policy</td>
+<td>JSON (<code>Effect/Action/Resource</code>)</td>
+<td><strong>Câu lệnh</strong> (<code>Allow group … to … in compartment …</code>)</td>
+<td>JSON binding (member+role)</td>
+</tr>
+<tr>
+<td>Danh tính workload</td>
+<td>IAM Role gắn EC2</td>
+<td><strong>Instance/Resource Principal</strong> (+ Dynamic Group)</td>
+<td>Service Account (+ Workload Identity)</td>
+</tr>
+<tr>
+<td>Guardrail tổ chức</td>
+<td>SCP (có Deny)</td>
+<td><em>(không có Deny; siết bằng phạm vi compartment / policy)</em></td>
+<td>Organization Policy</td>
+</tr>
+<tr>
+<td>Mạng ảo</td>
+<td>VPC</td>
+<td><strong>VCN</strong></td>
+<td>VPC (global)</td>
+</tr>
+<tr>
+<td>Tường lửa mức interface</td>
+<td>Security Group</td>
+<td><strong>NSG</strong></td>
+<td>Firewall rule (theo tag/SA)</td>
+</tr>
+<tr>
+<td>Firewall mức subnet</td>
+<td>NACL (stateless)</td>
+<td><strong>Security List</strong> (stateful mặc định)</td>
+<td><em>(không có; dùng priority)</em></td>
+</tr>
+<tr>
+<td>Lưu trữ đối tượng</td>
+<td>S3</td>
+<td><strong>Object Storage</strong></td>
+<td>Cloud Storage</td>
+</tr>
+<tr>
+<td>Bucket private mặc định</td>
+<td>BPA (bật mặc định từ 4/2023)</td>
+<td><strong>Mặc định private sẵn</strong></td>
+<td>Uniform bucket-level access</td>
+</tr>
+<tr>
+<td>URL chia sẻ có hạn</td>
+<td>Pre-signed URL</td>
+<td><strong>Pre-Authenticated Request (PAR)</strong></td>
+<td>Signed URL</td>
+</tr>
+<tr>
+<td>Quản lý khóa</td>
+<td>KMS</td>
+<td><strong>Vault (Keys)</strong></td>
+<td>Cloud KMS</td>
+</tr>
+<tr>
+<td>Quản lý bí mật</td>
+<td>Secrets Manager</td>
+<td><strong>Vault (Secrets)</strong></td>
+<td>Secret Manager</td>
+</tr>
+<tr>
+<td>Audit API</td>
+<td>CloudTrail</td>
+<td><strong>Audit</strong> (bật mặc định)</td>
+<td>Cloud Audit Logs</td>
+</tr>
+<tr>
+<td>CSPM / phát hiện đe dọa</td>
+<td>GuardDuty + Security Hub + Config</td>
+<td><strong>Cloud Guard</strong></td>
+<td>Security Command Center</td>
+</tr>
+<tr>
+<td>Metadata endpoint</td>
+<td><code>169.254.169.254</code> <code>/latest/</code> (IMDSv2: PUT token)</td>
+<td><code>169.254.169.254</code> <code>/opc/v2/</code> (header <code>Bearer Oracle</code>)</td>
+<td><code>metadata.google.internal</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-131411-nguyen-tac-van-hanh-đa-đam-may-kinh-nghiem-thuc-te">13.14.11. Nguyên tắc vận hành đa đám mây (kinh nghiệm thực tế)</h3>
+<p>Vận hành song song AWS (prod) + OCI (dev và một phần prod), mình rút ra mấy nguyên tắc mà lý thuyết ít nói thẳng:</p>
+<ul>
+<li><strong>Ranh giới đúng là prod vs non-prod, KHÔNG phải AWS vs OCI.</strong> Việc prod nằm ở AWS còn dev ở OCI chỉ là <em>tình cờ có lợi</em> (tách cả nhà cung cấp lẫn credential nên blast radius nhỏ), nhưng đừng biến "nhà cung cấp" thành tiêu chí phân loại bảo mật.</li>
+<li><strong>Phần prod chạy trên đám mây "dev" phải áp CÙNG chuẩn siết như prod chính.</strong> Đây là bẫy nguy hiểm nhất: một compartment prod đặt chung tenancy với dev rất dễ "thừa hưởng" thói quen cấu hình lỏng của dev (rule mạng rộng, bucket dễ dãi, policy tenancy-wide). Prod-OCI phải: least privilege theo compartment, không bucket public, bí mật trong Vault, bật logging/Cloud Guard — y như prod-AWS.</li>
+<li><strong>Tách credential / network / quyền giữa môi trường.</strong> Credential dev lộ ra ngoài không được mở nổi bất cứ thứ gì ở prod. Kết nối giữa hai đám mây (nếu có, ví dụ VPN AWS↔OCI) chỉ mở đúng cổng thật sự cần.</li>
+<li><strong>Dữ liệu thật không nằm ở dev.</strong> Môi trường dev cấu hình lỏng hơn là chuyện bình thường — nhưng chỉ chấp nhận được khi dev <em>không chạm dữ liệu thật</em>. Rủi ro lớn nhất của mô hình "dev trên OCI" là một máy dev cấu hình lỏng lại vô tình có dữ liệu production.</li>
+<li><strong>Chuẩn hóa bằng IaC để quản hai bộ IAM/tooling.</strong> Cái giá của đa đám mây là phải quản hai hệ IAM, hai bộ công cụ; bù lại bằng Terraform/IaC + policy-as-code (Checkov/Trivy quét cả cấu hình AWS lẫn OCI) để không phải nhớ hai lối cấu hình bằng tay.</li>
+</ul>
+<hr />
+<h2 id="ch13-1315-tan-cong-đam-may-va-cach-phat-hien">13.15. Tấn công đám mây và cách phát hiện</h2>
+<h3 id="ch13-13151-misconfiguration">13.15.1. Misconfiguration</h3>
+<p>Nguyên nhân hàng đầu. Phát hiện bằng CSPM (mục 13.16). Các dạng: bucket public, SG mở <code>0.0.0.0/0</code> port quản trị (22/3389/database), CloudTrail không bật, mã hóa tắt, IMDSv1 còn bật, IAM policy <code>"Action":"*","Resource":"*"</code>.</p>
+<h3 id="ch13-13152-credential-leak-key-trong-git">13.15.2. Credential leak — key trong git</h3>
+<p>AWS access key có dạng nhận diện rõ:</p>
+<pre><code>AKIA[0-9A-Z]{16}        &lt;- Access Key ID (20 ký tự, prefix AKIA)
+40-ký-tự base64 secret   &lt;- Secret Access Key
+</code></pre>
+<p>Quét git bằng các công cụ thật:</p>
+<pre><code class="language-bash"># trufflehog quét toàn lịch sử repo và xác thực key còn sống
+trufflehog git file://./myrepo --only-verified
+
+# gitleaks
+gitleaks detect --source . --report-format json --report-path leaks.json
+</code></pre>
+<p>Output gitleaks mẫu:</p>
+<pre><code class="language-json">{
+  &quot;Description&quot;: &quot;AWS Access Key&quot;,
+  &quot;Secret&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
+  &quot;File&quot;: &quot;config/old_settings.py&quot;,
+  &quot;Commit&quot;: &quot;9f3c1a...&quot;,
+  &quot;Author&quot;: &quot;dev@example.com&quot;,
+  &quot;RuleID&quot;: &quot;aws-access-token&quot;
+}
+</code></pre>
+<p><strong>Vì sao</strong> quét cả lịch sử commit: xóa key trong commit mới nhưng vẫn còn trong lịch sử git =&gt; kẻ tấn công <code>git log -p</code> lấy được. Phải vừa <strong>revoke key (vô hiệu hóa ngay)</strong> vừa làm sạch lịch sử (hoặc coi như đã lộ vĩnh viễn).</p>
+<p>GitHub Secret Scanning + push protection chặn ngay khi push; AWS có cơ chế tự gắn policy <code>AWSCompromisedKeyQuarantine</code> khi phát hiện key public.</p>
+<h3 id="ch13-13153-privilege-escalation-qua-iampassrole">13.15.3. Privilege Escalation qua <code>iam:PassRole</code></h3>
+<p>Đây là một trong những đường leo thang quyền nguy hiểm và phổ biến nhất.</p>
+<p><strong>Cơ chế:</strong> <code>iam:PassRole</code> cho phép một principal "trao" một role cho một dịch vụ (EC2, Lambda...). Nếu kẻ tấn công có:
+- <code>iam:PassRole</code> cho một role quyền cao (vd <code>AdminRole</code>), VÀ
+- quyền tạo tài nguyên gắn role đó (vd <code>ec2:RunInstances</code> hoặc <code>lambda:CreateFunction</code>),</p>
+<p>thì họ leo thang lên Admin dù bản thân tài khoản của họ không phải Admin.</p>
+<p>Bước khai thác cụ thể (qua Lambda):</p>
+<pre><code class="language-bash"># 1. Tạo Lambda chạy dưới AdminRole (cần iam:PassRole + lambda:CreateFunction)
+aws lambda create-function --function-name pwn \
+  --runtime python3.12 --handler index.handler \
+  --role arn:aws:iam::123456789012:role/AdminRole \
+  --zip-file fileb://payload.zip
+
+# 2. Lambda code gọi AWS API với quyền AdminRole, vd tạo user admin mới
+aws lambda invoke --function-name pwn out.json
+</code></pre>
+<p>Hoặc qua EC2 + IMDS:</p>
+<pre><code class="language-bash"># Khởi tạo EC2 gắn AdminRole, rồi đọc credential từ IMDS bên trong
+aws ec2 run-instances --image-id ami-xxx --instance-type t3.micro \
+  --iam-instance-profile Name=AdminInstanceProfile
+# Sau đó SSH/SSM vào, curl IMDS lấy credential AdminRole.
+</code></pre>
+<p><strong>Phòng thủ:</strong>
+- Hạn chế <code>iam:PassRole</code> chỉ tới role cụ thể qua <code>Resource</code> (không để <code>"Resource":"*"</code>).
+- Dùng condition <code>iam:PassedToService</code> để giới hạn role chỉ trao cho dịch vụ đúng.</p>
+<pre><code class="language-json">{
+  &quot;Effect&quot;: &quot;Allow&quot;,
+  &quot;Action&quot;: &quot;iam:PassRole&quot;,
+  &quot;Resource&quot;: &quot;arn:aws:iam::123456789012:role/app-limited-role&quot;,
+  &quot;Condition&quot;: { &quot;StringEquals&quot;: { &quot;iam:PassedToService&quot;: &quot;lambda.amazonaws.com&quot; } }
+}
+</code></pre>
+<p><strong>Phát hiện:</strong> trong CloudTrail tìm <code>RunInstances</code>/<code>CreateFunction</code> có <code>requestParameters</code> chứa role ARN quyền cao, được gọi bởi principal không phải admin. Công cụ Pacu (framework khai thác AWS) có module liệt kê đường leo thang:</p>
+<pre><code class="language-bash">pacu
+&gt; run iam__enum_permissions
+&gt; run iam__privesc_scan
+</code></pre>
+<h3 id="ch13-13154-exposed-bucket-phat-hien-va-khai-thac">13.15.4. Exposed bucket — phát hiện và khai thác</h3>
+<pre><code class="language-bash"># Truy cập ẩn danh thử liệt kê
+aws s3 ls s3://target-bucket --no-sign-request
+aws s3 cp s3://target-bucket/secret.txt . --no-sign-request
+</code></pre>
+<p><code>--no-sign-request</code> = không gửi credential =&gt; kiểm tra liệu bucket có cho phép truy cập ẩn danh (public). Phát hiện phía phòng thủ: bật BPA toàn tài khoản, Macie quét PII, Config rule <code>s3-bucket-public-read-prohibited</code>.</p>
+<hr />
+<h2 id="ch13-1316-cspm-cloud-security-posture-management">13.16. CSPM — Cloud Security Posture Management</h2>
+<h3 id="ch13-13161-la-gi">13.16.1. Là gì</h3>
+<p>CSPM tự động quét cấu hình cloud so với benchmark (CIS, PCI) và phát hiện sai lệch liên tục. Native: AWS Security Hub + Config, GCP SCC. Open source: <strong>Prowler</strong>, <strong>ScoutSuite</strong>.</p>
+<h3 id="ch13-13162-prowler-vi-du-thuc-te">13.16.2. Prowler — ví dụ thực tế</h3>
+<pre><code class="language-bash"># Quét toàn bộ checks theo CIS benchmark, xuất HTML + JSON
+prowler aws --compliance cis_2.0_aws --output-formats html json-ocsf
+</code></pre>
+<p>Output mẫu (rút gọn):</p>
+<pre><code>FAIL  s3_bucket_public_access  company-reports  Bucket allows public read
+FAIL  iam_root_mfa_enabled     account 1234     Root account MFA not enabled
+PASS  cloudtrail_multi_region  account 1234     Multi-region trail enabled
+</code></pre>
+<h3 id="ch13-13163-scoutsuite">13.16.3. ScoutSuite</h3>
+<pre><code class="language-bash">scout aws --report-dir ./scout-report
+# Mở ./scout-report/scoutsuite-results/...html xem dashboard rủi ro theo dịch vụ
+</code></pre>
+<h3 id="ch13-13164-aws-config-rule-native-cspm">13.16.4. AWS Config rule (native CSPM)</h3>
+<pre><code class="language-bash"># Bật managed rule kiểm tra bucket không được public
+aws configservice put-config-rule --config-rule '{
+  &quot;ConfigRuleName&quot;: &quot;s3-no-public-read&quot;,
+  &quot;Source&quot;: { &quot;Owner&quot;: &quot;AWS&quot;, &quot;SourceIdentifier&quot;: &quot;S3_BUCKET_PUBLIC_READ_PROHIBITED&quot; }
+}'
+</code></pre>
+<p>Config liên tục đánh giá tài nguyên khi thay đổi và gắn cờ NON_COMPLIANT, có thể tự động remediation qua SSM Automation.</p>
+<hr />
+<h2 id="ch13-1317-secret-manager">13.17. Secret Manager</h2>
+<h3 id="ch13-13171-aws-secrets-manager">13.17.1. AWS Secrets Manager</h3>
+<p>Lưu bí mật (DB password, API key) mã hóa bằng KMS, hỗ trợ <strong>rotation (xoay key) tự động</strong> qua Lambda rotation function.</p>
+<pre><code class="language-bash">aws secretsmanager create-secret --name prod/db/password \
+  --secret-string '{&quot;username&quot;:&quot;app&quot;,&quot;password&quot;:&quot;S3cr3t!&quot;}' \
+  --kms-key-id alias/app-cmk
+
+aws secretsmanager get-secret-value --secret-id prod/db/password \
+  --query SecretString --output text
+</code></pre>
+<p>So với Parameter Store: Secrets Manager có rotation tích hợp + tính phí/bí mật; SSM Parameter Store (SecureString) rẻ hơn, không tự rotate.</p>
+<h3 id="ch13-13172-gcp-secret-manager">13.17.2. GCP Secret Manager</h3>
+<p>Phiên bản (version) bất biến; truy cập kiểm soát qua IAM <code>roles/secretmanager.secretAccessor</code>.</p>
+<pre><code class="language-bash">echo -n &quot;S3cr3t!&quot; | gcloud secrets create db-pass --data-file=-
+gcloud secrets versions access latest --secret=db-pass
+</code></pre>
+<p><strong>Cảnh báo</strong> (bảo mật chung): (1) không bao giờ truyền secret qua biến môi trường hiện trong log/<code>ps</code>; ưu tiên fetch lúc runtime; (2) cấp quyền đọc secret theo least privilege và bật audit log mỗi lần access; (3) bật rotation định kỳ.</p>
+<hr />
+<h2 id="ch13-1318-tong-ket-cac-nguyen-tac-phong-thu-cot-loi">13.18. Tổng kết các nguyên tắc phòng thủ cốt lõi</h2>
+<table>
+<thead>
+<tr>
+<th>Nguyên tắc</th>
+<th>Áp dụng cụ thể</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Least privilege</td>
+<td>IAM/role hạt mịn, Resource/compartment cụ thể, bỏ <code>*</code></td>
+</tr>
+<tr>
+<td>Explicit deny guardrail</td>
+<td>SCP / Org Policy / permission boundary (OCI không có Deny — siết bằng phạm vi compartment)</td>
+</tr>
+<tr>
+<td>Loại bỏ credential lâu dài</td>
+<td>IAM Role/SA token/Instance Principal thay access key; WIF; IMDSv2</td>
+</tr>
+<tr>
+<td>Mã hóa mặc định</td>
+<td>SSE-KMS/CMEK/OCI Vault key + chặn non-TLS</td>
+</tr>
+<tr>
+<td>Khả năng quan sát</td>
+<td>CloudTrail + Config + GuardDuty / Audit Logs + SCC / OCI Audit + Cloud Guard, log bất biến</td>
+</tr>
+<tr>
+<td>Chặn public mặc định</td>
+<td>S3 BPA / Uniform bucket-level access / OCI bucket private sẵn</td>
+</tr>
+<tr>
+<td>Phát hiện liên tục</td>
+<td>CSPM (Prowler/ScoutSuite/SCC/Cloud Guard) + secret scanning trong CI</td>
+</tr>
+<tr>
+<td>Ranh giới môi trường</td>
+<td>Tách theo prod vs non-prod (không theo nhà cung cấp); prod trên cloud "dev" siết ngang prod chính</td>
+</tr>
+</tbody>
+</table>
+<p>Toàn bộ kiến trúc bảo mật đám mây quy về: <strong>kiểm soát danh tính (IAM) chặt, loại bỏ bí mật lâu dài, mã hóa mọi nơi, ghi log đầy đủ và bất biến, chặn public mặc định, và quét cấu hình sai liên tục.</strong> Phần lớn sự cố thực tế nằm ở "IN the cloud" — tức trong tầm kiểm soát và trách nhiệm của bạn.</p>
+<hr />
+<h2 id="ch13-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<p><strong>Từ AWS sang OCI — mấy chỗ mình bị hụt tư duy.</strong> Mình học cloud từ AWS trước, nên khi phải vận hành thêm OCI (dev và một phần prod) thì bị "vấp" đúng ở những khái niệm tưởng giống mà không giống:</p>
+<ul>
+<li><strong>Compartment không phải account.</strong> Ban đầu mình cứ tìm "tạo account con" như Organizations của AWS, mãi mới nhận ra OCI cô lập bằng compartment <em>trong cùng một tenancy</em>. Hệ quả bảo mật: ranh giới yếu hơn tách account, nên một policy viết ở cấp tenancy có thể rò quyền xuống mọi compartment. Từ đó mình cẩn thận đặt phạm vi <code>in compartment &lt;cụ thể&gt;</code> chứ không <code>in tenancy</code> cho tiện.</li>
+<li><strong>Policy dạng câu, và KHÔNG có Deny.</strong> Cú pháp <code>Allow group … to manage … in compartment …</code> đọc rất dễ chịu, nhưng mình mất một lúc mới thấm là <em>không có <code>Deny</code> tường minh</em> như SCP. Thói quen dựng guardrail bằng explicit Deny của AWS không bê thẳng sang được — phải nghĩ lại theo hướng "chỉ cấp đúng phạm vi", hoặc dùng Network Sources/tag. Đây là chỗ mình vẫn đang tìm hiểu tiếp: làm guardrail cấp tenancy trên OCI cho gọn thì dùng gì cho tương đương SCP.</li>
+<li><strong>Hai lớp tường lửa Security List + NSG.</strong> Một lần đổi rule trên NSG mà gói vẫn không đi, mất công debug mới nhớ ra Security List ở subnet vẫn đang chặn — cả hai phải cùng cho phép (AND). Và Security List <strong>stateful mặc định</strong> (khác NACL của AWS là stateless), nên đừng máy móc mở dải ephemeral port như thói quen NACL. Giờ mình theo nguyên tắc: phân quyền mạng bằng NSG (tham chiếu NSG-to-NSG), giữ Security List tối giản.</li>
+<li><strong>Bucket private mặc định là điểm cộng thật.</strong> Sau ám ảnh "S3 public-read" kinh điển, việc Object Storage của OCI mặc định private làm mình nhẹ đầu hơn — nhưng vẫn bật Cloud Guard để nó gắn cờ nếu ai đó lỡ đổi sang public. Chia sẻ file thì phát Pre-Authenticated Request có hạn, không bao giờ để bucket public "cho tiện".</li>
+<li><strong>Metadata <code>Bearer Oracle</code> không phải bí mật.</strong> Lúc đầu mình tưởng header <code>Authorization: Bearer Oracle</code> là một dạng token nên yên tâm. Không phải — nó là hằng số cố định, chỉ chặn được SSRF <em>ngây thơ</em> (loại không thêm được header). SSRF điều khiển được header vẫn qua. Nên mình vẫn siết đủ bộ SSRF defense ở tầng app, coi metadata v2 (cả AWS lẫn OCI) chỉ là một lớp phụ.</li>
+</ul>
+<p><strong>Bài học vận hành đa đám mây lớn nhất:</strong> ranh giới bảo mật đúng là <strong>prod vs non-prod</strong>, không phải AWS vs OCI. Prod chạy trên OCI mình bắt áp đúng chuẩn siết như prod AWS — cái bẫy là để compartment prod "thừa hưởng" thói quen lỏng của dev vì ở chung tenancy. Việc prod-AWS và dev-OCI tách cả nhà cung cấp lẫn credential là một lợi thế blast-radius <em>tình cờ</em>, nhưng mình không dựa vào đó thay cho kỷ luật cấu hình.</p>
+<p><strong>Đang tìm hiểu tiếp:</strong> chuẩn hóa cả hai đám mây bằng Terraform + policy-as-code (Checkov/Trivy quét cả AWS lẫn OCI) để bớt phải nhớ hai lối cấu hình tay; và cách gom log/alert của Cloud Guard (OCI) với GuardDuty/Config (AWS) về cùng một chỗ để một người vẫn theo dõi xuể.</p>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch12.html"><span>← Chương trước</span><b>12 · Kiểm thử &amp; Đánh giá lỗ hổng</b></a><a class="pg next" href="ch14.html"><span>Chương sau →</span><b>14 · Ảo hóa &amp; Container</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

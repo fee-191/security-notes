@@ -1,0 +1,2105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 15 — Threat Intelligence &amp;amp; Khung tấn công — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 15 — Threat Intelligence &amp;amp; Khung tấn công — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch14.html"><link rel="next" href="ch16.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter open active" data-ch="15"><a class="nav-ch-title" href="#top"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"><a class="nav-sub" href="#ch15-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch15-151-vi-sao-can-framework-tu-alert-roi-rac-toi-ngon-ngu-chung">15.1. Vì sao cần Framework: từ &quot;alert rời rạc&quot; tới &quot;ngôn ngữ chung&quot;</a><a class="nav-sub" href="#ch15-152-cyber-threat-intelligence-cti-đinh-nghia-phan-loai-vong-đoi">15.2. Cyber Threat Intelligence (CTI): định nghĩa, phân loại, vòng đời</a><a class="nav-sub" href="#ch15-153-cyber-kill-chain-lockheed-martin-7-buoc">15.3. Cyber Kill Chain (Lockheed Martin) — 7 bước</a><a class="nav-sub" href="#ch15-154-diamond-model-of-intrusion-analysis">15.4. Diamond Model of Intrusion Analysis</a><a class="nav-sub" href="#ch15-155-ioc-vs-ioa">15.5. IOC vs IOA</a><a class="nav-sub" href="#ch15-156-pyramid-of-pain-david-bianco-2013">15.6. Pyramid of Pain (David Bianco, 2013)</a><a class="nav-sub" href="#ch15-157-mitre-attck-kien-truc-va-mo-hinh-du-lieu">15.7. MITRE ATT&amp;amp;CK — kiến trúc và mô hình dữ liệu</a><a class="nav-sub" href="#ch15-158-đao-sau-cac-technique-trong-yeu-co-che-dau-hieu-phat-hien">15.8. Đào sâu các Technique trọng yếu (cơ chế + dấu hiệu phát hiện)</a><a class="nav-sub" href="#ch15-159-cac-matrix-enterprise-mobile-ics">15.9. Các Matrix: Enterprise, Mobile, ICS</a><a class="nav-sub" href="#ch15-1510-attck-navigator-map-detection-đo-coverage">15.10. ATT&amp;amp;CK Navigator: map detection &amp;amp; đo coverage</a><a class="nav-sub" href="#ch15-1511-detection-engineering-sigma-yara-suricata-gan-attck">15.11. Detection Engineering: Sigma, YARA, Suricata gắn ATT&amp;amp;CK</a><a class="nav-sub" href="#ch15-1512-chia-se-tinh-bao-stix-taxii-misp">15.12. Chia sẻ tình báo: STIX, TAXII, MISP</a><a class="nav-sub" href="#ch15-1513-phan-loai-malware">15.13. Phân loại Malware</a><a class="nav-sub" href="#ch15-1514-phan-tich-malware-co-ban">15.14. Phân tích Malware cơ bản</a><a class="nav-sub" href="#ch15-1515-tong-hop-vong-đoi-tan-cong-dau-hieu-phat-hien">15.15. Tổng hợp: vòng đời tấn công ↔ dấu hiệu phát hiện</a><a class="nav-sub" href="#ch15-1516-luu-y-bao-mat-van-hanh-tong-ket">15.16. Lưu ý bảo mật &amp;amp; vận hành tổng kết</a><a class="nav-sub" href="#ch15-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-15" data-ch="15">
+<h1 id="ch15-chuong-15-threat-intelligence-khung-tan-cong">Chương 15 — Threat Intelligence &amp; Khung tấn công</h1>
+<h2 id="ch15-tong-quan">Tổng quan</h2>
+<p>Đọc log mà không có framework thì mỗi cảnh báo là một mảnh rời — thấy IP lạ gọi ra ngoài, nhưng không biết nó khớp giai đoạn nào trong một cuộc tấn công thật, và không nói chuyện được với đội threat intel bằng cùng một thuật ngữ. Chương này gom lại bộ "ngôn ngữ chung" mà dân SOC và threat intel dùng để mô tả, đo và phản ứng với hành vi kẻ tấn công.</p>
+<p>Chương đi theo đúng trình tự một cuộc điều tra thật. Trước hết là khung tư duy: Cyber Kill Chain chia tấn công có chủ đích thành 7 giai đoạn tuyến tính — phá vỡ một mắt xích là gãy cả chuỗi; Diamond Model nhìn mỗi vụ xâm nhập qua 4 đỉnh (kẻ tấn công, năng lực, hạ tầng, nạn nhân) và cho phép pivot từ một manh mối nhỏ ra cả một nhóm APT. Kế đó là cách phân loại bằng chứng: IOC (dấu vết tĩnh, dễ đổi) so với IOA (chuỗi hành vi, khó né hơn), và Pyramid of Pain giải thích vì sao chặn một IP thì đối thủ đổi trong 5 phút, còn chặn một TTP thì chúng phải xây lại cả lối đánh.</p>
+<p>MITRE ATT&amp;CK là phần chi tiết nhất — knowledge base hành vi thật với định danh riêng cho từng technique (kiểu <code>T1059.001</code>), còn ATT&amp;CK Navigator tô màu ma trận đó để nhìn ra khoảng trống phát hiện. Từ lý thuyết, chương xuống tới việc viết rule thật: Sigma cho log, YARA cho file/memory, Suricata cho traffic mạng — và cách chia sẻ tình báo đó ra ngoài qua STIX/TAXII/MISP. Phần cuối tách bạch các loại malware (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) và hai hướng mổ xẻ mẫu — tĩnh và động — hai khái niệm mình từng gộp chung trước khi phân biệt rõ ràng.</p>
+<blockquote>
+<p>Cần tra nhanh? Bảng <strong>15.15</strong> nối từng giai đoạn tấn công với technique tiêu biểu, nguồn telemetry và rule phát hiện — dùng nó như mục lục thực hành của cả chương.</p>
+</blockquote>
+<hr />
+<h2 id="ch15-151-vi-sao-can-framework-tu-alert-roi-rac-toi-ngon-ngu-chung">15.1. Vì sao cần Framework: từ "alert rời rạc" tới "ngôn ngữ chung"</h2>
+<p>Trước khi có các framework chuẩn hóa, mỗi đội bảo mật mô tả tấn công theo cách riêng: "có người login sai nhiều lần", "có file lạ chạy PowerShell". Vấn đề không phải thiếu dữ liệu mà là <strong>thiếu ngôn ngữ chung</strong> để:</p>
+<ol>
+<li><strong>Trao đổi</strong> giữa các đội/tổ chức (SOC nội bộ ↔ ISAC ↔ vendor).</li>
+<li><strong>Đo lường độ phủ phát hiện</strong> (detection coverage): ta phát hiện được bao nhiêu phần trăm hành vi mà đối thủ có thể làm?</li>
+<li><strong>Ưu tiên đầu tư</strong>: nên viết rule phát hiện gì trước?</li>
+<li><strong>Tái lập (reproducibility)</strong>: cùng một hành vi luôn được gọi bằng cùng một định danh.</li>
+</ol>
+<p>Các framework trong chương này giải các bài toán khác nhau nhưng bổ trợ nhau:</p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Câu hỏi nó trả lời</th>
+<th>Mức trừu tượng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cyber Kill Chain</td>
+<td>Tấn công đi qua những <strong>giai đoạn tuyến tính</strong> nào?</td>
+<td>Cao (chiến lược)</td>
+</tr>
+<tr>
+<td>Diamond Model</td>
+<td>Một sự kiện liên hệ <strong>adversary / capability / infrastructure / victim</strong> ra sao?</td>
+<td>Trung (phân tích sự kiện)</td>
+</tr>
+<tr>
+<td>MITRE ATT&amp;CK</td>
+<td>Đối thủ <strong>thực sự làm gì</strong> ở mỗi giai đoạn (hành vi quan sát được)?</td>
+<td>Thấp (kỹ thuật, đo được)</td>
+</tr>
+<tr>
+<td>Pyramid of Pain</td>
+<td>Chặn IOC nào thì <strong>gây đau</strong> nhất cho đối thủ?</td>
+<td>Thước đo giá trị IOC</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao cần nhiều framework?</strong> Kill Chain quá thô để viết detection; ATT&amp;CK quá chi tiết để báo cáo cho lãnh đạo; Diamond Model giúp phân tích quan hệ nhưng không liệt kê kỹ thuật. Một SOC trưởng thành dùng cả ba: Kill Chain để kể chuyện, Diamond để pivot điều tra, ATT&amp;CK để đo coverage và viết rule.</p>
+<hr />
+<h2 id="ch15-152-cyber-threat-intelligence-cti-đinh-nghia-phan-loai-vong-đoi">15.2. Cyber Threat Intelligence (CTI): định nghĩa, phân loại, vòng đời</h2>
+<h3 id="ch15-1521-cti-la-gi-va-khong-la-gi">15.2.1. CTI là gì và không là gì</h3>
+<p><strong>Threat Intelligence</strong> = dữ liệu về mối đe dọa đã qua <strong>xử lý + phân tích + bối cảnh hóa</strong> để hỗ trợ <strong>ra quyết định</strong>. Điểm mấu chốt phân biệt với "data" thuần:</p>
+<pre><code>Data      → &quot;IP 185.220.101.45 xuất hiện trong log&quot;
+Information→ &quot;IP này là Tor exit node, kết nối lúc 03:00&quot;
+Intelligence→ &quot;IP này được nhóm FIN7 dùng làm C2 trong chiến dịch
+              nhắm ngành tài chính tháng 5; khuyến nghị chặn + hunt
+              các host đã beacon tới nó&quot;
+</code></pre>
+<p>Intelligence phải <strong>actionable</strong> (hành động được) và gắn <strong>bối cảnh</strong> (ai, mục tiêu gì, vì sao).</p>
+<h3 id="ch15-1522-bon-loai-cti">15.2.2. Bốn loại CTI</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Người tiêu thụ</th>
+<th>Khung thời gian</th>
+<th>Ví dụ cụ thể</th>
+<th>Định dạng điển hình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Strategic</strong></td>
+<td>Ban lãnh đạo, CISO</td>
+<td>Dài hạn (tháng/năm)</td>
+<td>"Ngành crypto-exchange bị nhắm bởi Lazarus với động cơ tài chính"</td>
+<td>Báo cáo văn xuôi, không kỹ thuật</td>
+</tr>
+<tr>
+<td><strong>Operational</strong></td>
+<td>SOC manager, IR lead</td>
+<td>Trung hạn (tuần)</td>
+<td>"Chiến dịch đang dùng macro Office → Cobalt Strike; TTP gồm T1566.001, T1059.001"</td>
+<td>Campaign report, TTP list</td>
+</tr>
+<tr>
+<td><strong>Tactical</strong></td>
+<td>Threat hunter, detection engineer</td>
+<td>Ngắn–trung</td>
+<td>"TTP cụ thể: PowerShell <code>-enc</code> base64 spawn từ winword.exe"</td>
+<td>Sigma rule, ATT&amp;CK technique</td>
+</tr>
+<tr>
+<td><strong>Technical</strong></td>
+<td>SOC analyst L1/L2, hệ thống tự động</td>
+<td>Rất ngắn (giờ/ngày)</td>
+<td>"Hash <code>a1b2c3...</code>, IP <code>185.x</code>, domain <code>evil.com</code>"</td>
+<td>IOC feed (STIX/MISP), CSV</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao chia tầng?</strong> Vì IOC kỹ thuật <strong>mau hỏng</strong> (đối thủ đổi IP/hash dễ dàng) còn TTP/strategic <strong>bền</strong> hơn. Đầu tư phát hiện nên dịch chuyển lên các tầng cao (xem Pyramid of Pain ở 15.6).</p>
+<h3 id="ch15-1523-vong-đoi-tinh-bao-intelligence-lifecycle-6-pha">15.2.3. Vòng đời tình báo (Intelligence Lifecycle) — 6 pha</h3>
+<p>Mô hình kinh điển (gốc từ cộng đồng tình báo quân sự/CIA, áp dụng cho CTI):</p>
+<pre><code>   ┌────────────────────────────────────────────────────────────┐
+   ▼                                                              │
+1.Direction → 2.Collection → 3.Processing → 4.Analysis → 5.Dissemination → 6.Feedback
+   │                                                                          │
+   └──────────────────────────── vòng lặp khép kín ──────────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Pha</th>
+<th>Việc làm</th>
+<th>Đầu ra</th>
+<th>Lưu ý kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Direction (Planning)</strong></td>
+<td>Xác định yêu cầu tình báo (PIR – Priority Intelligence Requirements)</td>
+<td>"Ai nhắm vào ta? Bằng TTP nào?"</td>
+<td>Không có PIR → thu thập vô định, ngập IOC vô dụng</td>
+</tr>
+<tr>
+<td><strong>2. Collection</strong></td>
+<td>Thu thập từ OSINT, feed thương mại, telemetry nội bộ, dark web, ISAC</td>
+<td>Raw data</td>
+<td>Ghi nguồn + thời điểm để đánh giá độ tin cậy</td>
+</tr>
+<tr>
+<td><strong>3. Processing</strong></td>
+<td>Chuẩn hóa: parse log, decode, dedupe, normalize sang STIX</td>
+<td>Structured data</td>
+<td>Bước hay bị bỏ qua → "garbage in"</td>
+</tr>
+<tr>
+<td><strong>4. Analysis</strong></td>
+<td>Tương quan, gán TTP, đánh giá độ tin cậy (Admiralty Code)</td>
+<td>Intelligence product</td>
+<td>Tránh confirmation bias; dùng ACH (Analysis of Competing Hypotheses)</td>
+</tr>
+<tr>
+<td><strong>5. Dissemination</strong></td>
+<td>Phát hành đúng định dạng cho đúng đối tượng</td>
+<td>Báo cáo, feed, rule</td>
+<td>Strategic ≠ technical về format</td>
+</tr>
+<tr>
+<td><strong>6. Feedback</strong></td>
+<td>Người dùng đánh giá: có actionable không?</td>
+<td>Điều chỉnh PIR</td>
+<td>Đóng vòng lặp, nếu không CTI sẽ lệch nhu cầu</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Admiralty Code (NATO)</strong> dùng để gán độ tin cậy hai chiều: <strong>độ tin nguồn (A–F)</strong> và <strong>độ tin thông tin (1–6)</strong>. Ví dụ "B2" = nguồn thường đáng tin, thông tin có thể đúng.</p>
+<table>
+<thead>
+<tr>
+<th>Source reliability</th>
+<th>Information credibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A = Completely reliable</td>
+<td>1 = Confirmed</td>
+</tr>
+<tr>
+<td>B = Usually reliable</td>
+<td>2 = Probably true</td>
+</tr>
+<tr>
+<td>C = Fairly reliable</td>
+<td>3 = Possibly true</td>
+</tr>
+<tr>
+<td>D = Not usually reliable</td>
+<td>4 = Doubtful</td>
+</tr>
+<tr>
+<td>E = Unreliable</td>
+<td>5 = Improbable</td>
+</tr>
+<tr>
+<td>F = Cannot be judged</td>
+<td>6 = Cannot be judged</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch15-153-cyber-kill-chain-lockheed-martin-7-buoc">15.3. Cyber Kill Chain (Lockheed Martin) — 7 bước</h2>
+<p>Mô hình do Lockheed Martin công bố (2011), mô tả tấn công có chủ đích (APT) như chuỗi tuyến tính. Triết lý phòng thủ: <strong>phá vỡ bất kỳ một mắt xích nào</strong> thì toàn chuỗi gãy → "intrusion kill chain".</p>
+<pre><code> [1]            [2]             [3]          [4]             [5]            [6]            [7]
+Recon ──▶ Weaponization ──▶ Delivery ──▶ Exploitation ──▶ Installation ──▶ C2 ──▶ Actions on Objectives
+ dò la      ghép exploit     gửi tới      chạy code        cài đặt        kênh    đánh cắp / phá hoại /
+ mục tiêu   + payload        nạn nhân     khai thác        persistence    điều khiển   lan ngang
+                                                                            ▲
+   ── chặn được BẤT KỲ một mắt xích nào ──▶ toàn chuỗi gãy ─────────────────┘
+</code></pre>
+<p>Sơ đồ cho thấy bản chất tuyến tính của mô hình: tấn công đi tuần tự từ trái sang phải, và phòng thủ chỉ cần làm gãy một bước là vô hiệu cả chiến dịch. Đây cũng là điểm yếu — mô hình giả định một dòng chảy một chiều, khó mô tả lateral movement lặp lại hay tấn công cloud không có khâu "delivery" malware.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Giai đoạn</th>
+<th>Hành động của attacker</th>
+<th>Dấu hiệu / Phòng thủ Blue Team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Reconnaissance</strong></td>
+<td>Thu thập email, công nghệ, nhân sự (LinkedIn, whois, scan)</td>
+<td>Log WAF/IDS phát hiện scan; honeytoken; theo dõi đăng ký domain giống thương hiệu</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Weaponization</strong></td>
+<td>Ghép exploit + payload (vd: PDF có macro)</td>
+<td>Khó phát hiện (xảy ra ở phía attacker); phân tích mẫu thu được</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Delivery</strong></td>
+<td>Gửi qua email/USB/web</td>
+<td>Email gateway, sandbox đính kèm, proxy log</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Exploitation</strong></td>
+<td>Khai thác lỗ hổng để chạy code</td>
+<td>EDR phát hiện exploit, EMET/CFG, patch</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Installation</strong></td>
+<td>Cài backdoor/persistence</td>
+<td>Giám sát autorun, dịch vụ mới, registry Run key</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Command &amp; Control (C2)</strong></td>
+<td>Thiết lập kênh điều khiển</td>
+<td>Phân tích beacon, DNS tunneling, JA3 fingerprint</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Actions on Objectives</strong></td>
+<td>Đánh cắp dữ liệu, phá hoại, lan ngang</td>
+<td>DLP, monitor exfil, phát hiện encryption hàng loạt (ransomware)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hạn chế:</strong> Kill Chain giả định tuyến tính và lấy "malware từ bên ngoài" làm trung tâm; yếu khi mô tả tấn công từ bên trong (insider), lateral movement lặp lại, hoặc tấn công cloud không có "malware delivery". ATT&amp;CK ra đời để bù chỗ này (vòng lặp, phi tuyến, hành vi quan sát được).</p>
+<p><strong>Unified Kill Chain (Paul Pols, 2017)</strong> hợp nhất Kill Chain + ATT&amp;CK thành 18 giai đoạn theo 3 cụm (In → Through → Out), khắc phục tính tuyến tính. Cần kiểm chứng số giai đoạn theo bản gốc nếu trích dẫn chính xác.</p>
+<hr />
+<h2 id="ch15-154-diamond-model-of-intrusion-analysis">15.4. Diamond Model of Intrusion Analysis</h2>
+<p>Công bố 2013 (Caltagirone, Pendergast, Betz). Mỗi <strong>sự kiện xâm nhập (event)</strong> được mô hình hóa bằng 4 đỉnh kim cương, liên kết với nhau:</p>
+<pre><code>                 Adversary
+                    /\
+                   /  \
+                  /    \
+   Infrastructure ------ Capability
+                  \    /
+                   \  /
+                    \/
+                  Victim
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Đỉnh</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ cụ thể</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adversary</strong></td>
+<td>Kẻ tấn công (operator/customer)</td>
+<td>Nhóm APT29</td>
+</tr>
+<tr>
+<td><strong>Capability</strong></td>
+<td>Năng lực: malware, exploit, kỹ năng (TTP)</td>
+<td>Backdoor "WellMess", exploit CVE-XXXX</td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Hạ tầng: C2 domain, IP, email gửi đi</td>
+<td><code>185.220.101.45</code>, <code>update-msft[.]com</code></td>
+</tr>
+<tr>
+<td><strong>Victim</strong></td>
+<td>Nạn nhân: tổ chức, người, tài sản</td>
+<td>Hãng dược X, mail server</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sức mạnh — Pivoting:</strong> khi nắm một đỉnh, ta lần ra đỉnh khác. Ví dụ: từ một <strong>domain C2</strong> (infrastructure) → tra passive DNS ra <strong>IP</strong> dùng chung → tìm <strong>các domain khác</strong> trỏ cùng IP → suy ra <strong>capability/adversary</strong> khác của cùng nhóm.</p>
+<pre><code>Domain evil.com ─(passive DNS)→ 1.2.3.4 ─(reverse)→ bad2.com, bad3.com
+       │                                                    │
+   (whois)                                              (sandbox)
+       ▼                                                    ▼
+ email reg X ──────(pivot adversary)─────► cùng campaign
+</code></pre>
+<p><strong>Các meta-feature</strong> mở rộng: timestamp, phase (gắn Kill Chain), result, direction, methodology, resources. <strong>Social-Political</strong> (động cơ adversary↔victim) và <strong>Technology</strong> (capability↔infrastructure) là hai trục bổ sung.</p>
+<p>Diamond bổ trợ ATT&amp;CK: ATT&amp;CK điền vào <strong>Capability</strong> (TTP cụ thể), còn Diamond đặt nó trong quan hệ điều tra.</p>
+<hr />
+<h2 id="ch15-155-ioc-vs-ioa">15.5. IOC vs IOA</h2>
+<p>Ví von cho dễ nhớ: IOC giống dấu vân tay tên trộm để lại sau khi đã đột nhập — bằng chứng tĩnh của việc <em>đã xảy ra</em>. IOA giống camera bắt được cảnh ai đó đang cạy cửa sổ — chuỗi hành vi <em>đang diễn ra</em>, can thiệp được trước khi mất đồ.</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th><strong>IOC (Indicator of Compromise)</strong></th>
+<th><strong>IOA (Indicator of Attack)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bản chất</td>
+<td>Bằng chứng tĩnh đã xảy ra</td>
+<td>Hành vi/ý đồ đang diễn ra</td>
+</tr>
+<tr>
+<td>Ví dụ</td>
+<td>Hash <code>e3b0c44...</code>, IP, domain, mutex, registry key</td>
+<td>"winword.exe spawn powershell.exe rồi tải file từ Internet"</td>
+</tr>
+<tr>
+<td>Độ bền</td>
+<td>Thấp (đổi dễ)</td>
+<td>Cao (logic tấn công khó đổi)</td>
+</tr>
+<tr>
+<td>Phát hiện</td>
+<td>So khớp danh sách</td>
+<td>Phân tích chuỗi hành vi (EDR)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ IOA (chuỗi nhân–quả) mà EDR phát hiện:</strong></p>
+<pre><code>1. outlook.exe  → tạo tiến trình winword.exe (mở đính kèm)
+2. winword.exe  → spawn cmd.exe /c powershell -enc &lt;base64&gt;
+3. powershell   → kết nối ra 185.x (download)
+4. powershell   → ghi file vào %APPDATA%\svchost.exe
+5. file mới     → tạo registry Run key (persistence)
+</code></pre>
+<p>Không indicator đơn lẻ nào ở trên là "xấu tuyệt đối" — chính <strong>chuỗi</strong> mới là dấu hiệu tấn công. Đây là khác biệt cốt lõi: IOC = "cái gì đã thấy"; IOA = "đang định làm gì". ATT&amp;CK technique về bản chất là cách chuẩn hóa <strong>IOA</strong>.</p>
+<hr />
+<h2 id="ch15-156-pyramid-of-pain-david-bianco-2013">15.6. Pyramid of Pain (David Bianco, 2013)</h2>
+<p>Hình dung như đuổi một kẻ trộm: đổi khóa cửa thì hắn thử cửa sổ (rẻ, đổi trong vài phút); nhưng nếu ta khiến cả <em>cách hắn đột nhập</em> không còn dùng được thì hắn phải học lại nghề. Pyramid of Pain đo đúng "nỗi đau" đó.</p>
+<p>Mô hình đo <strong>mức đau</strong> mà việc ta chặn một loại indicator gây ra cho đối thủ — tức chi phí họ phải bỏ ra để né tránh.</p>
+<pre><code>                    /\
+                   /  \                    ← Tough!       (khó nhất cho attacker đổi)
+                  / TTP \
+                 /------\
+                / Tools  \                 ← Challenging
+               /----------\
+              /  Network/   \              ← Annoying
+             / Host Artifacts \
+            /------------------\
+           /   Domain Names     \          ← Simple
+          /----------------------\
+         /     IP Addresses       \        ← Easy
+        /--------------------------\
+       /        Hash Values         \      ← Trivial   (đổi 1 byte → hash mới)
+      /------------------------------\
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Mức</th>
+<th>Indicator</th>
+<th>Chi phí đối thủ để né</th>
+<th>Hành động Blue Team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trivial</td>
+<td>Hash (MD5/SHA256)</td>
+<td>Đổi 1 byte → hash khác hoàn toàn</td>
+<td>Vẫn block, nhưng đừng kỳ vọng</td>
+</tr>
+<tr>
+<td>Easy</td>
+<td>IP address</td>
+<td>Thuê IP mới (vài phút)</td>
+<td>Block + theo dõi pattern hạ tầng</td>
+</tr>
+<tr>
+<td>Simple</td>
+<td>Domain</td>
+<td>Đăng ký domain mới (DGA tự động)</td>
+<td>DNS sinkhole, phát hiện DGA</td>
+</tr>
+<tr>
+<td>Annoying</td>
+<td>Host/Network artifacts (mutex, User-Agent lạ, registry)</td>
+<td>Phải sửa malware</td>
+<td>Viết detection theo artifact</td>
+</tr>
+<tr>
+<td>Challenging</td>
+<td>Tools (Mimikatz, Cobalt Strike)</td>
+<td>Phải đổi công cụ</td>
+<td>YARA theo công cụ, JA3</td>
+</tr>
+<tr>
+<td>Tough</td>
+<td><strong>TTPs</strong> (hành vi: dump LSASS, pass-the-hash)</td>
+<td>Phải đổi <strong>cách hành động</strong></td>
+<td>ATT&amp;CK detection — đầu tư ở đây</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bài học vận hành:</strong> đầu tư detection ở đỉnh tháp (TTP) cho lợi nhuận lâu dài; IOC ở đáy tháp rẻ nhưng chỉ chặn được đúng chiến dịch đã biết. Đây là lý do MITRE ATT&amp;CK (catalog TTP) là trung tâm của detection engineering hiện đại.</p>
+<hr />
+<h2 id="ch15-157-mitre-attck-kien-truc-va-mo-hinh-du-lieu">15.7. MITRE ATT&amp;CK — kiến trúc và mô hình dữ liệu</h2>
+<p><strong>ATT&amp;CK</strong> = <em>Adversarial Tactics, Techniques, and Common Knowledge</em>. Là <strong>knowledge base</strong> các hành vi đối thủ <strong>quan sát được trong thực tế</strong> (curated từ báo cáo công khai). Không phải framework tuyến tính như Kill Chain — nó là <strong>ma trận</strong> các hành vi.</p>
+<h3 id="ch15-1571-phan-cap-khai-niem">15.7.1. Phân cấp khái niệm</h3>
+<pre><code>Tactic  = MỤC TIÊU chiến thuật (&quot;VÌ SAO&quot; — attacker muốn đạt gì)
+   └─ Technique = CÁCH chung để đạt mục tiêu (&quot;LÀM GÌ&quot;)   → ID  Txxxx
+        └─ Sub-technique = biến thể cụ thể (&quot;LÀM NHƯ THẾ NÀO&quot;) → ID Txxxx.xxx
+              └─ Procedure = hiện thực CỤ THỂ của một nhóm/malware
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Cấp</th>
+<th>Trả lời</th>
+<th>Định danh</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tactic</strong></td>
+<td>Why (mục tiêu)</td>
+<td><code>TAxxxx</code></td>
+<td>TA0006 Credential Access</td>
+</tr>
+<tr>
+<td><strong>Technique</strong></td>
+<td>What (phương pháp)</td>
+<td><code>Txxxx</code></td>
+<td>T1003 OS Credential Dumping</td>
+</tr>
+<tr>
+<td><strong>Sub-technique</strong></td>
+<td>How (biến thể)</td>
+<td><code>Txxxx.xxx</code></td>
+<td>T1003.001 LSASS Memory</td>
+</tr>
+<tr>
+<td><strong>Procedure</strong></td>
+<td>Cụ thể ai làm sao</td>
+<td>(mô tả)</td>
+<td>"Mimikatz <code>sekurlsa::logonpasswords</code> đọc LSASS"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cấu trúc ID — phân tích từng phần:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Định dạng</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix</td>
+<td>1 ký tự</td>
+<td>Loại đối tượng</td>
+<td><code>T</code>=Technique, <code>TA</code>=Tactic, <code>S</code>=Software, <code>G</code>=Group, <code>M</code>=Mitigation, <code>C</code>=Campaign, <code>DS</code>=Data Source</td>
+</tr>
+<tr>
+<td>Số technique</td>
+<td>4 chữ số</td>
+<td>Định danh technique</td>
+<td><code>1003</code></td>
+</tr>
+<tr>
+<td>Dấu chấm + 3 chữ số</td>
+<td><code>.xxx</code></td>
+<td>Sub-technique</td>
+<td><code>.001</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ đầy đủ: <code>T1059.001</code> = Technique 1059 (Command and Scripting Interpreter), sub-technique 001 (PowerShell).</p>
+<h3 id="ch15-1572-mo-hinh-quan-he-attck-stix-data-model">15.7.2. Mô hình quan hệ (ATT&amp;CK STIX data model)</h3>
+<p>ATT&amp;CK được phát hành dưới dạng <strong>STIX 2.1 bundle</strong> (JSON) trên GitHub <code>mitre/cti</code>. Các object type chính và ánh xạ:</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm ATT&amp;CK</th>
+<th>STIX 2.1 type</th>
+<th>Quan hệ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Technique</td>
+<td><code>attack-pattern</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Tactic</td>
+<td><code>x-mitre-tactic</code></td>
+<td>technique <code>kill_chain_phases</code> trỏ tới tactic</td>
+</tr>
+<tr>
+<td>Group</td>
+<td><code>intrusion-set</code></td>
+<td><code>uses</code> → attack-pattern / malware</td>
+</tr>
+<tr>
+<td>Software (malware/tool)</td>
+<td><code>malware</code> / <code>tool</code></td>
+<td><code>uses</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Mitigation</td>
+<td><code>course-of-action</code></td>
+<td><code>mitigates</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Data Source/Component</td>
+<td><code>x-mitre-data-source</code> / <code>x-mitre-data-component</code></td>
+<td><code>detects</code> → attack-pattern</td>
+</tr>
+<tr>
+<td>Relationship</td>
+<td><code>relationship</code></td>
+<td>nối các object</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trích một <code>attack-pattern</code> (rút gọn, đúng cấu trúc STIX):</strong></p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;attack-pattern&quot;,
+  &quot;id&quot;: &quot;attack-pattern--0a3ead4e-6d47-4ccb-854c-a6a4f9d96b22&quot;,
+  &quot;spec_version&quot;: &quot;2.1&quot;,
+  &quot;name&quot;: &quot;PowerShell&quot;,
+  &quot;x_mitre_is_subtechnique&quot;: true,
+  &quot;kill_chain_phases&quot;: [
+    { &quot;kill_chain_name&quot;: &quot;mitre-attack&quot;, &quot;phase_name&quot;: &quot;execution&quot; }
+  ],
+  &quot;external_references&quot;: [
+    { &quot;source_name&quot;: &quot;mitre-attack&quot;,
+      &quot;external_id&quot;: &quot;T1059.001&quot;,
+      &quot;url&quot;: &quot;https://attack.mitre.org/techniques/T1059/001&quot; }
+  ],
+  &quot;x_mitre_platforms&quot;: [&quot;Windows&quot;],
+  &quot;x_mitre_data_sources&quot;: [&quot;Command: Command Execution&quot;,
+                           &quot;Process: Process Creation&quot;,
+                           &quot;Module: Module Load&quot;],
+  &quot;x_mitre_detection&quot;: &quot;Monitor for execution of powershell.exe with...&quot;
+}
+</code></pre>
+<p>Lưu ý quan trọng: <strong>technique ID đặt trong <code>external_references</code></strong> (nơi <code>source_name == "mitre-attack"</code>), KHÔNG phải trường <code>id</code> (đó là STIX UUID). Đây là điểm hay nhầm khi viết script parse ATT&amp;CK.</p>
+<h3 id="ch15-1573-lay-va-truy-van-du-lieu-attck-vi-du-chay-đuoc">15.7.3. Lấy và truy vấn dữ liệu ATT&amp;CK — ví dụ chạy được</h3>
+<p>Tải bundle Enterprise và đếm số technique bằng <code>jq</code>:</p>
+<pre><code class="language-bash"># Tải STIX bundle Enterprise ATT&amp;CK
+curl -sSL -o enterprise-attack.json \
+  https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
+
+# Đếm số attack-pattern chưa bị deprecated/revoked
+jq '[.objects[]
+      | select(.type==&quot;attack-pattern&quot;)
+      | select((.revoked // false)|not)
+      | select((.x_mitre_deprecated // false)|not)] | length' \
+   enterprise-attack.json
+
+# Liệt kê technique ID + tên cho tactic &quot;credential-access&quot;
+jq -r '.objects[]
+        | select(.type==&quot;attack-pattern&quot;)
+        | select(.kill_chain_phases[]?.phase_name==&quot;credential-access&quot;)
+        | (.external_references[]
+            | select(.source_name==&quot;mitre-attack&quot;).external_id)
+          + &quot;  &quot; + .name' \
+   enterprise-attack.json | sort | head
+</code></pre>
+<p>Giải thích tham số: <code>select(.type=="attack-pattern")</code> lọc đúng technique; <code>.kill_chain_phases[]?.phase_name</code> truy cập tactic (dấu <code>?</code> tránh lỗi khi mảng vắng); <code>.external_references[] | select(.source_name=="mitre-attack").external_id</code> rút technique ID.</p>
+<p>Truy vấn ở tầng Python với thư viện chính thức <code>mitreattack-python</code>:</p>
+<pre><code class="language-python">from mitreattack.stix20 import MitreAttackData
+
+mad = MitreAttackData(&quot;enterprise-attack.json&quot;)
+
+# Lấy technique theo ATT&amp;CK ID
+t = mad.get_object_by_attack_id(&quot;T1003.001&quot;, &quot;attack-pattern&quot;)
+print(t.name)                       # LSASS Memory
+
+# Nhóm nào dùng technique này?
+groups = mad.get_groups_using_technique(t.id)
+for g in groups:
+    print(g[&quot;object&quot;].name)         # vd: APT28, ...
+</code></pre>
+<h3 id="ch15-1574-14-tactic-enterprise-reconnaissance-impact">15.7.4. 14 Tactic Enterprise (Reconnaissance → Impact)</h3>
+<p>Thứ tự cột trong ma trận Enterprise (đây là <strong>thứ tự logic</strong>, không bắt buộc tuyến tính khi tấn công thật):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tactic</th>
+<th>ID</th>
+<th>Mục tiêu của attacker</th>
+<th>Technique ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Reconnaissance</strong></td>
+<td>TA0043</td>
+<td>Thu thập thông tin trước tấn công</td>
+<td>T1595 Active Scanning, T1589 Gather Victim Identity Info</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Resource Development</strong></td>
+<td>TA0042</td>
+<td>Chuẩn bị hạ tầng/công cụ</td>
+<td>T1583 Acquire Infrastructure, T1587 Develop Capabilities</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Initial Access</strong></td>
+<td>TA0001</td>
+<td>Đặt chân vào mạng</td>
+<td>T1566 Phishing, T1190 Exploit Public-Facing App</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Execution</strong></td>
+<td>TA0002</td>
+<td>Chạy code độc hại</td>
+<td><strong>T1059</strong> Command and Scripting Interpreter</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Persistence</strong></td>
+<td>TA0003</td>
+<td>Duy trì chỗ đứng qua reboot</td>
+<td>T1547 Boot/Logon Autostart, T1053 Scheduled Task</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Privilege Escalation</strong></td>
+<td>TA0004</td>
+<td>Nâng quyền</td>
+<td>T1548 Abuse Elevation Control, T1068 Exploit for PrivEsc</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Defense Evasion</strong></td>
+<td>TA0005</td>
+<td>Né phát hiện</td>
+<td>T1070 Indicator Removal, T1027 Obfuscated Files</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Credential Access</strong></td>
+<td>TA0006</td>
+<td>Lấy tài khoản/mật khẩu</td>
+<td><strong>T1110</strong> Brute Force, <strong>T1003</strong> OS Credential Dumping</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Discovery</strong></td>
+<td>TA0007</td>
+<td>Dò xét môi trường</td>
+<td>T1083 File/Directory Discovery, T1018 Remote System Discovery</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Lateral Movement</strong></td>
+<td>TA0008</td>
+<td>Di chuyển sang host khác</td>
+<td><strong>T1021</strong> Remote Services, T1550 Use Alternate Auth Material</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Collection</strong></td>
+<td>TA0009</td>
+<td>Gom dữ liệu mục tiêu</td>
+<td>T1005 Data from Local System, T1113 Screen Capture</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>Command and Control</strong></td>
+<td>TA0011</td>
+<td>Điều khiển từ xa</td>
+<td>T1071 App Layer Protocol, T1572 Protocol Tunneling</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Exfiltration</strong></td>
+<td>TA0010</td>
+<td>Tuồn dữ liệu ra</td>
+<td><strong>T1041</strong> Exfil Over C2 Channel, T1048 Exfil Over Alt Protocol</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Impact</strong></td>
+<td>TA0040</td>
+<td>Phá hoại/tống tiền</td>
+<td>T1486 Data Encrypted for Impact, T1490 Inhibit System Recovery</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao 2 tactic "Reconnaissance" và "Resource Development" được thêm sau (PRE-ATT&amp;CK gộp vào):</strong> ban đầu ATT&amp;CK Enterprise bắt đầu từ Initial Access. Các hoạt động trước xâm nhập (recon, mua hạ tầng) xảy ra ngoài mạng nạn nhân nên khó telemetry, được tách thành PRE-ATT&amp;CK rồi (2020) tích hợp lại làm 2 cột đầu.</p>
+<hr />
+<h2 id="ch15-158-đao-sau-cac-technique-trong-yeu-co-che-dau-hieu-phat-hien">15.8. Đào sâu các Technique trọng yếu (cơ chế + dấu hiệu phát hiện)</h2>
+<h3 id="ch15-1581-t1110-brute-force-credential-access">15.8.1. T1110 — Brute Force (Credential Access)</h3>
+<p><strong>Là gì:</strong> thử nhiều cặp credential cho tới khi đúng. Sub-techniques:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tên</th>
+<th>Cơ chế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1110.001</td>
+<td>Password Guessing</td>
+<td>Thử nhiều mật khẩu cho <strong>một</strong> tài khoản</td>
+</tr>
+<tr>
+<td>T1110.002</td>
+<td>Password Cracking</td>
+<td>Bẻ hash <strong>offline</strong> (sau khi đã dump)</td>
+</tr>
+<tr>
+<td>T1110.003</td>
+<td>Password Spraying</td>
+<td>Thử <strong>một</strong> mật khẩu phổ biến trên <strong>nhiều</strong> tài khoản (né lockout)</td>
+</tr>
+<tr>
+<td>T1110.004</td>
+<td>Credential Stuffing</td>
+<td>Dùng cặp user/pass rò rỉ từ nơi khác</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao password spraying nguy hiểm:</strong> chính sách lockout thường khóa sau N lần sai <em>trên một tài khoản</em>. Spray thử <code>Summer2024!</code> lần lượt cho 5000 user → mỗi user chỉ 1 lần sai → không kích hoạt lockout.</p>
+<p><strong>Ví dụ thực tế — spray SMB/RDP bằng <code>crackmapexec</code> (dùng trong lab có phép):</strong></p>
+<pre><code class="language-bash"># Một mật khẩu, nhiều user, có --continue-on-success để gom hết hit
+crackmapexec smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' \
+    --continue-on-success
+</code></pre>
+<blockquote>
+<p>Lưu ý công cụ: <code>crackmapexec</code> (CME) đã ngừng bảo trì từ ~2023; bản kế thừa được cộng đồng phát triển tiếp là <strong>NetExec</strong> (<code>nxc</code>), cú pháp gần như tương đương (<code>nxc smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' --continue-on-success</code>). Với môi trường mới nên dùng <code>nxc</code>.</p>
+</blockquote>
+<p><strong>Dấu hiệu Blue Team (Windows Security log):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Giá trị cần để ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event ID</td>
+<td><code>4625</code> (logon failed) — nhiều, rải nhiều <code>TargetUserName</code></td>
+</tr>
+<tr>
+<td>Event ID</td>
+<td><code>4771</code> (Kerberos pre-auth failed), <code>4768</code></td>
+</tr>
+<tr>
+<td>Failure Reason / Status</td>
+<td><code>0xC000006A</code> (sai mật khẩu), <code>0xC0000234</code> (account locked)</td>
+</tr>
+<tr>
+<td>Pattern</td>
+<td><strong>Nhiều username khác nhau, cùng một password attempt window</strong> → spray</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Detection logic (pseudo-SIEM):
+  COUNT(distinct TargetUserName) WHERE EventID=4625
+  GROUP BY SourceIP, time_bucket(5m) &gt; 20  → cảnh báo password spraying
+</code></pre>
+<h3 id="ch15-1582-t1059-command-and-scripting-interpreter-execution">15.8.2. T1059 — Command and Scripting Interpreter (Execution)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Interpreter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1059.001</td>
+<td>PowerShell</td>
+</tr>
+<tr>
+<td>T1059.003</td>
+<td>Windows Command Shell (cmd)</td>
+</tr>
+<tr>
+<td>T1059.004</td>
+<td>Unix Shell (bash)</td>
+</tr>
+<tr>
+<td>T1059.005</td>
+<td>Visual Basic</td>
+</tr>
+<tr>
+<td>T1059.006</td>
+<td>Python</td>
+</tr>
+<tr>
+<td>T1059.007</td>
+<td>JavaScript</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ payload PowerShell mã hóa — giải thích từng phần:</strong></p>
+<pre><code class="language-powershell">powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBi...
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+<th>Vì sao attacker dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-nop</code></td>
+<td><code>-NoProfile</code></td>
+<td>Bỏ qua profile (tránh logging/khởi tạo)</td>
+</tr>
+<tr>
+<td><code>-w hidden</code></td>
+<td><code>-WindowStyle Hidden</code></td>
+<td>Ẩn cửa sổ</td>
+</tr>
+<tr>
+<td><code>-enc</code></td>
+<td><code>-EncodedCommand</code> (Base64 <strong>UTF-16LE</strong>)</td>
+<td>Né phát hiện chuỗi, né dấu nháy escape</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý mã hóa:</strong> chuỗi sau <code>-enc</code> là Base64 của text <strong>UTF-16 Little Endian</strong>, không phải UTF-8. Giải mã đúng:</p>
+<pre><code class="language-bash"># Lệnh thực: giải mã encoded command
+echo 'SQBFAFgAIAAoAE4AZQB3AC0ATwBi' | base64 -d | iconv -f UTF-16LE -t UTF-8
+# → &quot;IEX (New-Ob...&quot;   (Invoke-Expression — tải &amp; chạy từ bộ nhớ)
+</code></pre>
+<p><strong>Dấu hiệu Blue Team:</strong>
+- <strong>Script Block Logging</strong> (Event ID <code>4104</code>) ghi lại nội dung script đã giải mã — bật qua GPO <code>Administrative Templates → Windows PowerShell → Turn on PowerShell Script Block Logging</code>.
+- Process creation (<code>4688</code> / Sysmon <code>1</code>) với <code>CommandLine</code> chứa <code>-enc</code>, <code>-e</code>, <code>FromBase64String</code>, <code>IEX</code>, <code>DownloadString</code>.
+- Parent–child bất thường: <code>winword.exe → powershell.exe</code> (IOA).</p>
+<h3 id="ch15-1583-t1003-os-credential-dumping-credential-access">15.8.3. T1003 — OS Credential Dumping (Credential Access)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Nguồn credential</th>
+<th>Cơ chế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1003.001</td>
+<td><strong>LSASS Memory</strong></td>
+<td>Đọc bộ nhớ tiến trình <code>lsass.exe</code> (chứa hash/vé Kerberos/đôi khi plaintext)</td>
+</tr>
+<tr>
+<td>T1003.002</td>
+<td>Security Account Manager (SAM)</td>
+<td>Đọc registry hive <code>SAM</code> → NTLM hash local</td>
+</tr>
+<tr>
+<td>T1003.003</td>
+<td>NTDS (<code>ntds.dit</code>)</td>
+<td>Database AD trên Domain Controller → toàn bộ hash domain</td>
+</tr>
+<tr>
+<td>T1003.004</td>
+<td>LSA Secrets</td>
+<td><code>HKLM\SECURITY\Policy\Secrets</code></td>
+</tr>
+<tr>
+<td>T1003.006</td>
+<td>DCSync</td>
+<td>Giả làm DC, yêu cầu replication (<code>DRSGetNCChanges</code>) để lấy hash</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao LSASS là mục tiêu:</strong> Local Security Authority Subsystem Service giữ credential material để hỗ trợ SSO. Mimikatz <code>sekurlsa::logonpasswords</code> mở handle tới <code>lsass.exe</code>, đọc các cấu trúc bộ nhớ và giải mã.</p>
+<p><strong>Ví dụ thực tế (lab):</strong></p>
+<pre><code>mimikatz # privilege::debug          # bật SeDebugPrivilege
+mimikatz # sekurlsa::logonpasswords  # dump credential từ LSASS
+</code></pre>
+<p>Dump bằng công cụ living off the land (LOLBIN — lợi dụng công cụ có sẵn của hệ điều hành) khó bị AV chú ý hơn:</p>
+<pre><code class="language-cmd">:: Tạo minidump LSASS bằng comsvcs.dll (LOLBIN)
+rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump &lt;PID_lsass&gt; C:\temp\l.dmp full
+</code></pre>
+<p><strong>Dấu hiệu Blue Team:</strong>
+- Sysmon <strong>Event ID 10</strong> (ProcessAccess) với <code>TargetImage</code> = <code>lsass.exe</code> và <code>GrantedAccess</code> = <code>0x1010</code>/<code>0x1410</code>/<code>0x143A</code> (quyền đọc bộ nhớ) từ tiến trình không phải hệ thống.
+- <strong>Credential Guard</strong> (VBS) cô lập LSASS secrets → vô hiệu mimikatz <code>logonpasswords</code>.
+- <strong>PPL (Protected Process Light)</strong> cho LSASS: <code>RunAsPPL=1</code> ở <code>HKLM\SYSTEM\CurrentControlSet\Control\Lsa</code>.</p>
+<p>Sysmon config phát hiện đọc LSASS:</p>
+<pre><code class="language-xml">&lt;Sysmon schemaversion=&quot;4.90&quot;&gt;
+  &lt;EventFiltering&gt;
+    &lt;RuleGroup name=&quot;lsass-access&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessAccess onmatch=&quot;include&quot;&gt;
+        &lt;TargetImage condition=&quot;image&quot;&gt;lsass.exe&lt;/TargetImage&gt;
+      &lt;/ProcessAccess&gt;
+    &lt;/RuleGroup&gt;
+  &lt;/EventFiltering&gt;
+&lt;/Sysmon&gt;
+</code></pre>
+<h3 id="ch15-1584-t1021-remote-services-lateral-movement">15.8.4. T1021 — Remote Services (Lateral Movement)</h3>
+<table>
+<thead>
+<tr>
+<th>Sub</th>
+<th>Dịch vụ</th>
+<th>Port</th>
+<th>Dấu hiệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1021.001</td>
+<td>RDP</td>
+<td>TCP <strong>3389</strong></td>
+<td>Event <code>4624</code> Logon Type <strong>10</strong> (RemoteInteractive)</td>
+</tr>
+<tr>
+<td>T1021.002</td>
+<td>SMB/Windows Admin Shares (C$, ADMIN$)</td>
+<td>TCP <strong>445</strong></td>
+<td>Logon Type <strong>3</strong>; truy cập <code>\\host\ADMIN$</code></td>
+</tr>
+<tr>
+<td>T1021.004</td>
+<td>SSH</td>
+<td>TCP 22</td>
+<td>auth log</td>
+</tr>
+<tr>
+<td>T1021.006</td>
+<td>WinRM</td>
+<td>TCP 5985/5986</td>
+<td>Logon Type 3; <code>wsmprovhost.exe</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Logon Type — bảng tra (Windows Event 4624):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Ý nghĩa</th>
+<th>Liên quan lateral movement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive (tại máy)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network (SMB, share, WinRM)</td>
+<td><strong>Có</strong> — pass-the-hash, psexec</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive (RDP)</td>
+<td><strong>Có</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+<td>persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế — pass-the-hash qua SMB (<code>impacket</code>):</strong></p>
+<pre><code class="language-bash"># Dùng NTLM hash thay vì mật khẩu để thực thi từ xa (T1021.002 + T1550.002)
+impacket-psexec -hashes :32ed87bdb5fdc5e9cba88547376818d4 \
+    Administrator@10.0.0.5
+</code></pre>
+<p><strong>Dấu hiệu:</strong> chuỗi <code>4624 (Type 3) → tạo service "PSEXESVC" (Event 7045) → tiến trình con cmd.exe</code> trên host đích.</p>
+<h3 id="ch15-1585-t1041-exfiltration-over-c2-channel-exfiltration">15.8.5. T1041 — Exfiltration Over C2 Channel (Exfiltration)</h3>
+<p><strong>Là gì:</strong> tuồn dữ liệu ra <strong>qua chính kênh C2 đang dùng</strong> (HTTP/HTTPS/DNS) thay vì mở kênh riêng — để hòa lẫn lưu lượng.</p>
+<p><strong>Dấu hiệu Blue Team — phát hiện C2/beacon ở mức gói tin:</strong>
+- <strong>Beaconing</strong>: kết nối định kỳ đều đặn (vd mỗi 60s ± jitter) tới cùng host. Phát hiện qua phân tích <strong>periodicity</strong> của NetFlow.
+- <strong>Tỷ lệ upload/download bất thường</strong> (bytes_out &gt;&gt; bytes_in cho exfil).
+- <strong>JA3/JA3S</strong> fingerprint của TLS client hello khớp Cobalt Strike/Metasploit.
+- <strong>DNS exfil</strong>: subdomain dài, entropy cao, nhiều query TXT/NULL.</p>
+<pre><code>Beacon pattern (NetFlow nhìn theo thời gian):
+  10:00:00  client → C2  220 bytes
+  10:01:00  client → C2  240 bytes   ← chu kỳ ~60s
+  10:02:01  client → C2  225 bytes
+  ...  (độ lệch nhỏ = jitter)  → cảnh báo regular beaconing
+</code></pre>
+<hr />
+<h2 id="ch15-159-cac-matrix-enterprise-mobile-ics">15.9. Các Matrix: Enterprise, Mobile, ICS</h2>
+<p>ATT&amp;CK có nhiều "domain" với tactic/technique riêng phù hợp môi trường:</p>
+<table>
+<thead>
+<tr>
+<th>Matrix</th>
+<th>Phạm vi</th>
+<th>Platform con</th>
+<th>Tactic đặc thù</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td>IT doanh nghiệp</td>
+<td>Windows, Linux, macOS, <strong>Cloud</strong> (IaaS, SaaS, Office/Google Workspace, Azure AD/Entra ID), Network, Containers</td>
+<td>14 tactic (đã liệt kê)</td>
+</tr>
+<tr>
+<td><strong>Mobile</strong></td>
+<td>Android, iOS</td>
+<td>—</td>
+<td>Có thêm các tactic liên quan thiết bị; vd Network Effects</td>
+</tr>
+<tr>
+<td><strong>ICS</strong></td>
+<td>Hệ thống điều khiển công nghiệp/OT</td>
+<td>PLC, SCADA, HMI</td>
+<td>12 tactic gồm <strong>Impair Process Control</strong>, <strong>Inhibit Response Function</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloud (nằm trong Enterprise):</strong> ví dụ technique đặc thù cloud:
+- T1078.004 Valid Accounts: <strong>Cloud Accounts</strong>
+- T1098 Account Manipulation (thêm credential/role IAM)
+- T1530 Data from Cloud Storage (đọc S3 bucket public)
+- T1526 Cloud Service Discovery</p>
+<p><strong>ICS — vì sao tách riêng:</strong> trong OT, "Impact" có thể là <strong>gây thiệt hại vật lý</strong> (đóng/mở van, làm hỏng tua-bin — như Stuxnet/Triton). Tactic <code>Inhibit Response Function</code> mô tả việc vô hiệu hệ thống an toàn (Safety Instrumented System) — không có khái niệm tương đương trong IT. Technique ví dụ: T0816 Device Restart/Shutdown, T0831 Manipulation of Control.</p>
+<hr />
+<h2 id="ch15-1510-attck-navigator-map-detection-đo-coverage">15.10. ATT&amp;CK Navigator: map detection &amp; đo coverage</h2>
+<p><strong>Navigator</strong> là ứng dụng web (chạy được offline) tô màu các ô technique trên ma trận để trực quan hóa: coverage phát hiện, hoạt động của một nhóm APT, gap analysis. Dữ liệu lưu dưới <strong>layer file (JSON)</strong>.</p>
+<h3 id="ch15-15101-cau-truc-layer-json-tung-truong">15.10.1. Cấu trúc layer JSON — từng trường</h3>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;SOC Detection Coverage Q2&quot;,
+  &quot;versions&quot;: { &quot;attack&quot;: &quot;17&quot;, &quot;navigator&quot;: &quot;5.0.0&quot;, &quot;layer&quot;: &quot;4.5&quot; },
+  &quot;domain&quot;: &quot;enterprise-attack&quot;,
+  &quot;description&quot;: &quot;Độ phủ rule SIEM hiện tại&quot;,
+  &quot;techniques&quot;: [
+    {
+      &quot;techniqueID&quot;: &quot;T1059.001&quot;,
+      &quot;tactic&quot;: &quot;execution&quot;,
+      &quot;score&quot;: 100,
+      &quot;color&quot;: &quot;&quot;,
+      &quot;comment&quot;: &quot;Phủ bởi Sigma rule win_susp_powershell_enc&quot;,
+      &quot;enabled&quot;: true,
+      &quot;metadata&quot;: [
+        { &quot;name&quot;: &quot;rule_id&quot;, &quot;value&quot;: &quot;SIGMA-0421&quot; }
+      ]
+    },
+    {
+      &quot;techniqueID&quot;: &quot;T1003.001&quot;,
+      &quot;tactic&quot;: &quot;credential-access&quot;,
+      &quot;score&quot;: 50,
+      &quot;comment&quot;: &quot;Chỉ có rule Sysmon EID10, chưa cover comsvcs&quot;
+    }
+  ],
+  &quot;gradient&quot;: {
+    &quot;colors&quot;: [&quot;#ff6666&quot;, &quot;#ffe766&quot;, &quot;#8ec843&quot;],
+    &quot;minValue&quot;: 0, &quot;maxValue&quot;: 100
+  },
+  &quot;legendItems&quot;: [],
+  &quot;showTacticRowBackground&quot;: true,
+  &quot;tacticRowBackground&quot;: &quot;#dddddd&quot;,
+  &quot;selectTechniquesAcrossTactics&quot;: true
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>domain</code></td>
+<td>string</td>
+<td><code>enterprise-attack</code> / <code>mobile-attack</code> / <code>ics-attack</code></td>
+</tr>
+<tr>
+<td><code>versions.attack</code></td>
+<td>string</td>
+<td>Phiên bản ATT&amp;CK (vd "15") — phải khớp để ID hợp lệ</td>
+</tr>
+<tr>
+<td><code>techniques[].techniqueID</code></td>
+<td>string</td>
+<td>ID technique/sub-technique</td>
+</tr>
+<tr>
+<td><code>techniques[].tactic</code></td>
+<td>string</td>
+<td>tactic shortname (vì 1 technique có thể thuộc nhiều tactic → cần chỉ rõ ô nào)</td>
+</tr>
+<tr>
+<td><code>techniques[].score</code></td>
+<td>number</td>
+<td>Điểm để tô gradient (vd % coverage)</td>
+</tr>
+<tr>
+<td><code>gradient</code></td>
+<td>object</td>
+<td>Ánh xạ score→màu (min→max)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao cần <code>tactic</code> trên từng technique:</strong> một technique như T1078 Valid Accounts xuất hiện ở <strong>nhiều cột</strong> (Initial Access, Persistence, Privilege Escalation, Defense Evasion). Trường <code>tactic</code> chỉ định tô ô nào.</p>
+<h3 id="ch15-15102-quy-trinh-đo-coverage-thuc-te">15.10.2. Quy trình đo coverage thực tế</h3>
+<ol>
+<li>Liệt kê toàn bộ detection rule (Sigma/SIEM) hiện có.</li>
+<li>Gán mỗi rule → một/nhiều technique ID (qua trường <code>tags: attack.txxxx</code> trong Sigma — xem 15.11).</li>
+<li>Sinh layer JSON (script), <code>score=100</code> cho technique có rule, <code>0</code> cho chưa.</li>
+<li>Mở Navigator → import layer → nhìn vùng đỏ = <strong>detection gap</strong>.</li>
+<li>So với layer của các APT nhắm vào ngành mình (MITRE cung cấp sẵn layer theo group) → <strong>kết hợp 2 layer</strong> bằng phép toán để ưu tiên.</li>
+</ol>
+<p><strong>Script sinh layer từ kho Sigma (rút gọn):</strong></p>
+<pre><code class="language-python">import glob, yaml, json, re
+
+techs = {}
+for f in glob.glob(&quot;rules/**/*.yml&quot;, recursive=True):
+    doc = yaml.safe_load(open(f, encoding=&quot;utf-8&quot;))
+    for tag in (doc.get(&quot;tags&quot;) or []):
+        m = re.fullmatch(r&quot;attack\.(t\d{4}(?:\.\d{3})?)&quot;, tag, re.I)
+        if m:
+            techs[m.group(1).upper()] = techs.get(m.group(1).upper(), 0) + 1
+
+layer = {
+  &quot;name&quot;: &quot;Sigma coverage&quot;, &quot;domain&quot;: &quot;enterprise-attack&quot;,
+  &quot;versions&quot;: {&quot;attack&quot;: &quot;17&quot;, &quot;navigator&quot;: &quot;5.0.0&quot;, &quot;layer&quot;: &quot;4.5&quot;},
+  &quot;techniques&quot;: [
+     {&quot;techniqueID&quot;: t, &quot;score&quot;: min(100, c*25),
+      &quot;comment&quot;: f&quot;{c} rule(s)&quot;} for t, c in techs.items()
+  ],
+  &quot;gradient&quot;: {&quot;colors&quot;: [&quot;#ff6666&quot;,&quot;#8ec843&quot;], &quot;minValue&quot;:0, &quot;maxValue&quot;:100}
+}
+json.dump(layer, open(&quot;coverage.json&quot;,&quot;w&quot;), indent=2)
+</code></pre>
+<p>Navigator hỗ trợ <strong>layer arithmetic</strong>: ví dụ tạo layer mới = <code>a - b</code> để tìm technique APT dùng (a) mà ta chưa cover (b).</p>
+<hr />
+<h2 id="ch15-1511-detection-engineering-sigma-yara-suricata-gan-attck">15.11. Detection Engineering: Sigma, YARA, Suricata gắn ATT&amp;CK</h2>
+<h3 id="ch15-15111-sigma-rule-siem-agnostic">15.11.1. Sigma — rule SIEM-agnostic</h3>
+<p><strong>Là gì:</strong> định dạng YAML mô tả detection trên <strong>log</strong> một cách trung lập, rồi <code>sigma-cli</code> chuyển sang truy vấn Splunk/Elastic/Sentinel...</p>
+<p><strong>[PROD] Cấu trúc rule — từng trường</strong> (rule này khớp theo hành vi trên <code>CommandLine</code>, thuộc tầng cao Pyramid of Pain — xem <a href="ch10.html">Chương 10</a> về detection engineering và <a href="ch08.html">Chương 8</a> về telemetry endpoint):</p>
+<pre><code class="language-yaml">title: PowerShell EncodedCommand Suspicious
+id: f7d4c3b2-1a2b-4c3d-9e8f-0a1b2c3d4e5f
+status: experimental
+description: Phát hiện powershell.exe chạy với tham số -EncodedCommand
+references:
+  - https://attack.mitre.org/techniques/T1059/001
+author: Blue Team
+date: 2026/06/19
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+    CommandLine|contains:
+      - ' -enc '
+      - ' -EncodedCommand '
+      - ' -e '
+  condition: selection
+falsepositives:
+  - Một số script quản trị hợp lệ dùng -enc
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Bắt buộc</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Có</td>
+<td>UUID duy nhất (dedupe, tham chiếu)</td>
+</tr>
+<tr>
+<td><code>logsource.category</code></td>
+<td>Có</td>
+<td>Loại log (<code>process_creation</code>, <code>firewall</code>, <code>dns_query</code>...)</td>
+</tr>
+<tr>
+<td><code>detection.selection</code></td>
+<td>Có</td>
+<td>Điều kiện khớp (map key→field log)</td>
+</tr>
+<tr>
+<td><code>detection.condition</code></td>
+<td>Có</td>
+<td>Logic boolean kết hợp các selection</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>Khuyến nghị</td>
+<td><code>attack.txxxx</code> → liên kết ATT&amp;CK (dùng đo coverage)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modifier</strong> (<code>|</code>): <code>endswith</code>, <code>contains</code>, <code>startswith</code>, <code>re</code> (regex), <code>all</code>. Vì sao có modifier: log thực tế đường dẫn đầy đủ → cần <code>endswith</code> thay vì so khớp tuyệt đối.</p>
+<p><strong>Biên dịch sang backend (lệnh thật):</strong></p>
+<pre><code class="language-bash">pip install sigma-cli pysigma-backend-splunk
+sigma convert -t splunk -p splunk_windows powershell_enc.yml
+# Output (SPL):
+# Image=&quot;*\\powershell.exe&quot; (CommandLine=&quot;* -enc *&quot; OR CommandLine=&quot;* -e *&quot; ...)
+</code></pre>
+<h3 id="ch15-15112-yara-pattern-matching-tren-filebo-nho">15.11.2. YARA — pattern matching trên file/bộ nhớ</h3>
+<p><strong>Là gì:</strong> ngôn ngữ rule khớp <strong>chuỗi/byte/regex</strong> trong file hoặc process memory → phân loại malware (mức "Tools" trên Pyramid of Pain).</p>
+<p><strong>[PROD] Cấu trúc rule</strong> (khớp chuỗi đặc trưng của công cụ — tầng "Tools", tương đối bền vì buộc đối thủ đổi công cụ):</p>
+<pre><code class="language-yara">import &quot;pe&quot;
+
+rule Mimikatz_Strings
+{
+    meta:
+        author      = &quot;BlueTeam&quot;
+        description = &quot;Phát hiện chuỗi đặc trưng Mimikatz&quot;
+        attack      = &quot;T1003.001&quot;
+        reference   = &quot;https://attack.mitre.org/software/S0002/&quot;
+
+    strings:
+        $s1 = &quot;sekurlsa::logonpasswords&quot; ascii wide
+        $s2 = &quot;privilege::debug&quot;          ascii wide
+        $s3 = { 6D 69 6D 69 6B 61 74 7A }      // &quot;mimikatz&quot; hex
+        $re = /gentilkiwi|benjamin delpy/ nocase
+
+    condition:
+        uint16(0) == 0x5A4D and          // MZ header (PE file)
+        pe.number_of_sections &gt; 1 and
+        2 of ($s*) and $re
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strings</code></td>
+<td>Khai báo pattern: <code>ascii</code>/<code>wide</code> (UTF-16), <code>nocase</code>, hex <code>{ .. }</code>, regex <code>/../</code></td>
+</tr>
+<tr>
+<td><code>condition</code></td>
+<td>Logic; <code>uint16(0)==0x5A4D</code> kiểm tra 2 byte đầu = <code>MZ</code> (PE); <code>2 of ($s*)</code> = ít nhất 2 string khớp</td>
+</tr>
+<tr>
+<td><code>import "pe"</code></td>
+<td>Module phân tích PE (số section, import, entry point)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao <code>uint16(0)==0x5A4D</code>:</strong> file PE bắt đầu bằng signature <strong>"MZ"</strong> (0x4D 0x5A) — little-endian đọc 2 byte đầu thành <code>0x5A4D</code>. Điều kiện này loại sớm file không phải PE → rule nhanh hơn.</p>
+<p><strong>Lệnh quét thật:</strong></p>
+<pre><code class="language-bash">yara -r -w mimikatz.yar /path/to/scan        # -r đệ quy, -w tắt warning
+yara mimikatz.yar --scan-list pids.txt        # quét theo PID (memory)
+</code></pre>
+<h3 id="ch15-15113-suricata-idsips-phat-hien-network-c2exfil">15.11.3. Suricata — IDS/IPS phát hiện network (C2/exfil)</h3>
+<p><strong>Là gì:</strong> IDS/IPS chữ ký + phân tích giao thức. Rule khớp gói/flow, gắn <code>metadata</code> ATT&amp;CK.</p>
+<p><strong>[DEMO] Cấu trúc rule — từng phần</strong> (chỉ minh hoạ cơ chế, KHÔNG dùng thẳng production): IOC kiểu chuỗi User-Agent/URI cố định nằm ở đáy Pyramid of Pain — đối thủ đổi User-Agent hoặc URI trong vài phút nên rule này <strong>kém bền</strong>, dễ né và dễ false positive. Khi triển khai thật, hãy ưu tiên phát hiện theo hành vi/TTP (xem <a href="ch10.html">Chương 10</a>) và bổ sung telemetry mạng tương quan với endpoint (xem <a href="ch08.html">Chương 8</a>).</p>
+<pre><code>alert http $HOME_NET any -&gt; $EXTERNAL_NET any ( \
+    msg:&quot;ATT&amp;CK T1071.001 Suspicious User-Agent CobaltStrike default&quot;; \
+    flow:established,to_server; \
+    http.user_agent; content:&quot;Mozilla/5.0 (compatible; MSIE 9.0&quot;; \
+    http.uri; content:&quot;/__utm.gif&quot;; \
+    classtype:trojan-activity; \
+    metadata: attack_target Client_Endpoint, mitre_technique_id T1071; \
+    sid:9000001; rev:1; )
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>alert http</code></td>
+<td>Action (<code>alert</code>/<code>drop</code>/<code>reject</code>) + protocol app-layer</td>
+</tr>
+<tr>
+<td><code>$HOME_NET any -&gt; $EXTERNAL_NET any</code></td>
+<td>Hướng: nguồn IP/port → đích IP/port</td>
+</tr>
+<tr>
+<td><code>flow:established,to_server</code></td>
+<td>Chỉ khớp gói client→server trong kết nối đã thiết lập</td>
+</tr>
+<tr>
+<td><code>http.user_agent</code> + <code>content</code></td>
+<td>Sticky buffer: chỉ tìm trong header User-Agent</td>
+</tr>
+<tr>
+<td><code>sid</code></td>
+<td>Signature ID (duy nhất); <code>rev</code> revision</td>
+</tr>
+<tr>
+<td><code>metadata: mitre_technique_id</code></td>
+<td>Gắn ATT&amp;CK ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao dùng sticky buffer (<code>http.user_agent</code>):</strong> giới hạn việc tìm <code>content</code> đúng vào trường cần, tránh false positive và tăng tốc (không scan toàn payload).</p>
+<p><strong>Chạy thật trên file pcap:</strong></p>
+<pre><code class="language-bash">suricata -r capture.pcap -S local.rules -l ./out/
+# Kết quả alert ở ./out/fast.log và eve.json (JSON, đầy đủ field)
+cat ./out/fast.log
+# 06/19/2026-10:00:01  [**] [1:9000001:1] ATT&amp;CK T1071.001 ... [**] ...
+</code></pre>
+<hr />
+<h2 id="ch15-1512-chia-se-tinh-bao-stix-taxii-misp">15.12. Chia sẻ tình báo: STIX, TAXII, MISP</h2>
+<h3 id="ch15-15121-stix-21-ngon-ngu-mo-ta-cti">15.12.1. STIX 2.1 — ngôn ngữ mô tả CTI</h3>
+<p><strong>STIX (Structured Threat Information eXpression)</strong> dùng <strong>JSON</strong>; mọi thứ là <strong>SDO</strong> (STIX Domain Object), <strong>SRO</strong> (Relationship Object), hoặc <strong>SCO</strong> (Cyber-observable Object).</p>
+<p><strong>[DEMO] STIX Indicator (SDO) — từng trường</strong> (minh hoạ cấu trúc; bản thân IOC domain đơn lẻ thuộc đáy Pyramid of Pain, mau hỏng — không nên là trụ cột phát hiện):</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;indicator&quot;,
+  &quot;spec_version&quot;: &quot;2.1&quot;,
+  &quot;id&quot;: &quot;indicator--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f&quot;,
+  &quot;created&quot;: &quot;2026-06-19T08:00:00.000Z&quot;,
+  &quot;modified&quot;: &quot;2026-06-19T08:00:00.000Z&quot;,
+  &quot;name&quot;: &quot;Malicious C2 domain&quot;,
+  &quot;indicator_types&quot;: [&quot;malicious-activity&quot;],
+  &quot;pattern&quot;: &quot;[domain-name:value = 'update-msft.com']&quot;,
+  &quot;pattern_type&quot;: &quot;stix&quot;,
+  &quot;valid_from&quot;: &quot;2026-06-19T00:00:00Z&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước/Định dạng</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td>Loại object (<code>indicator</code>, <code>malware</code>, <code>threat-actor</code>...)</td>
+</tr>
+<tr>
+<td><code>id</code></td>
+<td><code>type--UUIDv4</code></td>
+<td>Định danh toàn cục duy nhất</td>
+</tr>
+<tr>
+<td><code>created</code>/<code>modified</code></td>
+<td>ISO 8601 UTC (timestamp)</td>
+<td>Versioning</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>STIX Patterning language</td>
+<td>Biểu thức khớp observable</td>
+</tr>
+<tr>
+<td><code>pattern_type</code></td>
+<td>enum</td>
+<td><code>stix</code>, <code>snort</code>, <code>yara</code>, <code>sigma</code>...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>STIX Pattern</strong> là một mini-ngôn ngữ: <code>[file:hashes.'SHA-256' = 'abc...' AND file:size &gt; 1024]</code>. Toán tử: <code>AND OR FOLLOWEDBY</code>, qualifier <code>WITHIN</code>, <code>REPEATS</code>. Vì sao tách <code>pattern</code> riêng: cho phép biểu diễn điều kiện phức hợp, không chỉ một IOC đơn.</p>
+<h3 id="ch15-15122-taxii-21-giao-thuc-van-chuyen-stix">15.12.2. TAXII 2.1 — giao thức vận chuyển STIX</h3>
+<p><strong>TAXII (Trusted Automated eXchange of Indicator Information)</strong> là API <strong>HTTPS REST</strong> để trao đổi STIX. Mô hình: <strong>Server → API Roots → Collections → Objects</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Trả về</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/taxii2/</code></td>
+<td>GET</td>
+<td>Discovery: liệt kê API roots</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/</code></td>
+<td>GET</td>
+<td>Danh sách collection</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/{id}/objects/</code></td>
+<td>GET</td>
+<td>Lấy STIX objects (hỗ trợ filter <code>?added_after=</code>)</td>
+</tr>
+<tr>
+<td><code>/{api-root}/collections/{id}/objects/</code></td>
+<td>POST</td>
+<td>Đẩy object lên</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># Phải set Accept đúng media type TAXII 2.1
+curl -s -H &quot;Accept: application/taxii+json;version=2.1&quot; \
+     -u user:pass \
+     &quot;https://taxii.example.org/api1/collections/&lt;id&gt;/objects/?added_after=2026-06-18T00:00:00Z&quot;
+</code></pre>
+<p>Header <code>Accept: application/taxii+json;version=2.1</code> là <strong>bắt buộc</strong> — server dùng nó để negotiate phiên bản; thiếu thì trả 406.</p>
+<h3 id="ch15-15123-misp-nen-tang-chia-se-thuc-dung">15.12.3. MISP — nền tảng chia sẻ thực dụng</h3>
+<p><strong>MISP</strong> dùng mô hình <strong>Event → Attribute → Object → Tag/Galaxy</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Event</strong></td>
+<td>Một sự kiện/chiến dịch (chứa nhiều attribute)</td>
+</tr>
+<tr>
+<td><strong>Attribute</strong></td>
+<td>Một IOC: <code>type</code> (ip-dst, domain, sha256, url...), <code>value</code>, <code>category</code>, <code>to_ids</code> (có đẩy ra IDS không)</td>
+</tr>
+<tr>
+<td><strong>Object</strong></td>
+<td>Nhóm attribute có cấu trúc (vd "file" gồm filename+md5+sha256)</td>
+</tr>
+<tr>
+<td><strong>Galaxy / Cluster</strong></td>
+<td>Tri thức ngữ cảnh; <strong>MITRE ATT&amp;CK được nhúng làm Galaxy</strong> → gắn technique vào event</td>
+</tr>
+<tr>
+<td><strong>Tag</strong></td>
+<td>Nhãn (TLP, ATT&amp;CK, threat-actor)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trường <code>to_ids</code> quan trọng:</strong> <code>true</code> = IOC đủ tin cậy để đẩy thành rule IDS/SIEM; <code>false</code> = chỉ ngữ cảnh, không tự động chặn (tránh false positive).</p>
+<p><strong>TLP (Traffic Light Protocol)</strong> điều khiển chia sẻ:</p>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Chia sẻ tới</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tlp:red</code></td>
+<td>Chỉ người nhận trực tiếp</td>
+</tr>
+<tr>
+<td><code>tlp:amber</code></td>
+<td>Tổ chức + đối tác cần biết</td>
+</tr>
+<tr>
+<td><code>tlp:amber+strict</code></td>
+<td>Chỉ trong tổ chức</td>
+</tr>
+<tr>
+<td><code>tlp:green</code></td>
+<td>Cộng đồng, không công khai</td>
+</tr>
+<tr>
+<td><code>tlp:clear</code> (trước là white)</td>
+<td>Công khai</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thật — tạo event + thêm attribute qua REST API (PyMISP):</strong></p>
+<pre><code class="language-python">from pymisp import PyMISP, MISPEvent, MISPAttribute
+
+misp = PyMISP(&quot;https://misp.local&quot;, &quot;&lt;AUTH_KEY&gt;&quot;, ssl=False)
+
+ev = MISPEvent()
+ev.info = &quot;FIN7 phishing campaign June 2026&quot;
+ev.distribution = 1          # 1 = This community only
+ev.threat_level_id = 2       # 1=High,2=Medium,3=Low,4=Undefined
+ev.analysis = 1              # 0=Initial,1=Ongoing,2=Completed
+ev.add_tag(&quot;tlp:amber&quot;)
+ev.add_tag('misp-galaxy:mitre-attack-pattern=&quot;OS Credential Dumping - T1003&quot;')
+
+ev.add_attribute(&quot;domain&quot;, &quot;update-msft.com&quot;, to_ids=True,
+                 category=&quot;Network activity&quot;)
+ev.add_attribute(&quot;sha256&quot;,
+                 &quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;,
+                 to_ids=True, category=&quot;Payload delivery&quot;)
+
+created = misp.add_event(ev, pythonify=True)
+print(created.id)
+</code></pre>
+<p>Hoặc thuần HTTP:</p>
+<pre><code class="language-bash">curl -s https://misp.local/events/add \
+  -H &quot;Authorization: &lt;AUTH_KEY&gt;&quot; \
+  -H &quot;Accept: application/json&quot; -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;Event&quot;:{&quot;info&quot;:&quot;Test&quot;,&quot;distribution&quot;:&quot;0&quot;,&quot;threat_level_id&quot;:&quot;2&quot;,
+        &quot;analysis&quot;:&quot;0&quot;,
+        &quot;Attribute&quot;:[{&quot;type&quot;:&quot;ip-dst&quot;,&quot;value&quot;:&quot;185.220.101.45&quot;,&quot;to_ids&quot;:true}]}}'
+</code></pre>
+<hr />
+<h2 id="ch15-1513-phan-loai-malware">15.13. Phân loại Malware</h2>
+<p>Hình dung như bệnh dịch: virus phải bám vào "vật chủ" mới lây (như cảm cúm bám người), worm tự bò sang máy khác không cần ai mở (như dịch lây trong không khí), còn trojan thì giả dạng món quà vô hại để ta tự rước vào nhà. Gọi đúng "bệnh" mới chọn đúng "thuốc".</p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Cơ chế lan/định nghĩa</th>
+<th>Cần host?</th>
+<th>Tự nhân?</th>
+<th>ATT&amp;CK liên quan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Virus</strong></td>
+<td>Chèn code vào file/chương trình khác; chạy khi host chạy</td>
+<td>Có</td>
+<td>Có (qua host)</td>
+<td>T1204 User Execution</td>
+</tr>
+<tr>
+<td><strong>Worm</strong></td>
+<td>Tự lan qua mạng/lỗ hổng, không cần người dùng</td>
+<td>Không</td>
+<td>Có (tự động)</td>
+<td>T1210 Exploit Remote Services</td>
+</tr>
+<tr>
+<td><strong>Trojan</strong></td>
+<td>Giả phần mềm hợp lệ, mở backdoor</td>
+<td>—</td>
+<td>Không</td>
+<td>T1036 Masquerading</td>
+</tr>
+<tr>
+<td><strong>Ransomware</strong></td>
+<td>Mã hóa dữ liệu, đòi tiền chuộc</td>
+<td>—</td>
+<td>Có thể</td>
+<td><strong>T1486</strong> Data Encrypted for Impact</td>
+</tr>
+<tr>
+<td><strong>Rootkit</strong></td>
+<td>Ẩn sự hiện diện (kernel/bootkit), hook API</td>
+<td>—</td>
+<td>Không</td>
+<td>T1014 Rootkit</td>
+</tr>
+<tr>
+<td><strong>RAT</strong></td>
+<td>Remote Access Trojan: điều khiển từ xa toàn diện</td>
+<td>—</td>
+<td>Không</td>
+<td>T1219 Remote Access Software</td>
+</tr>
+<tr>
+<td><strong>Botnet</strong></td>
+<td>Mạng máy bị nhiễm điều khiển tập trung (DDoS/spam)</td>
+<td>—</td>
+<td>Có</td>
+<td>T1583.005 Botnet</td>
+</tr>
+<tr>
+<td><strong>Fileless</strong></td>
+<td>Sống trong bộ nhớ/registry/WMI, ít/không chạm đĩa</td>
+<td>Không</td>
+<td>—</td>
+<td>T1059, T1047 WMI, T1620 Reflective Loading</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao fileless khó phát hiện:</strong> không có file để AV quét hash/signature → phải phát hiện ở mức <strong>hành vi</strong> (IOA): PowerShell tải code vào RAM, WMI event subscription làm persistence, registry chứa payload base64. Đây minh họa trực tiếp Pyramid of Pain — buộc Blue Team lên tầng TTP.</p>
+<hr />
+<h2 id="ch15-1514-phan-tich-malware-co-ban">15.14. Phân tích Malware cơ bản</h2>
+<h3 id="ch15-15141-static-analysis-khong-chay-mau">15.14.1. Static Analysis (không chạy mẫu)</h3>
+<p><strong>Strings</strong> — trích chuỗi ASCII/Unicode để tìm dấu vết (URL, IP, lệnh, mutex):</p>
+<pre><code class="language-bash">strings -n 8 sample.exe | grep -Ei 'http|\.exe|powershell|HKEY|cmd'
+strings -e l sample.exe          # -e l = little-endian 16-bit (Unicode/UTF-16)
+</code></pre>
+<p><code>-n 8</code> chỉ lấy chuỗi ≥ 8 ký tự (giảm nhiễu); <code>-e l</code> cần thiết vì Windows hay dùng chuỗi UTF-16LE mà mặc định <code>strings</code> bỏ qua.</p>
+<p><strong>PE Header — cấu trúc file thực thi Windows (đào tới byte):</strong></p>
+<p>Một file PE bố cục như sau (offset từ đầu file):</p>
+<pre><code>Offset 0x00  ┌──────────────────────────────────────────┐
+             │ DOS Header (IMAGE_DOS_HEADER, 64 bytes)    │
+             │   e_magic  = &quot;MZ&quot; (0x4D5A)                 │  ← 2 bytes, offset 0x00
+             │   e_lfanew = offset tới PE header           │  ← 4 bytes, offset 0x3C
+0x3C ───────►│                                            │
+             ├──────────────────────────────────────────┤
+e_lfanew ──► │ PE Signature &quot;PE\0\0&quot; (0x50450000)          │  ← 4 bytes
+             ├──────────────────────────────────────────┤
+             │ COFF File Header (IMAGE_FILE_HEADER, 20B)  │
+             │   Machine          (2B)  0x8664=x64        │
+             │   NumberOfSections (2B)                    │
+             │   TimeDateStamp    (4B)  epoch compile     │
+             │   SizeOfOptionalHeader (2B)                │
+             │   Characteristics  (2B)                    │
+             ├──────────────────────────────────────────┤
+             │ Optional Header (PE32: 224B / PE32+: 240B) │
+             │   Magic (2B) 0x10B=PE32, 0x20B=PE32+       │
+             │   AddressOfEntryPoint (4B) RVA             │
+             │   ImageBase, SectionAlignment, ...         │
+             │   Subsystem (2B) 2=GUI, 3=CUI              │
+             │   DataDirectory[16] (Import, Export...)    │
+             ├──────────────────────────────────────────┤
+             │ Section Table (mỗi entry 40 bytes)         │
+             │   .text  .data  .rdata  .rsrc              │
+             └──────────────────────────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Offset</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Giá trị ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>e_magic</code></td>
+<td>0x00</td>
+<td>2 B</td>
+<td>Chữ ký DOS</td>
+<td><code>4D 5A</code> ("MZ")</td>
+</tr>
+<tr>
+<td><code>e_lfanew</code></td>
+<td>0x3C</td>
+<td>4 B</td>
+<td>Offset tới PE header</td>
+<td><code>0x000000E8</code></td>
+</tr>
+<tr>
+<td>PE signature</td>
+<td>e_lfanew</td>
+<td>4 B</td>
+<td><code>50 45 00 00</code> ("PE\0\0")</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>Machine</code></td>
+<td>+0x04</td>
+<td>2 B</td>
+<td>Kiến trúc</td>
+<td><code>0x8664</code> (x64), <code>0x014C</code> (x86)</td>
+</tr>
+<tr>
+<td><code>NumberOfSections</code></td>
+<td>+0x06</td>
+<td>2 B</td>
+<td>Số section</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>TimeDateStamp</code></td>
+<td>+0x08</td>
+<td>4 B</td>
+<td>Thời điểm compile (epoch)</td>
+<td><code>0x5F2A...</code></td>
+</tr>
+<tr>
+<td><code>Magic</code> (Opt.)</td>
+<td>+0x18</td>
+<td>2 B</td>
+<td>PE32 vs PE32+</td>
+<td><code>0x010B</code> / <code>0x020B</code></td>
+</tr>
+<tr>
+<td><code>AddressOfEntryPoint</code></td>
+<td>Opt+0x10</td>
+<td>4 B</td>
+<td>RVA điểm vào code</td>
+<td><code>0x1500</code></td>
+</tr>
+<tr>
+<td><code>Subsystem</code></td>
+<td>Opt</td>
+<td>2 B</td>
+<td>GUI/Console</td>
+<td><code>2</code>=GUI, <code>3</code>=Console</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao đọc PE header có giá trị forensic:</strong>
+- <code>TimeDateStamp</code> lệch vô lý (tương lai/quá khứ xa) → có thể bị giả mạo (anti-forensics).
+- Section có <strong>RawSize ≈ 0 nhưng VirtualSize lớn</strong> + entropy cao → dấu hiệu <strong>packed</strong> (UPX, themida).
+- <strong>Imports nghèo nàn</strong> (chỉ <code>LoadLibrary</code>+<code>GetProcAddress</code>) → import resolution động → packed/obfuscated.</p>
+<pre><code class="language-bash"># Phân tích PE bằng pefile (Python)
+python3 - &lt;&lt;'PY'
+import pefile, math
+pe = pefile.PE(&quot;sample.exe&quot;)
+print(&quot;Machine:&quot;, hex(pe.FILE_HEADER.Machine))
+print(&quot;Compile time:&quot;, pe.FILE_HEADER.TimeDateStamp)
+print(&quot;EntryPoint RVA:&quot;, hex(pe.OPTIONAL_HEADER.AddressOfEntryPoint))
+for s in pe.sections:
+    data = s.get_data()
+    ent = 0
+    if data:
+        from collections import Counter
+        for c in Counter(data).values():
+            p = c/len(data); ent -= p*math.log2(p)
+    print(s.Name.decode(errors='replace').strip('\x00'),
+          &quot;vsize=%#x rawsize=%#x entropy=%.2f&quot; %
+          (s.Misc_VirtualSize, s.SizeOfRawData, ent))
+PY
+</code></pre>
+<p>Entropy &gt; ~7.0 trên một section thực thi gợi ý dữ liệu nén/mã hóa (packed). Đây là heuristic quan trọng trong triage.</p>
+<p><strong>Hashing &amp; lookup:</strong></p>
+<pre><code class="language-bash">sha256sum sample.exe                # hash để tra VirusTotal/MISP
+# Import hash (imphash) – đặc trưng theo bảng import, gom biến thể cùng builder
+python3 -c &quot;import pefile;print(pefile.PE('sample.exe').get_imphash())&quot;
+</code></pre>
+<p><code>imphash</code> (import hash) bền hơn file hash vì các mẫu cùng "builder" thường có cùng thứ tự import → gom được biến thể (mức Tools trên Pyramid of Pain).</p>
+<h3 id="ch15-15142-dynamic-analysis-chay-trong-sandbox">15.14.2. Dynamic Analysis (chạy trong sandbox)</h3>
+<p><strong>Là gì:</strong> chạy mẫu trong môi trường cô lập (VM snapshot, không có route ra Internet thật hoặc dùng INetSim giả lập), thu hành vi: tiến trình tạo, file ghi, registry, kết nối mạng, API call.</p>
+<p><strong>Setup an toàn — vì sao:</strong>
+- VM <strong>không nối mạng sản xuất</strong>; snapshot để revert.
+- <strong>INetSim/FakeNet</strong> giả lập DNS/HTTP để mẫu "tin" là online → lộ C2 mà không thật sự kết nối ra ngoài.
+- Tránh sandbox-aware malware: nhiều mẫu kiểm tra <code>VMware</code>, số CPU, <code>sbiedll.dll</code>, sleep dài để né.</p>
+<p><strong>Công cụ &amp; lệnh thật:</strong></p>
+<pre><code class="language-bash"># 1. Giả lập dịch vụ mạng (Linux phân tích)
+inetsim                          # log DNS query, HTTP request mẫu gửi đi
+
+# 2. Theo dõi hệ thống call (Linux ELF)
+strace -f -e trace=network,file ./sample 2&gt;strace.log
+
+# 3. Procmon (Windows) — lọc:
+#    Operation = Process Create / RegSetValue / WriteFile
+#    → xuất CSV để map sang ATT&amp;CK
+</code></pre>
+<p><strong>Đầu ra mẫu (Procmon) → map ATT&amp;CK:</strong></p>
+<pre><code>winword.exe → Process Create powershell.exe -enc ...   → T1059.001
+powershell  → WriteFile %APPDATA%\Microsoft\svchost.exe → T1105 Ingress Tool Transfer
+powershell  → RegSetValue HKCU\...\Run\Updater          → T1547.001 Registry Run Key
+svchost.exe → TCP Connect 185.220.101.45:443            → T1071.001 / T1041
+</code></pre>
+<p><strong>Báo cáo Cuckoo/CAPE Sandbox</strong> tự động hóa: chạy mẫu, hook API, trả JSON gồm danh sách hành vi + <strong>đã tự map sang ATT&amp;CK technique</strong> (<code>ttps</code> trong report). CAPE còn dump payload đã giải nén (unpacked) từ bộ nhớ — hữu ích vì static analysis trên mẫu packed vô dụng.</p>
+<hr />
+<h2 id="ch15-1515-tong-hop-vong-đoi-tan-cong-dau-hieu-phat-hien">15.15. Tổng hợp: vòng đời tấn công ↔ dấu hiệu phát hiện</h2>
+<p>Bảng tra cứu nhanh nối <strong>giai đoạn → technique → telemetry → detection</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Giai đoạn</th>
+<th>Technique tiêu biểu</th>
+<th>Nguồn telemetry</th>
+<th>Dấu hiệu / Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial Access</td>
+<td>T1566.001 Spearphishing Attachment</td>
+<td>Email gateway, EDR</td>
+<td>Office spawn script (IOA)</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>T1059.001 PowerShell</td>
+<td>EID 4104, Sysmon 1</td>
+<td><code>-enc</code>, <code>IEX</code>, <code>DownloadString</code></td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>T1547.001 Run Key</td>
+<td>Sysmon 13 (RegSet)</td>
+<td>Ghi <code>...\CurrentVersion\Run</code></td>
+</tr>
+<tr>
+<td>Priv Esc</td>
+<td>T1068 Exploit for PrivEsc</td>
+<td>EDR, kernel log</td>
+<td>Token manipulation, crash dump</td>
+</tr>
+<tr>
+<td>Defense Evasion</td>
+<td>T1070.001 Clear Windows Event Logs</td>
+<td>EID 1102</td>
+<td>Audit log bị xóa</td>
+</tr>
+<tr>
+<td>Credential Access</td>
+<td>T1003.001 LSASS</td>
+<td>Sysmon 10</td>
+<td>GrantedAccess <code>0x1010</code> tới lsass</td>
+</tr>
+<tr>
+<td>Discovery</td>
+<td>T1018 Remote System Discovery</td>
+<td>Sysmon 1</td>
+<td><code>net view</code>, <code>nltest /dclist</code></td>
+</tr>
+<tr>
+<td>Lateral Movement</td>
+<td>T1021.002 SMB/Admin Shares</td>
+<td>EID 4624 Type 3, 7045</td>
+<td>PSEXESVC service tạo</td>
+</tr>
+<tr>
+<td>Collection</td>
+<td>T1560 Archive Collected Data</td>
+<td>Sysmon 11</td>
+<td><code>rar.exe a -hp</code>, 7zip</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>T1071.001 Web Protocols</td>
+<td>Proxy, NetFlow, Zeek</td>
+<td>Beaconing, JA3 khớp</td>
+</tr>
+<tr>
+<td>Exfiltration</td>
+<td>T1041 Exfil over C2</td>
+<td>NetFlow</td>
+<td>bytes_out &gt;&gt; bytes_in</td>
+</tr>
+<tr>
+<td>Impact</td>
+<td>T1486 Data Encrypted</td>
+<td>Sysmon 11, EDR</td>
+<td>Đổi tên đuôi hàng loạt, xóa shadow copy (T1490 <code>vssadmin delete shadows</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nguyên tắc detection engineering:</strong>
+1. Map mọi rule → ATT&amp;CK ID (cho đo coverage trong Navigator).
+2. Ưu tiên TTP (đỉnh Pyramid) hơn IOC (đáy).
+3. Một technique nên có <strong>nhiều rule ở nhiều data source</strong> (defense in depth detection) — vd LSASS dump phát hiện cả qua Sysmon 10 lẫn EDR memory scan.
+4. Theo dõi <strong>false positive</strong> qua trường <code>falsepositives</code> của Sigma; rule không tinh chỉnh sẽ bị bỏ qua (alert fatigue).
+5. Đóng vòng lặp: dùng feedback từ IR thực tế (Diamond Model pivot) để tạo PIR mới → cập nhật collection (CTI lifecycle).</p>
+<hr />
+<h2 id="ch15-1516-luu-y-bao-mat-van-hanh-tong-ket">15.16. Lưu ý bảo mật &amp; vận hành tổng kết</h2>
+<ul>
+<li><strong>IOC mau hỏng</strong>: tự động hết hạn IOC technical (qua <code>valid_from</code>/TTL trong STIX, hoặc decay model của MISP) để tránh phình danh sách block và FP.</li>
+<li><strong><code>to_ids</code> phải có người duyệt</strong>: đừng auto-block mọi IOC nhận từ feed — một domain hợp lệ bị gắn nhầm có thể gây outage.</li>
+<li><strong>TLP nghiêm ngặt</strong>: rò rỉ tình báo <code>tlp:red</code> có thể tiết lộ nguồn/nạn nhân; thực thi TLP ở cả con người và hệ thống chia sẻ.</li>
+<li><strong>ATT&amp;CK không phải checklist tuân thủ</strong>: "100% coverage" là ảo tưởng — technique luôn mở rộng và procedure vô hạn; coverage chỉ là công cụ ưu tiên, không phải đích.</li>
+<li><strong>Phân tích malware = hoạt động rủi ro</strong>: luôn cô lập mạng, dùng VM throwaway, không phân tích mẫu live trên máy nối mạng sản xuất.</li>
+<li><strong>Threat-informed defense</strong>: chọn các nhóm APT thực sự nhắm ngành mình (qua report/ISAC), lấy layer ATT&amp;CK của họ, ưu tiên detection theo đó thay vì cố phủ toàn ma trận.</li>
+</ul>
+<hr />
+<h3 id="ch15-tai-lieu-nen-kiem-chung-khi-trich-dan-chinh-xac">Tài liệu nên kiểm chứng khi trích dẫn chính xác</h3>
+<ul>
+<li>Số tactic/technique và ID cụ thể thay đổi theo từng phiên bản ATT&amp;CK — luôn đối chiếu <code>attack.mitre.org</code> và <code>versions.attack</code> trong layer.</li>
+<li>Số giai đoạn Unified Kill Chain (18) và chi tiết STIX media types nên kiểm lại theo bản đặc tả gốc (OASIS STIX/TAXII 2.1) trước khi dùng trong tài liệu chính thức.</li>
+</ul>
+<hr />
+<h2 id="ch15-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch14.html"><span>← Chương trước</span><b>14 · Ảo hóa &amp; Container</b></a><a class="pg next" href="ch16.html"><span>Chương sau →</span><b>16 · Tuân thủ &amp; Quản trị (GRC)</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

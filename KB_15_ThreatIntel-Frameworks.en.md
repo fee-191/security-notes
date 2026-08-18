@@ -2,39 +2,11 @@
 
 ## Overview
 
-This chapter explains how security engineers **describe, detect, measure, and respond to** adversary behavior through a "common language" of standardized frameworks and tools. When every team describes attacks in its own way, the organization loses the ability to exchange intelligence, measure defensive coverage, and prioritize investment. The frameworks below address precisely that problem: they are unified identifiers and reference models that turn scattered alerts into actionable knowledge.
+Reading logs without a framework, each alert is an isolated fragment — you see a weird IP calling out, but you can't tell which stage of a real attack it belongs to, or talk about it with the threat intel team using the same vocabulary. This chapter pulls together the "common language" that SOC and threat intel folks use to describe, measure, and respond to adversary behavior.
 
-**Threat Intelligence (CTI).** This is threat data that has been processed and enriched with context to support decision-making, as distinct from raw data. An IP address in a log is *data*; identifying that IP as the C2 server of a group targeting the financial sector, together with a recommendation to block it, is *intelligence*. CTI addresses the problem of alert overload: it filters out what is worth worrying about, why, and what to do next.
+The chapter follows the shape of a real investigation. First comes the thinking framework: the Cyber Kill Chain splits a targeted attack into 7 linear stages — break one link and the whole chain fails; the Diamond Model looks at each intrusion through 4 vertices (adversary, capability, infrastructure, victim), letting you pivot from one small clue to an entire APT group. Next is how to classify evidence: IOCs (static, easily changed) versus IOAs (behavior chains, harder to evade), and the Pyramid of Pain, which explains why blocking an IP costs the attacker five minutes while blocking a TTP forces them to rebuild their whole approach.
 
-**Cyber Kill Chain.** A model that divides a targeted attack into **7 linear stages**, from reconnaissance to actions on the objective. Its core value: breaking any single link breaks the whole chain, while also providing a strategic-level narrative framework for leadership.
-
-**Diamond Model.** Models each intrusion event through **4 vertices**: adversary, capability (tools/malware), infrastructure (C2 hosts, domains, IPs), and victim. Its strength lies in **pivoting**: knowing one vertex lets you trace the others — from a malicious domain, infer the shared IP, then the group's other domains.
-
-**IOC and IOA.** An **IOC (Indicator of Compromise)** is static evidence indicating that an incident has occurred: a malicious file hash, a bad IP, a registry key. An **IOA (Indicator of Attack)** is a chain of suspicious behavior in progress: for example, Word spawning PowerShell which then downloads a file from the Internet. IOCs are easily changed (alter one byte and you get a new hash), so they are short-lived; IOAs are based on attack logic, making them harder to evade and capable of catching even previously unseen variants.
-
-**Pyramid of Pain.** Ranks indicator types by **the cost an attacker must pay to evade** when blocked. The base of the pyramid (hashes, IPs) changes within minutes; the apex (TTPs — how the adversary operates) forces the attacker to change their entire approach. The model guides detection investment: prioritize the upper tiers for durable effectiveness.
-
-**MITRE ATT&CK.** A knowledge base listing adversary behaviors **observed in the real world**, organized as a matrix and a hierarchy tree: *Tactic* (the goal — "why"), *Technique* (the method — "what"), *Sub-technique* (the variant — "how"), *Procedure* (the concrete implementation). Each entry has a unique identifier (e.g., `T1059.001`), enabling you to measure detection coverage and write rules against each behavior.
-
-**ATT&CK Navigator.** A web application that colors the ATT&CK matrix to visualize detection coverage, the activity of an APT group, and gap analysis. The data is stored as a layer file (JSON), letting leadership and defenders see weaknesses immediately rather than reading a long list.
-
-**Detection Engineering: Sigma, YARA, Suricata.** Three rule formats corresponding to three layers of evidence:
-- **Sigma**: detection rules over **logs** in a SIEM-agnostic format, compiled to Splunk, Elastic, Sentinel, etc.
-- **YARA**: rules matching **strings/bytes/regex in files or memory** to classify malware.
-- **Suricata**: an IDS/IPS that inspects **network traffic** to detect C2 channels and exfiltration.
-
-All three can be tagged with ATT&CK identifiers to measure coverage per technique.
-
-**Intelligence sharing: STIX, TAXII, MISP.**
-- **STIX**: a standard JSON format for representing threat information for machine consumption.
-- **TAXII**: a REST/HTTPS protocol for automatically exchanging STIX between parties.
-- **MISP**: a platform for storing and sharing IOCs, integrating TLP labels and the ATT&CK Galaxy.
-
-The rationale for sharing: attackers reuse their tradecraft against many victims, so timely warnings protect the next organizations in line.
-
-**Malware classification and analysis.** The final part of the chapter distinguishes malware types (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) by their propagation mechanism and self-replication capability, then presents two approaches to dissecting a sample: **static analysis** (examining the file without executing it) and **dynamic analysis** (running it in an isolated environment to observe behavior). Correctly naming the malware type and understanding its mechanism is the basis for choosing appropriate prevention and response measures.
-
-> Chapter goal: equip security engineers (Blue Team / AppSec / DevSecOps) with a unified mental model to **describe**, **detect**, **measure**, and **respond to** adversary behavior. The chapter goes from intelligence theory (CTI) down to concrete data structures (STIX objects, MISP attributes, IOC formats, PE headers), and on to runnable commands and configuration files (Sigma, YARA, Suricata, ATT&CK Navigator JSON, MISP REST API).
+MITRE ATT&CK is the most detailed piece — a knowledge base of real-world behavior with a unique identifier for every technique (like `T1059.001`), and ATT&CK Navigator colors that matrix in to show detection gaps. From theory, the chapter moves down to writing actual rules: Sigma for logs, YARA for files/memory, Suricata for network traffic — and how to share that intelligence outward through STIX/TAXII/MISP. The last stretch separates out malware types (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) and the two approaches to dissecting a sample — static and dynamic — two things I used to lump together before sorting them out properly.
 
 > Need a quick lookup? Table **15.15** links each attack stage to its representative technique, telemetry source, and detection rule — use it as the chapter's hands-on index.
 
@@ -419,6 +391,8 @@ crackmapexec smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' \
     --continue-on-success
 ```
 
+> Tooling note: `crackmapexec` (CME) has been unmaintained since ~2023; the community-maintained successor is **NetExec** (`nxc`), with near-identical syntax (`nxc smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' --continue-on-success`). Prefer `nxc` in new environments.
+
 **Blue Team signals (Windows Security log):**
 
 | Field | Value to watch for |
@@ -592,7 +566,7 @@ The **Navigator** is a web application (runnable offline) that colors the techni
 ```json
 {
   "name": "SOC Detection Coverage Q2",
-  "versions": { "attack": "15", "navigator": "5.0.0", "layer": "4.5" },
+  "versions": { "attack": "17", "navigator": "5.0.0", "layer": "4.5" },
   "domain": "enterprise-attack",
   "description": "Current SIEM rule coverage",
   "techniques": [
@@ -659,7 +633,7 @@ for f in glob.glob("rules/**/*.yml", recursive=True):
 
 layer = {
   "name": "Sigma coverage", "domain": "enterprise-attack",
-  "versions": {"attack": "15", "navigator": "5.0.0", "layer": "4.5"},
+  "versions": {"attack": "17", "navigator": "5.0.0", "layer": "4.5"},
   "techniques": [
      {"techniqueID": t, "score": min(100, c*25),
       "comment": f"{c} rule(s)"} for t, c in techs.items()

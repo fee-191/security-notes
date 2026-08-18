@@ -20,41 +20,41 @@ Written for both **newcomers** and **practitioners who need a quick reference** 
 | # | Chapter | Key topics |
 |---|---|---|
 | 01 | **Computer Networking (TCP/IP, OSI)** | Byte-by-byte encapsulation, Ethernet/IPv4/IPv6/TCP/UDP header layouts, ARP, subnetting, TCP handshake & state machine, NAT, DNS, TLS |
-| 02 | **Linux Operating System** | Permissions & SUID/ACL, passwd/shadow, processes/namespaces, systemd, logging, bash + grep/awk/sed, hardening |
+| 02 | **Linux Operating System** | Permissions & SUID/ACL, passwd/shadow, processes/namespaces, systemd, logging, bash + grep/awk/sed, hardening (iptables/nftables), performance & resource diagnostics |
 | 03 | **Windows & Active Directory** | Security event IDs, Sysmon, Kerberos vs NTLM, AD attacks (PtH, Kerberoasting, golden ticket) + detection |
 | 04 | **Cryptography & Security Foundations** | AES/RSA/ECC/DH, hashing & password storage, HMAC, digital signatures, PKI/X.509, CIA/AAA, CVE/CVSS/CWE |
 
 ### Part B — Application Security & DevSecOps
 | # | Chapter | Key topics |
 |---|---|---|
-| 05 | **Web Application Security (OWASP Top 10)** | SQLi/XSS/CSRF/SSRF/IDOR (payload + fix), JWT/OAuth2/OIDC, STRIDE, Zero Trust |
-| 06 | **DevSecOps & Source Code Scanning** | SAST/DAST/SCA/secret/IaC, Semgrep (AST, rule writing, taint), Gitleaks/Trivy, supply chain (SLSA/SBOM) |
+| 05 | **Web Application Security (OWASP Top 10)** | OWASP Top 10 2025 edition, SQLi/XSS/CSRF/SSRF/IDOR (payload + fix), prompt injection, race conditions, JWT/OAuth2/OIDC, STRIDE, Zero Trust |
+| 06 | **DevSecOps & Source Code Scanning** | SAST/DAST/SCA/secret/IaC, Semgrep (AST, rule writing, taint), Gitleaks/Trivy, supply chain (SLSA/SBOM), governing AI-generated code |
 | 07 | **CI/CD & GitOps** | GitLab CI, GitHub Actions, Jenkins, Argo CD/GitOps, git submodule — real examples per tool |
 
 ### Part C — Monitoring, Detection & Response
 | # | Chapter | Key topics |
 |---|---|---|
-| 08 | **SIEM & Log Management** | SIEM architecture, Wazuh (decoder/rule, FIM, active response), detection engineering |
-| 09 | **Observability & Infrastructure Monitoring** | Elasticsearch/Logstash/Kibana/Beats, Zabbix; when to use which |
+| 08 | **SIEM & Log Management** | SIEM architecture, Wazuh (decoder/rule, FIM, active response), detection engineering, a real investigation workflow, SOAR |
+| 09 | **Observability & Infrastructure Monitoring** | Elasticsearch/Logstash/Kibana/Beats, Zabbix, Prometheus/PromQL/Alertmanager, Grafana; when to use which |
 | 10 | **SOC Operations & Incident Response** | SOC tiers, triage, IR lifecycle (NIST/SANS), playbooks, threat hunting |
 
 ### Part D — Network Defense & Testing
 | # | Chapter | Key topics |
 |---|---|---|
-| 11 | **Network Defense (IDS/IPS, WAF, Firewall, VPN)** | Snort/Suricata (rules + examples), ModSecurity + CRS, pfSense, VPN (IPsec/OpenVPN/WireGuard) |
+| 11 | **Network Defense (IDS/IPS, WAF, Firewall, VPN)** | Snort/Suricata (rules + examples), ModSecurity + CRS, pfSense, VPN (IPsec/OpenVPN/WireGuard), hardening nginx as a reverse proxy, Zeek |
 | 12 | **Penetration Testing & Vulnerability Assessment** | Burp Suite, Acunetix, Nmap (scan types + packets, NSE) |
 
 ### Part E — Infrastructure, Virtualization & Cloud
 | # | Chapter | Key topics |
 |---|---|---|
-| 13 | **Cloud Security** | IAM, VPC, SG vs NACL, S3, KMS, CloudTrail/GuardDuty, IMDSv2/SSRF, cloud attacks (AWS & GCP) |
+| 13 | **Cloud Security** | IAM, VPC, SG vs NACL, S3, KMS, CloudTrail/GuardDuty, IMDSv2/SSRF, cloud attacks; AWS – OCI – GCP side by side |
 | 14 | **Virtualization & Containers** | Docker internals, container escape, Kubernetes + security (RBAC/NetworkPolicy/PSS) |
 
 ### Part F — Offense, Compliance & Automation
 | # | Chapter | Key topics |
 |---|---|---|
 | 15 | **Threat Intelligence & Attack Frameworks** | 14 tactics + techniques, Kill Chain, Diamond Model, IOC vs IOA, malware analysis |
-| 16 | **Compliance & Governance (GRC)** | Risk management, NIST CSF/800-53/61/207, ISO 27001, Vietnam regulations |
+| 16 | **Compliance & Governance (GRC)** | Risk management, NIST CSF/800-53/61/207, ISO 27001 & SOC 2, Vietnam regulations (PDP Law 91/2025) |
 | 17 | **Programming & Automation for Security** | socket/requests/scapy/boto3, port scanner, log parser, API calls, secure coding |
 
 ---

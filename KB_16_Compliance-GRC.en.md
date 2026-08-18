@@ -2,25 +2,13 @@
 
 ## Overview
 
-**GRC (Governance, Risk, Compliance)** is the framework an organization uses to govern its own information security operations. It answers three questions: who is accountable, which risks to prioritize, and what evidence demonstrates compliance to regulators, customers, and partners.
+The first time a client sent over a security questionnaire — dozens of lines long, before they'd even sign a contract: what algorithm encrypts data at rest, who can access it, how long logs are kept, whether there's an incident response process — it hit me that writing secure code and being able to prove you're secure are two different jobs. **GRC (Governance, Risk, Compliance)** is the framework for the second one: it answers who is accountable, which risks get priority, and what evidence you hand regulators, customers, and partners when they ask.
 
-Security is not purely a technical matter (firewalls, encryption) but also a matter of **accountability and evidence**. When an incident occurs and there is no documentation proving that proper procedures were followed, the organization may face penalties, lose certifications, or incur legal liability. Engineering builds a robust system; GRC ensures that system has a legal basis, operational records, and clear assignment of responsibility.
+The chapter opens with GRC's three nested layers — governance sets the rules of the game, risk measures what could go wrong, compliance proves adherence — then moves into how risk gets quantified and treated (SLE/ARO/ALE, the four options of mitigate/transfer/avoid/accept, and residual risk that always needs a risk owner's sign-off). From there it covers the reference frameworks: NIST CSF for a strategic-level vocabulary to describe security posture, SP 800-53/800-61/800-207 for more concrete controls and processes, ISO 27001/27002 for a certifiable management system, PCI DSS for payment card data.
 
-This chapter covers the following knowledge blocks:
+The Vietnamese legal section — the Law on Cyber Information Security, the Cybersecurity Law, the decrees classifying systems and protecting personal data, plus the new personal-data-protection law taking effect in 2026 — directly shapes where a system must store data and how it obtains consent, so it isn't something you can skip even if you're not a lawyer. The chapter closes with the operational side: turning frameworks into daily practice (data classification, audit trails, crosswalks between standards) and the specifics of banking and finance, including the Three Lines Model and continuous compliance.
 
-- **GRC** — three nested layers. **Governance** is the outer layer: leadership sets the rules of the game, defines risk appetite, and establishes decision-making authority. **Risk** is the middle layer: assessing what could go wrong and the magnitude of damage. **Compliance** is the inner layer: proving adherence to standards and laws. Without centralized governance, each team does things its own way, residual risk (the risk that remains after treatment) goes untracked, and there are no records when an audit comes.
-- **Risk Management** — risk is formed from the chain **asset → threat → vulnerability → impact × likelihood**. It is measured in two ways: **quantitative** (assigning monetary values: SLE, ARO, ALE) to compare the cost of controls, and **qualitative** (scoring on a 1–5 likelihood × impact scale) when financial data is lacking. Risk treatment has 4 options: **mitigate, transfer, avoid, accept** — the portion of risk left after treatment is the **residual risk**, and every residual risk must be formally signed off and accepted by a risk owner. The **Risk Register** is the central repository tracking every risk along with its owner and remediation deadline.
-- **NIST Cybersecurity Framework (CSF)** — a voluntary framework providing a common language to describe security posture, divided into 6 Functions (CSF 2.0): **Govern, Identify, Protect, Detect, Respond, Recover**. CSF defines *what to do* rather than prescribing *specific technologies*.
-- **NIST Special Publications** — **SP 800-53** is a detailed control catalog (answering the specific questions CSF leaves open). **SP 800-61** is the incident response process: preparation → detection and analysis → containment/eradication/recovery → lessons learned. **SP 800-207 (Zero Trust)** eliminates default trust based on network location; every access request must be authenticated and have its risk re-evaluated.
-- **ISO/IEC 27001 & 27002** — **27001** is the international standard for an Information Security Management System (ISMS), which is **certifiable** by a third party. **27002** is a code of practice providing guidance on implementing each control. The central document is the **SoA (Statement of Applicability)** — listing every control with the rationale for applying or excluding it, which is the auditor's starting point.
-- **PCI DSS** — a contractually mandated standard (not a law) for any organization that stores, processes, or transmits payment card data; it comprises 12 requirements. The core rule: Sensitive Authentication Data (CVV, magnetic stripe data, PIN) **must never be stored** after authorization. **Tokenization** replaces real card numbers with meaningless tokens to reduce compliance scope.
-- **Vietnamese law** — four main instruments: the **Law on Cyber Information Security 2015** (foundational technical framework), the **Cybersecurity Law 2018** (national security, data localization requirements), **Decree 85/2016** (classifying systems into 5 levels), and **Decree 13/2023** (personal data protection, similar to GDPR). These are mandatory legal regulations; determining a system's classification level and obtaining consent when collecting personal data drives system design and data storage location.
-- **Operational Compliance** — turning frameworks into day-to-day practice: data classification so you know which controls to apply, a hash-chain audit trail for non-repudiation, log retention and data residency, and a crosswalk mapping one control onto multiple frameworks to avoid duplicated work.
-- **Banking/financial GRC** — industry specifics: the **Three Lines Model** that separates operating / oversight / independent-audit responsibilities, the State Bank of Vietnam supervisory framework and the Anti-Money-Laundering Law, and continuous compliance (policy-as-code running in CI/CD, fail-closed).
-
-The sections below present the technical detail for each block.
-
-> This chapter is intended for security engineers (Blue Team / AppSec / DevSecOps) who need to look things up and operate in practice. Each concept follows the sequence: **what it is → how it works internally (down to fields/steps/parameters) → a real, runnable example → security notes**. Vietnamese legal provisions are presented at the level of **operational meaning**; wherever document numbers/articles need verification, this is explicitly marked `[NEEDS VERIFICATION]` rather than fabricated.
+> Every concept below follows the same sequence: what it is → how it works internally → a runnable example → security notes. Vietnamese legal provisions are marked `[NEEDS VERIFICATION]` wherever a document number or article isn't something I'm fully certain of.
 
 ---
 
@@ -729,6 +717,15 @@ Surveillance audit (year 1, year 2) -> Recertification (year 3)
 
 **Security note:** A 27001 certificate certifies that a *management system* exists and operates, NOT that the system "cannot be hacked." A narrow scope (e.g. only one department) can still receive a valid certificate — always read the **scope statement** on a vendor's certificate before trusting it. This is an important due diligence point when assessing a vendor.
 
+### 16.4.4. Small-company view: ISO 27001 / SOC 2 on thin resources
+
+At a small company (a dev outsourcing shop, a startup), doing "enough" 27001 or SOC 2 is usually not about maximal security but about **getting through the sales gate**: large customers won't sign with a vendor that has no certificate or can't answer a security questionnaire. A few pragmatic lessons:
+
+- **Narrowing scope is the biggest lever.** Audit cost scales with scope. Put into the ISMS only the systems/teams that actually touch customer data (e.g. the prod platform plus the team that runs it), and keep dev/internal environments out of scope. A narrow but honest scope beats a broad scope with no evidence.
+- **SOC 2 vs 27001:** SOC 2 (Type I = at a point in time, Type II = control effectiveness over a 3–12 month window) is an auditor's attestation report (AICPA, common with US customers), while 27001 is an ISMS certificate (common with EU/APAC customers). Many customers accept either; pick the one that fits your customer market.
+- **Evidence should be automated output, not manual screenshots.** For Type II, the auditor samples evidence spread over time → doing it by hand won't scale. Make evidence something the pipeline/system emits automatically: access logs, CI scan results, IAM/MFA policy exports, periodic review tickets (see also 16.7.4 crosswalk and continuous compliance in 16.8.3). A control you can prove with machine-generated logs passes an audit far more smoothly than a "screenshot of the config."
+- **Customer security questionnaires** (SIG, CAIQ, or the customer's own Excel sheet) are effectively a pre-contract mini-audit. Answering them over and over is very time-consuming if you rewrite from scratch each time — so build a **baseline doc / answer bank** (architecture description, encryption controls, access management, IR, backup, data residency) to reuse answers and keep them consistent across rounds.
+
 ---
 
 ## 16.5. PCI DSS (overview — financial/card industry)
@@ -861,7 +858,9 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.4. Personal data protection — Decree 13/2023/NĐ-CP
 
-**What it is.** Decree **13/2023/NĐ-CP** on **personal data protection (PDPD)**, effective **2023-07-01**. This is the instrument closest to the GDPR in Vietnam to date. It defines personal data, sensitive personal data, the roles of the parties, data subject rights, and obligations.
+**What it is.** Decree **13/2023/NĐ-CP** on **personal data protection (PDPD)**, effective **2023-07-01**. It was the personal-data instrument closest to the GDPR in Vietnam during 2023–2025. It defines personal data, sensitive personal data, the roles of the parties, data subject rights, and obligations.
+
+> **IMPORTANT UPDATE — elevated from decree to statute.** The National Assembly passed the **Law on Personal Data Protection (Law No. 91/2025/QH15)** on 2025-06-26, **effective 2026-01-01**. This is the first *statute*-level instrument on personal data, sitting above Decree 13/2023 (decree level) and becoming the highest legal framework for PDP in Vietnam. Notable points (cross-check the original text when quoting precisely): prohibition on buying/selling personal data, tighter conditions for cross-border data transfer, and defined penalties. The operational principles below (consent, data subject rights, DPIA/TIA, breach notification) still hold but **must be re-checked against Law 91/2025 and its new implementing decrees** rather than relying on Decree 13/2023 alone. `[NEEDS VERIFICATION]` the number/articles of the decree implementing Law 91/2025.
 
 **Classification of personal data (determines the level of technical protection):**
 
@@ -1194,7 +1193,7 @@ echo "Evidence package: $OUT"
 | Handling payment card data | PCI DSS v4.0 |
 | Vietnamese law — security by level | Cyber Info Sec Law 2015 + Decree 85/2016 + TCVN 11930 |
 | Vietnamese law — national security, localization | Cybersecurity Law 2018 (+ implementing decree) |
-| Vietnamese law — personal data | Decree 13/2023 |
+| Vietnamese law — personal data | PDP Law 91/2025/QH15 (effective 2026-01-01) + Decree 13/2023 & implementing decrees |
 
 **Self-protection rule when writing compliance documentation:** every document number, article, and legal retention period must be cross-checked against the original text before official use. This document marks `[NEEDS VERIFICATION]` everywhere it could not be verified — especially **Decree 356/2025** (no reliable information yet), the SBV circular numbers, the TCVN 11930 section codes, and the breach notification time limit of Decree 13/2023.
 
@@ -1204,3 +1203,8 @@ echo "Evidence package: $OUT"
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- **A customer security questionnaire is what made GRC "click" for me.** At first I thought compliance was just paperwork. Then, in practice where I work, a customer sent a security questionnaire of a few dozen lines before signing — asking what algorithm we use for encryption at rest, how we manage keys, who can access data, whether we have MFA, how long we keep logs, which region the data sits in, whether we have an IR process. Being able to answer directly decided whether the deal happened. That's when I understood: a technical control and "the evidence proving you have that control" are two different things, and GRC is the bridge.
+- **Lesson: build a baseline doc so you don't start from scratch each time.** The first time, answering took several days of asking around every team. After that I consolidated it into a base document: an architecture diagram, a list of controls by group (encryption, IAM/MFA, logging, backup, IR, data residency), each pointing to real evidence (config exports, scan results). Next time I just map the customer's questions onto the baseline → much faster, and the answers stay consistent across customers.
+- **Something I got wrong:** I used to think "having an ISO 27001 certificate means the system is secure." In fact the certificate only says the ISMS *exists and operates within the declared scope*; the scope can be very narrow. Now, when assessing a vendor, I read the scope statement first.
+- **Still exploring:** how to turn compliance evidence into automated output (policy-as-code, evidence collection by script) so I don't have to take manual screenshots every audit cycle — the continuous compliance direction in 16.8.3.

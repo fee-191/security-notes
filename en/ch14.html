@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 14 — Virtualization &amp;amp; Containers — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 14 — Virtualization &amp;amp; Containers — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch13.html"><link rel="next" href="ch15.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="14"><a class="nav-ch-title" href="#top"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"><a class="nav-sub" href="#ch14-overview">Overview</a><a class="nav-sub" href="#ch14-each-section-runs-what-it-is-how-it-works-internally-down-to-concrete-parameters-and-steps-a-real-example-security-notes">&amp;gt; Each section runs: what it is → how it works internally (down to concrete parameters and steps) → a real example → security notes.</a><a class="nav-sub" href="#ch14-141-virtualization-foundations-why-and-where-the-isolation-lives">14.1. Virtualization foundations: why, and where the isolation lives</a><a class="nav-sub" href="#ch14-142-proxmox-ve">14.2. Proxmox VE</a><a class="nav-sub" href="#ch14-143-vmware-vsphereesxi">14.3. VMware vSphere/ESXi</a><a class="nav-sub" href="#ch14-144-vm-vs-container-a-comparison-from-the-ground-up">14.4. VM vs Container — a comparison from the ground up</a><a class="nav-sub" href="#ch14-145-docker-internals">14.5. Docker internals</a><a class="nav-sub" href="#ch14-146-scanning-images-with-trivy">14.6. Scanning images with Trivy</a><a class="nav-sub" href="#ch14-147-container-escape-concrete-mechanisms">14.7. Container escape — concrete mechanisms</a><a class="nav-sub" href="#ch14-148-kubernetes">14.8. Kubernetes</a><a class="nav-sub" href="#ch14-149-falco-runtime-threat-detection">14.9. Falco — runtime threat detection</a><a class="nav-sub" href="#ch14-1410-combined-hardening-checklist">14.10. Combined hardening checklist</a><a class="nav-sub" href="#ch14-my-notes">My notes</a></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-14" data-ch="14">
+<h1 id="ch14-chapter-14-virtualization-containers">Chapter 14 — Virtualization &amp; Containers</h1>
+<h2 id="ch14-overview">Overview</h2>
+<p>One physical host running several unrelated things at once is entirely normal — and the safety of that arrangement rests on a single question: what is the boundary between them actually made of, and where does it break? Because once an attacker takes one workload and <strong>escapes</strong> it, the host and every other workload on it go with it. The two isolation models — <strong>virtualization</strong> and <strong>containers</strong> — are what this chapter examines, from exactly that angle.</p>
+<p>Virtualization builds a thick boundary: each <strong>VM</strong> runs its own kernel, and a <strong>hypervisor</strong> sits underneath dividing the real hardware and enforcing isolation. This part covers <strong>Proxmox VE</strong> (open source, KVM-based) and <strong>VMware ESXi/vSphere</strong>, along with what makes them operationally valuable: snapshots for rollback, backups, and live migration of a running VM to another host.</p>
+<p>Containers go the other way — a much thinner boundary, because every container <strong>shares the host kernel</strong>. In exchange they start in milliseconds and waste almost nothing. What gets called "isolation" here is really two kernel mechanisms working together: <strong>namespaces</strong> limit what a container can <em>see</em> (PIDs, network, mounts, hostname), while <strong>cgroups</strong> limit how much it can <em>use</em> (RAM, CPU, PID count) so one container cannot starve the machine. Then comes the <strong>image/layer/registry</strong> model with <strong>Dockerfile</strong>, and <strong>Trivy</strong> for scanning images for CVEs, misconfiguration and hardcoded secrets inside the pipeline.</p>
+<p>From that thin boundary the chapter moves straight into <strong>container escape</strong>: <code>--privileged</code>, a carelessly mounted <code>docker.sock</code>, excess capabilities — you have to know the exits to close them. At larger scale comes <strong>Kubernetes</strong> with its four critical security surfaces: <strong>RBAC</strong>, <strong>NetworkPolicy</strong> (an L3/L4 firewall between Pods), <strong>Secrets</strong> (base64 by default, which is not encryption — encryption-at-rest has to be turned on), and <strong>Pod Security Standards</strong>. Finally <strong>Falco</strong>, the runtime detection layer that watches syscalls and speaks up on odd behaviour like a shell opening inside a container or something reading <code>/etc/shadow</code>, usually forwarding alerts to the SIEM.</p>
+<h2 id="ch14-each-section-runs-what-it-is-how-it-works-internally-down-to-concrete-parameters-and-steps-a-real-example-security-notes">&gt; Each section runs: what it is → how it works internally (down to concrete parameters and steps) → a real example → security notes.</h2>
+<h2 id="ch14-141-virtualization-foundations-why-and-where-the-isolation-lives">14.1. Virtualization foundations: why, and where the isolation lives</h2>
+<h3 id="ch14-1411-the-root-problem-cpu-privilege-protection-rings">14.1.1. The root problem — CPU privilege (protection rings)</h3>
+<p>x86/x86-64 CPUs provide four privilege levels (privilege rings), encoded in the 2-bit <code>CPL</code> (Current Privilege Level) held in the low 2 bits of the <code>CS</code> segment register:</p>
+<table>
+<thead>
+<tr>
+<th>Ring</th>
+<th>CPL (2 bits)</th>
+<th>Traditional role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>00</code></td>
+<td>Kernel — full access to privileged instructions (<code>HLT</code>, <code>LGDT</code>, <code>MOV CR3</code>, IN/OUT, etc.)</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>01</code></td>
+<td>Almost never used (some legacy drivers)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>10</code></td>
+<td>Almost never used</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>11</code></td>
+<td>User space — may not run privileged instructions</td>
+</tr>
+</tbody>
+</table>
+<p>The classic virtualization problem: a guest OS is written to run at Ring 0 (it thinks it owns the hardware). If you let the guest actually run at Ring 0, it takes over the machine. If you demote the guest to Ring 1/3, its privileged instructions must be "trapped" so the hypervisor can handle them on its behalf. The original x86 did NOT satisfy the Popek–Goldberg criteria because it had a class of instructions that are "sensitive but unprivileged" — for example <code>POPF</code> at Ring 3 silently skips writing the <code>IF</code> flag instead of raising a fault. This is why three techniques emerged: <strong>binary translation</strong>, <strong>paravirtualization</strong>, and <strong>hardware-assisted (VT-x/AMD-V)</strong>.</p>
+<h3 id="ch14-1412-type-1-vs-type-2-hypervisors">14.1.2. Type 1 vs Type 2 hypervisors</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Type 1 (bare-metal)</th>
+<th>Type 2 (hosted)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Location</td>
+<td>Runs directly on hardware, is the kernel</td>
+<td>Runs as a process on a host OS</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>VMware ESXi, Proxmox VE (KVM), Microsoft Hyper-V, Xen</td>
+<td>VMware Workstation/Player, VirtualBox, plain QEMU</td>
+</tr>
+<tr>
+<td>CPU scheduling</td>
+<td>Hypervisor schedules vCPUs onto pCPUs itself</td>
+<td>Relies on the host OS scheduler</td>
+</tr>
+<tr>
+<td>Overhead</td>
+<td>Low (short path to hardware)</td>
+<td>Higher (through an extra OS layer)</td>
+</tr>
+<tr>
+<td>Attack surface</td>
+<td>Thin hypervisor (a few MB to a few tens of MB)</td>
+<td>An entire full host OS → large surface</td>
+</tr>
+<tr>
+<td>Used for</td>
+<td>Datacenter, production</td>
+<td>Lab, dev on a laptop</td>
+</tr>
+</tbody>
+</table>
+<p>Note that KVM is a hybrid case: KVM is a <strong>Linux kernel module</strong> (<code>kvm.ko</code> + <code>kvm-intel.ko</code>/<code>kvm-amd.ko</code>) that turns Linux itself into a Type 1 hypervisor. Proxmox VE bundles Linux + KVM + QEMU + LXC. So "Proxmox = Type 1" in the sense that the host kernel becomes the hypervisor, even though it is itself a full Debian install.</p>
+<h3 id="ch14-1413-hardware-assisted-virtualization-vt-x-amd-v-and-vmcs">14.1.3. Hardware-assisted virtualization: VT-x / AMD-V and VMCS</h3>
+<blockquote>
+<p>Note: this section drills down to the hardware level. If you only need the big picture, skim it and skip to 14.2.</p>
+</blockquote>
+<p>Intel VT-x adds two new operating modes (not new rings):</p>
+<ul>
+<li><strong>VMX root mode</strong>: where the hypervisor (VMM) runs. It adds the instructions <code>VMXON</code>, <code>VMLAUNCH</code>, <code>VMRESUME</code>, <code>VMEXIT</code>, <code>VMREAD</code>, <code>VMWRITE</code>, <code>VMPTRLD</code>.</li>
+<li><strong>VMX non-root mode</strong>: where the guest runs. The guest still sees its own full Rings 0–3, but every "sensitive" event causes a <strong>VM-exit</strong> that transfers control back to root mode.</li>
+</ul>
+<p>The transition state is stored in the <strong>VMCS</strong> (Virtual Machine Control Structure) — a 4 KB, page-aligned region made up of 6 logical areas:</p>
+<table>
+<thead>
+<tr>
+<th>VMCS area</th>
+<th>Main contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Guest-state area</td>
+<td>Guest state saved on VM-exit and reloaded on VM-entry (RIP, RSP, CR0/CR3/CR4, segments, RFLAGS, etc.)</td>
+</tr>
+<tr>
+<td>Host-state area</td>
+<td>Host state reloaded on VM-exit</td>
+</tr>
+<tr>
+<td>VM-execution control</td>
+<td>Bitmap specifying which instructions/events cause an exit (e.g. the "HLT exiting", "use I/O bitmaps", "enable EPT" bits)</td>
+</tr>
+<tr>
+<td>VM-exit control</td>
+<td>Behavior on exit (save/restore MSRs, etc.)</td>
+</tr>
+<tr>
+<td>VM-entry control</td>
+<td>Behavior on entry (injecting events/interrupts into the guest)</td>
+</tr>
+<tr>
+<td>VM-exit information</td>
+<td>The reason for the exit (exit reason, exit qualification) — read by the hypervisor to know why</td>
+</tr>
+</tbody>
+</table>
+<p>When a VM-exit occurs, the CPU writes the reason code (Basic Exit Reason — 16 bits) into the VMCS. For example, exit reason <code>0</code> = NMI, <code>1</code> = external interrupt, <code>12</code> = HLT, <code>30</code> = I/O instruction, <code>48</code> = EPT violation. The hypervisor reads it with <code>VMREAD</code> to dispatch handling.</p>
+<h3 id="ch14-1414-memory-virtualization-shadow-page-tables-vs-eptnpt">14.1.4. Memory virtualization: shadow page tables vs EPT/NPT</h3>
+<blockquote>
+<p>Note: this section keeps drilling down, into the MMU mechanism. If you only need the big picture, skim it and skip to 14.2.</p>
+</blockquote>
+<p>The guest has its own page tables translating <strong>GVA → GPA</strong> (Guest Virtual → Guest Physical). But the GPA is not a real RAM address (HPA — Host Physical Address). An additional translation layer GPA → HPA is needed.</p>
+<p>The old way (shadow page tables): the hypervisor maintains a "shadow" table that translates GVA → HPA directly, synchronizing it every time the guest modifies its own page tables (by trapping write-faults to the page table) → very expensive.</p>
+<p>The new way — <strong>EPT</strong> (Intel Extended Page Tables) / <strong>NPT/RVI</strong> (AMD Nested Page Tables): the hardware performs the two-level translation. The MMU walks the guest page tables (GVA→GPA) and then the EPT tables (GPA→HPA) entirely in hardware. The EPT table is a 4-level structure (PML4 → PDPT → PD → PT), with each entry being 64 bits.</p>
+<p>The structure of an <strong>EPT entry (leaf-level PTE)</strong>, 64 bits (key bits described):</p>
+<table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1 bit</td>
+<td>Read access allowed</td>
+<td>1 = guest may read this GPA</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1 bit</td>
+<td>Write access</td>
+<td>1 = guest may write</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 bit</td>
+<td>Execute access</td>
+<td>0 = no execute (prevents running code)</td>
+</tr>
+<tr>
+<td>3–5</td>
+<td>3 bits</td>
+<td>EPT memory type (like PAT: WB=6, UC=0)</td>
+<td>6 = write-back</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1 bit</td>
+<td>Ignore PAT</td>
+<td>0</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1 bit</td>
+<td>(at PD/PDPT level) large page</td>
+<td>1 = 2 MB/1 GB page</td>
+</tr>
+<tr>
+<td>12–51</td>
+<td>40 bits</td>
+<td>Physical frame number (HPA &gt;&gt; 12)</td>
+<td>host page address</td>
+</tr>
+</tbody>
+</table>
+<p>An <strong>EPT violation</strong> (exit reason 48) occurs when the guest makes an access that violates the R/W/X permissions in the EPT — this is the foundational mechanism for memory isolation between VMs: VM A has no EPT entry whatsoever pointing into VM B's RAM.</p>
+<blockquote>
+<p>Security note: this two-level translation layer is the strongest hardware isolation boundary between VMs. The most serious vulnerabilities (for example the Foreshadow/L1TF class of attacks, or the VENOM bug CVE-2015-3456 in QEMU's floppy controller) all aim to break this boundary. Patching the microcode + patching the hypervisor is mandatory.</p>
+</blockquote>
+<h3 id="ch14-1415-paravirtualization-pv-and-virtio">14.1.5. Paravirtualization (PV) and virtio</h3>
+<p>Instead of fully emulating hardware (which costs VM-exits), PV modifies the guest so it "knows it is virtualized" and calls the hypervisor directly via a <strong>hypercall</strong>. Xen is the classic example. In KVM, the practical model is <strong>virtio</strong>: the guest uses the <code>virtio-net</code>, <code>virtio-blk</code>, <code>virtio-scsi</code> drivers to talk to the host over a <strong>virtqueue</strong> — a shared-memory ring buffer made of 3 parts:</p>
+<pre><code>Descriptor Table  -&gt;  array of elements {addr(64bit), len(32bit), flags(16bit), next(16bit)}
+Available Ring    -&gt;  guest pushes the index of a descriptor &quot;ready for the host&quot;
+Used Ring         -&gt;  host pushes the index of a descriptor &quot;finished processing&quot;
+</code></pre>
+<p>This mechanism reduces the number of VM-exits (batching I/O, notifying in bulk), so throughput is near-native. This is why Linux VMs on KVM/Proxmox should use the <code>virtio-scsi</code> disk bus and the <code>virtio</code> NIC model instead of emulating <code>e1000</code>/<code>IDE</code>.</p>
+<p>By now we have seen virtualization build its isolation boundary in hardware (VT-x/EPT) with a separate kernel for each VM. Containers take a different path: they share the host kernel. Section 14.4 puts the two models side by side to make the isolation trade-off clear; before that, 14.2–14.3 walk through two real-world hypervisors, Proxmox and VMware.</p>
+<hr />
+<h2 id="ch14-142-proxmox-ve">14.2. Proxmox VE</h2>
+<h3 id="ch14-1421-architecture">14.2.1. Architecture</h3>
+<p>Proxmox VE = Debian + Ubuntu kernel + KVM/QEMU (for VMs) + LXC (for OS containers). The core components:</p>
+<ul>
+<li><strong>pve-cluster (<code>pmxcfs</code>)</strong>: a distributed filesystem mounted at <code>/etc/pve</code>, synchronized via <strong>Corosync</strong>. All configuration files (VMs, ACLs, storage) live here and are automatically replicated between nodes.</li>
+<li><strong>Corosync</strong>: the cluster communication layer, using the <strong>Totem</strong> protocol (a virtual token ring) over UDP/multicast or unicast. It decides quorum.</li>
+<li><strong>pvedaemon / pveproxy</strong>: the REST API (port 8006/TCP, HTTPS) and the web UI.</li>
+<li><strong>qemu-server</strong>, <strong>pve-container</strong>: manage VMs and LXC.</li>
+</ul>
+<h3 id="ch14-1422-a-real-vm-configuration-file">14.2.2. A real VM configuration file</h3>
+<p>Each VM has a file <code>/etc/pve/qemu-server/&lt;vmid&gt;.conf</code>. A real example:</p>
+<pre><code class="language-ini"># /etc/pve/qemu-server/100.conf
+boot: order=scsi0;net0
+cores: 4
+cpu: host
+memory: 8192
+name: web-prod-01
+net0: virtio=DE:AD:BE:EF:00:01,bridge=vmbr0,firewall=1
+scsi0: local-lvm:vm-100-disk-0,size=40G,iothread=1
+scsihw: virtio-scsi-single
+machine: q35
+bios: ovmf            # UEFI instead of SeaBIOS
+efidisk0: local-lvm:vm-100-disk-1,size=4M
+agent: 1              # enable the QEMU guest agent
+smbios1: uuid=...
+</code></pre>
+<p>Explanation of the key parameters:
+- <code>cpu: host</code> — exposes all physical CPU flags to the guest (fastest, but hinders live-migration between different CPU generations). Use <code>cpu: x86-64-v2-AES</code> if migration compatibility is needed.
+- <code>net0: ...,firewall=1</code> — enables the Proxmox firewall for this NIC (see 14.2.4).
+- <code>iothread=1</code> — gives the disk a dedicated I/O thread, reducing contention with the vCPU.
+- <code>machine: q35</code> — a modern PCIe chipset (required for passthrough).</p>
+<h3 id="ch14-1423-snapshots-backups">14.2.3. Snapshots &amp; backups</h3>
+<p>Proxmox snapshots depend on the storage backend:
+- <strong>LVM-thin / ZFS / qcow2</strong>: support snapshots (copy-on-write). ZFS snapshots are block-level and nearly instantaneous.
+- <strong>Thick LVM / raw over iSCSI</strong>: CANNOT snapshot at the storage level.</p>
+<p>Real commands:</p>
+<pre><code class="language-bash"># Create a snapshot that includes RAM (vmstate) so you can roll back to the running state
+qm snapshot 100 before-upgrade --vmstate 1 --description &quot;Before patching the kernel&quot;
+
+# List
+qm listsnapshot 100
+
+# Roll back
+qm rollback 100 before-upgrade
+
+# zstd-compressed backup to a Proxmox Backup Server or NFS
+vzdump 100 --storage pbs-main --mode snapshot --compress zstd
+</code></pre>
+<p><code>--mode snapshot</code> uses QEMU's <strong>dirty bitmap</strong> mechanism: only the blocks changed since the previous backup are sent (incremental), making backups fast and small.</p>
+<h3 id="ch14-1424-proxmox-firewall-the-mechanism">14.2.4. Proxmox Firewall — the mechanism</h3>
+<p>The Proxmox firewall is a layer that generates <strong>iptables/nftables</strong> rules from configuration files at three levels: datacenter (<code>/etc/pve/firewall/cluster.fw</code>), node (<code>/etc/pve/nodes/&lt;node&gt;/host.fw</code>), and VM (<code>/etc/pve/firewall/&lt;vmid&gt;.fw</code>). Example:</p>
+<pre><code class="language-ini"># /etc/pve/firewall/100.fw
+[OPTIONS]
+enable: 1
+policy_in: DROP
+
+[RULES]
+IN SSH(ACCEPT) -source 10.0.0.0/24 -log nolog
+IN ACCEPT -p tcp -dport 443 -source +web_clients
+</code></pre>
+<blockquote>
+<p>Security note: Proxmox LXC containers share the kernel with the host (they are not real VMs). An LXC running <strong>privileged</strong> (<code>unprivileged: 0</code>) has its root user mapped straight to UID 0 on the host → an escape is very dangerous. Always prefer <code>unprivileged: 1</code> (user namespace remap, so root in the container = a high UID like 100000 on the host). For untrusted workloads, use a VM (KVM) instead of LXC.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-143-vmware-vsphereesxi">14.3. VMware vSphere/ESXi</h2>
+<h3 id="ch14-1431-esxi-architecture">14.3.1. ESXi architecture</h3>
+<p>ESXi is a Type 1 hypervisor with a proprietary kernel, the <strong>VMkernel</strong> (POSIX-like but not Linux). Important processes:
+- <strong>VMM</strong>: one instance per VM, using VT-x/EPT.
+- <strong>VMX (the <code>vmx</code> process)</strong>: handles device emulation, non-high-performance I/O, and console connections.
+- <strong>hostd</strong>: the local management agent (the API for the direct vSphere Client).
+- <strong>vpxa</strong>: the agent that connects to vCenter Server.</p>
+<p>A VM is defined by a <code>&lt;vm&gt;.vmx</code> file (text), with its disk being a <code>&lt;vm&gt;.vmdk</code> (descriptor) + <code>-flat.vmdk</code> (data) or <code>-sparse</code>.</p>
+<h3 id="ch14-1432-vmfs-snapshot-delta-disks">14.3.2. VMFS, snapshot delta disks</h3>
+<p>VMFS is a clustered filesystem with distributed locking (SCSI reservations / ATS — Atomic Test and Set). When a snapshot is created, ESXi freezes the base disk (read-only) and creates a <strong>delta disk</strong> (<code>-000001.vmdk</code>) that records all new changes using a redo-log mechanism. The snapshot chain is a tree; each delta points back to its parent. Deleting a snapshot = consolidation (merging the delta back into the base).</p>
+<blockquote>
+<p>Security / operational note: a delta disk grows without bound if a snapshot is left for a long time → the datastore fills up → every VM on the datastore hangs. A snapshot is NOT a backup. On the security side, the most serious ESXi vulnerabilities are usually in the <strong>SLP</strong> service (CVE-2021-21974 — the ESXiArgs ransomware) and <strong>OpenSLP</strong> on port 427; disabling SLP and closing the management ports are basic hardening measures.</p>
+</blockquote>
+<h3 id="ch14-1433-cluster-ha-drs-vmotion">14.3.3. Cluster: HA, DRS, vMotion</h3>
+<ul>
+<li><strong>vMotion</strong>: moves a running VM between hosts. Mechanism: pre-copy all of the RAM over the network, then iteratively copy the "dirty" pages (iterative pre-copy), and finally freeze for a few tens of milliseconds to copy the remaining dirty pages and hand over control. A dedicated vMotion network is required (encryption is recommended — Encrypted vMotion).</li>
+<li><strong>HA (High Availability)</strong>: if a host dies, its VMs are restarted on another host (not zero-downtime).</li>
+<li><strong>DRS</strong>: automatically balances load using vMotion.</li>
+</ul>
+<hr />
+<h2 id="ch14-144-vm-vs-container-a-comparison-from-the-ground-up">14.4. VM vs Container — a comparison from the ground up</h2>
+<p>A diagram of the two models' stacks shows the core difference: a VM replicates an entire kernel + OS for each workload (isolation via the hypervisor/hardware), while containers share one host kernel (isolation via that kernel's own namespaces/cgroups).</p>
+<pre><code>          VIRTUAL MACHINES                         CONTAINERS
+  +------+ +------+ +------+             +------+ +------+ +------+
+  | App  | | App  | | App  |            | App  | | App  | | App  |
+  | Libs | | Libs | | Libs |            | Libs | | Libs | | Libs |
+  +------+ +------+ +------+             +------+ +------+ +------+
+  |Guest | |Guest | |Guest | &lt;- separate |   Container Runtime  |
+  |  OS  | |  OS  | |  OS  |    kernel   |   (containerd/CRI-O) |
+  +------+-+------+-+------+   per VM    +----------------------+
+  |       Hypervisor      |             | Host kernel (SHARED) | &lt;- 1 kernel
+  +-----------------------+             +----------------------+    for all
+  |  Host OS (Type 2) /   |             |        Host OS       |
+  |    none (Type 1)      |             +----------------------+
+  +-----------------------+             |   Physical hardware  |
+  |    Physical hardware  |             +----------------------+
+  +-----------------------+
+</code></pre>
+<p>A VM's isolation boundary lies in the hypervisor + VT-x/EPT (each VM has an independent kernel); a container's boundary is namespaces + cgroups + capabilities on a shared kernel — thinner, with the escape surface being the entire syscall set of the host kernel.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Virtual Machine</th>
+<th>Container</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Isolated by</td>
+<td>VT-x/EPT (hardware), a separate kernel per VM</td>
+<td>namespaces + cgroups + capabilities (SHARED host kernel)</td>
+</tr>
+<tr>
+<td>Kernel</td>
+<td>One independent kernel per VM</td>
+<td>All containers share one host kernel</td>
+</tr>
+<tr>
+<td>Startup</td>
+<td>Seconds → minutes (boot an OS)</td>
+<td>Milliseconds (just a process + namespace)</td>
+</tr>
+<tr>
+<td>RAM overhead</td>
+<td>High (a full OS per VM)</td>
+<td>Very low (just the binary + libs)</td>
+</tr>
+<tr>
+<td>Escape attack surface</td>
+<td>The hypervisor (thin)</td>
+<td>The entire kernel syscall set → larger surface</td>
+</tr>
+<tr>
+<td>Security boundary</td>
+<td>Strong (safe by default for multi-tenant)</td>
+<td>Weaker — should NOT be treated as a security boundary for untrusted tenants without adding gVisor/Kata</td>
+</tr>
+</tbody>
+</table>
+<p>The key security takeaway: containers share the kernel. A kernel vulnerability (for example Dirty COW CVE-2016-5195, Dirty Pipe CVE-2022-0847) exploited inside a container can escalate straight to the host. This is why "a container is not a VM in terms of isolation." For untrusted workloads, use <strong>gVisor</strong> (a user-space kernel that intercepts syscalls) or <strong>Kata Containers</strong> (each container in its own KVM microVM).</p>
+<hr />
+<h2 id="ch14-145-docker-internals">14.5. Docker internals</h2>
+<h3 id="ch14-1451-namespaces-what-they-isolate">14.5.1. Namespaces — what they isolate</h3>
+<p>A namespace is a Linux kernel mechanism that isolates a <strong>global resource</strong> so that processes inside only see their own view. Each namespace has a file under <code>/proc/&lt;pid&gt;/ns/</code>. There are 8 types (on modern kernels):</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Isolates</th>
+<th>What the container sees differently from the host</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PID</strong></td>
+<td>The process tree</td>
+<td>The first process in the container is PID 1; it does not see host PIDs</td>
+</tr>
+<tr>
+<td><strong>NET</strong></td>
+<td>The network stack</td>
+<td>Its own interfaces, routing tables, iptables, ports, <code>/proc/net</code></td>
+</tr>
+<tr>
+<td><strong>MNT</strong></td>
+<td>Mount points</td>
+<td>Its own directory tree (the image's rootfs), no host mounts visible</td>
+</tr>
+<tr>
+<td><strong>UTS</strong></td>
+<td>hostname &amp; domainname</td>
+<td>Its own <code>hostname</code> (UTS = Unix Time-sharing System)</td>
+</tr>
+<tr>
+<td><strong>IPC</strong></td>
+<td>System V IPC, POSIX message queues</td>
+<td>Its own shared memory / semaphores</td>
+</tr>
+<tr>
+<td><strong>USER</strong></td>
+<td>UID/GID mapping</td>
+<td>root (UID 0) inside the container can be mapped to an unprivileged UID on the host</td>
+</tr>
+<tr>
+<td><strong>CGROUP</strong></td>
+<td>The view of the cgroup hierarchy</td>
+<td>Hides the host's real cgroup paths</td>
+</tr>
+<tr>
+<td><strong>TIME</strong></td>
+<td>CLOCK_MONOTONIC/BOOTTIME offsets</td>
+<td>(rarely used) skews the boot clock</td>
+</tr>
+</tbody>
+</table>
+<p>A practical observation:</p>
+<pre><code class="language-bash"># Run a container and inspect its namespaces
+docker run -d --name demo alpine sleep 3600
+PID=$(docker inspect -f '{{.State.Pid}}' demo)
+ls -l /proc/$PID/ns/
+# lrwxrwxrwx ... net -&gt; 'net:[4026532567]'   &lt;- namespace inode
+# lrwxrwxrwx ... pid -&gt; 'pid:[4026532569]'
+
+# Compare with the host: a different inode number =&gt; a different namespace
+ls -l /proc/1/ns/net
+# net -&gt; 'net:[4026531840]'   &lt;- a completely different inode
+
+# Create a namespace yourself with unshare (no Docker needed)
+sudo unshare --pid --fork --mount-proc bash
+# In the new shell: ps aux shows only a few processes, and bash is PID 1
+</code></pre>
+<p>The underlying syscalls: <code>clone()</code> with the flags <code>CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWUSER | CLONE_NEWCGROUP</code>; <code>unshare()</code> detaches a namespace for the current process; <code>setns()</code> joins an existing namespace (this is exactly what <code>docker exec</code> and <code>nsenter</code> use).</p>
+<h3 id="ch14-1452-cgroups-v1-vs-v2-resource-limits">14.5.2. cgroups v1 vs v2 — resource limits</h3>
+<p>cgroups (control groups) <strong>limit and account for</strong> resources (CPU, RAM, I/O, PID count). Namespaces isolate the <em>view</em>; cgroups limit the <em>amount</em>.</p>
+<p><strong>cgroups v1</strong>: each controller (cpu, memory, blkio, pids, etc.) is its OWN hierarchy, mounted under <code>/sys/fs/cgroup/&lt;controller&gt;/</code>. Complex, because a process lives in multiple trees.</p>
+<p><strong>cgroups v2</strong>: a single unified hierarchy at <code>/sys/fs/cgroup/</code>, where each cgroup enables controllers via the <code>cgroup.subtree_control</code> file. This is the default on modern distros (systemd).</p>
+<p>A real example of limits with cgroup v2:</p>
+<pre><code class="language-bash"># Docker creates a cgroup at /sys/fs/cgroup/system.slice/docker-&lt;id&gt;.scope/
+docker run -d --name limited --memory=256m --cpus=1.5 nginx
+
+ID=$(docker inspect -f '{{.Id}}' limited)
+CG=/sys/fs/cgroup/system.slice/docker-$ID.scope
+
+cat $CG/memory.max        # 268435456  (256*1024*1024 bytes)
+cat $CG/cpu.max           # 150000 100000  -&gt; (quota 150000us / period 100000us) = 1.5 CPU
+cat $CG/pids.max          # limit on the number of PIDs (anti fork-bomb)
+</code></pre>
+<p>Explanation of <code>cpu.max</code>: the format is <code>&lt;quota&gt; &lt;period&gt;</code>, in microseconds. <code>150000 100000</code> means that in each 100 ms period, the process may use at most 150 ms of CPU-time → equivalent to 1.5 cores. When it exceeds this, the scheduler <strong>throttles</strong> (blocks) the process until the next period.</p>
+<p><code>memory.max</code> is a hard limit. Exceeding it → the kernel <strong>OOM killer</strong> kills a process in the cgroup (see <code>dmesg</code>, exit code 137 = 128 + SIGKILL(9)).</p>
+<blockquote>
+<p>Security note: NOT setting limits → a container can devour all the host's RAM/CPU (an internal DoS). Set <code>--memory</code>, <code>--cpus</code>, <code>--pids-limit</code> for every workload. <code>--pids-limit</code> blocks fork bombs.</p>
+</blockquote>
+<h3 id="ch14-1453-overlayfs-lower-upper-merged">14.5.3. OverlayFS — lower / upper / merged</h3>
+<p>A Docker image consists of multiple read-only <strong>layers</strong>. When running a container, Docker stacks them using the <strong>overlay2</strong> storage driver, which is based on the kernel's OverlayFS:</p>
+<pre><code>              merged/   (what the container sees = the union)
+                 ^
+        +--------+--------+
+        |                 |
+     upperdir         lowerdir(s)
+   (read-write,     (read-only, the image layers
+    the container's   stacked, lowest one at the bottom)
+    changes)
+        |
+     workdir  (used by the kernel to perform an atomic copy-up)
+</code></pre>
+<p>The <strong>copy-up</strong> mechanism: when the container writes to a file that lives in a lowerdir (read-only), the kernel copies that file up to the upperdir before writing. The lowerdir is never modified → the image is immutable, and many containers share the same layers (saving disk). Deleting a file in the lower → creates a <strong>whiteout</strong> (a special character device file <code>c 0 0</code>) in the upper to "hide" that file in merged.</p>
+<pre><code class="language-bash">docker inspect -f '{{json .GraphDriver.Data}}' limited | python3 -m json.tool
+# {
+#   &quot;LowerDir&quot;: &quot;/var/lib/docker/overlay2/&lt;l1&gt;/diff:/var/lib/docker/overlay2/&lt;l2&gt;/diff&quot;,
+#   &quot;UpperDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/diff&quot;,
+#   &quot;MergedDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/merged&quot;,
+#   &quot;WorkDir&quot;: &quot;/var/lib/docker/overlay2/&lt;id&gt;/work&quot;
+# }
+mount | grep overlay   # shows a filesystem of type 'overlay'
+</code></pre>
+<blockquote>
+<p>Security note: "deleted" data in a lower layer STILL resides in the image (it is only hidden by a whiteout). <code>docker history</code> and unpacking each layer (<code>tar</code>) can recover a secret that was <code>RUN rm</code>'d in a later instruction. This is the classic secret-leak bug — you must use a multi-stage build or BuildKit secrets, never COPY a secret and then delete it.</p>
+<p>Operational note (real-world experience): images and build cache piling up in <code>/var/lib/docker/overlay2/</code> are the number-one cause of a full disk on a long-running Docker host. On a dev machine I run, the root FS filled up every 1–2 days simply because every CI build produced a new image and nobody cleaned up the old ones. Use <code>docker system df</code> to see space broken down by Images / Containers / Local Volumes / Build Cache (add <code>-v</code> to list each image in detail) before deciding what to remove. Important warning: <code>docker system prune</code> does <em>not</em> touch volumes by default, but <code>docker system prune --volumes</code> (or <code>docker volume prune</code>) will <strong>delete volumes not referenced by any container</strong> — on a machine with data volumes (DB, uploads) whose container is temporarily stopped, this is a path to accidentally wiping data. Safer: only clean unused images with <code>docker image prune -a --filter "until=72h"</code> on a schedule (a 3 a.m. cron), and avoid <code>--volumes</code> unless you are certain no data needs to be kept.</p>
+</blockquote>
+<h3 id="ch14-1454-image-layer-digest-the-format">14.5.4. Image, layer, digest — the format</h3>
+<p>A Docker/OCI image consists of: a <strong>manifest</strong> (JSON), a <strong>config</strong> (JSON), and the <strong>layer blobs</strong> (tar.gz). Each object is identified by a <strong>digest</strong> = <code>sha256:</code> + the SHA-256 hash of the content (content-addressable). Because the address = the hash, the content is immutable: changing 1 byte → changes the digest → it becomes a different object.</p>
+<p>An <strong>OCI Image Manifest</strong> (abbreviated example):</p>
+<pre><code class="language-json">{
+  &quot;schemaVersion&quot;: 2,
+  &quot;mediaType&quot;: &quot;application/vnd.oci.image.manifest.v1+json&quot;,
+  &quot;config&quot;: {
+    &quot;mediaType&quot;: &quot;application/vnd.oci.image.config.v1+json&quot;,
+    &quot;size&quot;: 7023,
+    &quot;digest&quot;: &quot;sha256:b5b2b2c5...e3a&quot;
+  },
+  &quot;layers&quot;: [
+    { &quot;mediaType&quot;: &quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;,
+      &quot;size&quot;: 32654, &quot;digest&quot;: &quot;sha256:9f0c...4d&quot; },
+    { &quot;mediaType&quot;: &quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;,
+      &quot;size&quot;: 16724, &quot;digest&quot;: &quot;sha256:3c3a...91&quot; }
+  ]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.digest</code></td>
+<td>Points to the image config JSON (contains ENV, CMD, history, <code>rootfs.diff_ids</code>)</td>
+</tr>
+<tr>
+<td><code>layers[].digest</code></td>
+<td>The digest of the (compressed) layer blob — used to pull/dedup</td>
+</tr>
+<tr>
+<td><code>rootfs.diff_ids</code> (in the config)</td>
+<td>The digest of the <strong>uncompressed</strong> layer — used to match layers on disk</td>
+</tr>
+</tbody>
+</table>
+<p>The difference between an <strong>image tag and a digest</strong>: <code>nginx:1.25</code> is a <em>mutable</em> tag (the publisher can re-push it). <code>nginx@sha256:abc...</code> is an <em>immutable</em> digest. For supply-chain security, <strong>pin by digest</strong> in production.</p>
+<pre><code class="language-bash">docker pull nginx@sha256:0d17b565c37bcbd895e9d92315a05c1c3c9a29f762b011a10c54a66cd53c9b31
+docker inspect --format '{{index .RepoDigests 0}}' nginx
+</code></pre>
+<h3 id="ch14-1455-dockerfile-each-instruction-caching">14.5.5. Dockerfile — each instruction &amp; caching</h3>
+<p>Each instruction creates (or does not create) a layer. BuildKit caches based on the instruction's content + the context.</p>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Role</th>
+<th>Creates a layer?</th>
+<th>Caching/security note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FROM</code></td>
+<td>Base image</td>
+<td>(inherited)</td>
+<td>Pin the digest. Use a minimal image (alpine/distroless)</td>
+</tr>
+<tr>
+<td><code>RUN</code></td>
+<td>Run a build command</td>
+<td>Yes</td>
+<td>Combine <code>apt-get update &amp;&amp; install &amp;&amp; rm -rf /var/lib/apt/lists/*</code> in one RUN</td>
+</tr>
+<tr>
+<td><code>COPY</code></td>
+<td>Copy from the context</td>
+<td>Yes</td>
+<td>Cache is invalidated if a source file changes (by checksum)</td>
+</tr>
+<tr>
+<td><code>ADD</code></td>
+<td>Like COPY + untar + URL</td>
+<td>Yes</td>
+<td>Avoid — COPY is clearer, ADD URL is surprising</td>
+</tr>
+<tr>
+<td><code>ENV</code></td>
+<td>Environment variable</td>
+<td>Metadata</td>
+<td>Do NOT put secrets in ENV (they end up in the image config, readable by anyone)</td>
+</tr>
+<tr>
+<td><code>ARG</code></td>
+<td>Build-time variable</td>
+<td>Metadata</td>
+<td>Also stored in history if misused; do not use for secrets</td>
+</tr>
+<tr>
+<td><code>USER</code></td>
+<td>Change the running user</td>
+<td>Metadata</td>
+<td>Set non-root BEFORE the ENTRYPOINT</td>
+</tr>
+<tr>
+<td><code>WORKDIR</code></td>
+<td>Working directory</td>
+<td>Metadata</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EXPOSE</code></td>
+<td>Documents a port</td>
+<td>Metadata</td>
+<td>Just a note, does not actually open a port</td>
+</tr>
+<tr>
+<td><code>ENTRYPOINT</code></td>
+<td>Fixed command at runtime</td>
+<td>Metadata</td>
+<td>Use the exec form <code>["nginx","-g","daemon off;"]</code> to receive signals correctly (PID 1)</td>
+</tr>
+<tr>
+<td><code>CMD</code></td>
+<td>Default arguments</td>
+<td>Metadata</td>
+<td>Overridden by <code>docker run ... &lt;cmd&gt;</code></td>
+</tr>
+<tr>
+<td><code>HEALTHCHECK</code></td>
+<td>Liveness check</td>
+<td>Metadata</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Caching</strong>: a build proceeds sequentially; if one instruction is a cache hit, subsequent instructions keep using the cache until a change is encountered. Therefore, put the things that rarely change (installing dependencies) FIRST and the things that change often (copying source code) LAST:</p>
+<pre><code class="language-dockerfile"># Wrong order: every code change forces re-installing deps
+COPY . .
+RUN npm ci
+
+# Right: separate package.json -&gt; the npm ci cache is kept when only src changes
+COPY package*.json ./
+RUN npm ci
+COPY . .
+</code></pre>
+<p>A real <strong>multi-stage build</strong> (Go) — keep only the binary, drop the toolchain:</p>
+<pre><code class="language-dockerfile"># ---- Build stage ----
+FROM golang:1.22 AS builder
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags=&quot;-s -w&quot; -o /app ./cmd/server
+
+# ---- Runtime stage: distroless, non-root ----
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=builder /app /app
+USER 65532:65532          # distroless's nonroot uid
+ENTRYPOINT [&quot;/app&quot;]
+</code></pre>
+<p>Why distroless: there is no shell, no package manager, no coreutils → an attacker who gets into the container has no <code>sh</code>, <code>curl</code>, or <code>cat</code> to work with; the attack surface is small; fewer CVEs from superfluous libraries.</p>
+<p>A <strong>BuildKit secret</strong> (leaves no trace in the layers):</p>
+<pre><code class="language-dockerfile"># syntax=docker/dockerfile:1
+RUN --mount=type=secret,id=npmtoken \
+    NPM_TOKEN=$(cat /run/secrets/npmtoken) npm ci
+</code></pre>
+<pre><code class="language-bash">DOCKER_BUILDKIT=1 docker build --secret id=npmtoken,src=./.npmtoken -t app .
+</code></pre>
+<p>The secret is temporarily mounted into the RUN and not written into a layer.</p>
+<p><strong><code>.dockerignore</code></strong> — prevents accidentally pulling secrets/superfluous files into the context:</p>
+<pre><code>.git
+node_modules
+*.pem
+*.key
+.env
+Dockerfile
+</code></pre>
+<h3 id="ch14-1456-registry-content-trust">14.5.6. Registry &amp; content trust</h3>
+<ul>
+<li><strong>Docker Registry / OCI Distribution</strong>: an HTTP API (<code>/v2/</code>). A pull = GET the manifest by tag/digest, then GET each layer blob by digest.</li>
+<li><strong>Cosign / Notary (DCT)</strong>: sign images. <code>cosign sign</code> creates a signature stored alongside the image; <code>cosign verify</code> checks it before deployment.</li>
+</ul>
+<pre><code class="language-bash">cosign generate-key-pair
+cosign sign --key cosign.key registry.example.com/app@sha256:...
+cosign verify --key cosign.pub registry.example.com/app@sha256:...
+</code></pre>
+<blockquote>
+<p>Supply-chain security note: enable an admission policy that only allows signed images (cosign + Kyverno/Gatekeeper), pin digests, and scan before pushing.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-146-scanning-images-with-trivy">14.6. Scanning images with Trivy</h2>
+<p>Trivy scans for: OS package + application library vulnerabilities (reading the lockfile), misconfigurations (Dockerfile/K8s/Terraform), hardcoded secrets, and licenses.</p>
+<pre><code class="language-bash"># Scan an image, report only HIGH/CRITICAL, fail CI if any CRITICAL exists
+trivy image --severity HIGH,CRITICAL --exit-code 1 \
+      --ignore-unfixed nginx:1.25
+
+# Scan a filesystem / Dockerfile misconfig
+trivy fs --scanners vuln,secret,misconfig .
+
+# Export SARIF for GitLab/GitHub code scanning
+trivy image --format sarif -o trivy.sarif app:latest
+</code></pre>
+<p>Explanation of the parameters:
+- <code>--ignore-unfixed</code>: skip CVEs without a patch yet (reduces noise, focuses on what is fixable).
+- <code>--exit-code 1</code>: return an error code so the CI pipeline fails → a security gate.
+- <code>--scanners vuln,secret,misconfig</code>: enable multiple scanners at once.</p>
+<p>Sample output (abbreviated):</p>
+<pre><code>nginx:1.25 (debian 12.4)
+Total: 2 (HIGH: 1, CRITICAL: 1)
+┌────────────┬────────────────┬──────────┬───────────────┬───────────────┐
+│  Library   │ Vulnerability  │ Severity │ Installed Ver │ Fixed Version │
+├────────────┼────────────────┼──────────┼───────────────┼───────────────┤
+│ libssl3    │ CVE-2024-XXXX  │ CRITICAL │ 3.0.11-1      │ 3.0.13-1      │
+│ zlib1g     │ CVE-2023-YYYY  │ HIGH     │ 1:1.2.13      │               │ (unfixed)
+└────────────┴────────────────┴──────────┴───────────────┴───────────────┘
+</code></pre>
+<p>GitLab CI integration (the correct DevSecOps environment):</p>
+<pre><code class="language-yaml">trivy_scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy image --exit-code 0 --format sarif -o gl-trivy.sarif &quot;$IMAGE&quot;
+    - trivy image --exit-code 1 --severity CRITICAL &quot;$IMAGE&quot;
+  artifacts:
+    reports: { container_scanning: gl-trivy.sarif }
+</code></pre>
+<hr />
+<h2 id="ch14-147-container-escape-concrete-mechanisms">14.7. Container escape — concrete mechanisms</h2>
+<p>A container escape = breaking out of namespace/cgroup isolation to reach the host. Three common classes:</p>
+<h3 id="ch14-1471---privileged">14.7.1. <code>--privileged</code></h3>
+<p><code>docker run --privileged</code> disables nearly all isolation: it grants <strong>all capabilities</strong>, disables the default seccomp/AppArmor, and gives access to <strong>every device</strong> in <code>/dev</code>. The consequence: the container sees the host's disk (<code>/dev/sda</code>) → mount it → read/write the host's rootfs.</p>
+<pre><code class="language-bash"># Inside a privileged container
+fdisk -l                       # see the host's /dev/sda
+mkdir /hostroot
+mount /dev/sda1 /hostroot      # mount the host rootfs
+echo 'attacker ALL=(ALL) NOPASSWD:ALL' &gt;&gt; /hostroot/etc/sudoers
+# or write /hostroot/root/.ssh/authorized_keys -&gt; full escape
+</code></pre>
+<p>A classic variant uses cgroup v1's <code>release_agent</code> (when privileged + cgroup v1): write into the <code>release_agent</code> file a script that runs with host privileges when the cgroup becomes empty → execute a command on the host.</p>
+<h3 id="ch14-1472-mounting-dockersock">14.7.2. Mounting <code>docker.sock</code></h3>
+<p><code>/var/run/docker.sock</code> is the Unix socket that talks to the Docker daemon (which runs as root). Anyone who can access the socket = controls the daemon = can create a new privileged container that mounts the host's <code>/</code> → root on the host.</p>
+<pre><code class="language-bash"># If the container was mistakenly mounted with -v /var/run/docker.sock:/var/run/docker.sock
+docker -H unix:///var/run/docker.sock run -v /:/host -it alpine chroot /host sh
+# now you are root on the host
+</code></pre>
+<p>This is why you must NEVER mount docker.sock into an untrusted container (a CI runner, an app). It is equivalent to handing over root on the host.</p>
+<h3 id="ch14-1473-cap_sys_admin-and-excess-capabilities">14.7.3. <code>CAP_SYS_ADMIN</code> and excess capabilities</h3>
+<p>Linux splits root privileges into many <strong>capabilities</strong> (a bitmask in the process's credentials). Docker by default keeps a small set and drops the dangerous parts. <code>CAP_SYS_ADMIN</code> is the "new root" — it allows <code>mount</code>, <code>pivot_root</code>, namespace operations, etc. → a common escape path.</p>
+<pre><code class="language-bash"># View the capabilities currently held in the container
+grep Cap /proc/1/status
+# CapEff: 00000000a80425fb   &lt;- bitmask, decode it:
+capsh --decode=00000000a80425fb
+# cap_chown,cap_dac_override,...,cap_net_raw,cap_setuid,...
+
+# Principle: drop everything, then add back only what you need
+docker run --cap-drop=ALL --cap-add=NET_BIND_SERVICE nginx
+</code></pre>
+<p><strong>Combined container defenses:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Command / effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Non-root</td>
+<td><code>USER 65532</code> in the Dockerfile + <code>--user 65532</code></td>
+</tr>
+<tr>
+<td>Read-only rootfs</td>
+<td><code>--read-only</code> (only write to declared volumes/tmpfs)</td>
+</tr>
+<tr>
+<td>Drop caps</td>
+<td><code>--cap-drop=ALL</code> then add the minimum</td>
+</tr>
+<tr>
+<td>No new privileges</td>
+<td><code>--security-opt=no-new-privileges</code> (blocks setuid privilege escalation)</td>
+</tr>
+<tr>
+<td>Seccomp</td>
+<td>Docker by default blocks a range of dangerous syscalls; write a custom profile</td>
+</tr>
+<tr>
+<td>AppArmor/SELinux</td>
+<td>MAC restricting file/capability access</td>
+</tr>
+<tr>
+<td>User namespace</td>
+<td><code>--userns-remap</code> → container root = a high UID on the host</td>
+</tr>
+<tr>
+<td>No privileged</td>
+<td>Do NOT use <code>--privileged</code>; do not mount docker.sock</td>
+</tr>
+</tbody>
+</table>
+<p>An example seccomp profile in JSON (a minimal allowlist):</p>
+<pre><code class="language-json">{
+  &quot;defaultAction&quot;: &quot;SCMP_ACT_ERRNO&quot;,
+  &quot;architectures&quot;: [&quot;SCMP_ARCH_X86_64&quot;],
+  &quot;syscalls&quot;: [
+    { &quot;names&quot;: [&quot;read&quot;,&quot;write&quot;,&quot;openat&quot;,&quot;close&quot;,&quot;fstat&quot;,&quot;mmap&quot;,&quot;execve&quot;,
+                &quot;brk&quot;,&quot;arch_prctl&quot;,&quot;exit_group&quot;],
+      &quot;action&quot;: &quot;SCMP_ACT_ALLOW&quot; }
+  ]
+}
+</code></pre>
+<pre><code class="language-bash">docker run --security-opt seccomp=./profile.json myapp
+</code></pre>
+<p><code>SCMP_ACT_ERRNO</code> = a syscall not in the allowlist returns <code>EPERM</code> instead of executing.</p>
+<hr />
+<h2 id="ch14-148-kubernetes">14.8. Kubernetes</h2>
+<h3 id="ch14-1481-architecture-control-plane-nodes">14.8.1. Architecture: control plane &amp; nodes</h3>
+<pre><code>                 CONTROL PLANE (master)
+   +-----------------------------------------------+
+   |  kube-apiserver  &lt;---&gt;  etcd (key-value store) |
+   |        ^   ^                                    |
+   |        |   +-- kube-scheduler                   |
+   |        +------ kube-controller-manager          |
+   +-----------------------------------------------+
+                 |  (API: HTTPS 6443)
+        +--------+----------------+
+        |                         |
+     NODE 1                    NODE 2
+   kubelet                   kubelet
+   kube-proxy                kube-proxy
+   container runtime (CRI)   container runtime
+   (containerd/CRI-O)        (containerd/CRI-O)
+        |
+     Pods (1..n containers/pod)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+<th>Security detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>kube-apiserver</strong></td>
+<td>The single entry point into the cluster; every operation goes through the REST API; authentication + authz + admission</td>
+<td>Port 6443/TCP TLS. The number 1 target</td>
+</tr>
+<tr>
+<td><strong>etcd</strong></td>
+<td>Stores ALL cluster state (including Secrets) as key-value</td>
+<td>Must be encrypted at rest + mTLS + only the apiserver may access it</td>
+</tr>
+<tr>
+<td><strong>kube-scheduler</strong></td>
+<td>Decides which node a Pod runs on (by resources, taint/toleration, affinity)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>kube-controller-manager</strong></td>
+<td>The reconcile loop that brings the actual state to the desired state</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>kubelet</strong></td>
+<td>The agent on each node; talks to the CRI to run Pods; reports status</td>
+<td>The kubelet API (10250) must be authenticated — if opened anonymously = node RCE</td>
+</tr>
+<tr>
+<td><strong>kube-proxy</strong></td>
+<td>Installs iptables/IPVS rules to implement Services (load balancing to Pods)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>CRI runtime</strong></td>
+<td>containerd / CRI-O that actually runs containers via runc</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The flow of a request</strong> (e.g. <code>kubectl apply -f deploy.yaml</code>):</p>
+<ol>
+<li>kubectl → HTTPS POST to the apiserver (port 6443), with a client cert/token.</li>
+<li><strong>Authentication</strong>: the apiserver determines "who" (cert CN, ServiceAccount JWT, OIDC).</li>
+<li><strong>Authorization (RBAC)</strong>: checks "is this user allowed to perform the verb <code>create</code> on the resource <code>deployments</code> in this namespace?".</li>
+<li><strong>Admission controllers</strong>: mutating (modify the object, e.g. inject a sidecar, set defaults) then validating (accept/reject, e.g. OPA/Gatekeeper, Pod Security).</li>
+<li>The apiserver writes the object into <strong>etcd</strong>.</li>
+<li>The controller-manager sees the new Deployment → creates a ReplicaSet → creates Pod objects.</li>
+<li>The scheduler assigns the Pod to a node (writes <code>nodeName</code>).</li>
+<li>That node's kubelet watches and sees its Pod → calls the CRI → containerd → runc creates the container.</li>
+</ol>
+<h3 id="ch14-1482-core-objects-real-manifests">14.8.2. Core objects (real manifests)</h3>
+<p><strong>Pod</strong> — the smallest unit, one or more containers sharing a NET namespace (same IP, same localhost) and volumes:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  namespace: app
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+  - name: nginx
+    image: nginx@sha256:0d17b565...   # pin the digest
+    ports: [{ containerPort: 8080 }]
+    resources:
+      requests: { cpu: &quot;100m&quot;, memory: &quot;128Mi&quot; }
+      limits:   { cpu: &quot;500m&quot;, memory: &quot;256Mi&quot; }
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities: { drop: [&quot;ALL&quot;] }
+</code></pre>
+<p><code>100m</code> = 100 millicores = 0.1 CPU. <code>128Mi</code> = 128 mebibytes = 128*2^20 bytes. <code>requests</code> is used by the scheduler to reserve space; <code>limits</code> is the cgroup hard cap.</p>
+<p><strong>Deployment</strong> (manages a ReplicaSet, rolling update):</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata: { name: web, namespace: app }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: web } }
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+      - name: web
+        image: registry.example.com/web@sha256:...
+</code></pre>
+<p>The relationship: a <strong>Deployment</strong> → creates/manages a <strong>ReplicaSet</strong> → keeps the correct number of <strong>Pods</strong>. Rolling update: create a new ReplicaSet, gradually scale up the new Pods, gradually scale down the old Pods according to <code>maxSurge</code>/<code>maxUnavailable</code>.</p>
+<p><strong>Service</strong> — a stable IP/DNS for a set of Pods (Pod IPs change constantly):</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Mechanism</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ClusterIP</strong></td>
+<td>An intra-cluster virtual IP, kube-proxy DNATs to the Pods</td>
+<td>Internal services (default)</td>
+</tr>
+<tr>
+<td><strong>NodePort</strong></td>
+<td>Opens the same port (30000–32767) on EVERY node</td>
+<td>Simple external access</td>
+</tr>
+<tr>
+<td><strong>LoadBalancer</strong></td>
+<td>Asks the cloud provider to create an external LB pointing to the NodePort</td>
+<td>Cloud production</td>
+</tr>
+<tr>
+<td><strong>ExternalName</strong></td>
+<td>Returns a DNS CNAME</td>
+<td>Pointing to an external service</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-yaml">apiVersion: v1
+kind: Service
+metadata: { name: web, namespace: app }
+spec:
+  type: ClusterIP
+  selector: { app: web }     # selects Pods by label
+  ports:
+  - port: 80           # the Service's port (ClusterIP:80)
+    targetPort: 8080   # the target container port
+</code></pre>
+<p>The kube-proxy mechanism (iptables mode): for each Service it creates a chain <code>KUBE-SERVICES</code> → <code>KUBE-SVC-xxx</code> → random DNAT (uniform probability) to one of the <code>KUBE-SEP-xxx</code> (each SEP = one Pod endpoint). This is L4 load balancing.</p>
+<p><strong>Ingress</strong> — L7 HTTP(S) routing (host/path) into Services, implemented by an Ingress Controller (nginx, traefik):</p>
+<pre><code class="language-yaml">apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  annotations: { nginx.ingress.kubernetes.io/ssl-redirect: &quot;true&quot; }
+spec:
+  tls: [{ hosts: [&quot;app.example.com&quot;], secretName: web-tls }]
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend: { service: { name: web, port: { number: 80 } } }
+</code></pre>
+<p><strong>ConfigMap &amp; Secret</strong>:</p>
+<pre><code class="language-yaml">apiVersion: v1
+kind: ConfigMap
+metadata: { name: app-cfg, namespace: app }
+data:
+  LOG_LEVEL: &quot;info&quot;
+  config.yaml: |
+    server: { port: 8080 }
+---
+apiVersion: v1
+kind: Secret
+metadata: { name: db-cred, namespace: app }
+type: Opaque
+data:
+  password: c3VwZXJzZWNyZXQ=   # base64(&quot;supersecret&quot;) — NOT encrypted
+</code></pre>
+<h3 id="ch14-1483-rbac-role-rolebinding">14.8.3. RBAC — Role / RoleBinding</h3>
+<p>RBAC answers: "what <code>verb</code> may a subject (user/group/ServiceAccount) perform on what <code>resource</code>, and where". <code>Role</code>/<code>RoleBinding</code> = scoped to one namespace; <code>ClusterRole</code>/<code>ClusterRoleBinding</code> = cluster-wide.</p>
+<pre><code class="language-yaml"># Role: read-only on pods &amp; logs in the app namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: pod-reader, namespace: app }
+rules:
+- apiGroups: [&quot;&quot;]                 # &quot;&quot; = the core group
+  resources: [&quot;pods&quot;, &quot;pods/log&quot;]
+  verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: bind-pod-reader, namespace: app }
+subjects:
+- kind: ServiceAccount
+  name: viewer
+  namespace: app
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+</code></pre>
+<p>Checking actual permissions:</p>
+<pre><code class="language-bash">kubectl auth can-i create deployments --namespace app --as system:serviceaccount:app:viewer
+# no
+kubectl auth can-i get pods --namespace app --as system:serviceaccount:app:viewer
+# yes
+</code></pre>
+<blockquote>
+<p>Security note: avoid <code>verbs: ["*"]</code> and <code>resources: ["*"]</code>. Especially dangerous: the <code>create</code> permission on <code>pods</code> (which can create a Pod that mounts the host or is privileged in order to escape), the <code>get</code>/<code>create</code> permissions on <code>secrets</code>, the <code>escalate</code>/<code>bind</code> permissions on RBAC, and the <code>create</code> permission on <code>pods/exec</code>. Grant by least-privilege.</p>
+</blockquote>
+<h3 id="ch14-1484-networkpolicy">14.8.4. NetworkPolicy</h3>
+<p>By default in K8s every Pod can talk to every Pod (a flat network). A NetworkPolicy (requires CNI support: Calico, Cilium, etc.) applies an L3/L4 firewall by label. The rule: once a policy selects a Pod, that Pod switches to <strong>default-deny</strong> for the declared direction.</p>
+<pre><code class="language-yaml"># Default-deny all ingress in the app namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny-ingress, namespace: app }
+spec:
+  podSelector: {}            # applies to ALL pods
+  policyTypes: [&quot;Ingress&quot;]
+---
+# Allow only the frontend to call backend:8080
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-frontend-to-backend, namespace: app }
+spec:
+  podSelector: { matchLabels: { app: backend } }
+  policyTypes: [&quot;Ingress&quot;]
+  ingress:
+  - from:
+    - podSelector: { matchLabels: { app: frontend } }
+    ports:
+    - { protocol: TCP, port: 8080 }
+</code></pre>
+<blockquote>
+<p>Note: a NetworkPolicy only takes effect if the installed CNI enforces it. On a cluster using a CNI that does not support it (e.g. plain flannel), the manifest is accepted but blocks NOTHING → a false sense of safety. Verify with a real test (<code>kubectl exec</code> curl between pods).</p>
+</blockquote>
+<h3 id="ch14-1485-secret-base64-encryption-etcd-encryption">14.8.5. Secret — base64 ≠ encryption &amp; etcd encryption</h3>
+<p>The <code>data</code> field of a Secret is only <strong>base64-encoded</strong> (to hold binary data in YAML), NOT encrypted:</p>
+<pre><code class="language-bash">echo 'c3VwZXJzZWNyZXQ=' | base64 -d     # supersecret  &lt;- anyone can decode it
+</code></pre>
+<p>By default, Secrets sit in etcd as <strong>plaintext</strong> (only base64). Anyone who can read etcd (an etcd backup, a control-plane node) = can read every secret. Enable <strong>encryption at rest</strong> with an <code>EncryptionConfiguration</code> for the apiserver:</p>
+<pre><code class="language-yaml">apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+- resources: [&quot;secrets&quot;]
+  providers:
+  - aescbc:                 # or aesgcm; best is kms: (external KMS)
+      keys:
+      - name: key1
+        secret: &lt;32-byte base64 key&gt;
+  - identity: {}            # fallback to read old, not-yet-encrypted data
+</code></pre>
+<p>The apiserver flag: <code>--encryption-provider-config=/etc/kubernetes/enc.yaml</code>. The recommended provider is <code>kms:</code> (envelope encryption with an HSM/cloud KMS) rather than keeping the key in a file.</p>
+<blockquote>
+<p>Security note: beyond etcd encryption, restrict who can <code>get secrets</code> via RBAC; avoid turning a Secret into an ENV (it leaks via <code>/proc/&lt;pid&gt;/environ</code>, crash dumps, logs) — prefer mounting it as a file (tmpfs). Consider external secrets (Vault, the External Secrets Operator).</p>
+</blockquote>
+<h3 id="ch14-1486-pod-security-standards-pss-admission">14.8.6. Pod Security Standards (PSS) &amp; Admission</h3>
+<p>PSS replaces PodSecurityPolicy (removed in v1.25). Three levels:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>privileged</strong></td>
+<td>Unrestricted (for system use only)</td>
+</tr>
+<tr>
+<td><strong>baseline</strong></td>
+<td>Blocks clearly dangerous configurations (privileged, hostNetwork, hostPID, adding dangerous capabilities)</td>
+</tr>
+<tr>
+<td><strong>restricted</strong></td>
+<td>The strictest: requires runAsNonRoot, drop ALL caps, seccomp RuntimeDefault, no privilege escalation</td>
+</tr>
+</tbody>
+</table>
+<p>Enable it with a namespace label (Pod Security Admission — built-in):</p>
+<pre><code class="language-bash">kubectl label namespace app \
+  pod-security.kubernetes.io/enforce=restricted \
+  pod-security.kubernetes.io/warn=restricted
+</code></pre>
+<p>A Pod that does not meet <code>restricted</code> will be REJECTED by the apiserver at creation.</p>
+<p><strong>Custom admission controller — OPA/Gatekeeper</strong> (for policies more complex than PSS):</p>
+<pre><code class="language-yaml"># ConstraintTemplate: define the policy in Rego
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata: { name: k8sallowedrepos }
+spec:
+  crd:
+    spec:
+      names: { kind: K8sAllowedRepos }
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: { repos: { type: array, items: { type: string } } }
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sallowedrepos
+      violation[{&quot;msg&quot;: msg}] {
+        c := input.review.object.spec.containers[_]
+        not startswith(c.image, input.parameters.repos[_])
+        msg := sprintf(&quot;image %v not from a trusted registry&quot;, [c.image])
+      }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedRepos
+metadata: { name: only-trusted-registry }
+spec:
+  match: { kinds: [{ apiGroups: [&quot;&quot;], kinds: [&quot;Pod&quot;] }] }
+  parameters: { repos: [&quot;registry.example.com/&quot;] }
+</code></pre>
+<p>Gatekeeper is a <strong>validating admission webhook</strong>: the apiserver calls it (HTTPS) before storing an object; it returns allow/deny + a reason. Kyverno is an equivalent choice that uses YAML instead of Rego.</p>
+<h3 id="ch14-1487-serviceaccount-tokens-the-kubelet-api-attack-surface">14.8.7. ServiceAccount tokens &amp; the kubelet API — attack surface</h3>
+<p>Each Pod (by default) has a ServiceAccount token attached at <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code> (a JWT). If an attacker compromises a Pod, this token can be used to call the apiserver with that SA's privileges.</p>
+<p>JWT structure (3 Base64URL parts separated by <code>.</code>): <code>header.payload.signature</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>header</td>
+<td><code>{"alg":"RS256","kid":"..."}</code> — the signing algorithm + key id</td>
+</tr>
+<tr>
+<td>payload (claims)</td>
+<td><code>iss</code>, <code>sub</code> (e.g. <code>system:serviceaccount:app:viewer</code>), <code>aud</code>, <code>exp</code>, <code>kubernetes.io</code> (namespace, pod, sa)</td>
+</tr>
+<tr>
+<td>signature</td>
+<td>RS256 signed by the apiserver's private key — prevents forgery</td>
+</tr>
+</tbody>
+</table>
+<p>A modern token is a <strong>bound token</strong> (projected): it has a short <code>exp</code>, and is bound to the Pod's lifecycle and a specific audience.</p>
+<blockquote>
+<p>Hardening: set <code>automountServiceAccountToken: false</code> for Pods that do not need to call the API; lock down the kubelet API (<code>--anonymous-auth=false</code>, <code>--authorization-mode=Webhook</code>); block the cloud metadata endpoint (169.254.169.254) with a NetworkPolicy to prevent theft of the node's IAM credentials.</p>
+</blockquote>
+<hr />
+<h2 id="ch14-149-falco-runtime-threat-detection">14.9. Falco — runtime threat detection</h2>
+<p>Falco is an engine that detects anomalous behavior <strong>in real time</strong> by reading the kernel's <strong>syscalls</strong> (via an eBPF probe or a kernel module) and matching them against rules. It sees: new processes, file opens, network connections, exec into a container, etc.</p>
+<p>Architecture: kernel → (eBPF/modern_ebpf probe) → ring buffer → libsinsp parses into "container-context events" → rule engine → output (stderr/JSON/gRPC/Falcosidekick → Slack, SIEM).</p>
+<p>A real Falco rule:</p>
+<pre><code class="language-yaml">- rule: Shell into a container (suspicious)
+  desc: Detect bash/sh spawned inside a container
+  condition: &gt;
+    spawned_process and container
+    and proc.name in (bash, sh, zsh)
+    and not container.image.repository in (allowed_debug_images)
+  output: &gt;
+    Shell opened in container (user=%user.name container=%container.name
+    image=%container.image.repository proc=%proc.cmdline)
+  priority: WARNING
+  tags: [container, shell, mitre_execution]
+</code></pre>
+<p>Explanation of the fields:
+- <code>condition</code>: an expression over sysdig fields (<code>proc.name</code>, <code>container.id</code>, <code>fd.name</code>, <code>evt.type</code>, etc.). <code>spawned_process</code> is a macro = <code>evt.type=execve and evt.dir=&lt;</code>.
+- <code>output</code>: the log template; <code>%proc.cmdline</code> and so on are interpolated from the event.
+- <code>priority</code>: the severity level.</p>
+<p>Useful default rules: "Write below /etc", "Read sensitive file (<code>/etc/shadow</code>)", "Container drift (a new binary not in the image)", "Outbound connection to C2", "Launch privileged container".</p>
+<pre><code class="language-bash"># Try it inside a container and watch the events
+docker exec -it web sh        # -&gt; Falco fires the alert &quot;Shell into a container&quot;
+cat /etc/shadow               # -&gt; &quot;Read sensitive file&quot;
+</code></pre>
+<blockquote>
+<p>Security note: Falco is a <strong>detective control</strong> (detection) that complements <strong>preventive controls</strong> (PSS, seccomp, NetworkPolicy). The eBPF probe needs kernel support (BTF). Send the output to a SIEM and set alerts; rules need tuning to reduce false positives (whitelist legitimate debug images).</p>
+</blockquote>
+<hr />
+<h2 id="ch14-1410-combined-hardening-checklist">14.10. Combined hardening checklist</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Key controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hypervisor (ESXi/Proxmox)</td>
+<td>Patch the hypervisor + microcode (L1TF/MDS); segregate the management network; disable SLP; encrypt vMotion; unprivileged LXC</td>
+</tr>
+<tr>
+<td>Image</td>
+<td>Distroless/minimal, multi-stage, non-root USER, pin digest, cosign signing, Trivy scan gating CI, .dockerignore, BuildKit secrets</td>
+</tr>
+<tr>
+<td>Container runtime</td>
+<td><code>--cap-drop=ALL</code>, <code>--read-only</code>, <code>no-new-privileges</code>, seccomp/AppArmor, no <code>--privileged</code>, no mounting docker.sock, <code>--pids-limit</code>, userns-remap</td>
+</tr>
+<tr>
+<td>K8s control plane</td>
+<td>etcd mTLS + encryption at rest (KMS), apiserver authz=RBAC, audit log enabled, kubelet auth</td>
+</tr>
+<tr>
+<td>K8s workload</td>
+<td>restricted securityContext, PSS=restricted, resource limits, NetworkPolicy default-deny, RBAC least-privilege, automountServiceAccountToken=false</td>
+</tr>
+<tr>
+<td>Admission</td>
+<td>Pod Security + Gatekeeper/Kyverno (only signed images from a trusted registry)</td>
+</tr>
+<tr>
+<td>Runtime detect</td>
+<td>Falco + Falcosidekick → SIEM; apiserver audit log → SIEM</td>
+</tr>
+<tr>
+<td>Supply chain</td>
+<td>SBOM (syft), sign + verify (cosign), pin digest, periodically re-scan running images</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch14-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch13.html"><span>← Previous</span><b>13 · Cloud Security</b></a><a class="pg next" href="ch15.html"><span>Next →</span><b>15 · Threat Intel &amp; Frameworks</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

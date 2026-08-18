@@ -1,2 +1,5 @@
 .DS_Store
 Thumbs.db
+
+# CV bản đầy đủ (có SĐT/địa chỉ) — không đưa lên web
+files/*-private.pdf

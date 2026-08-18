@@ -2,30 +2,13 @@
 
 ## Tổng quan
 
-Chương này trình bày việc nhúng kiểm soát bảo mật vào trong quy trình phát triển phần mềm thay vì kiểm tra một lần ở cuối. Nguyên tắc nền tảng: lỗ hổng phát hiện càng muộn thì chi phí sửa càng cao và rủi ro khai thác càng lớn. Mục tiêu là phát hiện và chặn lỗi tại điểm sớm nhất khả thi trong vòng đời phần mềm.
+Bảo mật kiểu cũ là một cửa kiểm ở cuối: code xong, sắp release thì mới có người ngồi soi. Cách đó có một vấn đề rất thực tế — tới lúc phát hiện thì sửa đã đắt, mà thường là đắt tới mức người ta chọn ghi nhận rủi ro rồi cho qua. **DevSecOps** đảo lại thứ tự đó: nhúng kiểm soát bảo mật vào chính quy trình phát triển, và **shift-left** nghĩa là đẩy mỗi phép kiểm về sớm nhất có thể — sớm nhất là ngay trên máy lập trình viên, trước khi code kịp rời khỏi đó.
 
-Các khái niệm và công cụ chính của chương:
+Nơi để gắn các phép kiểm ấy là **pipeline CI/CD**. Chương đi qua từng loại quét theo đúng vùng mù của chúng, vì không có loại nào bắt được mọi thứ: **SAST** đọc mã nguồn tĩnh (bắt tốt injection, XSS, path traversal), **DAST** tấn công ứng dụng đang chạy (bắt lỗi runtime và sai cấu hình), **IAST** gắn agent vào runtime để nối data-flow với vị trí code, **SCA** đối chiếu thư viện bên thứ ba với CSDL CVE, cùng **secret scanning**, **IaC scanning** và **container scanning**. Ba công cụ được đào sâu tới mức dùng được ngay: **Semgrep** (SAST khớp theo cấu trúc AST thay vì văn bản thuần — trọng tâm là viết rule YAML, metavariable `$X` và taint mode), **gitleaks** (quét cả nội dung lẫn lịch sử git, kết hợp regex nhận dạng cấu trúc với Shannon entropy) và **Trivy** (image, filesystem, IaC, SBOM).
 
-- **DevSecOps & shift-left**: **DevSecOps** là mô hình vận hành trong đó bảo mật (Sec) được nhúng vào quy trình phát triển (Dev) và vận hành (Ops) ở mọi giai đoạn, thay vì là một khâu tách rời. **Shift-left** là việc dịch hoạt động kiểm tra bảo mật về phía sớm hơn trên trục thời gian. Giải quyết vấn đề: sửa lỗi tại thời điểm lập trình rẻ hơn nhiều lần so với sửa khi đã lên production.
-- **CI/CD & pipeline**: **CI** (Continuous Integration) tự động gom, build và kiểm thử mỗi khi nộp code; **CD** (Continuous Deployment/Delivery) tự động đưa code đã qua kiểm thử ra môi trường thật. **Pipeline** là chuỗi bước tự động đó. Giải quyết vấn đề: chuẩn hóa kiểm tra, loại bỏ thao tác thủ công dễ sai sót; đây là nơi gắn các công cụ quét bảo mật để chạy tự động.
-- **Các loại quét** (mỗi loại có vùng mù riêng, cần kết hợp):
-  - **SAST** (Static Application Security Testing): phân tích mã nguồn không thực thi; bắt tốt injection, XSS, path traversal.
-  - **DAST** (Dynamic Application Security Testing): chạy ứng dụng và tấn công qua HTTP; bắt lỗi runtime, misconfig, lỗi xác thực.
-  - **IAST** (Interactive Application Security Testing): gắn agent vào runtime, kết hợp data-flow runtime với vị trí code.
-  - **SCA** (Software Composition Analysis): kiểm tra thư viện bên thứ ba so với CSDL CVE.
-  - **Secret scanning**: tìm mật khẩu, khóa API, token bị commit vào code.
-  - **IaC scanning**: kiểm tra cấu hình hạ tầng (Terraform, K8s) tìm sai cấu hình.
-  - **Container scanning**: quét layer image, tìm CVE trong package OS và dependency ứng dụng đóng gói trong image.
-- **Semgrep**: công cụ SAST mã nguồn mở ("semantic grep") so khớp theo cấu trúc AST thay vì văn bản thuần. Giải quyết vấn đề: regex báo nhầm và bỏ sót, còn Semgrep cân bằng tốc độ và độ chính xác. Trọng tâm chương: viết **rule** YAML, dùng **metavariable** (`$X`), và **taint mode** (theo dõi dữ liệu bẩn từ source tới sink).
-- **Gitleaks**: secret scanner quét cả nội dung file và lịch sử git, dùng hai phương pháp bổ sung — regex nhận dạng cấu trúc (ví dụ khóa AWS bắt đầu bằng `AKIA`) và Shannon entropy đo độ ngẫu nhiên.
-- **Trivy**: scanner đa năng cho container image, filesystem, cấu hình IaC và SBOM; liệt kê thành phần và đối chiếu CVE đã công bố.
-- **Cổng pipeline (gate) & exit code**: **gate** là điểm quyết định cho qua hay chặn trong pipeline, giao tiếp qua **exit code** (`0` = pass, khác `0` = fail). Thiết kế **phân tầng**: lỗi nghiêm trọng chặn build, lỗi nhẹ chỉ cảnh báo, nhằm tránh alert fatigue mà vẫn chặn rủi ro khai thác được.
-- **An ninh chuỗi cung ứng, SBOM, ký artifact**: **chuỗi cung ứng phần mềm** gồm thư viện, công cụ build và hạ tầng đóng gói — mỗi mắt xích đều có thể bị đầu độc. **SBOM** (Software Bill of Materials) liệt kê mọi thành phần để truy nhanh sản phẩm nào chứa thành phần dính CVE (ví dụ Log4Shell). **Ký artifact** (cosign/sigstore) chứng minh artifact đến từ nguồn tin cậy và chưa bị sửa đổi.
-- **Quản lý secret & Vault**: thay cho secret tĩnh trong code, dùng secret manager tập trung như **HashiCorp Vault**. **Dynamic secret** cấp credential ngắn hạn theo yêu cầu rồi tự thu hồi. **OIDC/workload identity** giải bài toán "secret zero" bằng danh tính đã ký sẵn của môi trường chạy (ví dụ GitHub Actions).
-- **pre-commit hook**: script chạy ngay trước khi commit; nếu phát hiện vấn đề thì chặn commit. Đây là điểm shift-left xa nhất, bắt lỗi trước khi code rời máy dev. Vì dev có thể bỏ qua hook, các kiểm tra này phải được lặp lại ở phía CI.
+Phần sau chuyển từ công cụ sang cách vận hành chúng mà đội ngũ không quay lưng. **Gate** giao tiếp với pipeline qua exit code và phải phân tầng — lỗi nghiêm trọng chặn build, lỗi nhẹ chỉ cảnh báo — nếu không thì alert fatigue sẽ giết cả hệ thống kiểm soát. Kèm theo là an ninh chuỗi cung ứng (**SBOM** để trả lời "sản phẩm nào của mình chứa thành phần dính CVE", ký artifact bằng cosign/sigstore), quản lý secret tập trung với **Vault** — dynamic secret, và OIDC/workload identity để giải bài toán "secret zero" — cùng **pre-commit hook** như điểm shift-left xa nhất (nhưng dev bỏ qua được, nên CI vẫn phải kiểm lại). Mục cuối dành cho **code do AI sinh ra**: nó "chạy được mà không an toàn", lại thêm rủi ro riêng như slopsquatting, và cách xử lý là tận dụng chính pipeline đã có chứ không dựng quy trình song song.
 
-> Chương này là tài liệu tham chiếu để học và tra cứu. Mỗi công cụ đều có ví dụ chạy được, mỗi định dạng dữ liệu đều mô tả tới mức trường/byte, và mỗi cơ chế đều giải thích "vì sao thiết kế như vậy".
-
+> Mỗi công cụ trong chương đều có ví dụ chạy được và giải thích vì sao nó được thiết kế như vậy — chỗ nào phụ thuộc phiên bản thì có ghi chú riêng.
 ---
 
 ## 6.1. Triết lý shift-left & mô hình DevSecOps
@@ -67,6 +50,26 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 - **Fail tiered (phân tầng)**: không phải mọi phát hiện đều chặn build — phân biệt blocking vs warning (xem 6.9).
 - **Guardrails, không phải gatekeepers**: cung cấp lan can để đi nhanh an toàn, thay vì cổng chặn làm dev tìm cách đi vòng (shadow IT).
 
+### 6.1.3. Bức tranh pipeline shift-left theo tầng (áp dụng thực tế)
+
+Lý thuyết ở trên khi áp vào hệ thống mình vận hành trở thành một chuỗi tầng cụ thể, toàn bộ bằng công cụ mã nguồn mở. **Mỗi tầng bắt một lớp lỗi riêng, không tầng nào thay được tầng nào** — bỏ một tầng là mở đúng vùng mù của tầng đó.
+
+```
+IDE ────► pre-commit ────► CI (trên PR) ─────────► staging ────► runtime
+Semgrep    gitleaks         Semgrep + gitleaks      OWASP ZAP     SIEM
+/linter                     + Trivy (image+deps)    (DAST)        giám sát
+```
+
+| Tầng | Công cụ | Bắt lớp lỗi gì | Vì sao không bỏ được |
+|---|---|---|---|
+| IDE (lúc gõ code) | Semgrep extension, linter | Pattern nguy hiểm ngay khi viết (SQLi, `eval`, hardcode) | Feedback tức thì, chi phí sửa 1x; nhưng dev có thể tắt |
+| pre-commit (máy dev) | gitleaks | Secret trước khi vào lịch sử git | Secret đã commit + push coi như đã lộ, phải xoay vòng; nhưng hook bypass được bằng `--no-verify` |
+| CI trên PR | Semgrep (SAST) + gitleaks + Trivy (image + dependency) | Lỗi code, secret lọt qua hook, CVE thư viện và image | Cổng server-side không bypass được — lặp lại mọi kiểm tra của các tầng trước |
+| Staging (pre-deploy) | OWASP ZAP (DAST) | Lỗi runtime, misconfig, header thiếu — vùng mù của SAST | Chỉ thấy được khi app chạy thật |
+| Runtime (production) | SIEM giám sát & cảnh báo (xem [Chương 8](#sec-08)) | Tấn công thật, hành vi bất thường | Không bộ scanner nào bắt hết trước khi deploy; phải có mắt ở tầng cuối |
+
+Hai tầng đầu chạy trên máy dev nên chỉ là "lớp lịch sự" — giá trị thật là feedback sớm, còn tính cưỡng chế nằm ở CI (xem 6.12.3). Ngược lại, nếu chỉ có CI mà không có tầng IDE/pre-commit thì dev nhận lỗi muộn hơn hàng giờ và secret đã kịp vào lịch sử git.
+
 ---
 
 ## 6.2. Phân loại kỹ thuật quét bảo mật
@@ -75,15 +78,17 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 
 ### 6.2.1. Bảng tổng quan
 
-| Loại | Tên đầy đủ | Đầu vào | Cần chạy app? | Phát hiện tốt | Vùng mù |
-|---|---|---|---|---|---|
-| SAST | Static Application Security Testing | Source/bytecode | Không | SQLi, XSS, path traversal, hardcoded crypto | Lỗi runtime/config, auth logic |
-| DAST | Dynamic Application Security Testing | App đang chạy (HTTP) | Có | Lỗi runtime, server misconfig, auth | Không thấy code, coverage phụ thuộc crawler |
-| IAST | Interactive AST | Agent trong runtime + traffic | Có | Kết hợp data-flow runtime + vị trí code | Cần instrument, ngôn ngữ hạn chế |
-| SCA | Software Composition Analysis | Manifest/lockfile deps | Không | CVE thư viện bên thứ ba, license | Lỗi code tự viết |
-| Secret scanning | — | Source + git history | Không | API key, token, private key bị commit | Secret đã mã hóa, ngoài repo |
-| IaC scanning | Infrastructure as Code | Terraform/K8s/CFN | Không | S3 public, SG mở 0.0.0.0/0 | Drift runtime so với code |
-| Container scanning | — | Image layers / filesystem | Không | CVE OS packages, app deps trong image | Lỗi logic ứng dụng |
+| Loại | Tên đầy đủ | Đầu vào | Cần chạy app? | Phát hiện tốt | Vùng mù | Tool tiêu biểu |
+|---|---|---|---|---|---|---|
+| SAST | Static Application Security Testing | Source/bytecode | Không | SQLi, XSS, path traversal, hardcoded crypto | Lỗi runtime/config, auth logic | Semgrep, SonarQube |
+| DAST | Dynamic Application Security Testing | App đang chạy (HTTP) | Có | Lỗi runtime, server misconfig, auth | Không thấy code, coverage phụ thuộc crawler | OWASP ZAP |
+| IAST | Interactive AST | Agent trong runtime + traffic | Có | Kết hợp data-flow runtime + vị trí code | Cần instrument, ngôn ngữ hạn chế | (chủ yếu thương mại) |
+| SCA | Software Composition Analysis | Manifest/lockfile deps | Không | CVE thư viện bên thứ ba, license | Lỗi code tự viết | Trivy, Dependabot |
+| Secret scanning | — | Source + git history | Không | API key, token, private key bị commit | Secret đã mã hóa, ngoài repo | gitleaks |
+| IaC scanning | Infrastructure as Code | Terraform/K8s/CFN | Không | S3 public, SG mở 0.0.0.0/0 | Drift runtime so với code | Checkov, Trivy (misconfig) |
+| Container scanning | — | Image layers / filesystem | Không | CVE OS packages, app deps trong image | Lỗi logic ứng dụng | Trivy |
+
+Một điểm đáng chú ý với team nhỏ: bộ core (Semgrep, gitleaks, Trivy, ZAP, Checkov) đều mã nguồn mở và gần như miễn phí. Chi phí thật không phải license mà là **thời gian con người vận hành** — tune rule, triage kết quả, giữ pipeline sống. Bài toán không phải "có tiền mua tool" mà là "có kỷ luật dùng tool + automation để ít người kham được".
 
 ### 6.2.2. SAST — phân tích tĩnh
 
@@ -142,7 +147,7 @@ Semgrep ("semantic grep") là công cụ SAST mã nguồn mở, định vị gi�
                   Findings (JSON/SARIF)
 ```
 
-Điểm cốt lõi: **pattern trong rule cũng được parse thành AST** giống như code đích, rồi Semgrep so khớp **cấu trúc cây với cây** (structural match), không so khớp văn bản. Vì vậy:
+Cái hay nằm ở chỗ **pattern trong rule cũng được parse thành AST** giống như code đích, rồi Semgrep so khớp **cấu trúc cây với cây** (structural match), không so khớp văn bản. Nhờ vậy:
 
 - `foo(1, 2)` khớp dù code viết `foo(1,2)`, `foo( 1, 2 )`, hay xuống dòng.
 - Comment, khoảng trắng, dấu ngoặc thừa được bỏ qua một cách tự nhiên.
@@ -340,7 +345,7 @@ rules:
     mode: taint
     metadata:
       cwe: "CWE-89: SQL Injection"
-      owasp: "A03:2021 - Injection"
+      owasp: "A05:2025 - Injection"
       confidence: HIGH
     pattern-sources:
       - pattern: flask.request.$ANYTHING
@@ -386,7 +391,7 @@ rules:
     languages: [javascript, typescript]
     severity: ERROR
     message: "eval() với dữ liệu động → remote code execution (CWE-95)."
-    metadata: { cwe: "CWE-95", owasp: "A03:2021" }
+    metadata: { cwe: "CWE-95", owasp: "A05:2025" }
     patterns:
       - pattern: eval($X)
       - pattern-not: eval("...")     # cho phép eval chuỗi hằng (vẫn nên tránh)
@@ -490,6 +495,13 @@ Chiến lược giảm false positive theo thứ tự ưu tiên:
 result = eval(trusted_expr)   # nosemgrep: js-eval-user-input — chuỗi đã whitelist
 ```
 
+**Chiến lược chống false-positive fatigue ở quy mô team.** Nếu ngày đầu bật cả ruleset lớn và Semgrep báo hàng trăm cảnh báo, dev sẽ bỏ cuộc — đó là lúc scan chết trên thực tế dù vẫn chạy trong pipeline. Cách làm bền hơn:
+
+1. **Bắt đầu bằng ruleset nhỏ, high-confidence** (SQLi, hardcoded secret, XSS — những rule gần như không báo nhầm) rồi mở rộng dần khi team đã quen.
+2. **Chỉ số ít rule là blocking, còn lại warning** — phân tầng đúng nghĩa (xem 6.9), ưu tiên theo mức nghiêm trọng chứ không chạy theo số lượng finding.
+3. **Triage định kỳ**: lịch cố định xem lại finding warning, tune rule (`pattern-not`, sanitizer), quyết định nâng lên blocking hay bỏ hẳn. Rule không ai xem là rule nên tắt.
+4. **Custom rule cho pattern nội bộ đáng giá hơn bật hết ruleset**: SAST khó hiểu logic nghiệp vụ, nhưng vài rule tự viết đúng chỗ — kiểu "mọi controller phải có guard phân quyền", "cấm raw query không tham số hóa" — bắt đúng lỗi team hay mắc mà không thêm noise.
+
 Quy ước severity → hành động (liên kết với cổng pipeline 6.9):
 
 | Severity | Ý nghĩa | Hành động pipeline đề xuất |
@@ -529,6 +541,14 @@ gitleaks protect --staged --source .
 
 # Xuất báo cáo + exit code != 0 nếu có leak
 gitleaks detect --source . --report-format sarif --report-path leaks.sarif
+```
+
+Lưu ý phiên bản: từ gitleaks v8.19 bộ lệnh được tổ chức lại — `gitleaks git` (quét repo + lịch sử), `gitleaks dir` (quét thư mục, thay `detect --no-git`), `gitleaks stash`; hai lệnh `detect`/`protect` cũ bị đánh dấu deprecated nhưng vẫn chạy được (cần kiểm chứng theo version đang dùng):
+
+```bash
+gitleaks git .              # thay cho: gitleaks detect --source .
+gitleaks dir .              # thay cho: gitleaks detect --no-git --source .
+gitleaks git --pre-commit --staged .   # dùng trong pre-commit hook
 ```
 
 ### 6.7.3. `.gitleaks.toml` ví dụ
@@ -634,6 +654,33 @@ trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed myapp:ci    # ch�
 
 Hai lệnh tách biệt thể hiện nguyên tắc gate phân tầng (6.9): CRITICAL chặn, HIGH chỉ cảnh báo.
 
+### 6.8.4. Ưu tiên xử lý khi scanner báo hàng trăm CVE
+
+Lần đầu chạy dependency scan trên một codebase có tuổi, kết quả 200+ CVE là bình thường — và không ai fix hết được, nhất là khi người xử lý chỉ có một. Vấn đề không phải "fix hết" mà là **ưu tiên đúng**. Một CVE chỉ đáng xử lý ngay khi hội đủ:
+
+1. **Severity cao** (High/Critical) — lọc bằng `--severity`.
+2. **Đã có fix version** — lọc bằng `--ignore-unfixed`; CVE chưa có patch thì không hành động trực tiếp được (xem dưới).
+3. **Reachability**: nằm trong đường code thực chạy — không phải devDependency, không phải module import mà không dùng. Đây là yếu tố hay bị bỏ qua nhất: CVE 9.8 ở thư viện mà app không đi qua code path đó ít nguy hiểm hơn CVE 7.5 nằm ngay endpoint public.
+
+Ngoài CVSS (mức nghiêm trọng lý thuyết), nên đối chiếu thêm hai nguồn đo **khả năng bị khai thác thực tế**: **EPSS** (Exploit Prediction Scoring System — xác suất CVE bị khai thác trong 30 ngày tới) và **CISA KEV** (Known Exploited Vulnerabilities — danh sách lỗ hổng *đang* bị khai thác thật ngoài kia). CVE nằm trong KEV thì vá trước bất kể điểm CVSS.
+
+Với CVE Critical chưa có bản vá: xác định có thực sự dùng code path bị ảnh hưởng không; nếu có thì áp mitigation tạm (WAF rule, chặn input, tắt tính năng, cô lập service) và theo dõi advisory; nếu buộc hoãn thì risk acceptance **có thời hạn**, không để rơi vào quên lãng.
+
+Cơ chế ignore của Trivy phục vụ đúng việc này — nhưng phải có kỷ luật. File `.trivyignore` đặt ở repo:
+
+```
+# [PROD] Mỗi dòng ignore bắt buộc kèm lý do + ngày review lại.
+# CVE-2025-12345 (lodash): không dùng code path bị ảnh hưởng (chỉ import hàm cloneDeep)
+#   Người quyết: SecOps · Review lại: 2026-09-15
+CVE-2025-12345
+
+# CVE-2025-67890 (openssl trong base image): chưa có fix, đã chặn cipher liên quan ở LB
+#   Người quyết: SecOps · Review lại: 2026-08-30
+CVE-2025-67890
+```
+
+Trivy chỉ đọc các dòng CVE ID (dòng `#` là comment), nhưng chính phần comment mới là thứ giữ cho danh sách ignore không biến thành "nghĩa địa quyết định không ai nhớ lý do". Ignore không có ngày review là quên vĩnh viễn.
+
 ---
 
 ## 6.9. Thiết kế cổng pipeline — exit code và phân tầng
@@ -654,6 +701,8 @@ Nếu chặn build trên **mọi** finding (kể cả HIGH/MEDIUM), dev bị "al
 |---|---|---|---|---|
 | Blocking gate | CRITICAL (và ERROR có confidence HIGH) | 1 | Build đỏ, không merge | Chặn lỗ hổng khai thác được |
 | Warning gate | HIGH / WARNING | 0 | Build xanh + annotation/comment PR | Tạo nhận thức, đưa vào backlog |
+
+Tiêu chí chọn thứ được vào tầng blocking: **rõ ràng và gần như không false positive**. Trong thực tế mình chặn cứng ba nhóm — secret bị commit (gitleaks), CVE Critical/High **đã có fix version** (Trivy `--ignore-unfixed`), và IaC tạo tài nguyên nguy hiểm kiểu public bucket / security group mở `0.0.0.0/0`. Phần nhiễu (SAST severity thấp, DAST informational, CVE chưa có patch) chỉ cảnh báo + tạo ticket theo SLA. Chặn cứng tất cả thì team ghét pipeline và tìm cách bypass; nới lỏng tất cả thì gate vô nghĩa.
 
 ### 6.9.3. Ví dụ GitLab CI (.gitlab-ci.yml)
 
@@ -686,9 +735,9 @@ trivy_block:
 
 gitleaks:
   stage: security
-  image: zricethezav/gitleaks
+  image: ghcr.io/gitleaks/gitleaks:latest   # image chính thức hiện tại (bản cũ zricethezav/gitleaks vẫn tồn tại)
   script:
-    - gitleaks detect --source . --no-banner
+    - gitleaks git . --no-banner
 ```
 
 `allow_failure: true` là cơ chế GitLab cho phép job thất bại mà không làm đỏ pipeline — đúng nghĩa "warning gate". Job `semgrep_block` không có nó nên thất bại của nó chặn merge.
@@ -700,6 +749,16 @@ semgrep ci   # tự dùng baseline = nhánh đích trong môi trường CI
 # hoặc thủ công:
 semgrep --config auto --baseline-commit "$CI_MERGE_REQUEST_DIFF_BASE_SHA" .
 ```
+
+### 6.9.4. Cơ chế exception có kiểm soát
+
+Câu hỏi thực tế nhất về gate: **chặn merge mà release đang gấp thì sao?** Nếu không có câu trả lời trước, đội sẽ tự trả lời bằng cách tắt gate — và một khi đã tắt thì hiếm khi bật lại. Thiết kế exception đúng:
+
+- **Cần approve tường minh** của người chịu trách nhiệm bảo mật (hoặc lead được ủy quyền khi người đó vắng) — không phải dev tự quyết.
+- **Ghi lý do + tạo ticket vá bắt buộc có thời hạn** — override hôm nay là nợ có ngày trả, không phải xí xóa.
+- **Có dấu vết audit**: exception nằm trong comment PR / ticket, tra lại được ai duyệt, khi nào, vì sao. Không bao giờ override âm thầm (sửa config gate rồi trả lại).
+
+Exception là **ngoại lệ có kiểm soát, không phải cửa sau mặc định**. Và nó là công cụ đo sức khỏe của gate: nếu tuần nào cũng phải override thì vấn đề không nằm ở quy trình exception mà ở ngưỡng gate đang đặt sai — chỉnh gate, đừng bình thường hóa việc đi vòng.
 
 ---
 
@@ -756,7 +815,7 @@ Cấu trúc CycloneDX (JSON, rút gọn) — các trường chính:
 ```json
 {
   "bomFormat": "CycloneDX",
-  "specVersion": "1.5",
+  "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-...",
   "version": 1,
   "metadata": { "timestamp": "2026-06-19T00:00:00Z",
@@ -789,7 +848,8 @@ Mục tiêu: chứng minh artifact (image, SBOM, blob) **không bị sửa** và
 
 ```bash
 # Ký keyless: mở OIDC flow, lấy cert ngắn hạn, ký, ghi vào Rekor
-COSIGN_EXPERIMENTAL=1 cosign sign myregistry/myapp@sha256:abcd...
+# (từ cosign v2.0 keyless là mặc định, không cần COSIGN_EXPERIMENTAL=1 như bản 1.x — cần kiểm chứng)
+cosign sign myregistry/myapp@sha256:abcd...
 
 # Xác minh: kiểm tra chữ ký + identity được phép + có trong Rekor
 cosign verify \
@@ -889,8 +949,8 @@ repos:
     hooks:
       - id: gitleaks            # chặn secret trước khi commit
 
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.50.0
+  - repo: https://github.com/semgrep/semgrep   # org đã đổi tên từ returntocorp
+    rev: v1.50.0                               # pin theo bản mới nhất khi dùng (cần kiểm chứng)
     hooks:
       - id: semgrep
         args: ["--config", "p/security-audit", "--error", "--skip-unknown-extensions"]
@@ -938,9 +998,38 @@ git commit -m "feat: ..."
 | CI build | Semgrep, Trivy fs/config, SCA | SAST, SCA, IaC | Blocking (CRITICAL) + Warning (HIGH) |
 | Image build | Trivy image, cosign sign, SBOM | Container, ký, SBOM | Blocking CVE CRITICAL |
 | Pre-deploy | cosign verify, admission controller | Provenance/policy | Blocking nếu không ký |
-| Runtime | DAST/ZAP, WAF, EDR | DAST, monitoring | Cảnh báo + chặn tấn công |
+| Staging | OWASP ZAP (DAST) | DAST | Baseline mỗi PR, full scan trước release |
+| Runtime | WAF, EDR, SIEM | Monitoring/phát hiện | Cảnh báo + chặn tấn công |
 
 Nguyên tắc xuyên suốt: **mỗi tầng có vùng mù, chồng các tầng để bù lẫn nhau**; secret bắt càng sớm càng tốt; chỉ chặn build trên rủi ro khai thác được; mọi chính sách là code, versioned và review được.
+
+---
+
+## 6.14. Kiểm soát code do AI sinh ra — mô hình ba lớp
+
+### 6.14.1. Vấn đề
+
+Phần lớn dev hiện nay dùng AI coding assistant hằng ngày (các khảo sát đưa con số ~70%+ — cần kiểm chứng). AI viết code nhanh nhưng thường gợi ý code **chạy được mà không an toàn** — nối chuỗi SQL, thiếu validation, thiếu check phân quyền — vì nó tối ưu cho "hoạt động" chứ không nắm ngữ cảnh bảo mật của hệ thống. Trách nhiệm thì rõ: **người merge chịu trách nhiệm về lỗ hổng, không phải công cụ**. Quy ước dễ thuyết phục nhất: coi output của AI như code của một junior mới vào — hữu ích, nhưng bắt buộc review, và không bao giờ dán secret/PII vào prompt.
+
+Cách kiểm soát hiệu quả không phải là cấm AI (dev sẽ dùng lén) mà là đặt guardrail ở **ba lớp** — trước, trong và sau khi code sinh ra:
+
+| Lớp | Kiểm soát | Biện pháp cụ thể |
+|---|---|---|
+| **Input** (trước khi AI sinh code) | Định hướng AI ngay từ đầu | File rules cho AI assistant trong repo (vd `CLAUDE.md`, `.cursor/rules`) ghi security rule cụ thể: bắt buộc parameterized query, bắt buộc check authz, cấm hardcode secret. Semgrep custom rules cấm các pattern nguy hiểm mà AI hay sinh |
+| **Process** (trong luồng làm việc) | Bắt sớm trên máy dev và tại PR | pre-commit hook chạy Semgrep + gitleaks (6.12); AI security review tự động comment vấn đề bảo mật lên PR; PR security checklist bắt buộc (xem [Chương 7](#sec-07)) |
+| **Output** (trước khi ra production) | Cổng không thương lượng | CI tự động fail theo severity (Critical/High); **human review bắt buộc** cho luồng auth / payment / PII — không giao cho AI review AI ở những chỗ này; DAST trên staging trước khi lên production |
+
+Ba lớp này thực chất là pipeline shift-left ở 6.1.3 áp cho một nguồn code mới: code AI sinh không cần pipeline riêng, nó cần **đi qua đúng pipeline hiện có** cộng thêm lớp input (rules file) mà code người viết không có.
+
+### 6.14.2. Slopsquatting — rủi ro chuỗi cung ứng đặc thù của AI
+
+Một rủi ro mới xuất hiện cùng AI assistant: AI **bịa tên package không tồn tại** (hallucination) khi gợi ý dependency — và tên bịa này thường lặp lại giữa các phiên/model. Kẻ tấn công thu thập các tên hay bị bịa, **đăng ký trước** package đó lên registry public (npm/PyPI) kèm mã độc; dev tin gợi ý của AI, chạy `npm install` và tự tay kéo mã độc về. Kỹ thuật này gọi là **slopsquatting** — họ hàng với typosquatting và dependency confusion (6.10.1), nhưng "mồi" không phải lỗi gõ phím của người mà là tên do AI bịa ra.
+
+Phòng thủ:
+
+- **Verify package trước khi cài**: tồn tại thật không, bao nhiêu download, repo nguồn có thật không — đặc biệt với tên do AI gợi ý mà mình chưa từng nghe.
+- Lockfile + SCA scan (Trivy) trong CI để bắt package lạ/độc ngay khi vào dependency tree.
+- Đưa vào rules file cho AI: chỉ dùng dependency đã có trong lockfile, muốn thêm mới phải nêu rõ và để người quyết.
 
 ---
 
@@ -977,3 +1066,8 @@ Cơ chế baseline vs full: **baseline** chỉ spider và phân tích **bị đ�
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- Mình đang là người làm bảo mật duy nhất ở một công ty nhỏ, và bài học lớn nhất của chương này khi va vào thực tế: **automation + guardrail là cách duy nhất để một người scale**. Một người không thể ngồi review mọi PR — nếu mô hình vận hành là "mọi thứ qua tay SecOps" thì chắc chắn nghẽn, và đó là dấu hiệu phải sửa mô hình chứ không phải cố làm nhiều giờ hơn. Việc của mình là làm cho "làm đúng" thành con đường dễ nhất: rule chạy sẵn trong pipeline, gate tự động, dev tự nhận feedback trong vài phút mà không cần mình online.
+- Bài học chọn điểm bắt đầu: mình không dựng cả pipeline một lúc mà chọn **gitleaks trước** làm quick win. Lý do: secret leak là loại lỗi rõ ràng nhất (gần như không false positive, không phải tranh luận), triển khai nhanh (một hook pre-commit + một job CI), và giá trị thấy được ngay tuần đầu. Có "điểm thắng" đầu tiên được team công nhận rồi thì thêm Semgrep, Trivy sau dễ hơn nhiều — thứ tự triển khai là quyết định chính trị chứ không chỉ kỹ thuật.
+- Điều từng hiểu sai: tưởng gate càng gắt càng an toàn. Thực tế khi thử chặn build trên cả finding nhiễu, phản ứng của dev không phải là sửa hết mà là tìm đường vòng — `--no-verify`, xin exception liên tục, và mất niềm tin vào pipeline. Từ đó mình mới thấm bảng phân tầng ở 6.9: gate chỉ đáng tin khi mỗi lần nó đỏ, người ta tin là có chuyện thật. Số lần xin exception mỗi tuần giờ là metric mình dùng để đo ngưỡng gate có đang đặt đúng không.
+- Đang tìm hiểu tiếp: đưa EPSS/KEV vào luồng triage CVE một cách tự động thay vì tra tay, và viết thêm Semgrep custom rule cho các pattern nội bộ (kiểu "endpoint mới phải có guard phân quyền") — vài rule đúng chỗ đang bắt được nhiều lỗi thật hơn cả ruleset cộng đồng.

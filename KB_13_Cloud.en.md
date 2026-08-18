@@ -2,25 +2,13 @@
 
 ## Overview
 
-**Cloud security** is the set of measures that protect resources (compute, storage, database, networking) running on a provider's infrastructure such as AWS or GCP, rather than on infrastructure you own (on-premises). The core problem it addresses: in the cloud, a single misconfiguration can expose your entire dataset to the public Internet, and the vast majority of real-world data breaches originate from customer-side configuration errors — not from the provider being compromised.
+I picked up this cloud security material for a very practical reason: the infrastructure I run spans both AWS and OCI, and sooner or later GCP comes into the picture too when working with partners who run on it. Reading through real-world breach reports, one pattern keeps repeating: it's almost never the provider getting hacked — it's the customer misconfiguring something, a bucket left public, a security group with an admin port opened by mistake, an IMDSv1 nobody bothered to disable. So the first question this chapter needs to answer isn't "is the cloud safe," it's "out of this whole stack, which part is actually my job."
 
-This chapter covers the following knowledge blocks, each with a definition and the problem it solves:
+The chapter starts right at that boundary: the IaaS/PaaS/SaaS models and the Shared Responsibility Model, which spell out who patches which layer and kill the "the provider handles everything once we move to the cloud" assumption. From there it moves into the pieces you actually have to manage yourself — IAM and least privilege, VPCs with Security Groups and Network ACLs, the services most likely to bite you in practice like S3 and KMS, the observability layer of CloudTrail/CloudWatch/GuardDuty, and IMDS, a classic SSRF target if you're still running v1. Organizations and SCPs close out this half by locking down guardrails at the org level, independent of whether any individual account was configured carefully.
 
-- **IaaS / PaaS / SaaS service models** — three tiers layered by "who operates which layer" of the stack. IaaS leaves the customer the most to manage (guest OS, runtime, app); SaaS leaves the least (mainly data). Solves: defining the responsibility boundary for patching and configuration at each layer — misjudging that boundary is the root of most incidents.
-- **Shared Responsibility Model** — a framework that divides security responsibility between the provider ("security OF the cloud": hardware, hypervisor, physical network) and the customer ("security IN the cloud": IAM, encryption, network configuration, data). Solves: countering the misconception that "moving to the cloud means the provider handles everything."
-- **IAM (Identity and Access Management)** — the system for managing identities and permissions, expressing permissions through JSON policy documents (the cryptographic foundations of keys, signatures, and tokens are covered in [Chapter 4](#sec-04)). Solves: enforcing least privilege, so each identity holds only the minimum permissions it actually needs.
-- **VPC (Virtual Private Cloud)** — an isolated virtual network, divided into public subnets (with an Internet route) and private subnets (not exposed externally). Solves: isolating sensitive resources such as databases from direct Internet access.
-- **Security Group and Network ACL** — two firewall mechanisms: Security Groups operate at the instance level and are stateful; Network ACLs operate at the subnet level and are stateless. Solves: controlling inbound/outbound traffic, especially blocking sensitive administrative ports.
-- **Amazon S3** — object storage organized into buckets. Solves: storing files at large scale; the main risk is unintended public configuration, controlled with Block Public Access.
-- **KMS (Key Management Service)** — a service for managing encryption keys, keeping root keys inside an HSM and logging every use. Solves: protecting encryption keys and creating an audit trail for each decryption.
-- **CloudTrail and CloudWatch** — CloudTrail records every API call (the primary investigation source); CloudWatch provides metrics, logs, and alarms. Solves: observability and detection of anomalous behavior.
-- **GuardDuty** — a threat detection service based on ML and threat intelligence, analyzing logs automatically. Solves: detecting suspicious behavior at a scale that cannot be handled manually.
-- **IMDS (Instance Metadata Service)** — a service that issues temporary credentials to instances at the link-local address `169.254.169.254`. IMDSv1 is easily exploited via SSRF; IMDSv2 requires a session token. Solves: explains why enforcing IMDSv2 is mandatory.
-- **Organizations and SCP (Service Control Policy)** — Organizations group multiple accounts into a management tree; SCPs set a maximum permission ceiling applied from the organization level downward, constraining even the root of member accounts. Solves: establishing safe guardrails that do not depend on each individual account's configuration.
-- **GCP and the equivalence mapping table** — GCP offers services equivalent to AWS under different names (S3 ↔ Cloud Storage, IAM Role ↔ Service Account, CloudTrail ↔ Audit Logs). Solves: learn one platform and infer the other in a multi-cloud environment.
-- **Cloud attacks, CSPM, and Secret Manager** — common attack paths (misconfiguration, credential leaks in source code, privilege escalation), CSPM tools that continuously scan for misconfigurations, and Secret Manager for centralized secret storage instead of hardcoding. Solves: prevention and early detection at lower cost than incident response.
+The second half steps outside AWS: first a mapping table to GCP so learning one platform lets you infer the other, then a dedicated section on OCI (13.14). I used to assume OCI was just AWS with different service names — turns out a lot of the foundational concepts are genuinely different: isolation by compartment instead of account, policies written as sentences instead of JSON, buckets private by default instead of something you have to lock down yourself. After lining up all three platforms, the chapter wraps with common cloud attack paths, CSPM tools that continuously scan for misconfiguration, and Secret Manager for keeping secrets out of source code.
 
-> This chapter is a technical reference for self-study and lookup. Every data structure is described down to the field/byte level; every tool includes real command examples, real configuration files, and sample output. Wherever a figure may change over time (service limits, regions, unpublished internal formats), the document explicitly notes "needs verification."
+> Examples throughout are real AWS CLI and OCI CLI commands with sample output; anywhere a figure might drift over time, it's flagged "needs verification."
 
 ---
 
@@ -34,7 +22,7 @@ Cloud computing is layered by "who operates which layer" of the infrastructure s
 |---|---|---|---|---|
 | IaaS (Infrastructure) | Hypervisor, host OS, physical network, physical storage | Guest OS, runtime, app, data, virtual network configuration | EC2, EBS, VPC | Compute Engine, Persistent Disk |
 | PaaS (Platform) | Additionally: OS, runtime, patching | App code + data + application configuration | Elastic Beanstalk, Lambda, RDS | App Engine, Cloud Functions, Cloud SQL |
-| SaaS (Software) | The entire stack | Only user data + in-app configuration | WorkMail, Chime | Workspace |
+| SaaS (Software) | The entire stack | Only user data + in-app configuration | WorkMail, QuickSight | Workspace |
 
 ### 13.1.2. Internals: the trust boundary shifts by layer
 
@@ -1012,13 +1000,213 @@ Example findings: `PUBLIC_BUCKET_ACL`, `SERVICE_ACCOUNT_KEY_NOT_ROTATED`, `OPEN_
 
 ---
 
-## 13.14. Cloud attacks and how to detect them
+## 13.14. OCI — Oracle Cloud Infrastructure
 
-### 13.14.1. Misconfiguration
+### 13.14.1. What it is and why I had to learn it
 
-The leading cause. Detected with CSPM (section 13.15). Forms include: public buckets, SGs open to `0.0.0.0/0` on administrative ports (22/3389/database), CloudTrail not enabled, encryption disabled, IMDSv1 still enabled, IAM policies with `"Action":"*","Resource":"*"`.
+I run two clouds in practice: prod on AWS, and dev (plus part of prod) on OCI (Oracle Cloud Infrastructure). Why I have to know OCI: it is **not a renamed copy of AWS** — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.
 
-### 13.14.2. Credential leak — keys in git
+The biggest difference to grasp up front: **AWS isolates with *accounts*, while OCI isolates with *compartments* inside a single *tenancy*.** Getting this wrong means getting OCI's entire permission model wrong.
+
+### 13.14.2. Tenancy and Compartment — the logical permission tree
+
+- **Tenancy**: the root of all of an organization's OCI resources — equivalent to "AWS Organizations + the root account" fused into one. Every OCI resource has an OCID (Oracle Cloud ID) of the form `ocid1.<type>.<realm>..<hash>` and always belongs to a tenancy.
+- **Compartment**: a **logical folder tree** for grouping resources and applying permissions. This is where OCI differs most from AWS. On AWS, to separate environments/teams you typically split *accounts* and stitch them together with Organizations; on OCI, a single tenancy contains many nested compartments (`dev`, `prod`, `prod/db`, `shared-network`...), and permissions are granted *per compartment*.
+
+```
+Tenancy (root)
+ ├── Compartment: network-shared      (shared VCN, subnets)
+ ├── Compartment: dev                 (dev environment resources)
+ │     └── Compartment: dev/app
+ └── Compartment: prod                (prod resources running on OCI)
+       ├── Compartment: prod/app
+       └── Compartment: prod/data     (buckets, DB — most tightly locked)
+```
+
+**Why compartments are convenient:** permissions, quotas, and even cost-tracking are attached per compartment; deleting a compartment cleans out everything inside it. But precisely because it is "one tenancy, many compartments," the isolation boundary is **weaker than AWS account separation** — a loose policy written at the tenancy level can leak permissions down into every compartment. This is why the part of prod running on OCI must sit in its own compartment with policies scoped correctly (see 13.14.9).
+
+### 13.14.3. IAM policy as statements (completely unlike AWS JSON)
+
+This is what surprised me most coming from AWS. OCI IAM policy is **not a JSON document** with `Effect/Action/Resource` like AWS — it is **near-readable English sentences**:
+
+```
+Allow group <group-name> to <verb> <resource-type> in compartment <name> [where <condition>]
+```
+
+Real examples:
+
+```
+Allow group Developers to manage object-family in compartment dev
+Allow group DBAdmins   to manage database-family in compartment prod:data
+Allow group Auditors   to read all-resources in tenancy
+Allow group AppOps     to use secret-family in compartment prod where request.region = 'ap-singapore-1'
+```
+
+The four **permission verbs**, ordered by increasing power (worth memorizing — different from AWS's enumeration of individual actions):
+
+| Verb | Includes | AWS equivalent (conceptual) |
+|---|---|---|
+| `inspect` | list resources (metadata, no sensitive contents) | `List*` |
+| `read` | inspect + read contents/details | `List* + Get*/Describe*` |
+| `use` | read + operate on / update existing (no create/delete) | `Get* + Update*/runtime actions` |
+| `manage` | use + create and delete | full control over the resource type |
+
+`<resource-type>` uses pre-grouped "families": `object-family` (Object Storage), `instance-family` (Compute), `virtual-network-family` (VCN), `secret-family`, `vaults`, `keys`... The `where` clause attaches conditions (region, time, `target.compartment.name`, tags...) — equivalent to AWS `Condition` but written inline in the sentence.
+
+**Why I like this syntax:** reading an OCI policy is almost like reading the policy in plain English, with far less of AWS's "syntactically valid JSON but wrong intent." **Where it trips you up:** there is no explicit `Deny` — OCI IAM only has Allow (implicit deny by default). To "forbid" something you must *not grant* it, or tighten by compartment scope, or use another mechanism (Network Sources, tag-based). The habit of writing `Deny` guardrails like AWS SCPs **does not port directly** — you have to rethink it as narrowing the scope of what you grant.
+
+### 13.14.4. Dynamic Group + Instance/Resource Principal (workload identity, no static keys)
+
+This is the part of OCI I value most, and it maps directly onto AWS's "IAM role attached to EC2": it lets compute/functions **obtain temporary credentials to call OCI APIs without embedding static keys in code**.
+
+The mechanism has two steps:
+
+1. **Dynamic Group**: groups *resources* (not users) by a *matching rule* — e.g. every instance in a compartment, or a specific function.
+
+   ```
+   # A dynamic group's matching rule
+   ALL {instance.compartment.id = 'ocid1.compartment.oc1..aaaa....dev'}
+   ```
+
+2. **A policy granting permissions to that dynamic group** (written just like a normal policy, with `dynamic-group` as the subject):
+
+   ```
+   Allow dynamic-group DevInstances to read secret-family in compartment dev
+   Allow dynamic-group DevInstances to use keys        in compartment dev
+   ```
+
+Then code running on the instance uses an **Instance Principal** to authenticate itself (the SDK fetches temporary certificates from the metadata endpoint), with no key file at all:
+
+```python
+import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+secrets = oci.secrets.SecretsClient(config={}, signer=signer)
+# calls the API with the machine's identity — temporary, auto-rotated credentials, never on disk
+```
+
+- **Instance Principal**: for VMs/compute.
+- **Resource Principal**: for serverless (OCI Functions) and some managed services — equivalent to a Lambda execution role.
+
+**Why it matters:** as on AWS, the crux is **"machine identity, not a key file."** Even the "secret to fetch the secret" is not on disk: the app uses its Instance Principal to authenticate, then fetches the real secret from Vault at startup. This is the correct way for a service in the dev OCI environment to access Vault without hardcoding credentials.
+
+### 13.14.5. OCI Vault — KMS + Secrets in one place
+
+OCI Vault combines the two roles that AWS splits into **KMS** (keys) and **Secrets Manager** (secrets):
+
+- **Keys (encryption keys)**: master keys protected in an HSM. Two vault types: *Default* (HSM partition shared with other tenants — cheaper, fine for most needs) and *Virtual Private Vault* (a dedicated HSM partition, stronger isolation, for stricter compliance requirements — pricing and limits need verification at time of use). Used for at-rest encryption of Block Volumes, Object Storage, databases. Supports rotation and envelope encryption on the same principle as KMS (section 13.7.2).
+- **Secrets**: DB passwords, API keys... stored encrypted with a key in the Vault, managed as immutable *versions*.
+
+```bash
+# Read a secret (bundle) — the returned content is base64-encoded
+oci secrets secret-bundle get-secret-bundle-by-name \
+  --secret-name db-password --vault-id ocid1.vault.oc1..aaaa
+```
+
+My actual secrets architecture: **prod uses AWS Secrets Manager, the part running on OCI uses OCI Vault** — same principle: the app holds no static key to call the secret store, it uses an IAM role (AWS) / Instance Principal (OCI) to authenticate and then fetches secrets at runtime.
+
+### 13.14.6. VCN — Security List (subnet level) vs NSG (VNIC level)
+
+A VCN (Virtual Cloud Network) is OCI's isolated virtual network, equivalent to a VPC. But OCI's firewall mechanism has **two layers coexisting**, and the mapping to AWS is not perfectly 1-to-1, which makes it easy to confuse:
+
+| Criterion | Security List (OCI) | Network Security Group / NSG (OCI) |
+|---|---|---|
+| Attached where | **Subnet** (applies to EVERY VNIC in the subnet) | Each resource's **VNIC** (grouped by function) |
+| Closest AWS analog | close to **NACL** (subnet level) but **stateful by default** | close to **Security Group** (interface level) |
+| Stateful? | per-rule choice: **stateful or stateless** | stateful by default (can choose stateless) |
+| Source reference | CIDR, or Service (for a Service Gateway) | CIDR **or another NSG** (like AWS SG-to-SG) |
+
+The easiest trap coming from AWS: on OCI a packet must pass **BOTH the subnet's Security List AND the VNIC's NSG** — both must allow it for the packet to flow (an AND intersection). People used to AWS often only adjust the NSG (thinking of it as a Security Group) and forget that the subnet's Security List is still blocking, or vice versa.
+
+Another difference from AWS: a Security List is **stateful by default** (not stateless like a NACL), so you usually do not have to manually open the ephemeral port range for return traffic — unless you deliberately set a rule to stateless. Practical recommendation: prefer **NSGs** for functional network segmentation (NSG-to-NSG references, mirroring the SG-to-SG best practice), keeping Security Lists minimal/default.
+
+### 13.14.7. Object Storage — private by default, PAR instead of public
+
+Object Storage is OCI's object store (equivalent to S3). There is one point I consider a **design plus** compared to S3's history:
+
+- **Buckets are private by default.** To make one public you must **actively** change its visibility to Public. Unlike early-days S3 (where loose configuration + public-read ACLs were the classic leak source), OCI's "accidentally public" risk is lower by default — but *you still have to check*, because someone can still switch it to public by mistake.
+- **Pre-Authenticated Requests (PARs)** replace opening a bucket to the public: create a URL with an **expiry time** and a scope (a single object or the whole bucket, read/write) — equivalent to an S3 pre-signed URL. When you need to share a file, issue a time-limited PAR; do **not** make the bucket public.
+- At-rest encryption is on by default (Oracle-managed key); sensitive data should move to a **customer-managed key in OCI Vault** to control rotation + audit who uses the key.
+
+```bash
+# Create a PAR to read one object, expiring in 24h — instead of making the bucket public
+oci os preauth-request create --namespace <ns> --bucket-name reports \
+  --name share-q1 --access-type ObjectRead \
+  --object-name q1.pdf --time-expires 2026-08-15T00:00:00Z
+```
+
+**Cloud Guard** (section 13.14.8) automatically flags public buckets — so enable it as a detection layer.
+
+### 13.14.8. Cloud Guard — OCI's CSPM
+
+Cloud Guard is OCI's cloud security posture management (CSPM) service, equivalent to GuardDuty + Security Hub + Config combined (or GCP's SCC):
+
+- **Detectors** scan for risky configuration/behavior and raise **Problems**: public buckets, security rules open to `0.0.0.0/0` on admin ports, overly broad IAM policies, unpatched instances, keys/secrets nearing expiry...
+- **Responders** allow automated or semi-automated remediation (e.g. automatically closing a public bucket).
+- Benchmarked against CIS OCI Foundations.
+
+In the systems I operate, Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.
+
+### 13.14.9. OCI metadata endpoint — IMDS v2 requires the `Authorization: Bearer Oracle` header
+
+OCI also has a metadata service at the exact same link-local address **`169.254.169.254`** as AWS/GCP, and Instance Principals fetch their temporary certificates through it — so it presents **the same SSRF attack surface** as AWS IMDS (SSRF mechanism: [Chapter 5](#sec-05)).
+
+The notable defensive difference — how each side blocks SSRF:
+
+| | AWS IMDSv2 | OCI IMDS v2 |
+|---|---|---|
+| Path | `/latest/meta-data/...` | `/opc/v2/...` |
+| Protection | **PUT** to fetch a token first, then GET with the token header | GET with a **fixed header** `Authorization: Bearer Oracle` |
+| Why it blocks naive SSRF | basic SSRF can only do GET, cannot PUT a token | basic SSRF cannot add the `Authorization` header itself |
+
+```bash
+# OCI IMDS v2 — a missing header is rejected
+curl -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/instance/
+curl -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/identity/cert.pem
+```
+
+**Important note:** the `Authorization: Bearer Oracle` header is a **fixed constant**, not a secret — it only raises the bar against *naive* SSRF (the kind that can only inject a URL, not add a header). An SSRF that can control headers still gets through. So do not treat metadata v2 (whether AWS or OCI) as sufficient: you still have to apply the full SSRF defense set at the application layer (domain allowlist, block private/link-local IPs `169.254.0.0/16`, validate the IP after DNS resolution to defeat rebinding, disable/validate redirects). OCI v1 (`/opc/v1/`) requires no header — so enforce v2 just as you enforce IMDSv2 on AWS.
+
+### 13.14.10. AWS ↔ OCI ↔ GCP mapping table
+
+A quick lookup when jumping between the three platforms — learn one, infer the other two:
+
+| Concept | AWS | OCI | GCP |
+|---|---|---|---|
+| Isolation boundary | Account (+ Organizations) | **Compartment** (within one tenancy) | Project (+ Folder/Org) |
+| IAM policy syntax | JSON (`Effect/Action/Resource`) | **Statements** (`Allow group … to … in compartment …`) | JSON binding (member+role) |
+| Workload identity | IAM Role on EC2 | **Instance/Resource Principal** (+ Dynamic Group) | Service Account (+ Workload Identity) |
+| Org guardrail | SCP (has Deny) | *(no Deny; tighten via compartment scope / policy)* | Organization Policy |
+| Virtual network | VPC | **VCN** | VPC (global) |
+| Interface-level firewall | Security Group | **NSG** | Firewall rule (by tag/SA) |
+| Subnet-level firewall | NACL (stateless) | **Security List** (stateful by default) | *(none; use priority)* |
+| Object storage | S3 | **Object Storage** | Cloud Storage |
+| Private-by-default bucket | BPA (on by default since 4/2023) | **Private by default already** | Uniform bucket-level access |
+| Time-limited share URL | Pre-signed URL | **Pre-Authenticated Request (PAR)** | Signed URL |
+| Key management | KMS | **Vault (Keys)** | Cloud KMS |
+| Secret management | Secrets Manager | **Vault (Secrets)** | Secret Manager |
+| API audit | CloudTrail | **Audit** (on by default) | Cloud Audit Logs |
+| CSPM / threat detection | GuardDuty + Security Hub + Config | **Cloud Guard** | Security Command Center |
+| Metadata endpoint | `169.254.169.254` `/latest/` (IMDSv2: PUT token) | `169.254.169.254` `/opc/v2/` (`Bearer Oracle` header) | `metadata.google.internal` |
+
+### 13.14.11. Multi-cloud operating principles (practical experience)
+
+Running AWS (prod) + OCI (dev and part of prod) side by side, I have distilled a few principles that theory rarely states bluntly:
+
+- **The correct boundary is prod vs non-prod, NOT AWS vs OCI.** Having prod on AWS and dev on OCI is merely a *fortunate coincidence* (separating both provider and credentials, so the blast radius is small), but do not turn "provider" into a security-classification criterion.
+- **The part of prod running on the "dev" cloud must meet the SAME tight standard as the main prod.** This is the most dangerous trap: a prod compartment sitting in the same tenancy as dev easily "inherits" dev's loose configuration habits (broad network rules, permissive buckets, tenancy-wide policies). Prod-OCI must have: least privilege by compartment, no public buckets, secrets in Vault, logging/Cloud Guard enabled — exactly like prod-AWS.
+- **Separate credentials / network / permissions across environments.** A leaked dev credential must not open anything in prod. Any connection between the two clouds (if it exists, e.g. an AWS↔OCI VPN) opens only the ports genuinely needed.
+- **Real data does not live in dev.** A dev environment being more loosely configured is normal — but only acceptable when dev *does not touch real data*. The biggest risk of the "dev on OCI" model is a loosely configured dev machine accidentally holding production data.
+- **Standardize with IaC to manage two IAM/tooling stacks.** The price of multi-cloud is managing two IAM systems and two toolsets; offset it with Terraform/IaC + policy-as-code (Checkov/Trivy scanning both AWS and OCI config) so you don't have to remember two ways of configuring by hand.
+
+---
+
+## 13.15. Cloud attacks and how to detect them
+
+### 13.15.1. Misconfiguration
+
+The leading cause. Detected with CSPM (section 13.16). Forms include: public buckets, SGs open to `0.0.0.0/0` on administrative ports (22/3389/database), CloudTrail not enabled, encryption disabled, IMDSv1 still enabled, IAM policies with `"Action":"*","Resource":"*"`.
+
+### 13.15.2. Credential leak — keys in git
 
 AWS access keys have a clearly identifiable form:
 
@@ -1054,7 +1242,7 @@ Sample gitleaks output:
 
 GitHub Secret Scanning + push protection blocks it the moment you push; AWS has a mechanism that automatically attaches the `AWSCompromisedKeyQuarantine` policy when it detects a public key.
 
-### 13.14.3. Privilege Escalation via `iam:PassRole`
+### 13.15.3. Privilege Escalation via `iam:PassRole`
 
 This is one of the most dangerous and common privilege-escalation paths.
 
@@ -1107,7 +1295,7 @@ pacu
 > run iam__privesc_scan
 ```
 
-### 13.14.4. Exposed bucket — detection and exploitation
+### 13.15.4. Exposed bucket — detection and exploitation
 
 ```bash
 # Try anonymous listing
@@ -1119,13 +1307,13 @@ aws s3 cp s3://target-bucket/secret.txt . --no-sign-request
 
 ---
 
-## 13.15. CSPM — Cloud Security Posture Management
+## 13.16. CSPM — Cloud Security Posture Management
 
-### 13.15.1. What it is
+### 13.16.1. What it is
 
 CSPM automatically scans cloud configuration against benchmarks (CIS, PCI) and continuously detects deviations. Native: AWS Security Hub + Config, GCP SCC. Open source: **Prowler**, **ScoutSuite**.
 
-### 13.15.2. Prowler — practical example
+### 13.16.2. Prowler — practical example
 
 ```bash
 # Run all checks against the CIS benchmark, export HTML + JSON
@@ -1140,14 +1328,14 @@ FAIL  iam_root_mfa_enabled     account 1234     Root account MFA not enabled
 PASS  cloudtrail_multi_region  account 1234     Multi-region trail enabled
 ```
 
-### 13.15.3. ScoutSuite
+### 13.16.3. ScoutSuite
 
 ```bash
 scout aws --report-dir ./scout-report
 # Open ./scout-report/scoutsuite-results/...html to view the risk dashboard by service
 ```
 
-### 13.15.4. AWS Config rule (native CSPM)
+### 13.16.4. AWS Config rule (native CSPM)
 
 ```bash
 # Enable a managed rule that checks buckets are not public
@@ -1161,9 +1349,9 @@ Config continuously evaluates resources as they change and flags them NON_COMPLI
 
 ---
 
-## 13.16. Secret Manager
+## 13.17. Secret Manager
 
-### 13.16.1. AWS Secrets Manager
+### 13.17.1. AWS Secrets Manager
 
 Stores secrets (DB passwords, API keys) encrypted with KMS, and supports **automatic rotation** via a Lambda rotation function.
 
@@ -1178,7 +1366,7 @@ aws secretsmanager get-secret-value --secret-id prod/db/password \
 
 Compared to Parameter Store: Secrets Manager has built-in rotation + charges per secret; SSM Parameter Store (SecureString) is cheaper but does not rotate automatically.
 
-### 13.16.2. GCP Secret Manager
+### 13.17.2. GCP Secret Manager
 
 Versions are immutable; access is controlled via the IAM role `roles/secretmanager.secretAccessor`.
 
@@ -1191,17 +1379,18 @@ gcloud secrets versions access latest --secret=db-pass
 
 ---
 
-## 13.17. Summary of core defensive principles
+## 13.18. Summary of core defensive principles
 
 | Principle | Concrete application |
 |---|---|
-| Least privilege | Fine-grained IAM/roles, specific Resources, drop `*` |
-| Explicit deny guardrail | SCP / Org Policy / permission boundary |
-| Eliminate long-lived credentials | IAM Role/SA tokens instead of access keys; WIF; IMDSv2 |
-| Encryption by default | SSE-KMS/CMEK + block non-TLS |
-| Observability | CloudTrail + Config + GuardDuty / Audit Logs + SCC, immutable logs |
-| Block public by default | S3 BPA / Uniform bucket-level access |
-| Continuous detection | CSPM (Prowler/ScoutSuite/SCC) + secret scanning in CI |
+| Least privilege | Fine-grained IAM/roles, specific Resources/compartments, drop `*` |
+| Explicit deny guardrail | SCP / Org Policy / permission boundary (OCI has no Deny — tighten via compartment scope) |
+| Eliminate long-lived credentials | IAM Role/SA token/Instance Principal instead of access keys; WIF; IMDSv2 |
+| Encryption by default | SSE-KMS/CMEK/OCI Vault key + block non-TLS |
+| Observability | CloudTrail + Config + GuardDuty / Audit Logs + SCC / OCI Audit + Cloud Guard, immutable logs |
+| Block public by default | S3 BPA / Uniform bucket-level access / OCI buckets private by default |
+| Continuous detection | CSPM (Prowler/ScoutSuite/SCC/Cloud Guard) + secret scanning in CI |
+| Environment boundary | Split by prod vs non-prod (not by provider); prod on the "dev" cloud locked as tightly as main prod |
 
 All cloud security architecture reduces to: **tight identity control (IAM), eliminating long-lived secrets, encrypting everywhere, complete and immutable logging, blocking public access by default, and continuously scanning for misconfigurations.** Most real-world incidents lie within "IN the cloud" — that is, within your control and your responsibility.
 
@@ -1211,3 +1400,15 @@ All cloud security architecture reduces to: **tight identity control (IAM), elim
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+**From AWS to OCI — the spots where my mental model failed me.** I learned cloud on AWS first, so when I had to also operate OCI (dev and part of prod) I tripped exactly on the concepts that look similar but aren't:
+
+- **A compartment is not an account.** At first I kept looking for "create a sub-account" like AWS Organizations, and only later realized OCI isolates with compartments *inside a single tenancy*. The security consequence: the boundary is weaker than account separation, so a policy written at the tenancy level can leak permissions down into every compartment. Since then I carefully scope `in compartment <specific>` rather than `in tenancy` for convenience.
+- **Policy as sentences, and NO Deny.** The `Allow group … to manage … in compartment …` syntax reads pleasantly, but it took me a while to internalize that there is *no explicit `Deny`* like an SCP. The AWS habit of building guardrails with explicit Deny doesn't carry straight over — you have to rethink it as "grant only the right scope," or use Network Sources/tags. This is something I'm still exploring: what to use as a tidy tenancy-level guardrail on OCI equivalent to an SCP.
+- **Two firewall layers, Security List + NSG.** Once I changed a rule on an NSG and the packet still wouldn't flow; after debugging I remembered the subnet's Security List was still blocking — both must allow it (AND). And a Security List is **stateful by default** (unlike AWS NACLs, which are stateless), so don't mechanically open the ephemeral port range out of NACL habit. Now my rule of thumb: segment the network with NSGs (NSG-to-NSG references), keep Security Lists minimal.
+- **Private-by-default buckets are a real plus.** After the classic "S3 public-read" trauma, OCI Object Storage being private by default is a relief — but I still enable Cloud Guard so it flags anything that gets flipped to public. To share a file I issue a time-limited Pre-Authenticated Request, never leaving a bucket public "for convenience."
+- **The `Bearer Oracle` metadata header is not a secret.** At first I assumed the `Authorization: Bearer Oracle` header was some kind of token and felt reassured. It isn't — it's a fixed constant, blocking only *naive* SSRF (the kind that can't add a header). An SSRF that controls headers still gets through. So I still apply the full SSRF defense set at the app layer and treat metadata v2 (both AWS and OCI) as just one extra layer.
+
+**The biggest multi-cloud lesson:** the real security boundary is **prod vs non-prod**, not AWS vs OCI. For prod running on OCI I enforce the same tight standard as prod on AWS — the trap is letting a prod compartment "inherit" dev's loose habits because they share a tenancy. Having prod-AWS and dev-OCI separate both provider and credentials is a *fortuitous* blast-radius advantage, but I don't lean on it in place of configuration discipline.
+
+**Still exploring:** standardizing both clouds with Terraform + policy-as-code (Checkov/Trivy scanning both AWS and OCI) to avoid remembering two ways of configuring by hand; and how to funnel Cloud Guard (OCI) logs/alerts together with GuardDuty/Config (AWS) into one place so a single person can still keep up.

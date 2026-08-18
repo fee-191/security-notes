@@ -1,0 +1,2102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 13 — Cloud Security — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 13 — Cloud Security — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch12.html"><link rel="next" href="ch14.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter open active" data-ch="13"><a class="nav-ch-title" href="#top"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"><a class="nav-sub" href="#ch13-overview">Overview</a><a class="nav-sub" href="#ch13-131-cloud-service-models-iaas-paas-saas">13.1. Cloud service models: IaaS / PaaS / SaaS</a><a class="nav-sub" href="#ch13-132-shared-responsibility-model">13.2. Shared Responsibility Model</a><a class="nav-sub" href="#ch13-133-aws-iam-identity-and-access-management">13.3. AWS IAM — Identity and Access Management</a><a class="nav-sub" href="#ch13-134-aws-vpc-virtual-private-cloud">13.4. AWS VPC — Virtual Private Cloud</a><a class="nav-sub" href="#ch13-135-security-group-stateful-vs-network-acl-stateless">13.5. Security Group (stateful) vs Network ACL (stateless)</a><a class="nav-sub" href="#ch13-136-amazon-s3-object-storage">13.6. Amazon S3 — object storage</a><a class="nav-sub" href="#ch13-137-aws-kms-key-management-service">13.7. AWS KMS — Key Management Service</a><a class="nav-sub" href="#ch13-138-cloudtrail-the-api-log">13.8. CloudTrail — the API log</a><a class="nav-sub" href="#ch13-139-cloudwatch">13.9. CloudWatch</a><a class="nav-sub" href="#ch13-1310-guardduty">13.10. GuardDuty</a><a class="nav-sub" href="#ch13-1311-imds-instance-metadata-service-v1-vs-v2">13.11. IMDS — Instance Metadata Service (v1 vs v2)</a><a class="nav-sub" href="#ch13-1312-aws-organizations-scp-service-control-policy">13.12. AWS Organizations &amp;amp; SCP (Service Control Policy)</a><a class="nav-sub" href="#ch13-1313-gcp-aws-equivalents">13.13. GCP — AWS equivalents</a><a class="nav-sub" href="#ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</a><a class="nav-sub" href="#ch13-1315-cloud-attacks-and-how-to-detect-them">13.15. Cloud attacks and how to detect them</a><a class="nav-sub" href="#ch13-1316-cspm-cloud-security-posture-management">13.16. CSPM — Cloud Security Posture Management</a><a class="nav-sub" href="#ch13-1317-secret-manager">13.17. Secret Manager</a><a class="nav-sub" href="#ch13-1318-summary-of-core-defensive-principles">13.18. Summary of core defensive principles</a><a class="nav-sub" href="#ch13-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-13" data-ch="13">
+<h1 id="ch13-chapter-13-cloud-security">Chapter 13 — Cloud Security</h1>
+<h2 id="ch13-overview">Overview</h2>
+<p>I picked up this cloud security material for a very practical reason: the infrastructure I run spans both AWS and OCI, and sooner or later GCP comes into the picture too when working with partners who run on it. Reading through real-world breach reports, one pattern keeps repeating: it's almost never the provider getting hacked — it's the customer misconfiguring something, a bucket left public, a security group with an admin port opened by mistake, an IMDSv1 nobody bothered to disable. So the first question this chapter needs to answer isn't "is the cloud safe," it's "out of this whole stack, which part is actually my job."</p>
+<p>The chapter starts right at that boundary: the IaaS/PaaS/SaaS models and the Shared Responsibility Model, which spell out who patches which layer and kill the "the provider handles everything once we move to the cloud" assumption. From there it moves into the pieces you actually have to manage yourself — IAM and least privilege, VPCs with Security Groups and Network ACLs, the services most likely to bite you in practice like S3 and KMS, the observability layer of CloudTrail/CloudWatch/GuardDuty, and IMDS, a classic SSRF target if you're still running v1. Organizations and SCPs close out this half by locking down guardrails at the org level, independent of whether any individual account was configured carefully.</p>
+<p>The second half steps outside AWS: first a mapping table to GCP so learning one platform lets you infer the other, then a dedicated section on OCI (13.14). I used to assume OCI was just AWS with different service names — turns out a lot of the foundational concepts are genuinely different: isolation by compartment instead of account, policies written as sentences instead of JSON, buckets private by default instead of something you have to lock down yourself. After lining up all three platforms, the chapter wraps with common cloud attack paths, CSPM tools that continuously scan for misconfiguration, and Secret Manager for keeping secrets out of source code.</p>
+<blockquote>
+<p>Examples throughout are real AWS CLI and OCI CLI commands with sample output; anywhere a figure might drift over time, it's flagged "needs verification."</p>
+</blockquote>
+<hr />
+<h2 id="ch13-131-cloud-service-models-iaas-paas-saas">13.1. Cloud service models: IaaS / PaaS / SaaS</h2>
+<h3 id="ch13-1311-what-it-is">13.1.1. What it is</h3>
+<p>Cloud computing is layered by "who operates which layer" of the infrastructure stack. The three standard models (original definition: NIST SP 800-145):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Provider manages</th>
+<th>Customer manages</th>
+<th>AWS example</th>
+<th>GCP example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IaaS (Infrastructure)</td>
+<td>Hypervisor, host OS, physical network, physical storage</td>
+<td>Guest OS, runtime, app, data, virtual network configuration</td>
+<td>EC2, EBS, VPC</td>
+<td>Compute Engine, Persistent Disk</td>
+</tr>
+<tr>
+<td>PaaS (Platform)</td>
+<td>Additionally: OS, runtime, patching</td>
+<td>App code + data + application configuration</td>
+<td>Elastic Beanstalk, Lambda, RDS</td>
+<td>App Engine, Cloud Functions, Cloud SQL</td>
+</tr>
+<tr>
+<td>SaaS (Software)</td>
+<td>The entire stack</td>
+<td>Only user data + in-app configuration</td>
+<td>WorkMail, QuickSight</td>
+<td>Workspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1312-internals-the-trust-boundary-shifts-by-layer">13.1.2. Internals: the trust boundary shifts by layer</h3>
+<p>The core security point: <strong>the attack surface and patching obligation shift along with the model</strong>.</p>
+<pre><code>                 IaaS            PaaS            SaaS
+               +--------+      +--------+      +--------+
+   App         |  CUST  |      |  CUST  |      |  PROV  |
+   Data        |  CUST  |      |  CUST  |      |  CUST* |   *Customer still owns/configures data access
+   Runtime     |  CUST  |      |  PROV  |      |  PROV  |
+   OS          |  CUST  |      |  PROV  |      |  PROV  |
+   Hypervisor  |  PROV  |      |  PROV  |      |  PROV  |
+   Phys. net   |  PROV  |      |  PROV  |      |  PROV  |
+               +--------+      +--------+      +--------+
+   CUST = Customer,  PROV = Provider
+</code></pre>
+<p><strong>Why:</strong> with IaaS, an unpatched kernel vulnerability in the guest OS is your responsibility; with PaaS such as Lambda, AWS patches the runtime but <strong>a vulnerable npm library in your deployment package is still yours</strong>. Misunderstanding this boundary is the root of most misconfiguration incidents.</p>
+<hr />
+<h2 id="ch13-132-shared-responsibility-model">13.2. Shared Responsibility Model</h2>
+<h3 id="ch13-1321-what-it-is">13.2.1. What it is</h3>
+<p>A framework that divides security responsibility. AWS phrases it as:</p>
+<ul>
+<li><strong>Security OF the cloud</strong> — AWS's responsibility: hardware, regions/AZs, physical network, hypervisor, foundational services.</li>
+<li><strong>Security IN the cloud</strong> — the customer's responsibility: IAM, data encryption, Security Group configuration, patching the guest OS (for IaaS), data classification.</li>
+</ul>
+<p>GCP uses the term "shared fate" — emphasizing that Google proactively provides secure-by-default blueprints, but the division of responsibility is essentially equivalent.</p>
+<p>Responsibility boundary diagram:</p>
+<pre><code>        ===== SECURITY IN THE CLOUD (Customer) =====
+        +-----------------------------------------------+
+        |  Customer data + data classification          |
+        |  IAM / policy / identity &amp; access management  |
+        |  Security Group, NACL, firewall config        |
+        |  At-rest / in-transit encryption (enable&amp;cfg) |
+        |  Patching guest OS, runtime, app (IaaS level) |
+        +-----------------------------------------------+
+                          | responsibility boundary
+        +-----------------------------------------------+
+        |  Hypervisor / virtualization                  |
+        |  Foundational services (compute, storage, DB) |
+        |  Physical network, region / AZ                |
+        |  Hardware, physical facilities (datacenter)   |
+        +-----------------------------------------------+
+        ===== SECURITY OF THE CLOUD (Provider) =====
+</code></pre>
+<p>The boundary line shifts up or down depending on the service model (IaaS pushes the boundary lower, SaaS pushes it higher), but data and access configuration always remain the customer's responsibility. This is why most breaches sit in the upper half of the diagram.</p>
+<h3 id="ch13-1322-detailed-responsibility-breakdown-by-service">13.2.2. Detailed responsibility breakdown by service</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>EC2 (IaaS)</th>
+<th>RDS (PaaS)</th>
+<th>S3 (managed storage)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Patch hypervisor</td>
+<td>AWS</td>
+<td>AWS</td>
+<td>AWS</td>
+</tr>
+<tr>
+<td>Patch OS</td>
+<td>Customer</td>
+<td>AWS</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Patch DB engine</td>
+<td>Customer</td>
+<td>AWS</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>At-rest encryption</td>
+<td>Customer enables</td>
+<td>Customer enables</td>
+<td>Customer enables/SSE</td>
+</tr>
+<tr>
+<td>In-transit encryption</td>
+<td>Customer configures</td>
+<td>Customer (force SSL)</td>
+<td>Customer (policy <code>aws:SecureTransport</code>)</td>
+</tr>
+<tr>
+<td>Access configuration (IAM/policy)</td>
+<td>Customer</td>
+<td>Customer</td>
+<td>Customer</td>
+</tr>
+<tr>
+<td>Data classification</td>
+<td>Customer</td>
+<td>Customer</td>
+<td>Customer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> nearly <strong>every famous cloud data breach falls within the "IN the cloud" portion</strong> — that is, a customer error (public bucket, key leaked in git, overly broad IAM). AWS/GCP are rarely breached at the layers they manage.</p>
+<hr />
+<h2 id="ch13-133-aws-iam-identity-and-access-management">13.3. AWS IAM — Identity and Access Management</h2>
+<h3 id="ch13-1331-entities">13.3.1. Entities</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Definition</th>
+<th>Example ARN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Root user</td>
+<td>Account owner, absolute full access, cannot be restricted by IAM policy</td>
+<td><code>arn:aws:iam::123456789012:root</code></td>
+</tr>
+<tr>
+<td>IAM User</td>
+<td>A long-lived person/service identity with credentials</td>
+<td><code>arn:aws:iam::123456789012:user/alice</code></td>
+</tr>
+<tr>
+<td>IAM Group</td>
+<td>A collection of users for attaching shared policies</td>
+<td><code>arn:aws:iam::123456789012:group/devs</code></td>
+</tr>
+<tr>
+<td>IAM Role</td>
+<td>A temporary identity with no fixed credentials, that is "assumed"</td>
+<td><code>arn:aws:iam::123456789012:role/app-role</code></td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>A JSON document defining permissions</td>
+<td><code>arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess</code></td>
+</tr>
+</tbody>
+</table>
+<p>ARN (Amazon Resource Name) structure — field by field:</p>
+<pre><code>arn : partition : service : region : account-id : resource-type / resource
+ |        |         |         |          |              |
+ |        |         |         |          |              +-- e.g. user/alice, bucket/my-data
+ |        |         |         |          +-- 12-digit account number
+ |        |         |         +-- e.g. us-east-1 (S3/IAM usually empty because global)
+ |        |         +-- e.g. iam, s3, ec2
+ |        +-- aws | aws-cn (China) | aws-us-gov
+ +-- the literal &quot;arn&quot;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>ARN field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arn</td>
+<td>fixed 3 characters</td>
+<td>literal</td>
+<td><code>arn</code></td>
+</tr>
+<tr>
+<td>partition</td>
+<td>string</td>
+<td>legal jurisdiction</td>
+<td><code>aws</code></td>
+</tr>
+<tr>
+<td>service</td>
+<td>string</td>
+<td>service namespace</td>
+<td><code>s3</code></td>
+</tr>
+<tr>
+<td>region</td>
+<td>string</td>
+<td>region (empty if global)</td>
+<td><code>us-east-1</code> or empty</td>
+</tr>
+<tr>
+<td>account-id</td>
+<td>12 digits</td>
+<td>account ID</td>
+<td><code>123456789012</code></td>
+</tr>
+<tr>
+<td>resource</td>
+<td>string</td>
+<td>resource identifier</td>
+<td><code>bucket/logs</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1332-policy-json-dissecting-each-field">13.3.2. Policy JSON — dissecting each field</h3>
+<p>This is the central structure of all AWS authorization. A policy is a JSON document.</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;AllowReadSpecificBucket&quot;,
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [
+        &quot;s3:GetObject&quot;,
+        &quot;s3:ListBucket&quot;
+      ],
+      &quot;Resource&quot;: [
+        &quot;arn:aws:s3:::company-reports&quot;,
+        &quot;arn:aws:s3:::company-reports/*&quot;
+      ],
+      &quot;Condition&quot;: {
+        &quot;StringEquals&quot;: { &quot;aws:PrincipalTag/team&quot;: &quot;finance&quot; },
+        &quot;IpAddress&quot;: { &quot;aws:SourceIp&quot;: &quot;203.0.113.0/24&quot; },
+        &quot;Bool&quot;: { &quot;aws:MultiFactorAuthPresent&quot;: &quot;true&quot; }
+      }
+    }
+  ]
+}
+</code></pre>
+<p>Field-by-field description:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Meaning</th>
+<th>Example value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Version</code></td>
+<td>Yes</td>
+<td>Policy language version. MUST be <code>2012-10-17</code> to use variables/conditions. <code>2008-10-17</code> is old and does not support policy variables</td>
+<td><code>2012-10-17</code></td>
+</tr>
+<tr>
+<td><code>Statement</code></td>
+<td>Yes</td>
+<td>Array of permission statements</td>
+<td><code>[ {...} ]</code></td>
+</tr>
+<tr>
+<td><code>Sid</code></td>
+<td>No</td>
+<td>Statement ID, a label for reading/managing</td>
+<td><code>AllowReadSpecificBucket</code></td>
+</tr>
+<tr>
+<td><code>Effect</code></td>
+<td>Yes</td>
+<td><code>Allow</code> or <code>Deny</code></td>
+<td><code>Allow</code></td>
+</tr>
+<tr>
+<td><code>Action</code></td>
+<td>Yes (or NotAction)</td>
+<td>API action, in the form <code>service:Operation</code>, supports <code>*</code></td>
+<td><code>s3:GetObject</code></td>
+</tr>
+<tr>
+<td><code>Resource</code></td>
+<td>Yes for identity-attached policies</td>
+<td>ARN of the resource it applies to</td>
+<td><code>arn:aws:s3:::bucket/*</code></td>
+</tr>
+<tr>
+<td><code>Principal</code></td>
+<td>Only in resource-based/trust policies</td>
+<td>Who is allowed (user/role/service)</td>
+<td><code>{"AWS": "...role/x"}</code></td>
+</tr>
+<tr>
+<td><code>Condition</code></td>
+<td>No</td>
+<td>Additional conditions (operator keys)</td>
+<td><code>StringEquals</code>, <code>IpAddress</code>, <code>Bool</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> <code>Version</code> is a fixed date: it is not the date you wrote the policy but the <strong>version of the policy language grammar</strong>. AWS freezes this value; writing it incorrectly (e.g. today's date) will cause conditions/variables to malfunction.</p>
+<p>Commonly used Condition operator keys:</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Used for</th>
+<th>Example key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StringEquals</code> / <code>StringLike</code></td>
+<td>string comparison (Like supports <code>*</code>)</td>
+<td><code>aws:PrincipalTag/team</code></td>
+</tr>
+<tr>
+<td><code>IpAddress</code> / <code>NotIpAddress</code></td>
+<td>CIDR</td>
+<td><code>aws:SourceIp</code></td>
+</tr>
+<tr>
+<td><code>Bool</code></td>
+<td>true/false</td>
+<td><code>aws:MultiFactorAuthPresent</code>, <code>aws:SecureTransport</code></td>
+</tr>
+<tr>
+<td><code>DateGreaterThan</code></td>
+<td>time</td>
+<td><code>aws:CurrentTime</code></td>
+</tr>
+<tr>
+<td><code>ArnLike</code></td>
+<td>ARN comparison</td>
+<td><code>aws:SourceArn</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1333-policy-evaluation-logic-step-by-step">13.3.3. Policy Evaluation Logic — step by step</h3>
+<p>When an API request arrives, AWS runs the following <strong>Allow / Deny</strong> decision process:</p>
+<pre><code>1. Default: implicit DENY for everything.
+2. Collect ALL applicable policies: identity-based, resource-based,
+   permission boundary, SCP (Organizations), session policy.
+3. Any Explicit DENY in any policy?         --&gt; YES =&gt; DENY (end).
+4. Does the SCP allow the Action?            --&gt; NO  =&gt; DENY.
+5. Does the permission boundary allow it?    --&gt; NO  =&gt; DENY.
+6. Is there an Explicit ALLOW in identity/resource policy? --&gt; YES =&gt; ALLOW.
+7. Otherwise                                 --&gt; DENY (implicit).
+</code></pre>
+<p>State machine diagram:</p>
+<pre><code>        +----------------+
+        | Implicit Deny  |  (initial state)
+        +-------+--------+
+                |
+        Explicit Deny? --yes--&gt; [DENY] (always wins)
+                | no
+        SCP allow &amp; Boundary allow &amp; Explicit Allow? --no--&gt; [DENY]
+                | yes
+              [ALLOW]
+</code></pre>
+<p><strong>Note:</strong> an Explicit Deny always beats any Allow. This is the foundation for guarding an account: even if someone accidentally grants <code>AdministratorAccess</code>, a Deny in an SCP/boundary still blocks it.</p>
+<h3 id="ch13-1334-sts-assumerole-and-trust-policy">13.3.4. STS AssumeRole and Trust Policy</h3>
+<p>STS (Security Token Service) issues <strong>temporary credentials</strong>. A Role has two policy parts:</p>
+<ul>
+<li><strong>Permission policy</strong>: what the role <em>can do</em>.</li>
+<li><strong>Trust policy</strong> (assume role policy document): <em>who is allowed to assume</em> this role — this is a special resource-based policy with a <code>Principal</code> field.</li>
+</ul>
+<p>Sample trust policy (allowing a role in another account to assume it, with an ExternalId to prevent the "confused deputy" problem):</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Principal&quot;: { &quot;AWS&quot;: &quot;arn:aws:iam::222233334444:role/partner-app&quot; },
+    &quot;Action&quot;: &quot;sts:AssumeRole&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringEquals&quot;: { &quot;sts:ExternalId&quot;: &quot;U7x-9213-secret&quot; }
+    }
+  }]
+}
+</code></pre>
+<p>The real assume command and its output:</p>
+<pre><code class="language-bash">aws sts assume-role \
+  --role-arn arn:aws:iam::123456789012:role/app-role \
+  --role-session-name audit-2026 \
+  --external-id U7x-9213-secret \
+  --duration-seconds 3600
+</code></pre>
+<p>Output (abbreviated):</p>
+<pre><code class="language-json">{
+  &quot;Credentials&quot;: {
+    &quot;AccessKeyId&quot;: &quot;ASIA....EXAMPLE&quot;,
+    &quot;SecretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
+    &quot;SessionToken&quot;: &quot;FwoGZXIvYXdz....&lt;very long&gt;&quot;,
+    &quot;Expiration&quot;: &quot;2026-06-19T15:00:00Z&quot;
+  },
+  &quot;AssumedRoleUser&quot;: {
+    &quot;Arn&quot;: &quot;arn:aws:sts::123456789012:assumed-role/app-role/audit-2026&quot;
+  }
+}
+</code></pre>
+<p>Distinguish them by the <strong>AccessKeyId prefix</strong> — this is a key identifier when investigating logs:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Credential type</th>
+<th>Lifetime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AKIA</code></td>
+<td>Long-term (IAM user access key)</td>
+<td>Permanent until deleted</td>
+</tr>
+<tr>
+<td><code>ASIA</code></td>
+<td>Temporary (STS)</td>
+<td>Has an Expiration</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> ExternalId: it prevents the confused deputy attack. If a SaaS provider uses the same role ARN for multiple customers, an attacker who knows your role ARN could trick the SaaS into assuming your role. The ExternalId is a secret known only to you and the SaaS, attached in the condition to block this.</p>
+<h3 id="ch13-1335-permission-boundary">13.3.5. Permission Boundary</h3>
+<p>This is a managed policy attached to a user/role that sets the <strong>maximum permission ceiling</strong>. Effective permissions = the intersection of the permission policy AND the boundary.</p>
+<pre><code>Effective permissions = (Identity policy ALLOW)  ∩  (Boundary ALLOW)  -  (any DENY)
+</code></pre>
+<p>Example: a developer is granted <code>AdministratorAccess</code> but the boundary only allows <code>s3:*</code> and <code>ec2:*</code> =&gt; in practice they can only operate S3 and EC2. Used to <strong>safely delegate IAM creation</strong> (let developers create their own roles but never exceeding the boundary).</p>
+<h3 id="ch13-1336-mfa">13.3.6. MFA</h3>
+<p>MFA TOTP follows RFC 6238 (TOTP), which is based on RFC 4226 (HOTP). The 6-digit code is computed from:</p>
+<pre><code>TOTP = HOTP(K, T)  where  T = floor((UnixTime - T0) / X)
+   K  = shared secret (Base32), X = 30 seconds (time step), T0 = 0
+   HOTP = Truncate( HMAC-SHA1(K, T) ) mod 10^6
+</code></pre>
+<p>Enforce MFA with the <code>aws:MultiFactorAuthPresent</code> condition (as in section 13.3.2). <strong>Note:</strong> for the root user, enabling a hardware/virtual MFA device is the number-one priority.</p>
+<hr />
+<h2 id="ch13-134-aws-vpc-virtual-private-cloud">13.4. AWS VPC — Virtual Private Cloud</h2>
+<p>A typical VPC architecture diagram (public/private subnets, IGW/NAT, placement of SG and NACL):</p>
+<pre><code>                          Internet
+                             |
+                       +-----------+
+                       |    IGW    |  (Internet Gateway)
+                       +-----------+
+                             |
+   VPC 10.0.0.0/16           |
+   +-------------------------|-----------------------------------+
+   |   PUBLIC SUBNET 10.0.1.0/24                                  |
+   |   route: 0.0.0.0/0 -&gt; IGW        [NACL applied at subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  NAT Gateway   |      |  Bastion/LB     | (SG at ENI)    |
+   |   +-------+--------+      +-----------------+                |
+   |           |                                                  |
+   |  ---------|------------------------------------------------  |
+   |   PRIVATE SUBNET 10.0.2.0/24                                 |
+   |   route: 0.0.0.0/0 -&gt; NAT GW     [NACL applied at subnet]    |
+   |   +----------------+      +-----------------+                |
+   |   |  App server    |-----&gt;|  Database (RDS) | (SG at ENI)    |
+   |   |  (SG)          |      |  (SG)           |                |
+   |   +----------------+      +-----------------+                |
+   |     no public IP — outbound to Internet ONLY VIA NAT GW      |
+   +-------------------------------------------------------------+
+</code></pre>
+<p>Key point: <strong>the NACL filters at the subnet boundary (stateless)</strong>, while the <strong>Security Group filters right at each instance's ENI (stateful)</strong>. Sensitive resources (the DB) sit in the private subnet, with only one-way outbound Internet access through the NAT Gateway and no inbound connections from the Internet.</p>
+<h3 id="ch13-1341-cidr-and-address-allocation">13.4.1. CIDR and address allocation</h3>
+<p>A VPC is an isolated L3 virtual network. You assign it a CIDR (Classless Inter-Domain Routing) block.</p>
+<p>CIDR notation <code>10.0.0.0/16</code>:</p>
+<pre><code>10.0.0.0/16  =&gt; 10.0.0.0 - 10.0.255.255
+  /16 = 32 - 16 = 16 host bits =&gt; 2^16 = 65536 addresses
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Bits</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IPv4 address</td>
+<td>32 bits</td>
+<td>4 octets</td>
+</tr>
+<tr>
+<td>Prefix <code>/n</code></td>
+<td>n network bits</td>
+<td>the fixed portion</td>
+</tr>
+<tr>
+<td>Host bits</td>
+<td>32 - n</td>
+<td>number of hosts</td>
+</tr>
+</tbody>
+</table>
+<p>AWS <strong>reserves 5 addresses at the start/end of each subnet</strong>: <code>.0</code> (network), <code>.1</code> (VPC router), <code>.2</code> (Amazon-provided DNS), <code>.3</code> (reserved for future use), and <code>.255</code> (broadcast — even though a VPC does not broadcast, it is still held). So a <code>/24</code> subnet (256 addresses) only provides 251 usable hosts.</p>
+<h3 id="ch13-1342-public-vs-private-subnets">13.4.2. Public vs private subnets</h3>
+<p>The difference is <strong>not in the subnet configuration</strong> but in the <strong>route table</strong>:</p>
+<ul>
+<li><strong>Public subnet</strong>: the route table has a <code>0.0.0.0/0 -&gt; igw-xxxx</code> (Internet Gateway) route.</li>
+<li><strong>Private subnet</strong>: the default route points to <code>0.0.0.0/0 -&gt; nat-xxxx</code> (NAT Gateway) or has no Internet route at all.</li>
+</ul>
+<p>Sample route tables:</p>
+<pre><code>Destination      Target            (public subnet)
+10.0.0.0/16      local
+0.0.0.0/0        igw-0abc123
+
+Destination      Target            (private subnet)
+10.0.0.0/16      local
+0.0.0.0/0        nat-0def456
+</code></pre>
+<h3 id="ch13-1343-igw-vs-nat-gateway">13.4.3. IGW vs NAT Gateway</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Direction</th>
+<th>Function</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internet Gateway (IGW)</td>
+<td>Bidirectional</td>
+<td>Lets instances with a public IP receive/send Internet traffic, performing 1:1 NAT with an Elastic IP</td>
+<td>No hourly charge</td>
+</tr>
+<tr>
+<td>NAT Gateway</td>
+<td>One-way (outbound)</td>
+<td>Private instances reach the Internet (updates, API calls) but the Internet CANNOT reach in</td>
+<td>Charged per hour + per GB; placed in a public subnet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> the NAT GW must sit in a public subnet: the NAT GW itself needs an outbound route through the IGW; private instances route to the NAT GW, and the NAT GW routes to the IGW.</p>
+<h3 id="ch13-1344-vpc-flow-logs-record-format">13.4.4. VPC Flow Logs — record format</h3>
+<p>Flow Logs record flow metadata (not content). The default format (v2) includes the following fields in order:</p>
+<pre><code>version account-id interface-id srcaddr dstaddr srcport dstport protocol packets bytes start end action log-status
+2 123456789012 eni-0abc 10.0.1.5 203.0.113.7 51000 443 6 20 4520 1655640000 1655640060 ACCEPT OK
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>format version</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>srcaddr</code>/<code>dstaddr</code></td>
+<td>source/destination IP</td>
+<td><code>10.0.1.5</code></td>
+</tr>
+<tr>
+<td><code>srcport</code>/<code>dstport</code></td>
+<td>port</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>IANA number (6=TCP, 17=UDP, 1=ICMP)</td>
+<td><code>6</code></td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td><code>ACCEPT</code>/<code>REJECT</code> (per SG/NACL)</td>
+<td><code>ACCEPT</code></td>
+</tr>
+<tr>
+<td><code>log-status</code></td>
+<td><code>OK</code>/<code>NODATA</code>/<code>SKIPDATA</code></td>
+<td><code>OK</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> repeated <code>REJECT</code> to many ports from one IP = a sign of a port scan; use this as a source for GuardDuty and threat analysis.</p>
+<hr />
+<h2 id="ch13-135-security-group-stateful-vs-network-acl-stateless">13.5. Security Group (stateful) vs Network ACL (stateless)</h2>
+<h3 id="ch13-1351-mechanism-comparison">13.5.1. Mechanism comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Security Group</th>
+<th>Network ACL (NACL)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Layer applied</td>
+<td>ENI (the instance's network interface)</td>
+<td>Subnet</td>
+</tr>
+<tr>
+<td>Stateful?</td>
+<td>YES — return traffic is automatically allowed</td>
+<td>NO — you must open both inbound and outbound</td>
+</tr>
+<tr>
+<td>Rules</td>
+<td>Allow only (no Deny)</td>
+<td>Allow AND Deny</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>All rules at once (no ordering)</td>
+<td>In rule-number ORDER (low -&gt; high), stopping at the first match</td>
+</tr>
+<tr>
+<td>Default</td>
+<td>Deny inbound, Allow all outbound</td>
+<td>"default NACL": allow all; a newly created NACL: deny all</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1352-what-stateful-means-at-the-packet-level">13.5.2. What stateful means (at the packet level)</h3>
+<p>When an instance sends a request out to <code>443</code> toward an external server:</p>
+<pre><code>Outbound: src 10.0.1.5:51000 -&gt; dst 1.2.3.4:443   (SG outbound rule allows it)
+Inbound return: src 1.2.3.4:443 -&gt; dst 10.0.1.5:51000
+</code></pre>
+<ul>
+<li>With a <strong>SG (stateful)</strong>: AWS keeps "connection tracking", so the return packet is automatically allowed — NO inbound rule is needed for ephemeral port 51000.</li>
+<li>With a <strong>NACL (stateless)</strong>: the return packet to the ephemeral port (1024-65535) must have an <strong>inbound rule allowing the ephemeral range</strong>, otherwise it is blocked.</li>
+</ul>
+<p><strong>Why</strong> you must open the ephemeral port range on a NACL: the TCP client picks a random source port in the ephemeral range; the server's response goes to that exact port. Because the NACL keeps no state, this must be declared explicitly.</p>
+<h3 id="ch13-1353-nacl-is-ordered-example">13.5.3. NACL is ordered — example</h3>
+<pre><code>Rule#   Type    Protocol  Port      Source           Allow/Deny
+100     HTTP    TCP       80        0.0.0.0/0        ALLOW
+130     SSH     TCP       22        0.0.0.0/0        DENY     &lt;-- number 130 &lt; 200
+200     SSH     TCP       22        203.0.113.0/24   ALLOW
+*       ALL     ALL       ALL       0.0.0.0/0        DENY
+</code></pre>
+<p><strong>Note:</strong> a NACL is evaluated <strong>from the lowest number to the highest, stopping at the first match</strong>. In the example above, an SSH packet from <code>203.0.113.5</code> matches rule 130 (DENY) BEFORE reaching rule 200 (ALLOW) =&gt; it is blocked. This is a classic rule-numbering mistake. Always give the specific rule (allowing the trusted IP) a SMALLER number than the broad deny rule.</p>
+<h3 id="ch13-1354-practical-example-of-creating-a-sg">13.5.4. Practical example of creating a SG</h3>
+<pre><code class="language-bash">aws ec2 create-security-group --group-name web-sg \
+  --description &quot;Web tier&quot; --vpc-id vpc-0a1b2c3d
+
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-0123456789 \
+  --protocol tcp --port 443 --cidr 0.0.0.0/0
+
+# Allow the app tier to reach the DB only from the app's SG (reference the SG, not an IP)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-db-999 \
+  --protocol tcp --port 5432 --source-group sg-app-888
+</code></pre>
+<p><strong>Warning:</strong> referencing <strong>SG-to-SG</strong> instead of CIDR is best practice — when an instance's IP changes, the rule still holds; and you do not accidentally open access to an unknown IP. Absolutely avoid <code>--cidr 0.0.0.0/0</code> for ports 22/3389/3306/5432.</p>
+<hr />
+<h2 id="ch13-136-amazon-s3-object-storage">13.6. Amazon S3 — object storage</h2>
+<h3 id="ch13-1361-the-multi-layer-access-model">13.6.1. The multi-layer access model</h3>
+<p>S3 access is decided by the combination: Block Public Access (BPA) &gt; IAM policy &gt; Bucket policy &gt; ACL. An explicit Deny at any layer beats everything.</p>
+<h3 id="ch13-1362-block-public-access-4-flags">13.6.2. Block Public Access — 4 flags</h3>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BlockPublicAcls</code></td>
+<td>Blocks new public ACL PUTs</td>
+</tr>
+<tr>
+<td><code>IgnorePublicAcls</code></td>
+<td>Ignores existing public ACLs</td>
+</tr>
+<tr>
+<td><code>BlockPublicPolicy</code></td>
+<td>Blocks setting a public bucket policy</td>
+</tr>
+<tr>
+<td><code>RestrictPublicBuckets</code></td>
+<td>Restricts access via a public policy to principals in the same account/service only</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">aws s3api put-public-access-block --bucket company-reports \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+</code></pre>
+<p>Since April 2023, AWS enables BPA by default for new buckets. <strong>Why</strong> 4 separate flags: ACLs and policies are two historically independent mechanisms; you need to block both "public" sources.</p>
+<h3 id="ch13-1363-bucket-policy-json-enforce-in-transit-encryption-and-block-non-tls">13.6.3. Bucket policy JSON — enforce in-transit encryption and block non-TLS</h3>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;DenyInsecureTransport&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Principal&quot;: &quot;*&quot;,
+      &quot;Action&quot;: &quot;s3:*&quot;,
+      &quot;Resource&quot;: [
+        &quot;arn:aws:s3:::company-reports&quot;,
+        &quot;arn:aws:s3:::company-reports/*&quot;
+      ],
+      &quot;Condition&quot;: { &quot;Bool&quot;: { &quot;aws:SecureTransport&quot;: &quot;false&quot; } }
+    },
+    {
+      &quot;Sid&quot;: &quot;DenyUnEncryptedUploads&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Principal&quot;: &quot;*&quot;,
+      &quot;Action&quot;: &quot;s3:PutObject&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:s3:::company-reports/*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringNotEquals&quot;: { &quot;s3:x-amz-server-side-encryption&quot;: &quot;aws:kms&quot; }
+      }
+    }
+  ]
+}
+</code></pre>
+<p>The first statement blocks any request not over HTTPS; the second rejects uploads that do not include the <code>x-amz-server-side-encryption: aws:kms</code> header.</p>
+<h3 id="ch13-1364-sse-encryption-the-types">13.6.4. SSE encryption — the types</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Key managed by</th>
+<th>Request header</th>
+<th>Audited via CloudTrail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SSE-S3</td>
+<td>AWS (AES-256, S3's key)</td>
+<td><code>x-amz-server-side-encryption: AES256</code></td>
+<td>Key usage not visible per-use</td>
+</tr>
+<tr>
+<td>SSE-KMS</td>
+<td>AWS KMS (your CMK)</td>
+<td><code>...: aws:kms</code> + <code>x-amz-server-side-encryption-aws-kms-key-id</code></td>
+<td>YES — each Decrypt is logged in CloudTrail</td>
+</tr>
+<tr>
+<td>SSE-C</td>
+<td>Customer supplies the key on each request</td>
+<td>sends the key in a header</td>
+<td>You manage the key yourself</td>
+</tr>
+<tr>
+<td>DSSE-KMS</td>
+<td>Dual-layer KMS encryption</td>
+<td><code>aws:kms:dsse</code></td>
+<td>For high-compliance requirements</td>
+</tr>
+</tbody>
+</table>
+<p>Since early 2023, S3 applies SSE-S3 by default to every new object (the exact version per region needs verification). <strong>Why</strong> choose SSE-KMS: you control who can use the key (via the KMS key policy) and <strong>you get an audit trail for each decryption</strong> — extremely valuable for investigations.</p>
+<h3 id="ch13-1365-versioning">13.6.5. Versioning</h3>
+<p>Enabling versioning keeps every object version; a delete only places a "delete marker". This protects against malicious overwrites/deletes (ransomware) and user error. Combine it with <strong>MFA Delete</strong> and <strong>Object Lock (WORM)</strong> for immutability.</p>
+<pre><code class="language-bash">aws s3api put-bucket-versioning --bucket company-reports \
+  --versioning-configuration Status=Enabled
+</code></pre>
+<h3 id="ch13-1366-the-classic-breach-pattern">13.6.6. The classic breach pattern</h3>
+<p>A scenario repeated many times in the real world: a bucket holding backups/PII is set to ACL <code>public-read</code> or a bucket policy with <code>Principal:"*"</code> and no condition. Anyone with the URL <code>https://bucket.s3.amazonaws.com/key</code> can read the data.</p>
+<p>Detect it with a quick check command:</p>
+<pre><code class="language-bash"># List buckets that do NOT have full Block Public Access enabled
+for b in $(aws s3api list-buckets --query 'Buckets[].Name' --output text); do
+  echo &quot;== $b ==&quot;
+  aws s3api get-public-access-block --bucket &quot;$b&quot; \
+    --query 'PublicAccessBlockConfiguration' 2&gt;/dev/null \
+    || echo &quot;  !! NO public-access-block (risk)&quot;  # no Block Public Access
+done
+</code></pre>
+<hr />
+<h2 id="ch13-137-aws-kms-key-management-service">13.7. AWS KMS — Key Management Service</h2>
+<h3 id="ch13-1371-cmk-and-key-classification">13.7.1. CMK and key classification</h3>
+<table>
+<thead>
+<tr>
+<th>Key type</th>
+<th>Who manages it</th>
+<th>Automatic key rotation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS owned</td>
+<td>AWS uses internally, you cannot see it</td>
+<td>Automatic</td>
+</tr>
+<tr>
+<td>AWS managed (<code>aws/s3</code>...)</td>
+<td>AWS on behalf of the service</td>
+<td>Automatic, yearly</td>
+</tr>
+<tr>
+<td>Customer managed (CMK)</td>
+<td>You (key policy, rotation, alias)</td>
+<td>Optional (default 1 year)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-1372-envelope-encryption-step-by-step">13.7.2. Envelope Encryption — step by step</h3>
+<p>KMS does not encrypt large data blocks directly (the limit for <code>Encrypt</code> is ~4 KB). Instead it uses <strong>envelope encryption</strong> (the principles of AES, AES-GCM, and key management are covered in <a href="ch04.html">Chapter 4</a>):</p>
+<pre><code>1. The client calls KMS GenerateDataKey(KeyId=CMK, KeySpec=AES_256).
+2. KMS returns:
+     - Plaintext data key (DEK) : 256-bit, used to encrypt data locally
+     - CiphertextBlob           : that same DEK, but encrypted by the CMK
+3. The client uses the plaintext DEK (AES-256-GCM) to encrypt the large file.
+4. The client WRITES: ciphertext_file + CiphertextBlob(the encrypted DEK).
+5. The client ERASES the plaintext DEK from RAM.
+
+Decryption:
+6. The client calls KMS Decrypt(CiphertextBlob) -&gt; gets back the plaintext DEK.
+7. Uses the DEK to decrypt the file.
+</code></pre>
+<p>Diagram:</p>
+<pre><code>      [CMK inside KMS - never leaves the HSM]
+              |  encrypt/decrypt
+              v
+   [Encrypted DEK: CiphertextBlob]  &lt;-- stored next to the data
+              |  Decrypt via KMS
+              v
+   [Plaintext DEK]  --AES-256-GCM--&gt;  [data]
+</code></pre>
+<p><strong>Why</strong> the envelope design: (1) it reduces the number of KMS calls (encrypting data locally is fast); (2) the root CMK never leaves the KMS HSM; (3) revoking Decrypt permission on the CMK immediately invalidates every DEK.</p>
+<p>Practical example:</p>
+<pre><code class="language-bash"># Create a DEK
+aws kms generate-data-key --key-id alias/app-cmk --key-spec AES_256 \
+  --query '{plain:Plaintext, blob:CiphertextBlob}' --output json
+# The Plaintext (base64) is used to encrypt; the CiphertextBlob is stored with the ciphertext.
+</code></pre>
+<h3 id="ch13-1373-kms-key-policy">13.7.3. KMS Key Policy</h3>
+<p>Unlike IAM: KMS <strong>always requires a key policy</strong> (resource-based). A common key policy grants administrative rights to the account root and then delegates further via IAM:</p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;EnableRootIAM&quot;,
+    &quot;Effect&quot;: &quot;Allow&quot;,
+    &quot;Principal&quot;: { &quot;AWS&quot;: &quot;arn:aws:iam::123456789012:root&quot; },
+    &quot;Action&quot;: &quot;kms:*&quot;,
+    &quot;Resource&quot;: &quot;*&quot;
+  }]
+}
+</code></pre>
+<p><strong>Note:</strong> deleting all statements that grant the root permissions can leave the key <strong>unmanageable</strong> (you would need to open an AWS Support ticket to recover it).</p>
+<hr />
+<h2 id="ch13-138-cloudtrail-the-api-log">13.8. CloudTrail — the API log</h2>
+<h3 id="ch13-1381-what-it-is">13.8.1. What it is</h3>
+<p>It records every API call (management events) and, optionally, data events (S3 object-level, Lambda invoke). It is the number-one investigation data source in AWS.</p>
+<h3 id="ch13-1382-structure-of-an-event-json-field-by-field">13.8.2. Structure of an event JSON — field by field</h3>
+<pre><code class="language-json">{
+  &quot;eventVersion&quot;: &quot;1.09&quot;,
+  &quot;userIdentity&quot;: {
+    &quot;type&quot;: &quot;AssumedRole&quot;,
+    &quot;principalId&quot;: &quot;AROAEXAMPLE:audit-2026&quot;,
+    &quot;arn&quot;: &quot;arn:aws:sts::123456789012:assumed-role/app-role/audit-2026&quot;,
+    &quot;accountId&quot;: &quot;123456789012&quot;,
+    &quot;accessKeyId&quot;: &quot;ASIA....EXAMPLE&quot;,
+    &quot;sessionContext&quot;: {
+      &quot;attributes&quot;: { &quot;mfaAuthenticated&quot;: &quot;false&quot;, &quot;creationDate&quot;: &quot;2026-06-19T14:00:00Z&quot; }
+    }
+  },
+  &quot;eventTime&quot;: &quot;2026-06-19T14:05:11Z&quot;,
+  &quot;eventSource&quot;: &quot;s3.amazonaws.com&quot;,
+  &quot;eventName&quot;: &quot;GetObject&quot;,
+  &quot;awsRegion&quot;: &quot;us-east-1&quot;,
+  &quot;sourceIPAddress&quot;: &quot;203.0.113.7&quot;,
+  &quot;userAgent&quot;: &quot;aws-cli/2.15.0&quot;,
+  &quot;requestParameters&quot;: { &quot;bucketName&quot;: &quot;company-reports&quot;, &quot;key&quot;: &quot;q1.pdf&quot; },
+  &quot;responseElements&quot;: null,
+  &quot;readOnly&quot;: true,
+  &quot;eventType&quot;: &quot;AwsApiCall&quot;,
+  &quot;recipientAccountId&quot;: &quot;123456789012&quot;,
+  &quot;eventID&quot;: &quot;a1b2c3d4-....&quot;,
+  &quot;managementEvent&quot;: false
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Investigative meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>userIdentity.type</code></td>
+<td><code>Root</code>, <code>IAMUser</code>, <code>AssumedRole</code>, <code>AWSService</code> — who called</td>
+</tr>
+<tr>
+<td><code>userIdentity.accessKeyId</code></td>
+<td><code>ASIA</code>=temporary, <code>AKIA</code>=long-term (see 13.3.4)</td>
+</tr>
+<tr>
+<td><code>sessionContext.mfaAuthenticated</code></td>
+<td><code>"false"</code> is suspicious for sensitive actions</td>
+</tr>
+<tr>
+<td><code>eventSource</code> + <code>eventName</code></td>
+<td>service + specific API</td>
+</tr>
+<tr>
+<td><code>sourceIPAddress</code></td>
+<td>source IP — cross-check against unknown IPs/countries</td>
+</tr>
+<tr>
+<td><code>errorCode</code> (if present)</td>
+<td>repeated <code>AccessDenied</code> = a sign of permission probing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> enable <strong>log file integrity validation</strong> (CloudTrail generates a SHA-256-signed digest) to detect tampered/deleted logs. Store logs in a dedicated bucket with Object Lock.</p>
+<hr />
+<h2 id="ch13-139-cloudwatch">13.9. CloudWatch</h2>
+<p>CloudWatch = metrics + logs + alarms. Security-relevant aspects:</p>
+<ul>
+<li><strong>CloudWatch Logs</strong>: aggregates application logs / VPC Flow Logs.</li>
+<li><strong>Metric filter + Alarm</strong>: detects behavior from CloudTrail. For example, create an alarm when there are repeated failed <code>ConsoleLogin</code> attempts or when the root user logs in.</li>
+</ul>
+<pre><code class="language-bash">aws logs put-metric-filter \
+  --log-group-name CloudTrail/Logs \
+  --filter-name RootLogin \
+  --filter-pattern '{ $.userIdentity.type = &quot;Root&quot; &amp;&amp; $.eventName = &quot;ConsoleLogin&quot; }' \
+  --metric-transformations metricName=RootLoginCount,metricNamespace=Security,metricValue=1
+</code></pre>
+<p>The filter pattern uses JSON-path syntax; <code>$.userIdentity.type</code> points to the nested field. Then attach <code>put-metric-alarm</code> to send an SNS alert.</p>
+<hr />
+<h2 id="ch13-1310-guardduty">13.10. GuardDuty</h2>
+<h3 id="ch13-13101-what-it-is">13.10.1. What it is</h3>
+<p>A threat detection service based on ML + threat intelligence, analyzing <strong>CloudTrail, VPC Flow Logs, DNS logs, EKS audit logs, S3 data events</strong> — with no agent to install.</p>
+<h3 id="ch13-13102-finding-families-name-format">13.10.2. Finding families (name format)</h3>
+<p>Finding names follow the structure <code>ThreatPurpose:ResourceType/ThreatFamilyName.DetectionMechanism!Artifact</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Example finding</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS</code></td>
+<td>An EC2 role's credentials used from outside AWS (a sign of stolen IMDS credentials)</td>
+</tr>
+<tr>
+<td><code>Recon:IAMUser/MaliciousIPCaller</code></td>
+<td>API call from a known malicious IP</td>
+</tr>
+<tr>
+<td><code>CryptoCurrency:EC2/BitcoinTool.B!DNS</code></td>
+<td>An EC2 instance querying a cryptocurrency-mining domain</td>
+</tr>
+<tr>
+<td><code>Backdoor:EC2/C&amp;CActivity.B</code></td>
+<td>An EC2 instance communicating with a C2 server</td>
+</tr>
+<tr>
+<td><code>Exfiltration:S3/ObjectRead.Unusual</code></td>
+<td>Unusual S3 reads</td>
+</tr>
+<tr>
+<td><code>Policy:IAMUser/RootCredentialUsage</code></td>
+<td>Use of root credentials</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why</strong> <code>InstanceCredentialExfiltration.OutsideAWS</code> is so powerful: it correlates location — an EC2 role's credentials <em>must</em> be used from inside AWS; if they appear from an external IP, they have almost certainly been extracted via SSRF/IMDS.</p>
+<hr />
+<h2 id="ch13-1311-imds-instance-metadata-service-v1-vs-v2">13.11. IMDS — Instance Metadata Service (v1 vs v2)</h2>
+<h3 id="ch13-13111-what-it-is">13.11.1. What it is</h3>
+<p>IMDS serves metadata at the fixed link-local address <strong><code>169.254.169.254</code></strong>. Most importantly, it issues the <strong>temporary credentials of the IAM role attached to the instance</strong>.</p>
+<pre><code class="language-bash"># Get the role name
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+# Get the credentials
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/app-role
+</code></pre>
+<p>Credential output:</p>
+<pre><code class="language-json">{
+  &quot;Code&quot;: &quot;Success&quot;,
+  &quot;AccessKeyId&quot;: &quot;ASIA....&quot;,
+  &quot;SecretAccessKey&quot;: &quot;....&quot;,
+  &quot;Token&quot;: &quot;....&quot;,
+  &quot;Expiration&quot;: &quot;2026-06-19T20:00:00Z&quot;
+}
+</code></pre>
+<h3 id="ch13-13112-imdsv1-simple-requestresponse-and-the-ssrf-vulnerability">13.11.2. IMDSv1 (simple request/response — and the SSRF vulnerability)</h3>
+<p>IMDSv1: a single HTTP GET to <code>169.254.169.254</code> is all it takes. NO token is needed. This is the root of countless SSRF incidents (the SSRF mechanism is covered in <a href="ch05.html">Chapter 5 — Web Application Security</a>).</p>
+<p>SSRF attack scenario via IMDSv1:</p>
+<pre><code>1. A web application has a parameter: https://app/fetch?url=&lt;URL&gt;  (the server fetches the URL itself).
+2. The attacker sends: ?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/app-role
+3. The server (running on EC2) fetches it on their behalf, returning ASIA/Secret/Token credentials.
+4. The attacker uses the credentials from their own machine (outside AWS) -&gt; GuardDuty
+   InstanceCredentialExfiltration.OutsideAWS.
+</code></pre>
+<h3 id="ch13-13113-imdsv2-session-token-step-by-step">13.11.3. IMDSv2 — session token, step by step</h3>
+<p>IMDSv2 requires a two-step process: <strong>PUT to obtain a token, then GET with the token</strong>:</p>
+<pre><code class="language-bash"># Step 1: PUT to obtain a token (max TTL 21600s = 6h)
+TOKEN=$(curl -X PUT &quot;http://169.254.169.254/latest/api/token&quot; \
+  -H &quot;X-aws-ec2-metadata-token-ttl-seconds: 21600&quot;)
+
+# Step 2: GET with the token in the header
+curl http://169.254.169.254/latest/meta-data/iam/security-credentials/ \
+  -H &quot;X-aws-ec2-metadata-token: $TOKEN&quot;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>IMDSv2 protection mechanism</th>
+<th>Why it blocks SSRF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Requires a <strong>PUT</strong> to obtain a token</td>
+<td>Most SSRF vulnerabilities only allow GET, and cannot send an arbitrary PUT with headers</td>
+</tr>
+<tr>
+<td>Requires a <strong>custom header</strong> <code>X-aws-ec2-metadata-token</code></td>
+<td>Basic SSRF cannot add this header</td>
+</tr>
+<tr>
+<td>Default <strong><code>X-Forwarded-For</code> =&gt; reject</strong></td>
+<td>Blocks requests that pass through a proxy/WAF/reverse proxy (a sign of SSRF/relay)</td>
+</tr>
+<tr>
+<td>Limits the <strong>PUT response hop limit = 1</strong></td>
+<td>The token does not "hop" across containers/routes; a packet with a decremented IP-TTL is rejected</td>
+</tr>
+</tbody>
+</table>
+<p>Enforce IMDSv2 (fully disable v1):</p>
+<pre><code class="language-bash">aws ec2 modify-instance-metadata-options \
+  --instance-id i-0123456789 \
+  --http-tokens required \
+  --http-put-response-hop-limit 1 \
+  --http-endpoint enabled
+</code></pre>
+<p><code>--http-tokens required</code> = require a token (disable v1). <code>--http-put-response-hop-limit 1</code> = the metadata response packet can travel only 1 hop (IP TTL), preventing a container on the instance or a reverse proxy from forwarding the metadata.</p>
+<p><strong>Note:</strong> blocking IMDS at the network layer should also be added — for example, an iptables drop of traffic to <code>169.254.169.254</code> for the web application user that does not need metadata.</p>
+<hr />
+<h2 id="ch13-1312-aws-organizations-scp-service-control-policy">13.12. AWS Organizations &amp; SCP (Service Control Policy)</h2>
+<h3 id="ch13-13121-what-it-is">13.12.1. What it is</h3>
+<p>Organizations manage multiple accounts in an OU (Organizational Unit) tree. An SCP is a <strong>guardrail</strong> applied at the org/OU/account level — it sets the <strong>maximum permission ceiling</strong> and does NOT itself grant any permissions.</p>
+<pre><code>Root
+ ├── OU: Security  (SCP: Deny disabling CloudTrail)
+ ├── OU: Prod      (SCP: only regions us-east-1, eu-west-1)
+ └── OU: Sandbox   (SCP: Deny expensive services)
+</code></pre>
+<h3 id="ch13-13122-scp-example-lock-down-regions-and-prevent-disabling-audit">13.12.2. SCP example — lock down regions and prevent disabling audit</h3>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;DenyOutsideAllowedRegions&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;NotAction&quot;: [ &quot;iam:*&quot;, &quot;sts:*&quot;, &quot;organizations:*&quot;, &quot;cloudfront:*&quot;, &quot;route53:*&quot; ],
+      &quot;Resource&quot;: &quot;*&quot;,
+      &quot;Condition&quot;: {
+        &quot;StringNotEquals&quot;: { &quot;aws:RequestedRegion&quot;: [ &quot;us-east-1&quot;, &quot;eu-west-1&quot; ] }
+      }
+    },
+    {
+      &quot;Sid&quot;: &quot;ProtectCloudTrail&quot;,
+      &quot;Effect&quot;: &quot;Deny&quot;,
+      &quot;Action&quot;: [ &quot;cloudtrail:StopLogging&quot;, &quot;cloudtrail:DeleteTrail&quot; ],
+      &quot;Resource&quot;: &quot;*&quot;
+    }
+  ]
+}
+</code></pre>
+<p><strong>Why</strong> <code>NotAction</code> contains <code>iam</code>/<code>sts</code>: these services are global (implicitly region <code>us-east-1</code>); blocking by region could accidentally lock them out. An SCP applies even to the <strong>root user of a member account</strong> — this is the only way to restrict root.</p>
+<hr />
+<h2 id="ch13-1313-gcp-aws-equivalents">13.13. GCP — AWS equivalents</h2>
+<h3 id="ch13-13130-aws-gcp-mapping-table">13.13.0. AWS ↔ GCP mapping table</h3>
+<p>A quick reference before the details: learn one platform, then infer the other.</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>AWS</th>
+<th>GCP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Human identity</td>
+<td>IAM User</td>
+<td>Google account / member</td>
+</tr>
+<tr>
+<td>Workload identity</td>
+<td>IAM Role</td>
+<td>Service Account</td>
+</tr>
+<tr>
+<td>Temporary token</td>
+<td>STS</td>
+<td>SA token via metadata / STS API</td>
+</tr>
+<tr>
+<td>Virtual network</td>
+<td>VPC (per-region)</td>
+<td>VPC (global), subnets per region</td>
+</tr>
+<tr>
+<td>Instance firewall</td>
+<td>Security Group (stateful)</td>
+<td>Firewall rule (stateful, with priority)</td>
+</tr>
+<tr>
+<td>Stateless ACL</td>
+<td>NACL</td>
+<td>(no direct equivalent; use firewall priority)</td>
+</tr>
+<tr>
+<td>Object storage</td>
+<td>S3</td>
+<td>Cloud Storage</td>
+</tr>
+<tr>
+<td>Key management</td>
+<td>KMS</td>
+<td>Cloud KMS</td>
+</tr>
+<tr>
+<td>API audit</td>
+<td>CloudTrail</td>
+<td>Cloud Audit Logs</td>
+</tr>
+<tr>
+<td>Metrics/logs</td>
+<td>CloudWatch</td>
+<td>Cloud Monitoring / Logging</td>
+</tr>
+<tr>
+<td>Threat detection</td>
+<td>GuardDuty</td>
+<td>SCC / Event Threat Detection</td>
+</tr>
+<tr>
+<td>Organization guardrail</td>
+<td>SCP</td>
+<td>Organization Policy</td>
+</tr>
+<tr>
+<td>Secret management</td>
+<td>Secrets Manager</td>
+<td>Secret Manager</td>
+</tr>
+<tr>
+<td>Metadata service</td>
+<td>IMDS 169.254.169.254</td>
+<td>metadata.google.internal (169.254.169.254)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-13131-gcp-iam">13.13.1. GCP IAM</h3>
+<p>GCP IAM attaches permissions via the <strong>binding</strong> formula: who (member) + role + resource (through the hierarchy).</p>
+<pre><code>who   = member  (user:, serviceAccount:, group:, domain:, allUsers, allAuthenticatedUsers)
+what  = role    (roles/storage.objectViewer ...)
+where = resource (Organization &gt; Folder &gt; Project &gt; Resource)  -- permissions are INHERITED downward
+</code></pre>
+<p>Role classification:</p>
+<table>
+<thead>
+<tr>
+<th>Role type</th>
+<th>Description</th>
+<th>Example</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primitive (basic)</td>
+<td>Owner/Editor/Viewer applied to the whole project</td>
+<td><code>roles/owner</code></td>
+<td>Too broad — avoid</td>
+</tr>
+<tr>
+<td>Predefined</td>
+<td>Defined by Google, fine-grained per service</td>
+<td><code>roles/storage.objectAdmin</code></td>
+<td>Recommended</td>
+</tr>
+<tr>
+<td>Custom</td>
+<td>You combine permissions yourself</td>
+<td><code>projects/p/roles/myAuditor</code></td>
+<td>True least privilege</td>
+</tr>
+</tbody>
+</table>
+<p>Example IAM policy binding (the JSON format from <code>getIamPolicy</code>):</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: 3,
+  &quot;bindings&quot;: [
+    {
+      &quot;role&quot;: &quot;roles/storage.objectViewer&quot;,
+      &quot;members&quot;: [ &quot;user:alice@example.com&quot;, &quot;group:auditors@example.com&quot; ],
+      &quot;condition&quot;: {
+        &quot;title&quot;: &quot;only-prod-bucket&quot;,
+        &quot;expression&quot;: &quot;resource.name.startsWith('projects/_/buckets/prod-')&quot;
+      }
+    }
+  ],
+  &quot;etag&quot;: &quot;BwXyz...&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>Policy schema version (3 to use conditions)</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>bindings[].role</code></td>
+<td>The assigned role</td>
+<td><code>roles/storage.objectViewer</code></td>
+</tr>
+<tr>
+<td><code>bindings[].members[]</code></td>
+<td>List of members (with a type prefix)</td>
+<td><code>user:</code>, <code>serviceAccount:</code></td>
+</tr>
+<tr>
+<td><code>condition.expression</code></td>
+<td>A CEL (Common Expression Language) expression</td>
+<td>a condition based on resource/time</td>
+</tr>
+<tr>
+<td><code>etag</code></td>
+<td>A key to prevent concurrent overwrites (optimistic locking)</td>
+<td>base64</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Warning:</strong> <code>allUsers</code> (anyone on the Internet) and <code>allAuthenticatedUsers</code> (any Google account) are the equivalent of "public" — the leading source of Cloud Storage leaks.</p>
+<h3 id="ch13-13132-service-account-service-account-key">13.13.2. Service Account &amp; Service Account Key</h3>
+<p>A Service Account (SA) is an identity for a workload. It has <strong>two kinds of secrets</strong>:</p>
+<ul>
+<li><strong>Google-managed key</strong>: Google rotates it automatically, used when the workload runs on GCP (the metadata server issues tokens automatically — equivalent to an AWS IAM role).</li>
+<li><strong>User-managed key (JSON)</strong>: a <code>.json</code> file you download — a long-lived secret, and the <strong>biggest risk</strong> if it leaks into git.</li>
+</ul>
+<p>Structure of an SA key JSON file:</p>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;service_account&quot;,
+  &quot;project_id&quot;: &quot;my-project&quot;,
+  &quot;private_key_id&quot;: &quot;a1b2c3...&quot;,
+  &quot;private_key&quot;: &quot;-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n&quot;,
+  &quot;client_email&quot;: &quot;app-sa@my-project.iam.gserviceaccount.com&quot;,
+  &quot;client_id&quot;: &quot;10293847566...&quot;,
+  &quot;token_uri&quot;: &quot;https://oauth2.googleapis.com/token&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>always <code>service_account</code> — the identifier when scanning for secrets</td>
+</tr>
+<tr>
+<td><code>private_key</code></td>
+<td>RSA private key in PEM — the core secret</td>
+</tr>
+<tr>
+<td><code>client_email</code></td>
+<td>the SA identifier (check this email's permissions)</td>
+</tr>
+<tr>
+<td><code>token_uri</code></td>
+<td>the endpoint to exchange a JWT for an OAuth2 access token</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> you should <strong>disable creation of user-managed keys</strong> via the Org Policy <code>iam.disableServiceAccountKeyCreation</code> and use Workload Identity Federation instead of key files.</p>
+<h3 id="ch13-13133-gcp-vpc">13.13.3. GCP VPC</h3>
+<p>A key difference from AWS: <strong>a GCP VPC is global</strong>, with subnets belonging to a region (AWS: a VPC is per-region, with subnets per AZ). Firewall rules are applied at the VPC level, by network tag/SA, with a priority (0-65535, lower = higher priority), and are stateful.</p>
+<pre><code class="language-bash">gcloud compute firewall-rules create allow-https \
+  --network=prod-vpc --direction=INGRESS --action=ALLOW \
+  --rules=tcp:443 --source-ranges=0.0.0.0/0 \
+  --target-tags=web --priority=1000
+</code></pre>
+<h3 id="ch13-13134-cloud-storage-equivalent-to-s3">13.13.4. Cloud Storage (equivalent to S3)</h3>
+<ul>
+<li>Permissions: IAM (uniform bucket-level access — recommended) or ACL (fine-grained — should be disabled).</li>
+<li>Enable <strong>Uniform bucket-level access</strong> to drop ACLs and avoid public-ACL mistakes.</li>
+<li>Default encryption is Google-managed; choose CMEK (Customer-Managed Encryption Key via Cloud KMS) or CSEK.</li>
+</ul>
+<pre><code class="language-bash">gsutil uniformbucketlevelaccess set on gs://prod-data
+# Detect public access:
+gsutil iam get gs://prod-data | grep -E &quot;allUsers|allAuthenticatedUsers&quot;
+</code></pre>
+<h3 id="ch13-13135-cloud-logging-equivalent-to-cloudtrailcloudwatch-logs">13.13.5. Cloud Logging (equivalent to CloudTrail/CloudWatch Logs)</h3>
+<p>GCP records <strong>Audit Logs</strong> divided into types:</p>
+<table>
+<thead>
+<tr>
+<th>Audit Log type</th>
+<th>Content</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Admin Activity</td>
+<td>configuration/IAM changes</td>
+<td>Always on, cannot be disabled</td>
+</tr>
+<tr>
+<td>Data Access</td>
+<td>data reads/writes</td>
+<td>OFF by default (except BigQuery) — must be enabled</td>
+</tr>
+<tr>
+<td>System Event</td>
+<td>Google's system actions</td>
+<td>Always on</td>
+</tr>
+<tr>
+<td>Policy Denied</td>
+<td>denied by policy</td>
+<td>Automatic</td>
+</tr>
+</tbody>
+</table>
+<p>A Cloud Audit Log entry (the <code>protoPayload</code> AuditLog format):</p>
+<pre><code class="language-json">{
+  &quot;protoPayload&quot;: {
+    &quot;@type&quot;: &quot;type.googleapis.com/google.cloud.audit.AuditLog&quot;,
+    &quot;authenticationInfo&quot;: { &quot;principalEmail&quot;: &quot;alice@example.com&quot; },
+    &quot;requestMetadata&quot;: { &quot;callerIp&quot;: &quot;203.0.113.7&quot; },
+    &quot;serviceName&quot;: &quot;storage.googleapis.com&quot;,
+    &quot;methodName&quot;: &quot;storage.objects.get&quot;,
+    &quot;resourceName&quot;: &quot;projects/_/buckets/prod-data/objects/q1.pdf&quot;
+  },
+  &quot;severity&quot;: &quot;INFO&quot;,
+  &quot;timestamp&quot;: &quot;2026-06-19T14:05:11Z&quot;,
+  &quot;logName&quot;: &quot;projects/my-project/logs/cloudaudit.googleapis.com%2Fdata_access&quot;
+}
+</code></pre>
+<p><strong>Note:</strong> Data Access logs are OFF by default — if you do not enable them, you have <strong>no trail of who read which object</strong> (unlike AWS, where you need to enable S3 data events). This is a common investigative blind spot.</p>
+<h3 id="ch13-13136-security-command-center-equivalent-to-guardduty-security-hub-config">13.13.6. Security Command Center (equivalent to GuardDuty + Security Hub + Config)</h3>
+<p>SCC is GCP's security posture management platform: it detects misconfigurations, vulnerabilities, and threats.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security Health Analytics</td>
+<td>Scans for misconfigurations (public buckets, SA keys, open firewalls) — CSPM-style</td>
+</tr>
+<tr>
+<td>Event Threat Detection</td>
+<td>Analyzes logs to detect behavior (SSH brute force, anomalous IAM)</td>
+</tr>
+<tr>
+<td>Container Threat Detection</td>
+<td>Runtime detection in GKE</td>
+</tr>
+<tr>
+<td>Web Security Scanner</td>
+<td>Scans web apps</td>
+</tr>
+</tbody>
+</table>
+<p>Example findings: <code>PUBLIC_BUCKET_ACL</code>, <code>SERVICE_ACCOUNT_KEY_NOT_ROTATED</code>, <code>OPEN_FIREWALL</code>, <code>MFA_NOT_ENFORCED</code>.</p>
+<hr />
+<h2 id="ch13-1314-oci-oracle-cloud-infrastructure">13.14. OCI — Oracle Cloud Infrastructure</h2>
+<h3 id="ch13-13141-what-it-is-and-why-i-had-to-learn-it">13.14.1. What it is and why I had to learn it</h3>
+<p>I run two clouds in practice: prod on AWS, and dev (plus part of prod) on OCI (Oracle Cloud Infrastructure). Why I have to know OCI: it is <strong>not a renamed copy of AWS</strong> — many foundational concepts are designed quite differently, and anyone used to AWS thinking can easily misunderstand them and then misconfigure. This section records exactly the spots where I stumbled, mapped 1-to-1 against AWS to switch mental models quickly.</p>
+<p>The biggest difference to grasp up front: <strong>AWS isolates with <em>accounts</em>, while OCI isolates with <em>compartments</em> inside a single <em>tenancy</em>.</strong> Getting this wrong means getting OCI's entire permission model wrong.</p>
+<h3 id="ch13-13142-tenancy-and-compartment-the-logical-permission-tree">13.14.2. Tenancy and Compartment — the logical permission tree</h3>
+<ul>
+<li><strong>Tenancy</strong>: the root of all of an organization's OCI resources — equivalent to "AWS Organizations + the root account" fused into one. Every OCI resource has an OCID (Oracle Cloud ID) of the form <code>ocid1.&lt;type&gt;.&lt;realm&gt;..&lt;hash&gt;</code> and always belongs to a tenancy.</li>
+<li><strong>Compartment</strong>: a <strong>logical folder tree</strong> for grouping resources and applying permissions. This is where OCI differs most from AWS. On AWS, to separate environments/teams you typically split <em>accounts</em> and stitch them together with Organizations; on OCI, a single tenancy contains many nested compartments (<code>dev</code>, <code>prod</code>, <code>prod/db</code>, <code>shared-network</code>...), and permissions are granted <em>per compartment</em>.</li>
+</ul>
+<pre><code>Tenancy (root)
+ ├── Compartment: network-shared      (shared VCN, subnets)
+ ├── Compartment: dev                 (dev environment resources)
+ │     └── Compartment: dev/app
+ └── Compartment: prod                (prod resources running on OCI)
+       ├── Compartment: prod/app
+       └── Compartment: prod/data     (buckets, DB — most tightly locked)
+</code></pre>
+<p><strong>Why compartments are convenient:</strong> permissions, quotas, and even cost-tracking are attached per compartment; deleting a compartment cleans out everything inside it. But precisely because it is "one tenancy, many compartments," the isolation boundary is <strong>weaker than AWS account separation</strong> — a loose policy written at the tenancy level can leak permissions down into every compartment. This is why the part of prod running on OCI must sit in its own compartment with policies scoped correctly (see 13.14.9).</p>
+<h3 id="ch13-13143-iam-policy-as-statements-completely-unlike-aws-json">13.14.3. IAM policy as statements (completely unlike AWS JSON)</h3>
+<p>This is what surprised me most coming from AWS. OCI IAM policy is <strong>not a JSON document</strong> with <code>Effect/Action/Resource</code> like AWS — it is <strong>near-readable English sentences</strong>:</p>
+<pre><code>Allow group &lt;group-name&gt; to &lt;verb&gt; &lt;resource-type&gt; in compartment &lt;name&gt; [where &lt;condition&gt;]
+</code></pre>
+<p>Real examples:</p>
+<pre><code>Allow group Developers to manage object-family in compartment dev
+Allow group DBAdmins   to manage database-family in compartment prod:data
+Allow group Auditors   to read all-resources in tenancy
+Allow group AppOps     to use secret-family in compartment prod where request.region = 'ap-singapore-1'
+</code></pre>
+<p>The four <strong>permission verbs</strong>, ordered by increasing power (worth memorizing — different from AWS's enumeration of individual actions):</p>
+<table>
+<thead>
+<tr>
+<th>Verb</th>
+<th>Includes</th>
+<th>AWS equivalent (conceptual)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inspect</code></td>
+<td>list resources (metadata, no sensitive contents)</td>
+<td><code>List*</code></td>
+</tr>
+<tr>
+<td><code>read</code></td>
+<td>inspect + read contents/details</td>
+<td><code>List* + Get*/Describe*</code></td>
+</tr>
+<tr>
+<td><code>use</code></td>
+<td>read + operate on / update existing (no create/delete)</td>
+<td><code>Get* + Update*/runtime actions</code></td>
+</tr>
+<tr>
+<td><code>manage</code></td>
+<td>use + create and delete</td>
+<td>full control over the resource type</td>
+</tr>
+</tbody>
+</table>
+<p><code>&lt;resource-type&gt;</code> uses pre-grouped "families": <code>object-family</code> (Object Storage), <code>instance-family</code> (Compute), <code>virtual-network-family</code> (VCN), <code>secret-family</code>, <code>vaults</code>, <code>keys</code>... The <code>where</code> clause attaches conditions (region, time, <code>target.compartment.name</code>, tags...) — equivalent to AWS <code>Condition</code> but written inline in the sentence.</p>
+<p><strong>Why I like this syntax:</strong> reading an OCI policy is almost like reading the policy in plain English, with far less of AWS's "syntactically valid JSON but wrong intent." <strong>Where it trips you up:</strong> there is no explicit <code>Deny</code> — OCI IAM only has Allow (implicit deny by default). To "forbid" something you must <em>not grant</em> it, or tighten by compartment scope, or use another mechanism (Network Sources, tag-based). The habit of writing <code>Deny</code> guardrails like AWS SCPs <strong>does not port directly</strong> — you have to rethink it as narrowing the scope of what you grant.</p>
+<h3 id="ch13-13144-dynamic-group-instanceresource-principal-workload-identity-no-static-keys">13.14.4. Dynamic Group + Instance/Resource Principal (workload identity, no static keys)</h3>
+<p>This is the part of OCI I value most, and it maps directly onto AWS's "IAM role attached to EC2": it lets compute/functions <strong>obtain temporary credentials to call OCI APIs without embedding static keys in code</strong>.</p>
+<p>The mechanism has two steps:</p>
+<ol>
+<li><strong>Dynamic Group</strong>: groups <em>resources</em> (not users) by a <em>matching rule</em> — e.g. every instance in a compartment, or a specific function.</li>
+</ol>
+<p><code># A dynamic group's matching rule
+   ALL {instance.compartment.id = 'ocid1.compartment.oc1..aaaa....dev'}</code></p>
+<ol start="2">
+<li><strong>A policy granting permissions to that dynamic group</strong> (written just like a normal policy, with <code>dynamic-group</code> as the subject):</li>
+</ol>
+<p><code>Allow dynamic-group DevInstances to read secret-family in compartment dev
+   Allow dynamic-group DevInstances to use keys        in compartment dev</code></p>
+<p>Then code running on the instance uses an <strong>Instance Principal</strong> to authenticate itself (the SDK fetches temporary certificates from the metadata endpoint), with no key file at all:</p>
+<pre><code class="language-python">import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+secrets = oci.secrets.SecretsClient(config={}, signer=signer)
+# calls the API with the machine's identity — temporary, auto-rotated credentials, never on disk
+</code></pre>
+<ul>
+<li><strong>Instance Principal</strong>: for VMs/compute.</li>
+<li><strong>Resource Principal</strong>: for serverless (OCI Functions) and some managed services — equivalent to a Lambda execution role.</li>
+</ul>
+<p><strong>Why it matters:</strong> as on AWS, the crux is <strong>"machine identity, not a key file."</strong> Even the "secret to fetch the secret" is not on disk: the app uses its Instance Principal to authenticate, then fetches the real secret from Vault at startup. This is the correct way for a service in the dev OCI environment to access Vault without hardcoding credentials.</p>
+<h3 id="ch13-13145-oci-vault-kms-secrets-in-one-place">13.14.5. OCI Vault — KMS + Secrets in one place</h3>
+<p>OCI Vault combines the two roles that AWS splits into <strong>KMS</strong> (keys) and <strong>Secrets Manager</strong> (secrets):</p>
+<ul>
+<li><strong>Keys (encryption keys)</strong>: master keys protected in an HSM. Two vault types: <em>Default</em> (HSM partition shared with other tenants — cheaper, fine for most needs) and <em>Virtual Private Vault</em> (a dedicated HSM partition, stronger isolation, for stricter compliance requirements — pricing and limits need verification at time of use). Used for at-rest encryption of Block Volumes, Object Storage, databases. Supports rotation and envelope encryption on the same principle as KMS (section 13.7.2).</li>
+<li><strong>Secrets</strong>: DB passwords, API keys... stored encrypted with a key in the Vault, managed as immutable <em>versions</em>.</li>
+</ul>
+<pre><code class="language-bash"># Read a secret (bundle) — the returned content is base64-encoded
+oci secrets secret-bundle get-secret-bundle-by-name \
+  --secret-name db-password --vault-id ocid1.vault.oc1..aaaa
+</code></pre>
+<p>My actual secrets architecture: <strong>prod uses AWS Secrets Manager, the part running on OCI uses OCI Vault</strong> — same principle: the app holds no static key to call the secret store, it uses an IAM role (AWS) / Instance Principal (OCI) to authenticate and then fetches secrets at runtime.</p>
+<h3 id="ch13-13146-vcn-security-list-subnet-level-vs-nsg-vnic-level">13.14.6. VCN — Security List (subnet level) vs NSG (VNIC level)</h3>
+<p>A VCN (Virtual Cloud Network) is OCI's isolated virtual network, equivalent to a VPC. But OCI's firewall mechanism has <strong>two layers coexisting</strong>, and the mapping to AWS is not perfectly 1-to-1, which makes it easy to confuse:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Security List (OCI)</th>
+<th>Network Security Group / NSG (OCI)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attached where</td>
+<td><strong>Subnet</strong> (applies to EVERY VNIC in the subnet)</td>
+<td>Each resource's <strong>VNIC</strong> (grouped by function)</td>
+</tr>
+<tr>
+<td>Closest AWS analog</td>
+<td>close to <strong>NACL</strong> (subnet level) but <strong>stateful by default</strong></td>
+<td>close to <strong>Security Group</strong> (interface level)</td>
+</tr>
+<tr>
+<td>Stateful?</td>
+<td>per-rule choice: <strong>stateful or stateless</strong></td>
+<td>stateful by default (can choose stateless)</td>
+</tr>
+<tr>
+<td>Source reference</td>
+<td>CIDR, or Service (for a Service Gateway)</td>
+<td>CIDR <strong>or another NSG</strong> (like AWS SG-to-SG)</td>
+</tr>
+</tbody>
+</table>
+<p>The easiest trap coming from AWS: on OCI a packet must pass <strong>BOTH the subnet's Security List AND the VNIC's NSG</strong> — both must allow it for the packet to flow (an AND intersection). People used to AWS often only adjust the NSG (thinking of it as a Security Group) and forget that the subnet's Security List is still blocking, or vice versa.</p>
+<p>Another difference from AWS: a Security List is <strong>stateful by default</strong> (not stateless like a NACL), so you usually do not have to manually open the ephemeral port range for return traffic — unless you deliberately set a rule to stateless. Practical recommendation: prefer <strong>NSGs</strong> for functional network segmentation (NSG-to-NSG references, mirroring the SG-to-SG best practice), keeping Security Lists minimal/default.</p>
+<h3 id="ch13-13147-object-storage-private-by-default-par-instead-of-public">13.14.7. Object Storage — private by default, PAR instead of public</h3>
+<p>Object Storage is OCI's object store (equivalent to S3). There is one point I consider a <strong>design plus</strong> compared to S3's history:</p>
+<ul>
+<li><strong>Buckets are private by default.</strong> To make one public you must <strong>actively</strong> change its visibility to Public. Unlike early-days S3 (where loose configuration + public-read ACLs were the classic leak source), OCI's "accidentally public" risk is lower by default — but <em>you still have to check</em>, because someone can still switch it to public by mistake.</li>
+<li><strong>Pre-Authenticated Requests (PARs)</strong> replace opening a bucket to the public: create a URL with an <strong>expiry time</strong> and a scope (a single object or the whole bucket, read/write) — equivalent to an S3 pre-signed URL. When you need to share a file, issue a time-limited PAR; do <strong>not</strong> make the bucket public.</li>
+<li>At-rest encryption is on by default (Oracle-managed key); sensitive data should move to a <strong>customer-managed key in OCI Vault</strong> to control rotation + audit who uses the key.</li>
+</ul>
+<pre><code class="language-bash"># Create a PAR to read one object, expiring in 24h — instead of making the bucket public
+oci os preauth-request create --namespace &lt;ns&gt; --bucket-name reports \
+  --name share-q1 --access-type ObjectRead \
+  --object-name q1.pdf --time-expires 2026-08-15T00:00:00Z
+</code></pre>
+<p><strong>Cloud Guard</strong> (section 13.14.8) automatically flags public buckets — so enable it as a detection layer.</p>
+<h3 id="ch13-13148-cloud-guard-ocis-cspm">13.14.8. Cloud Guard — OCI's CSPM</h3>
+<p>Cloud Guard is OCI's cloud security posture management (CSPM) service, equivalent to GuardDuty + Security Hub + Config combined (or GCP's SCC):</p>
+<ul>
+<li><strong>Detectors</strong> scan for risky configuration/behavior and raise <strong>Problems</strong>: public buckets, security rules open to <code>0.0.0.0/0</code> on admin ports, overly broad IAM policies, unpatched instances, keys/secrets nearing expiry...</li>
+<li><strong>Responders</strong> allow automated or semi-automated remediation (e.g. automatically closing a public bucket).</li>
+<li>Benchmarked against CIS OCI Foundations.</li>
+</ul>
+<p>In the systems I operate, Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.</p>
+<h3 id="ch13-13149-oci-metadata-endpoint-imds-v2-requires-the-authorization-bearer-oracle-header">13.14.9. OCI metadata endpoint — IMDS v2 requires the <code>Authorization: Bearer Oracle</code> header</h3>
+<p>OCI also has a metadata service at the exact same link-local address <strong><code>169.254.169.254</code></strong> as AWS/GCP, and Instance Principals fetch their temporary certificates through it — so it presents <strong>the same SSRF attack surface</strong> as AWS IMDS (SSRF mechanism: <a href="ch05.html">Chapter 5</a>).</p>
+<p>The notable defensive difference — how each side blocks SSRF:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>AWS IMDSv2</th>
+<th>OCI IMDS v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Path</td>
+<td><code>/latest/meta-data/...</code></td>
+<td><code>/opc/v2/...</code></td>
+</tr>
+<tr>
+<td>Protection</td>
+<td><strong>PUT</strong> to fetch a token first, then GET with the token header</td>
+<td>GET with a <strong>fixed header</strong> <code>Authorization: Bearer Oracle</code></td>
+</tr>
+<tr>
+<td>Why it blocks naive SSRF</td>
+<td>basic SSRF can only do GET, cannot PUT a token</td>
+<td>basic SSRF cannot add the <code>Authorization</code> header itself</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># OCI IMDS v2 — a missing header is rejected
+curl -H &quot;Authorization: Bearer Oracle&quot; http://169.254.169.254/opc/v2/instance/
+curl -H &quot;Authorization: Bearer Oracle&quot; http://169.254.169.254/opc/v2/identity/cert.pem
+</code></pre>
+<p><strong>Important note:</strong> the <code>Authorization: Bearer Oracle</code> header is a <strong>fixed constant</strong>, not a secret — it only raises the bar against <em>naive</em> SSRF (the kind that can only inject a URL, not add a header). An SSRF that can control headers still gets through. So do not treat metadata v2 (whether AWS or OCI) as sufficient: you still have to apply the full SSRF defense set at the application layer (domain allowlist, block private/link-local IPs <code>169.254.0.0/16</code>, validate the IP after DNS resolution to defeat rebinding, disable/validate redirects). OCI v1 (<code>/opc/v1/</code>) requires no header — so enforce v2 just as you enforce IMDSv2 on AWS.</p>
+<h3 id="ch13-131410-aws-oci-gcp-mapping-table">13.14.10. AWS ↔ OCI ↔ GCP mapping table</h3>
+<p>A quick lookup when jumping between the three platforms — learn one, infer the other two:</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>AWS</th>
+<th>OCI</th>
+<th>GCP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Isolation boundary</td>
+<td>Account (+ Organizations)</td>
+<td><strong>Compartment</strong> (within one tenancy)</td>
+<td>Project (+ Folder/Org)</td>
+</tr>
+<tr>
+<td>IAM policy syntax</td>
+<td>JSON (<code>Effect/Action/Resource</code>)</td>
+<td><strong>Statements</strong> (<code>Allow group … to … in compartment …</code>)</td>
+<td>JSON binding (member+role)</td>
+</tr>
+<tr>
+<td>Workload identity</td>
+<td>IAM Role on EC2</td>
+<td><strong>Instance/Resource Principal</strong> (+ Dynamic Group)</td>
+<td>Service Account (+ Workload Identity)</td>
+</tr>
+<tr>
+<td>Org guardrail</td>
+<td>SCP (has Deny)</td>
+<td><em>(no Deny; tighten via compartment scope / policy)</em></td>
+<td>Organization Policy</td>
+</tr>
+<tr>
+<td>Virtual network</td>
+<td>VPC</td>
+<td><strong>VCN</strong></td>
+<td>VPC (global)</td>
+</tr>
+<tr>
+<td>Interface-level firewall</td>
+<td>Security Group</td>
+<td><strong>NSG</strong></td>
+<td>Firewall rule (by tag/SA)</td>
+</tr>
+<tr>
+<td>Subnet-level firewall</td>
+<td>NACL (stateless)</td>
+<td><strong>Security List</strong> (stateful by default)</td>
+<td><em>(none; use priority)</em></td>
+</tr>
+<tr>
+<td>Object storage</td>
+<td>S3</td>
+<td><strong>Object Storage</strong></td>
+<td>Cloud Storage</td>
+</tr>
+<tr>
+<td>Private-by-default bucket</td>
+<td>BPA (on by default since 4/2023)</td>
+<td><strong>Private by default already</strong></td>
+<td>Uniform bucket-level access</td>
+</tr>
+<tr>
+<td>Time-limited share URL</td>
+<td>Pre-signed URL</td>
+<td><strong>Pre-Authenticated Request (PAR)</strong></td>
+<td>Signed URL</td>
+</tr>
+<tr>
+<td>Key management</td>
+<td>KMS</td>
+<td><strong>Vault (Keys)</strong></td>
+<td>Cloud KMS</td>
+</tr>
+<tr>
+<td>Secret management</td>
+<td>Secrets Manager</td>
+<td><strong>Vault (Secrets)</strong></td>
+<td>Secret Manager</td>
+</tr>
+<tr>
+<td>API audit</td>
+<td>CloudTrail</td>
+<td><strong>Audit</strong> (on by default)</td>
+<td>Cloud Audit Logs</td>
+</tr>
+<tr>
+<td>CSPM / threat detection</td>
+<td>GuardDuty + Security Hub + Config</td>
+<td><strong>Cloud Guard</strong></td>
+<td>Security Command Center</td>
+</tr>
+<tr>
+<td>Metadata endpoint</td>
+<td><code>169.254.169.254</code> <code>/latest/</code> (IMDSv2: PUT token)</td>
+<td><code>169.254.169.254</code> <code>/opc/v2/</code> (<code>Bearer Oracle</code> header)</td>
+<td><code>metadata.google.internal</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch13-131411-multi-cloud-operating-principles-practical-experience">13.14.11. Multi-cloud operating principles (practical experience)</h3>
+<p>Running AWS (prod) + OCI (dev and part of prod) side by side, I have distilled a few principles that theory rarely states bluntly:</p>
+<ul>
+<li><strong>The correct boundary is prod vs non-prod, NOT AWS vs OCI.</strong> Having prod on AWS and dev on OCI is merely a <em>fortunate coincidence</em> (separating both provider and credentials, so the blast radius is small), but do not turn "provider" into a security-classification criterion.</li>
+<li><strong>The part of prod running on the "dev" cloud must meet the SAME tight standard as the main prod.</strong> This is the most dangerous trap: a prod compartment sitting in the same tenancy as dev easily "inherits" dev's loose configuration habits (broad network rules, permissive buckets, tenancy-wide policies). Prod-OCI must have: least privilege by compartment, no public buckets, secrets in Vault, logging/Cloud Guard enabled — exactly like prod-AWS.</li>
+<li><strong>Separate credentials / network / permissions across environments.</strong> A leaked dev credential must not open anything in prod. Any connection between the two clouds (if it exists, e.g. an AWS↔OCI VPN) opens only the ports genuinely needed.</li>
+<li><strong>Real data does not live in dev.</strong> A dev environment being more loosely configured is normal — but only acceptable when dev <em>does not touch real data</em>. The biggest risk of the "dev on OCI" model is a loosely configured dev machine accidentally holding production data.</li>
+<li><strong>Standardize with IaC to manage two IAM/tooling stacks.</strong> The price of multi-cloud is managing two IAM systems and two toolsets; offset it with Terraform/IaC + policy-as-code (Checkov/Trivy scanning both AWS and OCI config) so you don't have to remember two ways of configuring by hand.</li>
+</ul>
+<hr />
+<h2 id="ch13-1315-cloud-attacks-and-how-to-detect-them">13.15. Cloud attacks and how to detect them</h2>
+<h3 id="ch13-13151-misconfiguration">13.15.1. Misconfiguration</h3>
+<p>The leading cause. Detected with CSPM (section 13.16). Forms include: public buckets, SGs open to <code>0.0.0.0/0</code> on administrative ports (22/3389/database), CloudTrail not enabled, encryption disabled, IMDSv1 still enabled, IAM policies with <code>"Action":"*","Resource":"*"</code>.</p>
+<h3 id="ch13-13152-credential-leak-keys-in-git">13.15.2. Credential leak — keys in git</h3>
+<p>AWS access keys have a clearly identifiable form:</p>
+<pre><code>AKIA[0-9A-Z]{16}        &lt;- Access Key ID (20 characters, AKIA prefix)
+40-character base64 secret   &lt;- Secret Access Key
+</code></pre>
+<p>Scan git with real tools:</p>
+<pre><code class="language-bash"># trufflehog scans the entire repo history and verifies that keys are still live
+trufflehog git file://./myrepo --only-verified
+
+# gitleaks
+gitleaks detect --source . --report-format json --report-path leaks.json
+</code></pre>
+<p>Sample gitleaks output:</p>
+<pre><code class="language-json">{
+  &quot;Description&quot;: &quot;AWS Access Key&quot;,
+  &quot;Secret&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
+  &quot;File&quot;: &quot;config/old_settings.py&quot;,
+  &quot;Commit&quot;: &quot;9f3c1a...&quot;,
+  &quot;Author&quot;: &quot;dev@example.com&quot;,
+  &quot;RuleID&quot;: &quot;aws-access-token&quot;
+}
+</code></pre>
+<p><strong>Why</strong> scan the entire commit history: deleting a key in a new commit but leaving it in git history =&gt; an attacker can recover it with <code>git log -p</code>. You must both <strong>revoke the key (disable it immediately)</strong> and clean the history (or consider it permanently exposed).</p>
+<p>GitHub Secret Scanning + push protection blocks it the moment you push; AWS has a mechanism that automatically attaches the <code>AWSCompromisedKeyQuarantine</code> policy when it detects a public key.</p>
+<h3 id="ch13-13153-privilege-escalation-via-iampassrole">13.15.3. Privilege Escalation via <code>iam:PassRole</code></h3>
+<p>This is one of the most dangerous and common privilege-escalation paths.</p>
+<p><strong>Mechanism:</strong> <code>iam:PassRole</code> allows a principal to "hand" a role to a service (EC2, Lambda...). If an attacker has:
+- <code>iam:PassRole</code> for a high-privilege role (e.g. <code>AdminRole</code>), AND
+- permission to create a resource that attaches that role (e.g. <code>ec2:RunInstances</code> or <code>lambda:CreateFunction</code>),</p>
+<p>then they can escalate to Admin even though their own account is not an Admin.</p>
+<p>Concrete exploitation steps (via Lambda):</p>
+<pre><code class="language-bash"># 1. Create a Lambda running under AdminRole (needs iam:PassRole + lambda:CreateFunction)
+aws lambda create-function --function-name pwn \
+  --runtime python3.12 --handler index.handler \
+  --role arn:aws:iam::123456789012:role/AdminRole \
+  --zip-file fileb://payload.zip
+
+# 2. The Lambda code calls AWS APIs with AdminRole's permissions, e.g. create a new admin user
+aws lambda invoke --function-name pwn out.json
+</code></pre>
+<p>Or via EC2 + IMDS:</p>
+<pre><code class="language-bash"># Launch an EC2 with AdminRole attached, then read the credentials from IMDS inside it
+aws ec2 run-instances --image-id ami-xxx --instance-type t3.micro \
+  --iam-instance-profile Name=AdminInstanceProfile
+# Then SSH/SSM in and curl IMDS to obtain AdminRole's credentials.
+</code></pre>
+<p><strong>Defense:</strong>
+- Restrict <code>iam:PassRole</code> to a specific role via <code>Resource</code> (do not use <code>"Resource":"*"</code>).
+- Use the <code>iam:PassedToService</code> condition to restrict the role to being passed only to the correct service.</p>
+<pre><code class="language-json">{
+  &quot;Effect&quot;: &quot;Allow&quot;,
+  &quot;Action&quot;: &quot;iam:PassRole&quot;,
+  &quot;Resource&quot;: &quot;arn:aws:iam::123456789012:role/app-limited-role&quot;,
+  &quot;Condition&quot;: { &quot;StringEquals&quot;: { &quot;iam:PassedToService&quot;: &quot;lambda.amazonaws.com&quot; } }
+}
+</code></pre>
+<p><strong>Detection:</strong> in CloudTrail, look for <code>RunInstances</code>/<code>CreateFunction</code> whose <code>requestParameters</code> contain a high-privilege role ARN, called by a non-admin principal. The Pacu tool (an AWS exploitation framework) has a module that enumerates escalation paths:</p>
+<pre><code class="language-bash">pacu
+&gt; run iam__enum_permissions
+&gt; run iam__privesc_scan
+</code></pre>
+<h3 id="ch13-13154-exposed-bucket-detection-and-exploitation">13.15.4. Exposed bucket — detection and exploitation</h3>
+<pre><code class="language-bash"># Try anonymous listing
+aws s3 ls s3://target-bucket --no-sign-request
+aws s3 cp s3://target-bucket/secret.txt . --no-sign-request
+</code></pre>
+<p><code>--no-sign-request</code> = do not send credentials =&gt; tests whether the bucket allows anonymous (public) access. Defensive detection: enable account-wide BPA, Macie to scan for PII, the Config rule <code>s3-bucket-public-read-prohibited</code>.</p>
+<hr />
+<h2 id="ch13-1316-cspm-cloud-security-posture-management">13.16. CSPM — Cloud Security Posture Management</h2>
+<h3 id="ch13-13161-what-it-is">13.16.1. What it is</h3>
+<p>CSPM automatically scans cloud configuration against benchmarks (CIS, PCI) and continuously detects deviations. Native: AWS Security Hub + Config, GCP SCC. Open source: <strong>Prowler</strong>, <strong>ScoutSuite</strong>.</p>
+<h3 id="ch13-13162-prowler-practical-example">13.16.2. Prowler — practical example</h3>
+<pre><code class="language-bash"># Run all checks against the CIS benchmark, export HTML + JSON
+prowler aws --compliance cis_2.0_aws --output-formats html json-ocsf
+</code></pre>
+<p>Sample output (abbreviated):</p>
+<pre><code>FAIL  s3_bucket_public_access  company-reports  Bucket allows public read
+FAIL  iam_root_mfa_enabled     account 1234     Root account MFA not enabled
+PASS  cloudtrail_multi_region  account 1234     Multi-region trail enabled
+</code></pre>
+<h3 id="ch13-13163-scoutsuite">13.16.3. ScoutSuite</h3>
+<pre><code class="language-bash">scout aws --report-dir ./scout-report
+# Open ./scout-report/scoutsuite-results/...html to view the risk dashboard by service
+</code></pre>
+<h3 id="ch13-13164-aws-config-rule-native-cspm">13.16.4. AWS Config rule (native CSPM)</h3>
+<pre><code class="language-bash"># Enable a managed rule that checks buckets are not public
+aws configservice put-config-rule --config-rule '{
+  &quot;ConfigRuleName&quot;: &quot;s3-no-public-read&quot;,
+  &quot;Source&quot;: { &quot;Owner&quot;: &quot;AWS&quot;, &quot;SourceIdentifier&quot;: &quot;S3_BUCKET_PUBLIC_READ_PROHIBITED&quot; }
+}'
+</code></pre>
+<p>Config continuously evaluates resources as they change and flags them NON_COMPLIANT, and can auto-remediate via SSM Automation.</p>
+<hr />
+<h2 id="ch13-1317-secret-manager">13.17. Secret Manager</h2>
+<h3 id="ch13-13171-aws-secrets-manager">13.17.1. AWS Secrets Manager</h3>
+<p>Stores secrets (DB passwords, API keys) encrypted with KMS, and supports <strong>automatic rotation</strong> via a Lambda rotation function.</p>
+<pre><code class="language-bash">aws secretsmanager create-secret --name prod/db/password \
+  --secret-string '{&quot;username&quot;:&quot;app&quot;,&quot;password&quot;:&quot;S3cr3t!&quot;}' \
+  --kms-key-id alias/app-cmk
+
+aws secretsmanager get-secret-value --secret-id prod/db/password \
+  --query SecretString --output text
+</code></pre>
+<p>Compared to Parameter Store: Secrets Manager has built-in rotation + charges per secret; SSM Parameter Store (SecureString) is cheaper but does not rotate automatically.</p>
+<h3 id="ch13-13172-gcp-secret-manager">13.17.2. GCP Secret Manager</h3>
+<p>Versions are immutable; access is controlled via the IAM role <code>roles/secretmanager.secretAccessor</code>.</p>
+<pre><code class="language-bash">echo -n &quot;S3cr3t!&quot; | gcloud secrets create db-pass --data-file=-
+gcloud secrets versions access latest --secret=db-pass
+</code></pre>
+<p><strong>Warning</strong> (general security): (1) never pass a secret through an environment variable that shows up in logs/<code>ps</code>; prefer fetching it at runtime; (2) grant read access to secrets per least privilege and enable an audit log on every access; (3) enable periodic rotation.</p>
+<hr />
+<h2 id="ch13-1318-summary-of-core-defensive-principles">13.18. Summary of core defensive principles</h2>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>Concrete application</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Least privilege</td>
+<td>Fine-grained IAM/roles, specific Resources/compartments, drop <code>*</code></td>
+</tr>
+<tr>
+<td>Explicit deny guardrail</td>
+<td>SCP / Org Policy / permission boundary (OCI has no Deny — tighten via compartment scope)</td>
+</tr>
+<tr>
+<td>Eliminate long-lived credentials</td>
+<td>IAM Role/SA token/Instance Principal instead of access keys; WIF; IMDSv2</td>
+</tr>
+<tr>
+<td>Encryption by default</td>
+<td>SSE-KMS/CMEK/OCI Vault key + block non-TLS</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>CloudTrail + Config + GuardDuty / Audit Logs + SCC / OCI Audit + Cloud Guard, immutable logs</td>
+</tr>
+<tr>
+<td>Block public by default</td>
+<td>S3 BPA / Uniform bucket-level access / OCI buckets private by default</td>
+</tr>
+<tr>
+<td>Continuous detection</td>
+<td>CSPM (Prowler/ScoutSuite/SCC/Cloud Guard) + secret scanning in CI</td>
+</tr>
+<tr>
+<td>Environment boundary</td>
+<td>Split by prod vs non-prod (not by provider); prod on the "dev" cloud locked as tightly as main prod</td>
+</tr>
+</tbody>
+</table>
+<p>All cloud security architecture reduces to: <strong>tight identity control (IAM), eliminating long-lived secrets, encrypting everywhere, complete and immutable logging, blocking public access by default, and continuously scanning for misconfigurations.</strong> Most real-world incidents lie within "IN the cloud" — that is, within your control and your responsibility.</p>
+<hr />
+<h2 id="ch13-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<p><strong>From AWS to OCI — the spots where my mental model failed me.</strong> I learned cloud on AWS first, so when I had to also operate OCI (dev and part of prod) I tripped exactly on the concepts that look similar but aren't:</p>
+<ul>
+<li><strong>A compartment is not an account.</strong> At first I kept looking for "create a sub-account" like AWS Organizations, and only later realized OCI isolates with compartments <em>inside a single tenancy</em>. The security consequence: the boundary is weaker than account separation, so a policy written at the tenancy level can leak permissions down into every compartment. Since then I carefully scope <code>in compartment &lt;specific&gt;</code> rather than <code>in tenancy</code> for convenience.</li>
+<li><strong>Policy as sentences, and NO Deny.</strong> The <code>Allow group … to manage … in compartment …</code> syntax reads pleasantly, but it took me a while to internalize that there is <em>no explicit <code>Deny</code></em> like an SCP. The AWS habit of building guardrails with explicit Deny doesn't carry straight over — you have to rethink it as "grant only the right scope," or use Network Sources/tags. This is something I'm still exploring: what to use as a tidy tenancy-level guardrail on OCI equivalent to an SCP.</li>
+<li><strong>Two firewall layers, Security List + NSG.</strong> Once I changed a rule on an NSG and the packet still wouldn't flow; after debugging I remembered the subnet's Security List was still blocking — both must allow it (AND). And a Security List is <strong>stateful by default</strong> (unlike AWS NACLs, which are stateless), so don't mechanically open the ephemeral port range out of NACL habit. Now my rule of thumb: segment the network with NSGs (NSG-to-NSG references), keep Security Lists minimal.</li>
+<li><strong>Private-by-default buckets are a real plus.</strong> After the classic "S3 public-read" trauma, OCI Object Storage being private by default is a relief — but I still enable Cloud Guard so it flags anything that gets flipped to public. To share a file I issue a time-limited Pre-Authenticated Request, never leaving a bucket public "for convenience."</li>
+<li><strong>The <code>Bearer Oracle</code> metadata header is not a secret.</strong> At first I assumed the <code>Authorization: Bearer Oracle</code> header was some kind of token and felt reassured. It isn't — it's a fixed constant, blocking only <em>naive</em> SSRF (the kind that can't add a header). An SSRF that controls headers still gets through. So I still apply the full SSRF defense set at the app layer and treat metadata v2 (both AWS and OCI) as just one extra layer.</li>
+</ul>
+<p><strong>The biggest multi-cloud lesson:</strong> the real security boundary is <strong>prod vs non-prod</strong>, not AWS vs OCI. For prod running on OCI I enforce the same tight standard as prod on AWS — the trap is letting a prod compartment "inherit" dev's loose habits because they share a tenancy. Having prod-AWS and dev-OCI separate both provider and credentials is a <em>fortuitous</em> blast-radius advantage, but I don't lean on it in place of configuration discipline.</p>
+<p><strong>Still exploring:</strong> standardizing both clouds with Terraform + policy-as-code (Checkov/Trivy scanning both AWS and OCI) to avoid remembering two ways of configuring by hand; and how to funnel Cloud Guard (OCI) logs/alerts together with GuardDuty/Config (AWS) into one place so a single person can still keep up.</p>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch12.html"><span>← Previous</span><b>12 · Pentest &amp; Vuln Assessment</b></a><a class="pg next" href="ch14.html"><span>Next →</span><b>14 · Virtualization &amp; Containers</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -2,39 +2,13 @@
 
 ## Overview
 
-**Cryptography** is the science of protecting information through three core capabilities: keeping secrets, guaranteeing integrity, and proving origin. Every transaction on the Internet (logging in, transferring money, messaging, shopping) relies on cryptographic primitives to defend against eavesdropping, tampering, and forgery. This chapter presents each primitive in sequence: **concept → mechanism → example → security notes**.
+I didn't get into cryptography to reimplement AES from scratch — I got into it to be able to read a design decision and tell whether it's actually safe: which algorithm signs a JWT, which hash a password gets stored under, where an expired TLS certificate breaks things. The three capabilities cryptography provides are the same three questions that come up in every review: can this stay secret, can it stay unmodified, and can its origin be proven. Miss any one of the three and the system has a hole, no matter how solid the encryption part looks.
 
-**Three foundational goals (CIA, AAA, Non-repudiation):**
+The chapter opens with the foundational framework — **CIA** (confidentiality/integrity/availability), **AAA** (authentication/authorization/accounting), and **non-repudiation** — then moves to the distinction most newcomers blur: **encoding, hashing, and encryption** are three different operations that cannot substitute for one another (Base64-ing a password is a classic mistake). From there it covers the two main pillars — **symmetric encryption** (AES, AEAD) and **asymmetric encryption** (RSA, ECC, DH/ECDHE) — along with **cryptographic hash functions** and why MD5/SHA-1 are considered broken while SHA-256/SHA-3 still hold up.
 
-- **CIA** — the three security objectives: **Confidentiality** (secrecy — only authorized parties may read), **Integrity** (data is not modified without authorization), **Availability** (accessible when needed). Every tool choice must clearly identify which property is being protected.
-- **AAA** — three questions about a subject: **Authentication** ("who are you"), **Authorization** ("what are you allowed to do"), **Accounting** (logging — "what did you do").
-- **Non-repudiation** — a subject cannot deny an action it performed. Achievable only through digital signatures with a private key.
+The rest ties directly into running a real system: storing passwords correctly with **Argon2/bcrypt/scrypt** plus salt and pepper, using **HMAC** and **digital signatures** to authenticate integrity and origin, and **PKI/X.509**, the foundation every HTTPS connection rests on. The chapter closes with the risk model (vulnerability, threat, exploit, risk, and the CVE/CWE/CVSS identifiers that go with them) and the design principles underneath all of it — least privilege, defense in depth, zero trust, and Kerckhoffs's principle, the reason AES and RSA can publish their entire algorithm and still be secure.
 
-**Distinguishing Encoding — Hashing — Encryption:**
-
-- **Encoding** (e.g., Base64) — merely changes how data is represented; reversible without a key, **provides no security**. Base64-ing a password is a common mistake.
-- **Hashing** — produces a fixed-length fingerprint, **one-way and irreversible**. Used for integrity checks and password storage.
-- **Encryption** — locks data with a secret key, reversible only with the key. This is the only primitive that guarantees confidentiality.
-
-**Symmetric encryption** — one key for both encryption and decryption; **AES** + **AEAD** (see 4.3).
-
-**Asymmetric encryption** — a **key pair** (public/private) for key exchange; **RSA**, **ECC**, **DH/ECDHE** (see 4.4).
-
-**Cryptographic hash functions** — a fixed-length, one-way fingerprint with the **avalanche** effect; **SHA-256/SHA-3**, **MD5/SHA-1 are broken** (see 4.5).
-
-**Password storage** — never store in plaintext and never use a fast hash (too fast). Use a function that is **deliberately slow and memory-hard** (**Argon2**, **bcrypt**, **scrypt**) together with a **salt** (random and unique per user) and a **pepper** (a shared secret stored separately).
-
-**HMAC** — uses a shared secret key to authenticate message integrity and origin. Applications: JWT, webhook signatures, signing API requests.
-
-**Digital signatures** — sign with a **private key**, verify with a **public key**; simultaneously guarantee integrity, authentication, and non-repudiation. The roles of the key pair are reversed relative to asymmetric encryption.
-
-**PKI & X.509** — a certificate system that guarantees a public key belongs to the correct subject. A **CA (Certificate Authority)** signs to vouch for an **X.509 certificate**; **revocation** mechanisms (CRL, OCSP) invalidate compromised or mis-issued certificates. This is the foundation of HTTPS.
-
-**Risk model** — four concepts to distinguish: **Vulnerability** (a weakness), **Threat** (a threat actor), **Exploit** (a tool that takes advantage), **Risk** (= Likelihood × Impact). Identification uses **CVE** (a specific vulnerability), **CWE** (a general weakness type), **CVSS** (a 0–10 scale).
-
-**Design principles** — including **Least Privilege**, **Defense in Depth**, **Zero Trust**, and especially **Kerckhoffs's principle**: a system must remain secure even when an adversary knows the entire mechanism, as long as the key is kept secret. This is why AES, RSA, and SHA-256 are all open standards.
-
-> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section progresses from concept → internal mechanism (at the bit/byte/step level) → runnable real-world example → security notes. The technical figures follow NIST FIPS / RFC; anything requiring further verification is noted explicitly.
+> Technical figures in this chapter follow NIST FIPS / RFC; anywhere I'm not fully certain, it's flagged for further verification.
 
 ---
 
@@ -577,7 +551,7 @@ A client trusts the Leaf because it can verify the signature chain up to a Root 
 | Version | Version (v3 = 2) | v3 |
 | Serial Number | A unique serial issued by the CA | `04:A2:...` |
 | Signature Algorithm | The algorithm the CA signs with | `sha256WithRSAEncryption` / `ecdsa-with-SHA256` |
-| Issuer | The DN of the issuing CA | `CN=R3, O=Let's Encrypt` |
+| Issuer | The DN of the issuing CA | `CN=R11, O=Let's Encrypt` |
 | Validity (Not Before / Not After) | The validity window | 2026-01-01 → 2026-04-01 |
 | Subject | The subject's DN | `CN=example.com` |
 | Subject Public Key Info | Public key + algorithm | RSA 2048 / EC P-256 |

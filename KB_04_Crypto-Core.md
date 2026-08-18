@@ -2,39 +2,13 @@
 
 ## Tổng quan
 
-**Mật mã học (cryptography)** là khoa học bảo vệ thông tin bằng ba năng lực cốt lõi: giữ bí mật, bảo đảm toàn vẹn, và chứng minh nguồn gốc. Mọi giao dịch trên Internet (đăng nhập, chuyển tiền, nhắn tin, mua hàng) đều dựa trên các nguyên thủy mật mã để chống đọc trộm, sửa lén và giả mạo. Chương trình bày từng nguyên thủy theo trình tự: **khái niệm → cơ chế → ví dụ → lưu ý bảo mật**.
+Mình học mật mã học không phải để tự code lại AES, mà để đọc hiểu vì sao một quyết định thiết kế là an toàn hay không — ký JWT bằng thuật toán nào, lưu mật khẩu bằng hash gì, chứng chỉ TLS hết hạn thì gãy ở đâu. Ba năng lực mà mật mã học giải quyết cũng là ba câu hỏi lặp lại trong mọi lần review: giữ bí mật, bảo đảm toàn vẹn, và chứng minh nguồn gốc. Thiếu một trong ba là hệ thống có lỗ hổng, dù phần mã hóa trông có vẻ ổn.
 
-**Ba mục tiêu nền tảng (CIA, AAA, Non-repudiation):**
+Chương mở đầu bằng bộ khung khái niệm nền — **CIA** (confidentiality/integrity/availability), **AAA** (authentication/authorization/accounting) và **non-repudiation** — rồi tới chỗ người mới học hay lẫn nhất: **encoding, hashing và encryption** là ba việc hoàn toàn khác nhau, không dùng thay nhau được (Base64 mật khẩu là sai lầm kinh điển). Từ nền đó, chương đi vào hai trụ cột chính: **mã hóa đối xứng** (AES, AEAD) và **mã hóa bất đối xứng** (RSA, ECC, DH/ECDHE), cùng **hàm băm mật mã** và lý do MD5/SHA-1 bị coi là đã vỡ trong khi SHA-256/SHA-3 vẫn đứng vững.
 
-- **CIA** — ba mục tiêu bảo mật: **Confidentiality** (bí mật — chỉ chủ thể được phép đọc), **Integrity** (toàn vẹn — dữ liệu không bị sửa trái phép), **Availability** (sẵn sàng — truy cập được khi cần). Mỗi lựa chọn công cụ phải xác định rõ thuộc tính nào đang được bảo vệ.
-- **AAA** — ba câu hỏi về chủ thể: **Authentication** (xác thực — "là ai"), **Authorization** (cấp quyền — "được làm gì"), **Accounting** (ghi nhật ký — "đã làm gì").
-- **Non-repudiation (chống chối bỏ)** — chủ thể không thể phủ nhận hành vi đã thực hiện. Chỉ đạt được bằng chữ ký số với khóa riêng.
+Phần còn lại gắn thẳng vào việc vận hành hệ thống thật: lưu mật khẩu đúng cách bằng **Argon2/bcrypt/scrypt** kèm salt và pepper, dùng **HMAC** và **chữ ký số** để xác thực toàn vẹn và nguồn gốc, rồi tới **PKI/X.509** — nền tảng của mọi kết nối HTTPS. Khép chương là mô hình rủi ro (vulnerability, threat, exploit, risk, cùng bộ định danh CVE/CWE/CVSS) và các nguyên tắc thiết kế nền tảng như least privilege, defense in depth, zero trust và nguyên lý Kerckhoffs — lý do AES hay RSA công khai toàn bộ thuật toán mà vẫn an toàn.
 
-**Phân biệt Encoding — Hashing — Encryption:**
-
-- **Encoding** (ví dụ Base64) — chỉ đổi cách biểu diễn dữ liệu, đảo ngược được không cần khóa, **không cung cấp bảo mật**. Base64 mật khẩu là sai lầm phổ biến.
-- **Hashing (băm)** — tạo dấu vân tay cố định, **một chiều không đảo ngược**. Dùng kiểm tra toàn vẹn và lưu mật khẩu.
-- **Encryption (mã hóa)** — khóa dữ liệu bằng khóa bí mật, đảo ngược được khi có khóa. Đây là nguyên thủy duy nhất bảo đảm bí mật.
-
-**Mã hóa đối xứng** — một khóa cho cả mã và giải; **AES** + **AEAD** (xem 4.3).
-
-**Mã hóa bất đối xứng** — **cặp khóa** công khai/riêng tư để trao khóa; **RSA**, **ECC**, **DH/ECDHE** (xem 4.4).
-
-**Hàm băm mật mã** — dấu vân tay cố định, một chiều, **avalanche**; **SHA-256/SHA-3**, **MD5/SHA-1 đã vỡ** (xem 4.5).
-
-**Lưu trữ mật khẩu** — không lưu dạng rõ và không dùng hash thường (quá nhanh). Dùng hàm **chậm có chủ đích, tốn bộ nhớ** (**Argon2**, **bcrypt**, **scrypt**) kèm **salt** (ngẫu nhiên riêng mỗi user) và **pepper** (bí mật chung lưu tách biệt).
-
-**HMAC** — dùng khóa bí mật chung để xác thực toàn vẹn và nguồn gốc thông điệp. Ứng dụng: JWT, chữ ký webhook, ký request API.
-
-**Chữ ký số** — ký bằng **khóa riêng**, kiểm tra bằng **khóa công khai**; bảo đảm đồng thời toàn vẹn, xác thực và chống chối bỏ. Ngược chiều với mã hóa bất đối xứng về vai trò của cặp khóa.
-
-**PKI & X.509** — hệ thống chứng chỉ bảo đảm khóa công khai thuộc đúng chủ thể. **CA (Certificate Authority)** ký bảo đảm **chứng chỉ X.509**; cơ chế **thu hồi** (CRL, OCSP) hủy chứng chỉ bị lộ hoặc cấp sai. Đây là nền tảng của HTTPS.
-
-**Mô hình rủi ro** — bốn khái niệm cần phân biệt: **Vulnerability** (điểm yếu), **Threat** (tác nhân đe dọa), **Exploit** (công cụ khai thác), **Risk** (= Likelihood × Impact). Định danh dùng **CVE** (lỗ hổng cụ thể), **CWE** (loại điểm yếu chung), **CVSS** (thang điểm 0–10).
-
-**Nguyên tắc thiết kế** — gồm **Least Privilege**, **Defense in Depth**, **Zero Trust** và đặc biệt là **nguyên lý Kerckhoffs**: hệ thống phải an toàn ngay cả khi kẻ địch biết toàn bộ cơ chế, chỉ cần khóa được giữ kín. Đây là lý do AES, RSA, SHA-256 đều là chuẩn mở.
-
-> Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ khái niệm → cơ chế bên trong (mức bit/byte/bước) → ví dụ thực tế chạy được → lưu ý bảo mật. Các con số kỹ thuật bám theo NIST FIPS / RFC; chỗ nào cần kiểm chứng thêm sẽ ghi rõ.
+> Số liệu kỹ thuật trong chương bám theo NIST FIPS/RFC; chỗ nào mình chưa chắc chắn sẽ ghi rõ cần kiểm chứng thêm.
 
 ---
 
@@ -577,7 +551,7 @@ Client tin Leaf vì verify được chuỗi chữ ký lên đến Root đã tin 
 | Version | Phiên bản (v3 = 2) | v3 |
 | Serial Number | Số seri duy nhất do CA cấp | `04:A2:...` |
 | Signature Algorithm | Thuật toán CA ký | `sha256WithRSAEncryption` / `ecdsa-with-SHA256` |
-| Issuer | DN của CA cấp | `CN=R3, O=Let's Encrypt` |
+| Issuer | DN của CA cấp | `CN=R11, O=Let's Encrypt` |
 | Validity (Not Before / Not After) | Khoảng hiệu lực | 2026-01-01 → 2026-04-01 |
 | Subject | DN chủ thể | `CN=example.com` |
 | Subject Public Key Info | Public key + thuật toán | RSA 2048 / EC P-256 |

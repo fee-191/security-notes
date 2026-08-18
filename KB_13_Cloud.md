@@ -2,25 +2,13 @@
 
 ## Tổng quan
 
-**Bảo mật đám mây** là tập hợp các biện pháp bảo vệ tài nguyên (compute, storage, database, mạng) được vận hành trên hạ tầng của nhà cung cấp như AWS hoặc GCP, thay vì hạ tầng tự sở hữu (on-premises). Vấn đề cốt lõi mà nó giải quyết: trên đám mây, một sai sót cấu hình duy nhất có thể phơi toàn bộ dữ liệu ra Internet công khai, và phần lớn sự cố rò rỉ dữ liệu thực tế bắt nguồn từ lỗi cấu hình phía khách hàng — không phải từ việc nhà cung cấp bị xâm nhập.
+Mình học mảng cloud security này không phải vì tò mò lý thuyết, mà vì công việc thật: hạ tầng nơi mình vận hành nằm cả trên AWS lẫn OCI, và sớm muộn cũng đụng tới GCP khi làm việc với đối tác dùng nền tảng đó. Đọc vài báo cáo lộ dữ liệu thực tế mới thấy một điểm chung đáng sợ: phần lớn không phải do nhà cung cấp bị hack, mà do chính khách hàng cấu hình sai — một bucket để public, một security group mở nhầm cổng quản trị, một IMDSv1 quên tắt. Nên câu hỏi mình cần trả lời trước tiên không phải "cloud có an toàn không", mà là "trong cả chồng hạ tầng này, đâu mới là phần việc của mình".
 
-Chương trình bày các khối kiến thức sau, mỗi khối kèm định nghĩa và vấn đề nó giải quyết:
+Chương bắt đầu từ đúng ranh giới đó: mô hình IaaS/PaaS/SaaS và Shared Responsibility Model, hai thứ chỉ ra ai vá lỗi tầng nào và dập tắt luôn ngộ nhận "lên cloud là nhà cung cấp lo hết". Từ đó chương đi vào các khối mình phải tự quản — IAM và least privilege, VPC cùng Security Group/Network ACL, những dịch vụ dễ gây sự cố nhất trong thực tế như S3 và KMS, lớp giám sát CloudTrail/CloudWatch/GuardDuty, và IMDS, thứ hay bị khai thác qua SSRF nếu còn chạy bản v1. Organizations và SCP khép lại phần này bằng vai trò chốt guardrail ở cấp tổ chức, không phụ thuộc từng tài khoản con có cẩn thận hay không.
 
-- **Mô hình dịch vụ IaaS / PaaS / SaaS** — ba mức phân tầng theo "ai vận hành tầng nào" trong ngăn xếp. IaaS giao khách hàng quản nhiều nhất (guest OS, runtime, app); SaaS giao ít nhất (chủ yếu dữ liệu). Giải quyết: xác định ranh giới trách nhiệm vá lỗi và cấu hình ở từng tầng — nhầm ranh giới là gốc rễ của hầu hết sự cố.
-- **Shared Responsibility Model (mô hình trách nhiệm chung)** — khung phân định trách nhiệm bảo mật giữa nhà cung cấp ("security OF the cloud": phần cứng, hypervisor, mạng vật lý) và khách hàng ("security IN the cloud": IAM, mã hóa, cấu hình mạng, dữ liệu). Giải quyết: chống ngộ nhận "lên cloud là nhà cung cấp lo hết".
-- **IAM (Identity and Access Management)** — hệ thống quản lý danh tính và phân quyền, biểu diễn quyền bằng tài liệu policy JSON (nền tảng mật mã của khóa, chữ ký và token xem [Chương 4](#sec-04)). Giải quyết: thực thi least privilege, mỗi danh tính chỉ có đúng quyền tối thiểu cần thiết.
-- **VPC (Virtual Private Cloud)** — mạng ảo cô lập, chia thành subnet public (có đường ra Internet) và private (không phơi ra ngoài). Giải quyết: cô lập tài nguyên nhạy cảm như database khỏi truy cập trực tiếp từ Internet.
-- **Security Group và Network ACL** — hai cơ chế tường lửa: Security Group hoạt động ở mức instance và có trạng thái (stateful); Network ACL hoạt động ở mức subnet và không trạng thái (stateless). Giải quyết: kiểm soát luồng vào/ra, đặc biệt chặn các cổng quản trị nhạy cảm.
-- **Amazon S3** — kho lưu trữ đối tượng theo đơn vị bucket. Giải quyết: lưu file quy mô lớn; rủi ro chính là cấu hình public ngoài ý muốn, kiểm soát bằng Block Public Access.
-- **KMS (Key Management Service)** — dịch vụ quản lý khóa mã hóa, giữ khóa gốc trong HSM và ghi log mọi lần sử dụng. Giải quyết: bảo vệ khóa mã hóa và tạo dấu vết audit cho từng lần giải mã.
-- **CloudTrail và CloudWatch** — CloudTrail ghi nhật ký mọi lệnh gọi API (nguồn điều tra chính); CloudWatch cung cấp metrics, log và cảnh báo. Giải quyết: khả năng quan sát và phát hiện hành vi bất thường.
-- **GuardDuty** — dịch vụ phát hiện mối đe dọa dựa trên ML và threat intel, phân tích log tự động. Giải quyết: phát hiện hành vi đáng ngờ ở quy mô không thể xử lý thủ công.
-- **IMDS (Instance Metadata Service)** — dịch vụ cấp credential tạm thời cho instance tại địa chỉ link-local `169.254.169.254`. IMDSv1 dễ bị khai thác qua SSRF; IMDSv2 yêu cầu session token. Giải quyết: lý do bắt buộc ép dùng IMDSv2.
-- **Organizations và SCP (Service Control Policy)** — Organizations gom nhiều tài khoản thành cây quản lý; SCP đặt trần quyền tối đa áp từ cấp tổ chức xuống, ràng buộc cả root của tài khoản con. Giải quyết: thiết lập guardrail an toàn không phụ thuộc cấu hình của từng tài khoản.
-- **GCP và bảng ánh xạ tương đương** — GCP cung cấp các dịch vụ tương đương AWS với tên gọi khác (S3 ↔ Cloud Storage, IAM Role ↔ Service Account, CloudTrail ↔ Audit Logs). Giải quyết: học một nền tảng và suy ra nền tảng còn lại trong môi trường đa đám mây.
-- **Tấn công đám mây, CSPM và Secret Manager** — các đường tấn công phổ biến (misconfiguration, lộ credential trong mã nguồn, leo thang quyền), công cụ CSPM quét cấu hình sai liên tục, và Secret Manager lưu trữ bí mật tập trung thay vì hardcode. Giải quyết: phòng ngừa và phát hiện sớm với chi phí thấp hơn xử lý sự cố.
+Nửa sau chương bước ra ngoài AWS: trước là bảng ánh xạ dịch vụ sang GCP để học một nền tảng suy ra nền tảng kia, sau là hẳn một phần riêng cho OCI (13.14). Mình từng tưởng OCI chỉ đổi tên dịch vụ so với AWS, hoá ra nhiều khái niệm nền tảng thiết kế khác hẳn — cô lập bằng compartment thay vì account, policy viết dạng câu thay vì JSON, bucket private mặc định thay vì phải tự khoá lại. Đối chiếu xong cả ba nền tảng, chương khép bằng các đường tấn công cloud phổ biến, công cụ CSPM quét cấu hình sai liên tục, và Secret Manager để không phải hardcode bí mật trong code.
 
-> Chương này là tài liệu tham chiếu kỹ thuật để tự học và tra cứu. Mọi cấu trúc dữ liệu được mô tả tới mức trường/byte; mọi công cụ đều có ví dụ lệnh thật, file cấu hình thật và output mẫu. Nơi nào con số có thể thay đổi theo thời gian (giới hạn dịch vụ, region, định dạng nội bộ chưa công bố), tài liệu ghi rõ "cần kiểm chứng".
+> Ví dụ trong chương là lệnh AWS CLI và OCI CLI thật kèm output mẫu; chỗ nào số liệu có thể đổi theo thời gian đều ghi "cần kiểm chứng".
 
 ---
 
@@ -34,7 +22,7 @@ Chương trình bày các khối kiến thức sau, mỗi khối kèm định ng
 |---|---|---|---|---|
 | IaaS (Infrastructure) | Hypervisor, host OS, mạng vật lý, lưu trữ vật lý | Guest OS, runtime, app, data, cấu hình mạng ảo | EC2, EBS, VPC | Compute Engine, Persistent Disk |
 | PaaS (Platform) | Cộng thêm: OS, runtime, patching | App code + data + cấu hình ứng dụng | Elastic Beanstalk, Lambda, RDS | App Engine, Cloud Functions, Cloud SQL |
-| SaaS (Software) | Toàn bộ ngăn xếp | Chỉ dữ liệu người dùng + cấu hình trong app | WorkMail, Chime | Workspace |
+| SaaS (Software) | Toàn bộ ngăn xếp | Chỉ dữ liệu người dùng + cấu hình trong app | WorkMail, QuickSight | Workspace |
 
 ### 13.1.2. Cơ chế bên trong: ranh giới tin cậy thay đổi theo tầng
 
@@ -1012,13 +1000,213 @@ Finding ví dụ: `PUBLIC_BUCKET_ACL`, `SERVICE_ACCOUNT_KEY_NOT_ROTATED`, `OPEN_
 
 ---
 
-## 13.14. Tấn công đám mây và cách phát hiện
+## 13.14. OCI — Oracle Cloud Infrastructure
 
-### 13.14.1. Misconfiguration
+### 13.14.1. Là gì và vì sao mình phải học nó
 
-Nguyên nhân hàng đầu. Phát hiện bằng CSPM (mục 13.15). Các dạng: bucket public, SG mở `0.0.0.0/0` port quản trị (22/3389/database), CloudTrail không bật, mã hóa tắt, IMDSv1 còn bật, IAM policy `"Action":"*","Resource":"*"`.
+Mình vận hành thực tế hai đám mây: prod chạy trên AWS, còn dev (và một phần prod) chạy trên OCI (Oracle Cloud Infrastructure). Lý do phải nắm OCI: nó **không phải bản sao đổi tên của AWS** — nhiều khái niệm nền tảng được thiết kế khác hẳn, và người quen tư duy AWS rất dễ hiểu nhầm rồi cấu hình sai. Mục này ghi lại đúng những chỗ mình từng bỡ ngỡ, và đối chiếu 1-1 với AWS để chuyển tư duy cho nhanh.
 
-### 13.14.2. Credential leak — key trong git
+Điểm khác biệt lớn nhất phải nắm trước: **AWS cô lập bằng *account* (tài khoản), còn OCI cô lập bằng *compartment* (ngăn) bên trong một *tenancy*.** Hiểu sai chỗ này là hiểu sai toàn bộ mô hình phân quyền của OCI.
+
+### 13.14.2. Tenancy và Compartment — cây phân quyền logic
+
+- **Tenancy**: gốc của toàn bộ tài nguyên OCI của một tổ chức — tương đương "AWS Organizations + account gốc" gộp làm một. Mỗi tài nguyên OCI có một OCID (Oracle Cloud ID) dạng `ocid1.<type>.<realm>..<hash>`, luôn thuộc về một tenancy.
+- **Compartment**: một **cây thư mục logic** để nhóm tài nguyên và áp quyền. Đây là chỗ khác AWS nhiều nhất. Trên AWS, muốn tách môi trường/nhóm người ta thường tách *account* rồi ghép bằng Organizations; trên OCI, một tenancy duy nhất chứa nhiều compartment lồng nhau (`dev`, `prod`, `prod/db`, `shared-network`...), và quyền được cấp *theo compartment*.
+
+```
+Tenancy (gốc)
+ ├── Compartment: network-shared      (VCN, subnet dùng chung)
+ ├── Compartment: dev                 (tài nguyên môi trường dev)
+ │     └── Compartment: dev/app
+ └── Compartment: prod                (tài nguyên prod chạy trên OCI)
+       ├── Compartment: prod/app
+       └── Compartment: prod/data     (bucket, DB — siết chặt nhất)
+```
+
+**Vì sao compartment tiện:** phân quyền, quota và cả bảng theo dõi chi phí đều gắn theo compartment; xóa compartment là dọn sạch mọi thứ bên trong. Nhưng cũng chính vì "một tenancy nhiều compartment", ranh giới cô lập **yếu hơn tách account của AWS** — nếu viết policy lỏng ở cấp tenancy, quyền có thể rò xuống mọi compartment. Đây là lý do phần prod chạy trên OCI phải đặt trong compartment riêng và siết policy đúng phạm vi (xem 13.14.9).
+
+### 13.14.3. IAM policy dạng câu lệnh (khác hẳn JSON của AWS)
+
+Chỗ này làm mình bỡ ngỡ nhất khi từ AWS sang. IAM policy của OCI **không phải tài liệu JSON** với `Effect/Action/Resource` như AWS — nó là **những câu tiếng Anh gần như đọc được thành lời**:
+
+```
+Allow group <tên-group> to <động-từ> <loại-tài-nguyên> in compartment <tên> [where <điều-kiện>]
+```
+
+Ví dụ thật:
+
+```
+Allow group Developers to manage object-family in compartment dev
+Allow group DBAdmins   to manage database-family in compartment prod:data
+Allow group Auditors   to read all-resources in tenancy
+Allow group AppOps     to use secret-family in compartment prod where request.region = 'ap-singapore-1'
+```
+
+Bốn **động từ quyền** xếp theo mức tăng dần (đây là điểm cần nhớ, khác cách liệt kê từng action của AWS):
+
+| Động từ | Bao gồm | Tương đương AWS (khái niệm) |
+|---|---|---|
+| `inspect` | liệt kê tài nguyên (metadata, không nội dung nhạy cảm) | `List*` |
+| `read` | inspect + đọc nội dung/chi tiết | `List* + Get*/Describe*` |
+| `use` | read + thao tác/cập nhật hiện có (không tạo/xóa) | `Get* + Update*/thao tác chạy` |
+| `manage` | use + tạo và xóa | quyền đầy đủ trên loại tài nguyên |
+
+`<loại-tài-nguyên>` là các "family" gộp sẵn: `object-family` (Object Storage), `instance-family` (Compute), `virtual-network-family` (VCN), `secret-family`, `vaults`, `keys`... Mệnh đề `where` gắn điều kiện (region, thời gian, `target.compartment.name`, tag...) — tương đương `Condition` của AWS nhưng viết chung trong câu.
+
+**Vì sao mình thích cú pháp này:** đọc policy OCI gần như đọc chính sách bằng tiếng Anh, ít bị "JSON đúng cú pháp nhưng sai ý" như AWS. **Chỗ dễ sai:** không có `Deny` tường minh — OCI IAM chỉ có Allow (mặc định deny ngầm). Muốn "cấm" thì phải *không cấp*, hoặc siết bằng phạm vi compartment, hoặc dùng cơ chế khác (Network Sources, tag-based). Thói quen viết `Deny` guardrail như SCP của AWS **không áp thẳng được** — cần nghĩ lại theo hướng thu hẹp phạm vi cấp quyền.
+
+### 13.14.4. Dynamic Group + Instance/Resource Principal (danh tính workload, không cắm key tĩnh)
+
+Đây là phần mình đánh giá cao nhất của OCI, và nó tương đương thẳng với "IAM role gắn vào EC2" của AWS: cho phép compute/function **tự lấy credential tạm để gọi OCI API mà không cắm key tĩnh vào code**.
+
+Cơ chế hai bước:
+
+1. **Dynamic Group**: nhóm *các tài nguyên* (không phải người dùng) theo *quy tắc khớp* — ví dụ mọi instance trong một compartment, hoặc function cụ thể.
+
+   ```
+   # Matching rule của một dynamic group
+   ALL {instance.compartment.id = 'ocid1.compartment.oc1..aaaa....dev'}
+   ```
+
+2. **Policy cấp quyền cho dynamic group đó** (viết y như policy thường, chủ thể là `dynamic-group`):
+
+   ```
+   Allow dynamic-group DevInstances to read secret-family in compartment dev
+   Allow dynamic-group DevInstances to use keys        in compartment dev
+   ```
+
+Sau đó code chạy trên instance dùng **Instance Principal** để tự xác thực (SDK tự lấy chứng chỉ tạm từ metadata endpoint), hoàn toàn không có key file:
+
+```python
+import oci
+signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+secrets = oci.secrets.SecretsClient(config={}, signer=signer)
+# gọi API với danh tính máy — credential tạm, tự xoay, không nằm trên đĩa
+```
+
+- **Instance Principal**: cho VM/compute.
+- **Resource Principal**: cho serverless (OCI Functions) và một số dịch vụ managed — tương đương execution role của Lambda.
+
+**Vì sao quan trọng:** giống AWS, mấu chốt là **"danh tính máy, không phải key file"**. Kể cả "secret để lấy secret" cũng không nằm trên đĩa: app dùng Instance Principal tự xác thực rồi mới fetch bí mật thật từ Vault lúc khởi động. Đây là cách đúng để service ở môi trường dev OCI truy cập Vault mà không hardcode credential.
+
+### 13.14.5. OCI Vault — KMS + Secrets gộp một chỗ
+
+OCI Vault gộp hai vai trò mà AWS tách thành **KMS** (khóa) và **Secrets Manager** (bí mật):
+
+- **Keys (khóa mã hóa)**: master key bảo vệ trong HSM. Hai loại vault: *Default* (dùng chung phân vùng HSM với khách khác — rẻ, đủ cho hầu hết nhu cầu) và *Virtual Private Vault* (được cấp phân vùng HSM riêng, mức cô lập cao hơn, dành cho yêu cầu tuân thủ ngặt — cần kiểm chứng giá và giới hạn theo thời điểm). Dùng cho encryption at-rest của Block Volume, Object Storage, DB. Hỗ trợ rotation và envelope encryption y hệt nguyên lý KMS (mục 13.7.2).
+- **Secrets (bí mật)**: DB password, API key... lưu mã hóa bằng chính key trong Vault, quản theo *version* bất biến.
+
+```bash
+# Đọc một secret (bundle) — nội dung trả về ở dạng base64
+oci secrets secret-bundle get-secret-bundle-by-name \
+  --secret-name db-password --vault-id ocid1.vault.oc1..aaaa
+```
+
+Kiến trúc bí mật thực tế của mình: **prod dùng AWS Secrets Manager, phần chạy trên OCI dùng OCI Vault** — cùng một nguyên tắc: app không giữ key tĩnh để gọi secret store, nó dùng IAM role (AWS) / Instance Principal (OCI) tự xác thực rồi fetch bí mật lúc runtime.
+
+### 13.14.6. VCN — Security List (mức subnet) vs NSG (mức VNIC)
+
+VCN (Virtual Cloud Network) là mạng ảo cô lập của OCI, tương đương VPC. Nhưng cơ chế tường lửa của OCI có **hai lớp cùng tồn tại**, và ánh xạ sang AWS không hoàn toàn 1-1 nên rất dễ nhầm:
+
+| Tiêu chí | Security List (OCI) | Network Security Group / NSG (OCI) |
+|---|---|---|
+| Gắn ở đâu | **Subnet** (áp cho MỌI VNIC trong subnet) | **VNIC** của từng tài nguyên (nhóm theo chức năng) |
+| Gần với AWS nào | gần **NACL** (mức subnet) nhưng **stateful mặc định** | gần **Security Group** (mức interface) |
+| Stateful? | Từng rule chọn được: **stateful hoặc stateless** | Stateful mặc định (chọn stateless được) |
+| Tham chiếu nguồn | CIDR, hoặc Service (cho Service Gateway) | CIDR **hoặc chính NSG khác** (như SG-to-SG của AWS) |
+
+Điểm dễ sai nhất khi từ AWS sang: trên OCI, một gói tin phải **qua CẢ Security List của subnet LẪN NSG của VNIC** — cả hai đều phải cho phép thì gói mới đi được (giao AND). Người quen AWS hay chỉ chỉnh SG (nghĩ như Security Group) mà quên Security List ở subnet vẫn đang chặn, hoặc ngược lại.
+
+Khác AWS nữa: Security List **mặc định stateful** (không phải stateless như NACL), nên thường không phải mở tay dải ephemeral port cho gói trả về — trừ khi cố ý đặt rule stateless. Khuyến nghị thực tế: ưu tiên dùng **NSG** để phân quyền mạng theo chức năng (tham chiếu NSG-to-NSG, giống best practice SG-to-SG), giữ Security List ở mức tối giản/mặc định.
+
+### 13.14.7. Object Storage — bucket private mặc định, PAR thay cho public
+
+Object Storage là kho đối tượng của OCI (tương đương S3). Có một điểm mình coi là **điểm cộng thiết kế** so với lịch sử S3:
+
+- **Bucket mặc định là private.** Muốn public phải **chủ động** đổi visibility sang Public. Khác S3 thời kỳ đầu (nơi cấu hình lỏng + ACL public-read là nguồn rò rỉ kinh điển), rủi ro "vô tình public" của OCI thấp hơn theo mặc định — nhưng *vẫn phải kiểm*, vì đổi nhầm sang public vẫn xảy ra.
+- **Pre-Authenticated Request (PAR)** thay cho việc mở public: tạo một URL có **thời hạn hết hạn (expiry)** và phạm vi (một object hoặc cả bucket, read/write) — tương đương pre-signed URL của S3. Cần chia sẻ file thì phát PAR có hạn, **không** để bucket public.
+- Mã hóa at-rest bật mặc định (Oracle-managed key); dữ liệu nhạy cảm nên chuyển sang **customer-managed key trong OCI Vault** để kiểm soát rotation + audit ai dùng key.
+
+```bash
+# Tạo PAR đọc một object, hết hạn sau 24h — thay cho việc để bucket public
+oci os preauth-request create --namespace <ns> --bucket-name reports \
+  --name share-q1 --access-type ObjectRead \
+  --object-name q1.pdf --time-expires 2026-08-15T00:00:00Z
+```
+
+**Cloud Guard** (mục 13.14.8) tự gắn cờ bucket public — nên bật sẵn như một lớp phát hiện.
+
+### 13.14.8. Cloud Guard — CSPM của OCI
+
+Cloud Guard là dịch vụ quản lý tư thế bảo mật (CSPM) của OCI, tương đương GuardDuty + Security Hub + Config gộp lại (hoặc SCC của GCP):
+
+- **Detector** quét cấu hình/hành vi rủi ro sinh ra **Problem**: bucket public, security rule mở `0.0.0.0/0` cổng quản trị, IAM policy quá rộng, instance thiếu bản vá, key/secret sắp hết hạn...
+- **Responder** cho phép xử lý tự động hoặc bán tự động (ví dụ tự đóng bucket public).
+- Đối chiếu benchmark (CIS OCI Foundations).
+
+Ở hệ thống mình vận hành, Cloud Guard đóng vai trò cho môi trường OCI đúng như AWS Config + GuardDuty cho môi trường AWS: phát hiện drift cấu hình, bucket public, rule mạng nới rộng, hành vi bất thường — và đẩy cảnh báo về kênh vận hành thay vì để một người rà tay hàng tháng.
+
+### 13.14.9. Metadata endpoint OCI — IMDS v2 yêu cầu header `Authorization: Bearer Oracle`
+
+OCI cũng có metadata service tại đúng địa chỉ link-local **`169.254.169.254`** như AWS/GCP, và Instance Principal lấy chứng chỉ tạm qua đây — nên **cùng bề mặt tấn công SSRF** như IMDS của AWS (cơ chế SSRF: [Chương 5](#sec-05)).
+
+Điểm khác biệt phòng thủ đáng chú ý — cách chống SSRF của mỗi bên:
+
+| | AWS IMDSv2 | OCI IMDS v2 |
+|---|---|---|
+| Đường dẫn | `/latest/meta-data/...` | `/opc/v2/...` |
+| Cơ chế bảo vệ | **PUT** lấy token trước, rồi GET kèm header token | GET kèm **header cố định** `Authorization: Bearer Oracle` |
+| Vì sao chặn SSRF ngây thơ | SSRF cơ bản chỉ làm được GET, không PUT được token | SSRF cơ bản không tự thêm được header `Authorization` |
+
+```bash
+# OCI IMDS v2 — thiếu header sẽ bị từ chối
+curl -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/instance/
+curl -H "Authorization: Bearer Oracle" http://169.254.169.254/opc/v2/identity/cert.pem
+```
+
+**Lưu ý quan trọng:** header `Authorization: Bearer Oracle` là **hằng số cố định**, không phải bí mật — nó chỉ nâng rào cho SSRF *ngây thơ* (loại chỉ chèn được URL, không thêm được header). Một SSRF cho phép điều khiển header vẫn vượt qua được. Vì vậy đừng coi metadata v2 (dù AWS hay OCI) là biện pháp đủ: vẫn phải áp đủ bộ SSRF defense ở tầng ứng dụng (allowlist domain, chặn IP private/link-local `169.254.0.0/16`, validate IP sau khi resolve DNS chống rebinding, tắt/validate redirect). OCI v1 (`/opc/v1/`) không yêu cầu header — nên ép dùng v2 giống như ép IMDSv2 trên AWS.
+
+### 13.14.10. Bảng ánh xạ AWS ↔ OCI ↔ GCP
+
+Tra nhanh khi nhảy giữa ba nền tảng — học một, suy ra hai cái còn lại:
+
+| Khái niệm | AWS | OCI | GCP |
+|---|---|---|---|
+| Ranh giới cô lập | Account (+ Organizations) | **Compartment** (trong 1 tenancy) | Project (+ Folder/Org) |
+| Cú pháp IAM policy | JSON (`Effect/Action/Resource`) | **Câu lệnh** (`Allow group … to … in compartment …`) | JSON binding (member+role) |
+| Danh tính workload | IAM Role gắn EC2 | **Instance/Resource Principal** (+ Dynamic Group) | Service Account (+ Workload Identity) |
+| Guardrail tổ chức | SCP (có Deny) | *(không có Deny; siết bằng phạm vi compartment / policy)* | Organization Policy |
+| Mạng ảo | VPC | **VCN** | VPC (global) |
+| Tường lửa mức interface | Security Group | **NSG** | Firewall rule (theo tag/SA) |
+| Firewall mức subnet | NACL (stateless) | **Security List** (stateful mặc định) | *(không có; dùng priority)* |
+| Lưu trữ đối tượng | S3 | **Object Storage** | Cloud Storage |
+| Bucket private mặc định | BPA (bật mặc định từ 4/2023) | **Mặc định private sẵn** | Uniform bucket-level access |
+| URL chia sẻ có hạn | Pre-signed URL | **Pre-Authenticated Request (PAR)** | Signed URL |
+| Quản lý khóa | KMS | **Vault (Keys)** | Cloud KMS |
+| Quản lý bí mật | Secrets Manager | **Vault (Secrets)** | Secret Manager |
+| Audit API | CloudTrail | **Audit** (bật mặc định) | Cloud Audit Logs |
+| CSPM / phát hiện đe dọa | GuardDuty + Security Hub + Config | **Cloud Guard** | Security Command Center |
+| Metadata endpoint | `169.254.169.254` `/latest/` (IMDSv2: PUT token) | `169.254.169.254` `/opc/v2/` (header `Bearer Oracle`) | `metadata.google.internal` |
+
+### 13.14.11. Nguyên tắc vận hành đa đám mây (kinh nghiệm thực tế)
+
+Vận hành song song AWS (prod) + OCI (dev và một phần prod), mình rút ra mấy nguyên tắc mà lý thuyết ít nói thẳng:
+
+- **Ranh giới đúng là prod vs non-prod, KHÔNG phải AWS vs OCI.** Việc prod nằm ở AWS còn dev ở OCI chỉ là *tình cờ có lợi* (tách cả nhà cung cấp lẫn credential nên blast radius nhỏ), nhưng đừng biến "nhà cung cấp" thành tiêu chí phân loại bảo mật.
+- **Phần prod chạy trên đám mây "dev" phải áp CÙNG chuẩn siết như prod chính.** Đây là bẫy nguy hiểm nhất: một compartment prod đặt chung tenancy với dev rất dễ "thừa hưởng" thói quen cấu hình lỏng của dev (rule mạng rộng, bucket dễ dãi, policy tenancy-wide). Prod-OCI phải: least privilege theo compartment, không bucket public, bí mật trong Vault, bật logging/Cloud Guard — y như prod-AWS.
+- **Tách credential / network / quyền giữa môi trường.** Credential dev lộ ra ngoài không được mở nổi bất cứ thứ gì ở prod. Kết nối giữa hai đám mây (nếu có, ví dụ VPN AWS↔OCI) chỉ mở đúng cổng thật sự cần.
+- **Dữ liệu thật không nằm ở dev.** Môi trường dev cấu hình lỏng hơn là chuyện bình thường — nhưng chỉ chấp nhận được khi dev *không chạm dữ liệu thật*. Rủi ro lớn nhất của mô hình "dev trên OCI" là một máy dev cấu hình lỏng lại vô tình có dữ liệu production.
+- **Chuẩn hóa bằng IaC để quản hai bộ IAM/tooling.** Cái giá của đa đám mây là phải quản hai hệ IAM, hai bộ công cụ; bù lại bằng Terraform/IaC + policy-as-code (Checkov/Trivy quét cả cấu hình AWS lẫn OCI) để không phải nhớ hai lối cấu hình bằng tay.
+
+---
+
+## 13.15. Tấn công đám mây và cách phát hiện
+
+### 13.15.1. Misconfiguration
+
+Nguyên nhân hàng đầu. Phát hiện bằng CSPM (mục 13.16). Các dạng: bucket public, SG mở `0.0.0.0/0` port quản trị (22/3389/database), CloudTrail không bật, mã hóa tắt, IMDSv1 còn bật, IAM policy `"Action":"*","Resource":"*"`.
+
+### 13.15.2. Credential leak — key trong git
 
 AWS access key có dạng nhận diện rõ:
 
@@ -1054,7 +1242,7 @@ Output gitleaks mẫu:
 
 GitHub Secret Scanning + push protection chặn ngay khi push; AWS có cơ chế tự gắn policy `AWSCompromisedKeyQuarantine` khi phát hiện key public.
 
-### 13.14.3. Privilege Escalation qua `iam:PassRole`
+### 13.15.3. Privilege Escalation qua `iam:PassRole`
 
 Đây là một trong những đường leo thang quyền nguy hiểm và phổ biến nhất.
 
@@ -1107,7 +1295,7 @@ pacu
 > run iam__privesc_scan
 ```
 
-### 13.14.4. Exposed bucket — phát hiện và khai thác
+### 13.15.4. Exposed bucket — phát hiện và khai thác
 
 ```bash
 # Truy cập ẩn danh thử liệt kê
@@ -1119,13 +1307,13 @@ aws s3 cp s3://target-bucket/secret.txt . --no-sign-request
 
 ---
 
-## 13.15. CSPM — Cloud Security Posture Management
+## 13.16. CSPM — Cloud Security Posture Management
 
-### 13.15.1. Là gì
+### 13.16.1. Là gì
 
 CSPM tự động quét cấu hình cloud so với benchmark (CIS, PCI) và phát hiện sai lệch liên tục. Native: AWS Security Hub + Config, GCP SCC. Open source: **Prowler**, **ScoutSuite**.
 
-### 13.15.2. Prowler — ví dụ thực tế
+### 13.16.2. Prowler — ví dụ thực tế
 
 ```bash
 # Quét toàn bộ checks theo CIS benchmark, xuất HTML + JSON
@@ -1140,14 +1328,14 @@ FAIL  iam_root_mfa_enabled     account 1234     Root account MFA not enabled
 PASS  cloudtrail_multi_region  account 1234     Multi-region trail enabled
 ```
 
-### 13.15.3. ScoutSuite
+### 13.16.3. ScoutSuite
 
 ```bash
 scout aws --report-dir ./scout-report
 # Mở ./scout-report/scoutsuite-results/...html xem dashboard rủi ro theo dịch vụ
 ```
 
-### 13.15.4. AWS Config rule (native CSPM)
+### 13.16.4. AWS Config rule (native CSPM)
 
 ```bash
 # Bật managed rule kiểm tra bucket không được public
@@ -1161,9 +1349,9 @@ Config liên tục đánh giá tài nguyên khi thay đổi và gắn cờ NON_C
 
 ---
 
-## 13.16. Secret Manager
+## 13.17. Secret Manager
 
-### 13.16.1. AWS Secrets Manager
+### 13.17.1. AWS Secrets Manager
 
 Lưu bí mật (DB password, API key) mã hóa bằng KMS, hỗ trợ **rotation (xoay key) tự động** qua Lambda rotation function.
 
@@ -1178,7 +1366,7 @@ aws secretsmanager get-secret-value --secret-id prod/db/password \
 
 So với Parameter Store: Secrets Manager có rotation tích hợp + tính phí/bí mật; SSM Parameter Store (SecureString) rẻ hơn, không tự rotate.
 
-### 13.16.2. GCP Secret Manager
+### 13.17.2. GCP Secret Manager
 
 Phiên bản (version) bất biến; truy cập kiểm soát qua IAM `roles/secretmanager.secretAccessor`.
 
@@ -1191,17 +1379,18 @@ gcloud secrets versions access latest --secret=db-pass
 
 ---
 
-## 13.17. Tổng kết các nguyên tắc phòng thủ cốt lõi
+## 13.18. Tổng kết các nguyên tắc phòng thủ cốt lõi
 
 | Nguyên tắc | Áp dụng cụ thể |
 |---|---|
-| Least privilege | IAM/role hạt mịn, Resource cụ thể, bỏ `*` |
-| Explicit deny guardrail | SCP / Org Policy / permission boundary |
-| Loại bỏ credential lâu dài | IAM Role/SA token thay access key; WIF; IMDSv2 |
-| Mã hóa mặc định | SSE-KMS/CMEK + chặn non-TLS |
-| Khả năng quan sát | CloudTrail + Config + GuardDuty / Audit Logs + SCC, log bất biến |
-| Chặn public mặc định | S3 BPA / Uniform bucket-level access |
-| Phát hiện liên tục | CSPM (Prowler/ScoutSuite/SCC) + secret scanning trong CI |
+| Least privilege | IAM/role hạt mịn, Resource/compartment cụ thể, bỏ `*` |
+| Explicit deny guardrail | SCP / Org Policy / permission boundary (OCI không có Deny — siết bằng phạm vi compartment) |
+| Loại bỏ credential lâu dài | IAM Role/SA token/Instance Principal thay access key; WIF; IMDSv2 |
+| Mã hóa mặc định | SSE-KMS/CMEK/OCI Vault key + chặn non-TLS |
+| Khả năng quan sát | CloudTrail + Config + GuardDuty / Audit Logs + SCC / OCI Audit + Cloud Guard, log bất biến |
+| Chặn public mặc định | S3 BPA / Uniform bucket-level access / OCI bucket private sẵn |
+| Phát hiện liên tục | CSPM (Prowler/ScoutSuite/SCC/Cloud Guard) + secret scanning trong CI |
+| Ranh giới môi trường | Tách theo prod vs non-prod (không theo nhà cung cấp); prod trên cloud "dev" siết ngang prod chính |
 
 Toàn bộ kiến trúc bảo mật đám mây quy về: **kiểm soát danh tính (IAM) chặt, loại bỏ bí mật lâu dài, mã hóa mọi nơi, ghi log đầy đủ và bất biến, chặn public mặc định, và quét cấu hình sai liên tục.** Phần lớn sự cố thực tế nằm ở "IN the cloud" — tức trong tầm kiểm soát và trách nhiệm của bạn.
 
@@ -1211,3 +1400,15 @@ Toàn bộ kiến trúc bảo mật đám mây quy về: **kiểm soát danh tí
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+**Từ AWS sang OCI — mấy chỗ mình bị hụt tư duy.** Mình học cloud từ AWS trước, nên khi phải vận hành thêm OCI (dev và một phần prod) thì bị "vấp" đúng ở những khái niệm tưởng giống mà không giống:
+
+- **Compartment không phải account.** Ban đầu mình cứ tìm "tạo account con" như Organizations của AWS, mãi mới nhận ra OCI cô lập bằng compartment *trong cùng một tenancy*. Hệ quả bảo mật: ranh giới yếu hơn tách account, nên một policy viết ở cấp tenancy có thể rò quyền xuống mọi compartment. Từ đó mình cẩn thận đặt phạm vi `in compartment <cụ thể>` chứ không `in tenancy` cho tiện.
+- **Policy dạng câu, và KHÔNG có Deny.** Cú pháp `Allow group … to manage … in compartment …` đọc rất dễ chịu, nhưng mình mất một lúc mới thấm là *không có `Deny` tường minh* như SCP. Thói quen dựng guardrail bằng explicit Deny của AWS không bê thẳng sang được — phải nghĩ lại theo hướng "chỉ cấp đúng phạm vi", hoặc dùng Network Sources/tag. Đây là chỗ mình vẫn đang tìm hiểu tiếp: làm guardrail cấp tenancy trên OCI cho gọn thì dùng gì cho tương đương SCP.
+- **Hai lớp tường lửa Security List + NSG.** Một lần đổi rule trên NSG mà gói vẫn không đi, mất công debug mới nhớ ra Security List ở subnet vẫn đang chặn — cả hai phải cùng cho phép (AND). Và Security List **stateful mặc định** (khác NACL của AWS là stateless), nên đừng máy móc mở dải ephemeral port như thói quen NACL. Giờ mình theo nguyên tắc: phân quyền mạng bằng NSG (tham chiếu NSG-to-NSG), giữ Security List tối giản.
+- **Bucket private mặc định là điểm cộng thật.** Sau ám ảnh "S3 public-read" kinh điển, việc Object Storage của OCI mặc định private làm mình nhẹ đầu hơn — nhưng vẫn bật Cloud Guard để nó gắn cờ nếu ai đó lỡ đổi sang public. Chia sẻ file thì phát Pre-Authenticated Request có hạn, không bao giờ để bucket public "cho tiện".
+- **Metadata `Bearer Oracle` không phải bí mật.** Lúc đầu mình tưởng header `Authorization: Bearer Oracle` là một dạng token nên yên tâm. Không phải — nó là hằng số cố định, chỉ chặn được SSRF *ngây thơ* (loại không thêm được header). SSRF điều khiển được header vẫn qua. Nên mình vẫn siết đủ bộ SSRF defense ở tầng app, coi metadata v2 (cả AWS lẫn OCI) chỉ là một lớp phụ.
+
+**Bài học vận hành đa đám mây lớn nhất:** ranh giới bảo mật đúng là **prod vs non-prod**, không phải AWS vs OCI. Prod chạy trên OCI mình bắt áp đúng chuẩn siết như prod AWS — cái bẫy là để compartment prod "thừa hưởng" thói quen lỏng của dev vì ở chung tenancy. Việc prod-AWS và dev-OCI tách cả nhà cung cấp lẫn credential là một lợi thế blast-radius *tình cờ*, nhưng mình không dựa vào đó thay cho kỷ luật cấu hình.
+
+**Đang tìm hiểu tiếp:** chuẩn hóa cả hai đám mây bằng Terraform + policy-as-code (Checkov/Trivy quét cả AWS lẫn OCI) để bớt phải nhớ hai lối cấu hình tay; và cách gom log/alert của Cloud Guard (OCI) với GuardDuty/Config (AWS) về cùng một chỗ để một người vẫn theo dõi xuể.

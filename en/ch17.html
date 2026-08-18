@@ -1,0 +1,1468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 17 — Programming &amp;amp; Automation for Security — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 17 — Programming &amp;amp; Automation for Security — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch16.html"><link rel="next" href="ch99.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="17"><a class="nav-ch-title" href="#top"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"><a class="nav-sub" href="#ch17-overview">Overview</a><a class="nav-sub" href="#ch17-171-why-python-dominates-cybersecurity-automation">17.1. Why Python dominates cybersecurity &amp;amp; automation</a><a class="nav-sub" href="#ch17-172-python-syntax-foundations-for-security-quick-review-deep-dive-where-mistakes-happen">17.2. Python syntax foundations for security (quick review, deep dive where mistakes happen)</a><a class="nav-sub" href="#ch17-173-socket-a-tcp-port-scanner-from-scratch">17.3. socket — A TCP port scanner from scratch</a><a class="nav-sub" href="#ch17-174-requests-http-automation-rest-apis-sessions-auth">17.4. requests — HTTP automation, REST APIs, sessions &amp;amp; auth</a><a class="nav-sub" href="#ch17-175-re-regex-log-parsing-in-the-field">17.5. re — Regex log parsing in the field</a><a class="nav-sub" href="#ch17-176-subprocess-os-running-system-commands-safely">17.6. subprocess &amp;amp; os — Running system commands safely</a><a class="nav-sub" href="#ch17-177-json-serializing-handling-apiconfig-data">17.7. json — Serializing &amp;amp; handling API/config data</a><a class="nav-sub" href="#ch17-178-scapy-crafting-sending-and-sniffing-packets-at-the-byte-level">17.8. scapy — Crafting, sending, and sniffing packets at the byte level</a><a class="nav-sub" href="#ch17-179-paramiko-secure-ssh-automation">17.9. paramiko — Secure SSH automation</a><a class="nav-sub" href="#ch17-1710-boto3-aws-automation-audit-cloud-ir">17.10. boto3 — AWS automation (audit, cloud IR)</a><a class="nav-sub" href="#ch17-1711-hashlib-hmac-hashing-integrity-message-authentication">17.11. hashlib &amp;amp; hmac — Hashing, integrity, message authentication</a><a class="nav-sub" href="#ch17-1712-secrets-generating-tokens-securely-do-not-use-random">17.12. secrets — Generating tokens securely (do not use random)</a><a class="nav-sub" href="#ch17-1713-secure-coding-in-python-a-synthesis">17.13. Secure coding in Python — a synthesis</a><a class="nav-sub" href="#ch17-1714-security-testing-of-python-code-sast">17.14. Security testing of Python code (SAST)</a><a class="nav-sub" href="#ch17-1715-putting-it-together-a-mini-ir-agent-combining-re-requests-json-secrets">17.15. Putting it together — A mini IR Agent (combining re + requests + json + secrets)</a><a class="nav-sub" href="#ch17-1716-packaging-running-with-docker">17.16. Packaging &amp;amp; running with Docker</a><a class="nav-sub" href="#ch17-1717-summary-of-the-core-principles">17.17. Summary of the core principles</a><a class="nav-sub" href="#ch17-my-notes">My notes</a></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-17" data-ch="17">
+<h1 id="ch17-chapter-17-programming-automation-for-security">Chapter 17 — Programming &amp; Automation for Security</h1>
+<h2 id="ch17-overview">Overview</h2>
+<p>After writing the same manual log-scanning script for the third time, I started asking myself why I wasn't letting a machine handle this repetitive part. That's basically why this chapter exists — using <strong>Python as the automation language for cybersecurity</strong>, replacing repetitive manual work with scripts. The volume of security data (multi-gigabyte logs, thousands of servers, millions of packets) has long outgrown what anyone can process by hand, and Python combines fast development with a library ecosystem that covers nearly everything you need — it acts as a <strong>glue language</strong>: the logic lives in Python, while the heavy lifting gets delegated to optimized, audited C libraries.</p>
+<p>The chapter starts with the foundation people trip over most: telling <code>str</code> (text) apart from <code>bytes</code> (the raw binary data that actually goes over the wire and through crypto) — I used to treat the two as interchangeable until a packet-parsing bug set me straight — plus how <code>struct</code> breaks a packet apart field by field. From there it's the networking and web toolkit: <code>socket</code> for building a port scanner from scratch, <code>scapy</code> for crafting and inspecting packets down to individual fields when plain sockets aren't enough (stealthy scans, ARP spoofing detection), <code>requests</code> for calling REST APIs to automate tickets and alerts, <code>paramiko</code> for SSHing into an entire fleet to run config audits.</p>
+<p>The middle of the chapter covers data and systems libraries: <code>re</code> for pulling the handful of lines that matter out of millions of log lines, <code>json</code> as the common language with APIs and config files, <code>subprocess</code>/<code>os</code> for calling external programs and touching files — also the single biggest hotspot for command injection, which is why the chapter spends real time on calling them safely — and <code>boto3</code> for auditing AWS configuration (public S3 buckets, open security groups) or automating incident response. Then comes applied cryptography: <code>hashlib</code>/<code>hmac</code> for integrity checks and verifying where a message actually came from, <code>secrets</code> for generating tokens that can't be guessed — sidestepping the classic trap of using <code>random</code> (Mersenne Twister, entirely predictable) where you need true randomness. The chapter closes with secure coding &amp; SAST (Bandit catching anti-patterns automatically) and a capstone example — an IR Agent packaged in Docker — that stitches every piece above into a complete read logs → detect → alert → respond flow.</p>
+<blockquote>
+<p>Each section follows the same structure: what it is → internal mechanics (down to the bit/byte/parameter level) → a runnable example → security notes. Technical figures follow official specs/RFCs/manuals; anything uncertain is flagged.</p>
+</blockquote>
+<hr />
+<h2 id="ch17-171-why-python-dominates-cybersecurity-automation">17.1. Why Python dominates cybersecurity &amp; automation</h2>
+<p>Python is chosen as the "glue language" of security for three specific technical reasons, not because it is "easy to learn":</p>
+<ol>
+<li><strong>CPython has a stable C-API</strong> → most crypto/network libraries (OpenSSL via <code>cryptography</code>, libpcap via <code>scapy</code>, libssh2/openssh via <code>paramiko</code>) have high-speed C bindings. The logic is written in Python, while the heavy lifting runs in C that has been optimized and audited.</li>
+<li><strong>The object model + duck typing</strong> allow tools to be written quickly and semi-structured data (logs, JSON, packets) to be parsed without rigid type declarations.</li>
+<li><strong>The packaging ecosystem</strong> (<code>pip</code>, PyPI, wheel) allows tools to be distributed immediately, and <code>venv</code> isolates dependencies — important when a forensic analysis host must not be "contaminated."</li>
+</ol>
+<p>A security point to remember from the very start: the <strong>GIL (Global Interpreter Lock)</strong> in CPython means that multithreading (<code>threading</code>) does not run CPU-bound work in parallel, but it can still parallelize I/O-bound work (sockets, files, HTTP). Because most security tools are I/O-bound (waiting on the network, waiting on disk), <code>threading</code> and <code>asyncio</code> remain extremely useful; only when cracking hashes/brute-forcing (CPU-bound) do you need <code>multiprocessing</code>.</p>
+<hr />
+<h2 id="ch17-172-python-syntax-foundations-for-security-quick-review-deep-dive-where-mistakes-happen">17.2. Python syntax foundations for security (quick review, deep dive where mistakes happen)</h2>
+<h3 id="ch17-1721-data-types-and-binary-representation">17.2.1. Data types and binary representation</h3>
+<p>Security engineers work with bytes constantly, so they must clearly distinguish <code>str</code> from <code>bytes</code> — this is the number-one source of bugs when parsing packets/crypto.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Nature</th>
+<th>Immutable?</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int</code></td>
+<td>Arbitrary-precision integer</td>
+<td>Yes</td>
+<td>Counting, offsets, bitmasks</td>
+</tr>
+<tr>
+<td><code>bytes</code></td>
+<td>Sequence of bytes 0–255, immutable</td>
+<td>Yes</td>
+<td>Network data, hashes, raw payloads</td>
+</tr>
+<tr>
+<td><code>bytearray</code></td>
+<td>Sequence of bytes editable in place</td>
+<td>No</td>
+<td>Building packets, editing buffers</td>
+</tr>
+<tr>
+<td><code>str</code></td>
+<td>Sequence of Unicode code points</td>
+<td>Yes</td>
+<td>Text, decoded logs</td>
+</tr>
+<tr>
+<td><code>memoryview</code></td>
+<td>Zero-copy view over a buffer</td>
+<td>—</td>
+<td>Processing large buffers without copying</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Internal mechanics — why <code>str</code> ≠ <code>bytes</code>:</strong> A Python 3 <code>str</code> is a sequence of Unicode <em>code points</em>; it has no intrinsic "encoding" until you call <code>.encode()</code>. A network byte (for example the bytes <code>0xC3 0xA9</code>) only becomes the character <code>é</code> if you know the encoding is UTF-8. Mixing these two types when computing an HMAC will produce the wrong digest.</p>
+<pre><code class="language-python"># Explicit conversion — always specify the encoding
+s = &quot;héllo&quot;
+b = s.encode(&quot;utf-8&quot;)        # b'h\xc3\xa9llo'  -&gt; 6 bytes (é = 2 bytes)
+print(len(s), len(b))        # 5 6  -&gt; 5 characters but 6 bytes (é takes 2 bytes)
+# Exact hex representation/length:
+print(b.hex())               # '68c3a96c6c6f'  (each byte = 2 hex digits)
+print(len(b))                # 6
+
+# Read a 4-byte big-endian field from a packet:
+raw = b&quot;\x00\x00\x05\xdc&quot;    # 1500
+mtu = int.from_bytes(raw, byteorder=&quot;big&quot;, signed=False)
+print(mtu)                   # 1500
+
+# Pack it back:
+print((1500).to_bytes(2, &quot;big&quot;).hex())   # '05dc'
+</code></pre>
+<p><strong>Note:</strong> When comparing tokens/MACs, do not use <code>==</code> on <code>str</code>/<code>bytes</code>, because it short-circuits (stops early on the first differing byte → timing leak). Use <code>hmac.compare_digest()</code> (see 17.13).</p>
+<h3 id="ch17-1722-struct-readwrite-binary-data-field-by-field">17.2.2. struct — read/write binary data field by field</h3>
+<p><code>struct</code> is the bridge between network bytes and Python types. The format string controls byte order and size:</p>
+<table>
+<thead>
+<tr>
+<th>Character</th>
+<th>C type</th>
+<th>Size</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>B</code></td>
+<td>unsigned char</td>
+<td>1 byte</td>
+<td>0–255</td>
+</tr>
+<tr>
+<td><code>H</code></td>
+<td>unsigned short</td>
+<td>2 bytes</td>
+<td>0–65535</td>
+</tr>
+<tr>
+<td><code>I</code></td>
+<td>unsigned int</td>
+<td>4 bytes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Q</code></td>
+<td>unsigned long long</td>
+<td>8 bytes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>char[]</td>
+<td>n bytes</td>
+<td><code>4s</code> = 4 raw bytes</td>
+</tr>
+<tr>
+<td><code>!</code> (prefix)</td>
+<td>—</td>
+<td>—</td>
+<td>network byte order = big-endian, no padding</td>
+</tr>
+<tr>
+<td><code>&lt;</code> / <code>&gt;</code></td>
+<td>—</td>
+<td>—</td>
+<td>little / big endian</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import struct
+# Read the first 12 bytes of an IPv4 header: version+IHL(1B), TOS(1B), total_len(2B), id(2B), flags+frag(2B), ttl(1B), proto(1B), checksum(2B)
+ip_head = b&quot;\x45\x00\x00\x3c\x1c\x46\x40\x00\x40\x06\xb1\xe6&quot;
+ver_ihl, tos, tot_len, ident, flags_frag, ttl, proto, csum = struct.unpack(&quot;!BBHHHBBH&quot;, ip_head)
+version = ver_ihl &gt;&gt; 4          # 4
+ihl = (ver_ihl &amp; 0x0F) * 4      # 5*4 = 20 byte header length
+print(version, ihl, tot_len, ttl, proto)   # 4 20 60 64 6 (proto 6 = TCP)
+</code></pre>
+<h3 id="ch17-1723-listdictset-comprehensions-generators">17.2.3. List/Dict/Set comprehensions &amp; generators</h3>
+<pre><code class="language-python">logs = [&quot;ok&quot;, &quot;FAIL ip=10.0.0.1&quot;, &quot;FAIL ip=10.0.0.2&quot;, &quot;ok&quot;, &quot;FAIL ip=10.0.0.1&quot;]
+fails = [l for l in logs if l.startswith(&quot;FAIL&quot;)]                  # list comp
+ips   = {l.split(&quot;ip=&quot;)[1] for l in fails}                        # set comp -&gt; unique IPs
+count = {ip: sum(ip in l for l in fails) for ip in ips}           # dict comp -&gt; count
+# Generator: lazy, does not load the whole file into RAM — important for GB-sized logs
+def read_lines(path):
+    with open(path, &quot;r&quot;, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:          # generator pattern, read one line at a time
+            yield line.rstrip(&quot;\n&quot;)
+</code></pre>
+<p><strong>Why generators matter for security:</strong> the log file <code>/var/log/auth.log</code> can be several GB. A list comprehension <code>[l for l in open(...)]</code> loads the entire file into RAM → OOM. A generator holds one line at a time.</p>
+<h3 id="ch17-1724-functions-argskwargs-type-hints">17.2.4. Functions, <em>args/</em>*kwargs, type hints</h3>
+<pre><code class="language-python">from typing import Iterable
+def scan_ports(host: str, ports: Iterable[int], timeout: float = 1.0) -&gt; dict[int, bool]:
+    &quot;&quot;&quot;Type hints make large tools easier to audit; they are not enforced at runtime.&quot;&quot;&quot;
+    ...
+</code></pre>
+<p>Type hints are not checked by CPython at runtime — they serve <code>mypy</code>/IDEs and code auditing. For real runtime checking you need <code>pydantic</code> (to validate input from the network/API).</p>
+<h3 id="ch17-1725-exceptions-and-context-managers">17.2.5. Exceptions and context managers</h3>
+<pre><code class="language-python">import socket
+try:
+    s = socket.create_connection((&quot;10.0.0.5&quot;, 22), timeout=2)
+except (socket.timeout, ConnectionRefusedError) as e:
+    print(&quot;closed/filtered:&quot;, e)
+except OSError as e:               # catch the broader group last
+    print(&quot;network error:&quot;, e)
+else:
+    print(&quot;open&quot;)
+    s.close()
+finally:
+    pass                           # cleanup always runs
+</code></pre>
+<p><strong>Context managers</strong> ensure resources (sockets, files, locks) are released even when an exception occurs — avoiding file descriptor leaks (a form of self-inflicted DoS when scanning thousands of hosts):</p>
+<pre><code class="language-python">from contextlib import contextmanager
+@contextmanager
+def timed_socket(addr, timeout):
+    s = socket.create_connection(addr, timeout=timeout)
+    try:
+        yield s
+    finally:
+        s.close()      # always closed, even on a mid-way error
+</code></pre>
+<h3 id="ch17-1726-virtualenv-pip-isolate-and-pin-dependencies">17.2.6. virtualenv &amp; pip — isolate and pin dependencies</h3>
+<pre><code class="language-bash"># Create an isolated environment (Python 3.3+ ships with venv)
+python3 -m venv .venv
+source .venv/bin/activate          # Linux/mac;  .venv\Scripts\activate on Windows
+pip install --upgrade pip
+pip install requests scapy paramiko boto3
+
+# Pin exactly for reproducible builds — important for audit &amp; supply chain
+pip freeze &gt; requirements.txt      # records exact versions: requests==2.32.3 ...
+pip install -r requirements.txt
+
+# Check for known vulnerabilities in dependencies (supply chain)
+pip install pip-audit
+pip-audit -r requirements.txt      # looks up the OSV/PyPI advisory DB
+</code></pre>
+<p><strong>Note (supply chain):</strong>
+- Always <strong>pin versions</strong> (<code>==</code>) in production environments; open ranges (<code>&gt;=</code>) allow an attacker to push a malicious release via dependency confusion.
+- Consider <strong>hash-pinning</strong>: <code>pip install --require-hashes -r requirements.txt</code> with a file containing <code>--hash=sha256:...</code> → protects against artifact substitution on PyPI/mirrors.
+- Beware of <strong>typosquatting</strong> (<code>reqursts</code>, fake <code>python-requests</code>). Verify the exact package name.</p>
+<hr />
+<h2 id="ch17-173-socket-a-tcp-port-scanner-from-scratch">17.3. socket — A TCP port scanner from scratch</h2>
+<h3 id="ch17-what-it-is">What it is</h3>
+<p><code>socket</code> is a Python API that wraps the OS's BSD sockets directly. It allows creating TCP/UDP/raw connections and is the foundation of every network tool.</p>
+<h3 id="ch17-internal-mechanics-the-tcp-3-way-handshake">Internal mechanics — the TCP 3-way handshake</h3>
+<p>A successful TCP <code>connect()</code> means the OS has completed the handshake. At the segment level it proceeds as follows (the TCP flags are at byte offset 13 of the TCP header, in the low 6 bits: URG/ACK/PSH/RST/SYN/FIN):</p>
+<pre><code>Client                                   Server
+  |  --- SYN  seq=x          -----------&gt;  |   (SYN flag=1)
+  |  &lt;-- SYN/ACK seq=y ack=x+1 ----------  |   (SYN=1, ACK=1)
+  |  --- ACK  ack=y+1        -----------&gt;  |   (ACK=1)  -&gt; ESTABLISHED
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>TCP header field</th>
+<th>Size</th>
+<th>Offset</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>2 bytes</td>
+<td>0</td>
+<td>Source port</td>
+<td>49152</td>
+</tr>
+<tr>
+<td>Dest Port</td>
+<td>2 bytes</td>
+<td>2</td>
+<td>Destination port</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>4 bytes</td>
+<td>4</td>
+<td>Sequence number of the first byte</td>
+<td>0xABCD1234</td>
+</tr>
+<tr>
+<td>Ack Number</td>
+<td>4 bytes</td>
+<td>8</td>
+<td>Next expected seq</td>
+<td></td>
+</tr>
+<tr>
+<td>Data Offset (4 bits) + Reserved + Flags</td>
+<td>2 bytes</td>
+<td>12</td>
+<td>Header length + 9 flags</td>
+<td>SYN=0x02</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>2 bytes</td>
+<td>14</td>
+<td>Receive window size</td>
+<td>65535</td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>2 bytes</td>
+<td>16</td>
+<td>Checksum</td>
+<td></td>
+</tr>
+<tr>
+<td>Urgent Pointer</td>
+<td>2 bytes</td>
+<td>18</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Port state inferred from the response:</strong>
+- Receive <strong>SYN/ACK</strong> → port is <strong>OPEN</strong> (the client then sends RST if this is a connect-scan, to close quickly).
+- Receive <strong>RST</strong> → port is <strong>CLOSED</strong>.
+- No response (timeout) → <strong>FILTERED</strong> (a firewall dropped the packet).</p>
+<h3 id="ch17-real-world-example-multithreaded-tcp-connect-scanner">Real-world example — multithreaded TCP connect scanner</h3>
+<pre><code class="language-python">#!/usr/bin/env python3
+import socket
+import concurrent.futures as cf
+
+def probe(host: str, port: int, timeout: float = 1.0) -&gt; tuple[int, str]:
+    # AF_INET = IPv4, SOCK_STREAM = TCP
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(timeout)
+        try:
+            # connect_ex returns 0 if the OS completed the handshake; an errno on failure
+            rc = s.connect_ex((host, port))
+        except socket.gaierror:
+            return port, &quot;dns-error&quot;
+        if rc == 0:
+            banner = &quot;&quot;
+            try:
+                s.settimeout(0.5)
+                banner = s.recv(64).decode(errors=&quot;replace&quot;).strip()  # grab banner
+            except OSError:
+                pass
+            return port, f&quot;open {banner}&quot;.strip()
+        elif rc == 111:                       # ECONNREFUSED (Linux)
+            return port, &quot;closed&quot;
+        return port, &quot;filtered&quot;
+
+def scan(host, ports, workers=200):
+    results = {}
+    with cf.ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(probe, host, p): p for p in ports}
+        for fut in cf.as_completed(futs):
+            port, state = fut.result()
+            if state.startswith(&quot;open&quot;):
+                results[port] = state
+    return dict(sorted(results.items()))
+
+if __name__ == &quot;__main__&quot;:
+    print(scan(&quot;scanme.nmap.org&quot;, range(1, 1025)))
+</code></pre>
+<p>Sample output:</p>
+<pre><code>{22: 'open SSH-2.0-OpenSSH_6.6.1p1 Ubuntu', 80: 'open'}
+</code></pre>
+<p><strong>Parameter explanation:</strong>
+- <code>socket.AF_INET</code> selects IPv4 (<code>AF_INET6</code> for IPv6).
+- <code>SOCK_STREAM</code> = TCP; <code>SOCK_DGRAM</code> = UDP; <code>SOCK_RAW</code> requires root to craft raw packets.
+- <code>connect_ex</code> does not raise an exception when the port is closed (it returns an errno), reducing overhead versus <code>connect</code> for wide scans.
+- <code>ThreadPoolExecutor(max_workers=200)</code> runs 200 probes in parallel; because this is I/O-bound, the GIL is not a barrier (threads blocked on <code>recv</code>/<code>connect</code> release the GIL).</p>
+<p><strong>Security &amp; legal note:</strong>
+- Scanning a host without authorization is conduct that can be prosecuted. Only scan assets you own or have written permission to test.
+- A <code>connect</code>-scan leaves complete logs (a full handshake) on the target side — unlike a SYN-scan (sends SYN, receives SYN/ACK, then RST, half-open). A SYN-scan requires a raw socket + root privileges and is done with <code>scapy</code> (see 17.8).
+- Set a reasonable timeout: too low → false "filtered"; too high → slow scan that is easily detected because connections are held open for a long time.</p>
+<hr />
+<h2 id="ch17-174-requests-http-automation-rest-apis-sessions-auth">17.4. requests — HTTP automation, REST APIs, sessions &amp; auth</h2>
+<h3 id="ch17-what-it-is_1">What it is</h3>
+<p><code>requests</code> is a high-level HTTP client library (wrapping <code>urllib3</code>). It is the backbone of any automation that calls REST APIs (Jira, Slack, SIEM, EDR).</p>
+<h3 id="ch17-mechanics-the-lifecycle-of-an-http11-request">Mechanics — the lifecycle of an HTTP/1.1 request</h3>
+<p>An HTTP/1.1 request on the wire (the TCP payload after the handshake) takes the form of ASCII text:</p>
+<pre><code>GET /rest/api/2/issue/SEC-1 HTTP/1.1\r\n          &lt;- request line
+Host: jira.example.com\r\n                         &lt;- header (mandatory in HTTP/1.1)
+Authorization: Bearer eyJ...\r\n
+Accept: application/json\r\n
+User-Agent: python-requests/2.32.3\r\n
+\r\n                                               &lt;- blank line = end of headers
+&lt;body if any&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Method</td>
+<td>variable</td>
+<td>HTTP verb</td>
+<td><code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code></td>
+</tr>
+<tr>
+<td>Request-URI</td>
+<td>variable</td>
+<td>Path + query</td>
+<td><code>/rest/api/2/issue</code></td>
+</tr>
+<tr>
+<td>Version</td>
+<td>8 bytes</td>
+<td>Version</td>
+<td><code>HTTP/1.1</code></td>
+</tr>
+<tr>
+<td>Each header</td>
+<td>variable</td>
+<td><code>Name: Value</code> ending in <code>\r\n</code> (CRLF, 2 bytes)</td>
+<td></td>
+</tr>
+<tr>
+<td>Header/body separator</td>
+<td>2 bytes</td>
+<td><code>\r\n\r\n</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Response: <code>HTTP/1.1 200 OK\r\n</code> + headers + <code>\r\n\r\n</code> + body.</p>
+<h3 id="ch17-real-world-example-1-calling-a-siemjira-style-rest-api-with-a-session-retries-timeout">Real-world example 1 — calling a SIEM/Jira-style REST API with a Session, retries, timeout</h3>
+<pre><code class="language-python">import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import os
+
+def build_session() -&gt; requests.Session:
+    s = requests.Session()
+    # A Session reuses the TCP connection (keep-alive) + cookies -&gt; much faster when calling N times
+    retries = Retry(
+        total=3,                       # retry at most 3 times
+        backoff_factor=0.5,            # wait 0.5s, 1s, 2s (exponential)
+        status_forcelist=[429, 500, 502, 503, 504],  # retry on rate-limit/server errors
+        allowed_methods=[&quot;GET&quot;, &quot;POST&quot;],
+    )
+    s.mount(&quot;https://&quot;, HTTPAdapter(max_retries=retries))
+    # Secret TAKEN FROM AN ENVIRONMENT VARIABLE, not hardcoded
+    token = os.environ[&quot;JIRA_TOKEN&quot;]
+    s.headers.update({
+        &quot;Authorization&quot;: f&quot;Bearer {token}&quot;,
+        &quot;Accept&quot;: &quot;application/json&quot;,
+        &quot;Content-Type&quot;: &quot;application/json&quot;,
+    })
+    return s
+
+def create_ticket(sess, project=&quot;SEC&quot;, summary=&quot;Suspicious login&quot;, desc=&quot;&quot;):
+    payload = {
+        &quot;fields&quot;: {
+            &quot;project&quot;: {&quot;key&quot;: project},
+            &quot;summary&quot;: summary,
+            &quot;description&quot;: desc,
+            &quot;issuetype&quot;: {&quot;name&quot;: &quot;Incident&quot;},
+        }
+    }
+    r = sess.post(
+        &quot;https://jira.example.com/rest/api/2/issue&quot;,
+        json=payload,                  # auto-serializes JSON + sets Content-Type
+        timeout=(3.05, 10),            # (connect timeout, read timeout) - always set
+        verify=True,                   # never verify=False in production
+    )
+    r.raise_for_status()               # raise HTTPError on 4xx/5xx
+    return r.json()[&quot;key&quot;]             # e.g. &quot;SEC-1234&quot;
+</code></pre>
+<p><strong>Explanation of the important parameters:</strong>
+- <code>timeout=(3.05, 10)</code>: a tuple (connect, read). Not setting a timeout → the request can hang forever if the server does not respond (hanging the entire IR pipeline). The value <code>3.05</code> avoids coinciding with multiples of the 3s TCP retransmit timer.
+- <code>verify=True</code>: validates the TLS certificate against the CA store. <code>verify=False</code> opens the door to MITM — only acceptable in an isolated lab, and it will print an <code>InsecureRequestWarning</code>.
+- <code>json=payload</code> vs <code>data=payload</code>: <code>json=</code> automatically runs <code>json.dumps</code> and sets the <code>Content-Type: application/json</code> header; <code>data=</code> sends form-encoded data.
+- <code>raise_for_status()</code>: turns HTTP errors into exceptions so the IR pipeline does not "silently" swallow failures.</p>
+<h3 id="ch17-real-world-example-2-the-pattern-of-an-automation-ir-agent-sending-an-alert-to-a-slack-webhook">Real-world example 2 — the pattern of an automation / IR agent (sending an alert to a Slack webhook)</h3>
+<pre><code class="language-python">def notify_slack(webhook_url: str, text: str, severity: str):
+    color = {&quot;high&quot;: &quot;#cc0000&quot;, &quot;medium&quot;: &quot;#e69900&quot;, &quot;low&quot;: &quot;#36a64f&quot;}.get(severity, &quot;#888&quot;)
+    body = {&quot;attachments&quot;: [{&quot;color&quot;: color, &quot;text&quot;: text, &quot;footer&quot;: &quot;IR-Agent&quot;}]}
+    r = requests.post(webhook_url, json=body, timeout=(3, 5))
+    r.raise_for_status()
+</code></pre>
+<p>Sample output when a "brute-force detected" alert is pushed: Slack displays a red attachment with text describing the IP and the number of attempts.</p>
+<p><strong>Note:</strong>
+- <strong>SSRF</strong>: if the target URL comes from user input, an attacker can point it at <code>http://169.254.169.254/latest/meta-data/</code> (cloud metadata) to steal IAM credentials. Validate and whitelist the target host; block internal/link-local IP ranges.
+- <strong>Secret in the URL</strong>: do not embed tokens in the query string (they get written into access logs and history). Use the <code>Authorization</code> header.
+- <strong>Header injection / CRLF</strong>: do not concatenate unsanitized input into headers — the <code>\r\n</code> characters can inject forged headers. <code>requests</code> blocks most of this, but you must still validate.</p>
+<hr />
+<h2 id="ch17-175-re-regex-log-parsing-in-the-field">17.5. re — Regex log parsing in the field</h2>
+<h3 id="ch17-what-it-is_2">What it is</h3>
+<p>The <code>re</code> module provides regular expressions (PCRE-like). It is used to extract fields from unstructured text logs.</p>
+<h3 id="ch17-mechanics-compile-the-core-constructs">Mechanics — compile &amp; the core constructs</h3>
+<p><code>re.compile()</code> compiles a pattern into NFA bytecode once and reuses it many times (much faster when parsing millions of lines).</p>
+<table>
+<thead>
+<tr>
+<th>Construct</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\d</code> <code>\w</code> <code>\s</code></td>
+<td>digit / word char / whitespace</td>
+<td></td>
+</tr>
+<tr>
+<td><code>(?P&lt;name&gt;...)</code></td>
+<td>named capture group</td>
+<td><code>(?P&lt;ip&gt;\d+\.\d+\.\d+\.\d+)</code></td>
+</tr>
+<tr>
+<td><code>(?:...)</code></td>
+<td>non-capturing group</td>
+<td>logical grouping, no capture</td>
+</tr>
+<tr>
+<td><code>+ * ? {m,n}</code></td>
+<td>quantifiers</td>
+<td><code>\d{1,3}</code></td>
+</tr>
+<tr>
+<td><code>^ $</code></td>
+<td>start/end of line (with <code>re.M</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>word boundary</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-real-world-example-counting-brute-force-ips-in-varlogauthlog">Real-world example — counting brute-force IPs in /var/log/auth.log</h3>
+<p>A typical failed SSH <code>auth.log</code> line:</p>
+<pre><code>Jun 19 10:21:45 host sshd[2931]: Failed password for invalid user admin from 203.0.113.7 port 51244 ssh2
+</code></pre>
+<pre><code class="language-python">import re
+from collections import Counter
+
+# Compile once; named groups make the code readable
+PAT = re.compile(
+    r&quot;Failed password for (?:invalid user )?(?P&lt;user&gt;\S+) &quot;
+    r&quot;from (?P&lt;ip&gt;\d{1,3}(?:\.\d{1,3}){3}) port (?P&lt;port&gt;\d+)&quot;
+)
+
+def brute_force_offenders(path: str, threshold: int = 5) -&gt; dict:
+    by_ip = Counter()
+    users_by_ip: dict[str, set] = {}
+    with open(path, &quot;r&quot;, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:                         # generator: one line at a time, no full load
+            m = PAT.search(line)
+            if m:
+                ip = m.group(&quot;ip&quot;)
+                by_ip[ip] += 1
+                users_by_ip.setdefault(ip, set()).add(m.group(&quot;user&quot;))
+    # Keep only IPs above the threshold
+    return {
+        ip: {&quot;attempts&quot;: n, &quot;users_tried&quot;: sorted(users_by_ip[ip])}
+        for ip, n in by_ip.items() if n &gt;= threshold
+    }
+
+if __name__ == &quot;__main__&quot;:
+    import json
+    print(json.dumps(brute_force_offenders(&quot;/var/log/auth.log&quot;, 5), indent=2))
+</code></pre>
+<p>Sample output:</p>
+<pre><code class="language-json">{
+  &quot;203.0.113.7&quot;: { &quot;attempts&quot;: 142, &quot;users_tried&quot;: [&quot;admin&quot;, &quot;root&quot;, &quot;test&quot;] },
+  &quot;198.51.100.9&quot;: { &quot;attempts&quot;: 31, &quot;users_tried&quot;: [&quot;oracle&quot;] }
+}
+</code></pre>
+<p><strong>Byte-level pattern analysis:</strong> <code>\d{1,3}(?:\.\d{1,3}){3}</code> matches an octet of 1–3 digits, repeated 3 times with dots. Note that it does not check that octets are ≤ 255 — it accepts <code>999.999.999.999</code>. To validate correctly, use <code>ipaddress.ip_address()</code> after extracting.</p>
+<p><strong>Note — ReDoS (Regex Denial of Service):</strong>
+- Patterns with <strong>catastrophic backtracking</strong> such as <code>(a+)+$</code> run with input <code>"aaaa...!"</code> have exponential complexity → CPU hang. When parsing attacker-controlled input (remote logs, HTTP headers), avoid nested quantifiers.
+- The standard <code>re</code> module has no timeout. For untrusted input, consider the <code>regre</code>/<code>google-re2</code> libraries (RE2, no backtracking, guaranteed linear time) or limit input length before matching.</p>
+<hr />
+<h2 id="ch17-176-subprocess-os-running-system-commands-safely">17.6. subprocess &amp; os — Running system commands safely</h2>
+<h3 id="ch17-what-it-is_3">What it is</h3>
+<p><code>subprocess</code> spawns child processes; <code>os</code>/<code>shutil</code> manipulate files/permissions/environment. This is the number-one hotspot for <strong>command injection</strong>.</p>
+<h3 id="ch17-mechanics-shellfalse-vs-shelltrue">Mechanics — shell=False vs shell=True</h3>
+<pre><code>shell=True  -&gt; Python calls /bin/sh -c &quot;command string&quot;  -&gt; sh parses metacharacters  ; | &amp; $ ` &gt; &lt;
+shell=False -&gt; Python calls execve(argv[0], argv[], env)  directly, not through a shell
+</code></pre>
+<p>When <code>shell=True</code>, the command string is interpreted by <code>/bin/sh</code>. If part of the string comes from user input (<code>"ping " + user_input</code>) and <code>user_input = "; rm -rf /"</code>, the shell executes both commands. With <code>shell=False</code>, the argument is one element in the <code>argv</code> list and is not interpreted by a shell → safe.</p>
+<h3 id="ch17-real-world-example-the-right-and-wrong-way">Real-world example — the right and wrong way</h3>
+<pre><code class="language-python">import subprocess, shlex
+
+host = &quot;8.8.8.8&quot;   # assume this comes from input
+
+# Wrong — command injection:  host = &quot;8.8.8.8; cat /etc/shadow&quot;
+# subprocess.run(f&quot;ping -c1 {host}&quot;, shell=True)   # don't do this
+
+# Right — argv list, shell=False (the default)
+res = subprocess.run(
+    [&quot;ping&quot;, &quot;-c&quot;, &quot;1&quot;, host],        # each token is a separate element -&gt; no injection
+    capture_output=True,              # capture stdout/stderr
+    text=True,                        # decode bytes -&gt; str (per locale)
+    timeout=5,                        # avoid hanging forever
+    check=False,                      # don't raise; check res.returncode yourself
+)
+print(res.returncode, res.stdout[:80])
+
+# If you ABSOLUTELY must use a shell (e.g. you need a pipe), sanitize with shlex.quote:
+safe = shlex.quote(host)             # &quot;'8.8.8.8; cat /etc/shadow'&quot; -&gt; wrapped in quotes, harmless
+subprocess.run(f&quot;ping -c1 {safe} | tee /tmp/out&quot;, shell=True, timeout=5)
+</code></pre>
+<p><strong>Parameter explanation:</strong>
+- <code>capture_output=True</code> ≡ <code>stdout=PIPE, stderr=PIPE</code>.
+- <code>text=True</code> (alias <code>universal_newlines</code>) decodes the output. For binary data (pcap, binaries), leave it as the default <code>bytes</code>.
+- <code>timeout=5</code> raises <code>TimeoutExpired</code> if exceeded — mandatory when calling network tools that may hang.
+- <code>check=True</code> raises <code>CalledProcessError</code> if the return code ≠ 0.</p>
+<p><strong>Note:</strong>
+- <code>shlex.quote()</code> is only safe for <strong>POSIX sh</strong>, not for Windows <code>cmd.exe</code> (the quoting rules differ). On Windows, avoid <code>shell=True</code> entirely.
+- Do not pass secrets via argv (<code>ps aux</code> exposes the entire command line to every user); pass them via stdin or env.
+- <code>os.system()</code> always uses a shell → avoid it entirely. Use <code>subprocess.run</code> with a list.</p>
+<hr />
+<h2 id="ch17-177-json-serializing-handling-apiconfig-data">17.7. json — Serializing &amp; handling API/config data</h2>
+<h3 id="ch17-mechanics-type-mapping">Mechanics — type mapping</h3>
+<table>
+<thead>
+<tr>
+<th>JSON</th>
+<th>Python</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>object <code>{}</code></td>
+<td><code>dict</code></td>
+</tr>
+<tr>
+<td>array <code>[]</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td>string</td>
+<td><code>str</code></td>
+</tr>
+<tr>
+<td>number (int)</td>
+<td><code>int</code></td>
+</tr>
+<tr>
+<td>number (real)</td>
+<td><code>float</code></td>
+</tr>
+<tr>
+<td><code>true</code>/<code>false</code></td>
+<td><code>True</code>/<code>False</code></td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import json
+data = json.loads('{&quot;alerts&quot;:[{&quot;sev&quot;:&quot;high&quot;,&quot;ip&quot;:&quot;1.2.3.4&quot;}]}')   # parse string
+text = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)  # pretty serialize
+# Read/write a config file:
+with open(&quot;rules.json&quot;, encoding=&quot;utf-8&quot;) as f:
+    rules = json.load(f)          # load from a file object
+</code></pre>
+<p><strong>Note:</strong>
+- Standard <code>json</code> is safe (it does not execute code), unlike the unsafe <code>pickle</code>/<code>yaml.load</code> (see below). <strong>Never <code>pickle.loads()</code> untrusted data</strong> — it can execute arbitrary code via <code>__reduce__</code>. For YAML, use <code>yaml.safe_load()</code>.
+- JSON from an untrusted source can be very deep/large → memory DoS. Limit the payload size before parsing.</p>
+<hr />
+<h2 id="ch17-178-scapy-crafting-sending-and-sniffing-packets-at-the-byte-level">17.8. scapy — Crafting, sending, and sniffing packets at the byte level</h2>
+<h3 id="ch17-what-it-is_4">What it is</h3>
+<p><code>scapy</code> lets you build packets layer by layer, send them, and sniff/decode them — controlling every header field.</p>
+<h3 id="ch17-mechanics-layer-by-layer-encapsulation-byte-by-byte-decapsulation">Mechanics — layer-by-layer encapsulation (byte-by-byte decapsulation)</h3>
+<p>An <code>Ethernet / IP / TCP / payload</code> packet is encapsulated from the top down. On the wire, the bytes are laid out as follows:</p>
+<pre><code>[ Ethernet header 14B ][ IPv4 header 20B ][ TCP header 20B ][ payload ]
+        ^                      ^                  ^
+   dst MAC(6) src MAC(6)   ver/ihl, len, ...   src/dst port, seq, flags
+   ethertype(2)=0x0800
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Main field</th>
+<th>Size</th>
+<th>Offset within layer</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ethernet</td>
+<td>dst MAC</td>
+<td>6 bytes</td>
+<td>0</td>
+<td>ff:ff:ff:ff:ff:ff</td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td>src MAC</td>
+<td>6 bytes</td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td>EtherType</td>
+<td>2 bytes</td>
+<td>12</td>
+<td>0x0800 = IPv4</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Version+IHL</td>
+<td>1 byte</td>
+<td>0</td>
+<td>0x45</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Total Length</td>
+<td>2 bytes</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Protocol</td>
+<td>1 byte</td>
+<td>9</td>
+<td>6=TCP, 17=UDP, 1=ICMP</td>
+</tr>
+<tr>
+<td>IPv4</td>
+<td>Src/Dst IP</td>
+<td>4+4 bytes</td>
+<td>12/16</td>
+<td></td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>Src/Dst Port</td>
+<td>2+2 bytes</td>
+<td>0/2</td>
+<td></td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>Flags</td>
+<td>6 bits (in byte 13)</td>
+<td>13</td>
+<td>SYN=0x02</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-real-world-example-1-syn-scan-half-open-controlling-tcp-flags">Real-world example 1 — SYN scan (half-open), controlling TCP flags</h3>
+<pre><code class="language-python">from scapy.all import IP, TCP, sr1, conf
+conf.verb = 0
+
+def syn_scan(target, port, timeout=2):
+    pkt = IP(dst=target) / TCP(dport=port, flags=&quot;S&quot;)   # flags=&quot;S&quot; -&gt; set only the SYN flag
+    resp = sr1(pkt, timeout=timeout)                    # send 1 packet, receive 1 response
+    if resp is None:
+        return &quot;filtered&quot;                               # no answer -&gt; firewall drop
+    if resp.haslayer(TCP):
+        tcp = resp.getlayer(TCP)
+        if tcp.flags == 0x12:                           # SYN+ACK -&gt; open
+            # send RST so the handshake is not completed (half-open, fewer logs)
+            sr1(IP(dst=target) / TCP(dport=port, flags=&quot;R&quot;), timeout=1)
+            return &quot;open&quot;
+        if tcp.flags == 0x14:                           # RST+ACK -&gt; closed
+            return &quot;closed&quot;
+    return &quot;unknown&quot;
+
+print(syn_scan(&quot;scanme.nmap.org&quot;, 80))   # 'open'
+</code></pre>
+<p><code>flags="S"</code> sets the TCP flags byte to <code>0x02</code>. <code>resp.flags == 0x12</code> means SYN(0x02)+ACK(0x10). This is a true SYN-scan and requires root privileges (a raw socket).</p>
+<h3 id="ch17-real-world-example-2-sniff-and-detect-arp-spoofing">Real-world example 2 — sniff and detect ARP spoofing</h3>
+<pre><code class="language-python">from scapy.all import sniff, ARP
+
+arp_table = {}   # ip -&gt; mac seen
+
+def on_packet(pkt):
+    if pkt.haslayer(ARP) and pkt[ARP].op == 2:    # op=2 is an ARP reply
+        ip, mac = pkt[ARP].psrc, pkt[ARP].hwsrc
+        if ip in arp_table and arp_table[ip] != mac:
+            print(f&quot;[!] Suspected ARP SPOOF: {ip} changed from {arp_table[ip]} to {mac}&quot;)
+        arp_table[ip] = mac
+
+# Sniff on the interface, BPF-filter only ARP to reduce load
+sniff(iface=&quot;eth0&quot;, filter=&quot;arp&quot;, prn=on_packet, store=False)
+</code></pre>
+<p><strong>Explanation:</strong> <code>filter="arp"</code> is a BPF (Berkeley Packet Filter) — compiled down into the kernel, filtering before packets reach userspace (high performance). <code>store=False</code> does not keep packets in RAM (avoiding OOM during long sniffs). ARP op=1 is a request, op=2 is a reply; one IP mapping to multiple MACs in a short window is a sign of ARP poisoning (MITM).</p>
+<p><strong>Note:</strong> scapy needs <code>CAP_NET_RAW</code> (root). In Docker you must run with <code>--cap-add=NET_RAW</code> or <code>--privileged</code>. Sending raw packets onto a network you are not authorized to use is an attack.</p>
+<hr />
+<h2 id="ch17-179-paramiko-secure-ssh-automation">17.9. paramiko — Secure SSH automation</h2>
+<h3 id="ch17-what-it-is_5">What it is</h3>
+<p><code>paramiko</code> is a pure-Python implementation of SSHv2 (transport, auth, channels). It is used to automate configuration collection and run audit commands across a server fleet.</p>
+<h3 id="ch17-mechanics-the-sshv2-handshake-abridged-per-rfc-4253">Mechanics — the SSHv2 handshake (abridged per RFC 4253)</h3>
+<pre><code>1. TCP connect to port 22
+2. Banner exchange:  &quot;SSH-2.0-...&quot;  (both sides send a version string ending in \r\n)
+3. KEXINIT: negotiate algorithms (KEX, host key, cipher, MAC, compression)
+4. Key exchange (e.g. curve25519-sha256 / diffie-hellman) -&gt; create a shared secret
+5. Server sends its host key -&gt; the client must verify it (known_hosts) -&gt; prevents MITM
+6. Derive session keys -&gt; enable encryption
+7. Authentication: publickey / password / keyboard-interactive
+8. Open a channel -&gt; exec a command or a shell
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Packet/field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Banner</td>
+<td>ASCII string <code>SSH-2.0-OpenSSH_9.x\r\n</code></td>
+<td>identifies the version</td>
+</tr>
+<tr>
+<td>KEXINIT</td>
+<td>algorithm list</td>
+<td>negotiate the cipher suite</td>
+</tr>
+<tr>
+<td>Host key</td>
+<td>server's public key</td>
+<td>client checks known_hosts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch17-real-world-example-running-an-audit-command-verifying-the-host-key-correctly">Real-world example — running an audit command, verifying the host key correctly</h3>
+<pre><code class="language-python">import paramiko
+
+def audit_host(host, user, key_path):
+    client = paramiko.SSHClient()
+    # Load known_hosts -&gt; VERIFY the host key, prevent MITM
+    client.load_system_host_keys()
+    # Right: reject unknown hosts. Wrong: AutoAddPolicy() skips the check -&gt; easy MITM
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    pkey = paramiko.Ed25519Key.from_private_key_file(key_path)
+    client.connect(host, username=user, pkey=pkey, timeout=10,
+                   auth_timeout=10, banner_timeout=10)
+    try:
+        # exec_command opens a channel, returns (stdin, stdout, stderr)
+        stdin, stdout, stderr = client.exec_command(&quot;sshd -T | grep -i permitrootlogin&quot;, timeout=10)
+        out = stdout.read().decode().strip()
+        rc = stdout.channel.recv_exit_status()      # exit code of the remote command
+        return {&quot;host&quot;: host, &quot;permit_root&quot;: out, &quot;rc&quot;: rc}
+    finally:
+        client.close()
+</code></pre>
+<p><strong>Parameter explanation:</strong>
+- <code>RejectPolicy()</code> vs <code>AutoAddPolicy()</code>: AutoAdd automatically trusts every new host key → disables MITM protection. In production, use RejectPolicy + a managed known_hosts.
+- <code>Ed25519Key</code>: use a modern key; avoid old RSA-1024/DSA.
+- <code>recv_exit_status()</code>: retrieves the exit code of the remote command (distinct from being able to read its output).
+- The <code>*_timeout</code> values: avoid hanging when the server is slow/filtering packets.</p>
+<p><strong>Note:</strong>
+- Do not hardcode passwords/passphrases in code; load them from a secret manager or env.
+- Store private keys with <code>0600</code> permissions. Use a passphrase for keys.
+- Pin host keys in a centrally managed known_hosts; alert if a host key changes (it could be MITM or a reinstall).</p>
+<hr />
+<h2 id="ch17-1710-boto3-aws-automation-audit-cloud-ir">17.10. boto3 — AWS automation (audit, cloud IR)</h2>
+<h3 id="ch17-what-it-is_6">What it is</h3>
+<p><code>boto3</code> is the official AWS SDK for Python. It is used to audit configuration (public S3, open security groups), collect logs, and respond to incidents in the cloud.</p>
+<h3 id="ch17-mechanics-the-credential-chain-sigv4-request-signing">Mechanics — the credential chain &amp; SigV4 request signing</h3>
+<p>boto3 looks for credentials in order (the credential provider chain):
+1. Explicit code parameters (avoid — easy to leak).
+2. Environment variables <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SESSION_TOKEN</code>.
+3. The <code>~/.aws/credentials</code> file (a profile).
+4. <strong>IAM role</strong> via instance metadata (EC2) / IRSA (EKS) / ECS task role — <strong>the highest priority from a security standpoint</strong> because the credentials are short-lived and auto-rotated.</p>
+<p>Each API call is signed with <strong>AWS Signature Version 4 (SigV4)</strong>: build a canonical request → SHA-256 hash → build a string-to-sign → HMAC-SHA256 applied multiple times with a key derived from the secret + date + region + service → an <code>Authorization: AWS4-HMAC-SHA256 Credential=... SignedHeaders=... Signature=...</code> header. As a result, the secret key never travels on the wire; only the signature does.</p>
+<h3 id="ch17-real-world-example-finding-publicly-exposed-s3-buckets">Real-world example — finding publicly exposed S3 buckets</h3>
+<pre><code class="language-python">import boto3
+from botocore.exceptions import ClientError
+
+def find_public_buckets():
+    s3 = boto3.client(&quot;s3&quot;)           # credentials taken via the chain above
+    findings = []
+    for b in s3.list_buckets()[&quot;Buckets&quot;]:
+        name = b[&quot;Name&quot;]
+        public = False
+        # Check the Public Access Block
+        try:
+            pab = s3.get_public_access_block(Bucket=name)[&quot;PublicAccessBlockConfiguration&quot;]
+            if not all(pab.values()):     # if any blocking flag is off
+                public = True
+        except ClientError as e:
+            if e.response[&quot;Error&quot;][&quot;Code&quot;] == &quot;NoSuchPublicAccessBlockConfiguration&quot;:
+                public = True             # no PAB -&gt; risk
+        # Check whether the ACL grants to AllUsers
+        try:
+            acl = s3.get_bucket_acl(Bucket=name)
+            for g in acl[&quot;Grants&quot;]:
+                uri = g.get(&quot;Grantee&quot;, {}).get(&quot;URI&quot;, &quot;&quot;)
+                if &quot;AllUsers&quot; in uri or &quot;AuthenticatedUsers&quot; in uri:
+                    public = True
+        except ClientError:
+            pass
+        if public:
+            findings.append(name)
+    return findings
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;Public buckets:&quot;, find_public_buckets())
+</code></pre>
+<p>Sample output:</p>
+<pre><code>Public buckets: ['legacy-backups-2019', 'marketing-assets']
+</code></pre>
+<p><strong>Explanation:</strong>
+- <code>boto3.client("s3")</code> creates a low-level client (1:1 with the API); <code>boto3.resource(...)</code> is a higher-level abstraction.
+- Pagination: <code>list_buckets</code> returns everything, but APIs like <code>list_objects_v2</code> are paginated — use <code>paginator = s3.get_paginator("list_objects_v2")</code> to iterate through all results.
+- <code>ClientError</code> carries <code>e.response["Error"]["Code"]</code> — you need to distinguish permission errors (<code>AccessDenied</code>) from "does not exist" errors.</p>
+<p><strong>Note:</strong>
+- <strong>Least privilege</strong>: attach an IAM policy with only the <code>s3:GetBucketAcl</code>, <code>s3:GetBucketPublicAccessBlock</code>, <code>s3:ListAllMyBuckets</code> permissions. Do not use an admin key for an audit tool.
+- <strong>Do not hardcode keys</strong>. Use an IAM role / SSO. If you must use a key, store it in Secrets Manager and rotate it.
+- Enable <strong>CloudTrail</strong> so that every API call your tool makes is logged — your audit tool itself must also be auditable.</p>
+<hr />
+<h2 id="ch17-1711-hashlib-hmac-hashing-integrity-message-authentication">17.11. hashlib &amp; hmac — Hashing, integrity, message authentication</h2>
+<h3 id="ch17-what-it-is_7">What it is</h3>
+<p><code>hashlib</code> provides cryptographic hash functions (SHA-256, SHA-3, BLAKE2…). <code>hmac</code> creates a Message Authentication Code using a secret key.</p>
+<h3 id="ch17-mechanics-digest-sizes-and-how-hmac-defeats-length-extension">Mechanics — digest sizes and how HMAC defeats length-extension</h3>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Block size</th>
+<th>Digest size</th>
+<th>Security note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MD5</td>
+<td>64 bytes</td>
+<td>16 bytes (128 bits)</td>
+<td><strong>Broken</strong> (collisions). Use only as a non-security checksum</td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td>64 bytes</td>
+<td>20 bytes (160 bits)</td>
+<td><strong>Broken</strong> (SHAttered). Do not use for signatures</td>
+</tr>
+<tr>
+<td>SHA-256</td>
+<td>64 bytes</td>
+<td>32 bytes (256 bits)</td>
+<td>Currently secure</td>
+</tr>
+<tr>
+<td>SHA-512</td>
+<td>128 bytes</td>
+<td>64 bytes (512 bits)</td>
+<td>Secure; faster on 64-bit CPUs</td>
+</tr>
+<tr>
+<td>SHA3-256</td>
+<td>—</td>
+<td>32 bytes</td>
+<td>Sponge construction, not affected by length-extension</td>
+</tr>
+<tr>
+<td>BLAKE2b</td>
+<td>—</td>
+<td>up to 64 bytes</td>
+<td>Fast, has a keyed mode</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HMAC</strong> = <code>H((K ⊕ opad) || H((K ⊕ ipad) || message))</code>. The two nested hashings with the key XORed against two constants (<code>ipad=0x36</code> repeated, <code>opad=0x5c</code> repeated) make HMAC immune to the <strong>length-extension</strong> attack that raw hashes (MD5/SHA-1/SHA-256 in Merkle–Damgård form) are vulnerable to. That is WHY you should never use <code>sha256(secret || message)</code> as a homemade MAC — it lets an attacker append data and compute a valid MAC.</p>
+<h3 id="ch17-real-world-example-hashing-a-forensic-file-authenticating-a-webhook">Real-world example — hashing a forensic file &amp; authenticating a webhook</h3>
+<pre><code class="language-python">import hashlib, hmac, os
+
+def sha256_file(path: str, chunk=1 &lt;&lt; 20) -&gt; str:
+    h = hashlib.sha256()
+    with open(path, &quot;rb&quot;) as f:
+        for block in iter(lambda: f.read(chunk), b&quot;&quot;):   # read 1MB at a time, large files don't OOM
+            h.update(block)
+    return h.hexdigest()        # 64 hex chars = 32 bytes
+
+# Verify the HMAC of a webhook (e.g. GitHub/Slack signs the payload)
+def verify_webhook(secret: bytes, payload: bytes, signature_hex: str) -&gt; bool:
+    mac = hmac.new(secret, payload, hashlib.sha256)
+    expected = mac.hexdigest()
+    # constant-time comparison -&gt; prevents timing attacks
+    return hmac.compare_digest(expected, signature_hex)
+</code></pre>
+<p><strong>Explanation:</strong>
+- <code>iter(lambda: f.read(chunk), b"")</code>: calls <code>read</code> until it returns <code>b""</code> (EOF) → streams large files.
+- <code>hexdigest()</code> for SHA-256 is always exactly 64 hex characters long (32 bytes × 2).
+- <code>hmac.compare_digest</code>: compares in a time that does not depend on the position of the differing byte → an attacker cannot guess the MAC byte by byte through timing measurements.</p>
+<p><strong>Note:</strong>
+- <strong>Do not use <code>hashlib</code> to store passwords</strong>. SHA-256 is too fast → easy to brute-force. Use <strong>bcrypt / scrypt / Argon2</strong> (via <code>argon2-cffi</code>, <code>bcrypt</code>) with a salt + a high cost factor.
+- MD5/SHA-1 are only acceptable for non-security dedup/checksums, not for attack-resistant integrity.</p>
+<hr />
+<h2 id="ch17-1712-secrets-generating-tokens-securely-do-not-use-random">17.12. secrets — Generating tokens securely (do not use random)</h2>
+<h3 id="ch17-mechanics-why-random-is-dangerous">Mechanics — why <code>random</code> is dangerous</h3>
+<p>The <code>random</code> module uses the <strong>Mersenne Twister (MT19937)</strong>: deterministic, with a state of 624 × 32-bit words. Observing 624 consecutive outputs is enough to <strong>recover the entire state</strong> and predict every future value. → it must not be used for tokens, session IDs, password resets, IVs, or salts.</p>
+<p><code>secrets</code> (Python 3.6+) draws entropy from the <strong>OS CSPRNG</strong> (<code>/dev/urandom</code> on Linux, <code>getrandom(2)</code>; <code>BCryptGenRandom</code> on Windows) — unpredictable.</p>
+<h3 id="ch17-real-world-example">Real-world example</h3>
+<pre><code class="language-python">import secrets
+token = secrets.token_urlsafe(32)     # 32 bytes of entropy -&gt; ~43 URL-safe characters
+hexer = secrets.token_hex(16)         # 16 bytes -&gt; 32 hex chars
+api_key = secrets.token_bytes(32)     # 32 raw bytes
+# Safe secret comparison:
+if secrets.compare_digest(provided, stored):
+    ...
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Input</th>
+<th>Output</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token_bytes(n)</code></td>
+<td>n bytes</td>
+<td>bytes</td>
+<td>raw keys, salts</td>
+</tr>
+<tr>
+<td><code>token_hex(n)</code></td>
+<td>n bytes</td>
+<td>2n hex chars</td>
+<td>readable tokens</td>
+</tr>
+<tr>
+<td><code>token_urlsafe(n)</code></td>
+<td>n bytes</td>
+<td>base64url</td>
+<td>session tokens, reset links</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> 256-bit entropy (32 bytes) is sufficient for every purpose. Do not manually use <code>os.urandom</code> and encode it yourself when <code>secrets</code> already standardizes this.</p>
+<hr />
+<h2 id="ch17-1713-secure-coding-in-python-a-synthesis">17.13. Secure coding in Python — a synthesis</h2>
+<h3 id="ch17-17131-avoid-evalexec-code-injection">17.13.1. Avoid eval/exec — code injection</h3>
+<pre><code class="language-python"># Wrong — eval/exec on input -&gt; RCE: user_input=&quot;__import__('os').system('rm -rf /')&quot;
+# eval(user_input)
+
+# Right — limited parsing:
+import ast
+val = ast.literal_eval(&quot;[1, 2, {'a': 3}]&quot;)   # literals only, no function calls/imports
+</code></pre>
+<p><code>eval</code>/<code>exec</code> execute arbitrary Python code. With data from the network/user, this is direct RCE. <code>ast.literal_eval</code> only accepts safe literals (numbers, strings, lists, dicts, tuples, bools, None).</p>
+<h3 id="ch17-17132-parameterized-queries-preventing-sql-injection">17.13.2. Parameterized queries — preventing SQL injection</h3>
+<pre><code class="language-python">import sqlite3
+conn = sqlite3.connect(&quot;app.db&quot;)
+user = &quot;admin' OR '1'='1&quot;
+
+# Wrong -&gt; SQLi:
+# conn.execute(f&quot;SELECT * FROM users WHERE name = '{user}'&quot;)
+
+# Right -&gt; the driver binds the parameter, data is never mixed into the statement
+cur = conn.execute(&quot;SELECT * FROM users WHERE name = ?&quot;, (user,))
+rows = cur.fetchall()
+</code></pre>
+<p>With PostgreSQL (<code>psycopg2</code>/<code>psycopg</code>):</p>
+<pre><code class="language-python">import psycopg2
+cur.execute(&quot;SELECT * FROM users WHERE email = %s&quot;, (email,))   # %s is a placeholder, not % formatting
+</code></pre>
+<p><strong>Mechanics:</strong> the placeholder (<code>?</code> for sqlite3, <code>%s</code> for psycopg2) causes the driver to send the statement and the data separately (a prepared statement). The DB parses the statement first, the data is treated purely as a value → it cannot alter the query structure. <strong>Do not use f-strings/<code>%</code>/<code>.format()</code> to insert data into SQL.</strong></p>
+<h3 id="ch17-17133-shlexquote-for-shell-commands-already-covered-in-176">17.13.3. shlex.quote for shell commands — already covered in 17.6.</h3>
+<h3 id="ch17-17134-validate-input">17.13.4. Validate input</h3>
+<pre><code class="language-python">import ipaddress
+def parse_ip(s: str) -&gt; str:
+    return str(ipaddress.ip_address(s))   # raises ValueError if invalid -&gt; fail closed
+</code></pre>
+<p>Use <code>ipaddress</code>, <code>urllib.parse</code>, <code>pathlib</code> to validate IPs/URLs/paths instead of homemade regex. For paths, guard against <strong>path traversal</strong> (<code>../../etc/passwd</code>):</p>
+<pre><code class="language-python">from pathlib import Path
+base = Path(&quot;/srv/data&quot;).resolve()
+target = (base / user_supplied).resolve()
+if not target.is_relative_to(base):     # Python 3.9+
+    raise ValueError(&quot;path traversal&quot;)
+</code></pre>
+<h3 id="ch17-17135-managing-secrets-via-environment-variables-vault">17.13.5. Managing secrets via environment variables / vault</h3>
+<pre><code class="language-python">import os
+token = os.environ[&quot;API_TOKEN&quot;]          # KeyError if missing -&gt; fail loud, better than silently None
+# .env is for local dev only, do not commit it; production uses a secret manager (Vault, AWS Secrets Manager)
+</code></pre>
+<p><strong>Rules:</strong>
+- Do not hardcode secrets in source (they are exposed permanently via git history — you must rotate them if you accidentally commit one).
+- Scan for secret leaks in CI with <code>gitleaks</code> / <code>detect-secrets</code> (see 17.14).
+- <code>.gitignore</code> should contain <code>.env</code>, <code>*.pem</code>, <code>*.key</code>.</p>
+<h3 id="ch17-17136-summary-table-of-vulnerabilities-mitigations">17.13.6. Summary table of vulnerabilities &amp; mitigations</h3>
+<table>
+<thead>
+<tr>
+<th>Vulnerability</th>
+<th>Dangerous API</th>
+<th>Correct mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Code injection</td>
+<td><code>eval</code>, <code>exec</code>, <code>pickle.loads</code>, <code>yaml.load</code></td>
+<td><code>ast.literal_eval</code>, <code>json</code>, <code>yaml.safe_load</code></td>
+</tr>
+<tr>
+<td>Command injection</td>
+<td><code>os.system</code>, <code>subprocess(shell=True)</code></td>
+<td><code>subprocess([...], shell=False)</code>, <code>shlex.quote</code></td>
+</tr>
+<tr>
+<td>SQL injection</td>
+<td>f-string in SQL</td>
+<td>parameterized query (<code>?</code>/<code>%s</code>)</td>
+</tr>
+<tr>
+<td>SSRF</td>
+<td><code>requests.get(user_url)</code></td>
+<td>whitelist hosts, block internal IPs</td>
+</tr>
+<tr>
+<td>Path traversal</td>
+<td>concatenating raw paths</td>
+<td><code>Path.resolve()</code> + <code>is_relative_to</code></td>
+</tr>
+<tr>
+<td>Weak randomness</td>
+<td><code>random</code> for tokens</td>
+<td><code>secrets</code></td>
+</tr>
+<tr>
+<td>Timing attack</td>
+<td><code>==</code> to compare MACs</td>
+<td><code>hmac.compare_digest</code></td>
+</tr>
+<tr>
+<td>ReDoS</td>
+<td>nested quantifiers</td>
+<td>RE2/limit input</td>
+</tr>
+<tr>
+<td>Supply chain</td>
+<td>open version ranges</td>
+<td>pin <code>==</code> + <code>--require-hashes</code> + <code>pip-audit</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch17-1714-security-testing-of-python-code-sast">17.14. Security testing of Python code (SAST)</h2>
+<p>A complement to secure coding: automatically detect anti-patterns.</p>
+<pre><code class="language-bash"># Bandit: SAST for Python, catches dangerous patterns (B602 shell=True, B307 eval, B501 verify=False...)
+pip install bandit
+bandit -r ./src -ll          # -r recursive, -ll report medium severity and above only
+
+# Scan dependencies for CVEs:
+pip-audit -r requirements.txt
+
+# Scan for committed secrets:
+pip install detect-secrets
+detect-secrets scan &gt; .secrets.baseline
+</code></pre>
+<p>Sample bandit output:</p>
+<pre><code>&gt;&gt; Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified.
+   Severity: High   Confidence: High
+   Location: ./src/runner.py:42
+</code></pre>
+<p>Explanation: <code>-ll</code> filters by severity; each <code>Bxxx</code> code corresponds to a test rule. Integrate this into CI to fail the build when a High severity issue appears.</p>
+<hr />
+<h2 id="ch17-1715-putting-it-together-a-mini-ir-agent-combining-re-requests-json-secrets">17.15. Putting it together — A mini IR Agent (combining re + requests + json + secrets)</h2>
+<p>A real-world pattern: log parser → detect brute-force → create a SIEM/Jira ticket → notify Slack. It combines the parts above:</p>
+<pre><code>   DATA SOURCE              ANALYSIS              DECISION               ACTION / API
+  +--------------+      +---------------+      +----------------+      +------------------+
+  | auth.log     | ---&gt; | re: extract IP| ---&gt; | count &gt;= thr?  |--no--&gt; (skip / log)
+  | (read lines  |      | + count tries |      |  (Counter)     |
+  |  with a      |      | (Counter)     |      +----------------+
+  |  generator)  |      +---------------+              | yes
+  +--------------+                                     v
+                                            +--------------------+      +----------------+
+                                            | json.dumps report  | ---&gt; | requests.post  |
+                                            +--------------------+      | -&gt; Jira ticket |
+                                                                        | -&gt; Slack alert |
+                                                                        +----------------+
+                                                            (secret from env, timeout on every call)
+</code></pre>
+<p>An automation script's flow always follows four stages: <strong>ingest data → analyze → decide by threshold → call an API to act/alert</strong>. Each stage uses one of the modules from the sections above, secrets are always loaded from environment variables, and every network call sets a timeout.</p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;Mini IR Agent: detect SSH brute-force and respond.&quot;&quot;&quot;
+import os, re, json, requests
+from collections import Counter
+
+PAT = re.compile(r&quot;Failed password for (?:invalid user )?\S+ &quot;
+                 r&quot;from (?P&lt;ip&gt;\d{1,3}(?:\.\d{1,3}){3})&quot;)
+
+def detect(path, threshold=10):
+    c = Counter()
+    with open(path, encoding=&quot;utf-8&quot;, errors=&quot;replace&quot;) as f:
+        for line in f:
+            m = PAT.search(line)
+            if m:
+                c[m.group(&quot;ip&quot;)] += 1
+    return {ip: n for ip, n in c.items() if n &gt;= threshold}
+
+def respond(offenders, slack_url):
+    if not offenders:
+        return
+    text = &quot;Brute-force detected:\n&quot; + &quot;\n&quot;.join(
+        f&quot;- {ip}: {n} attempts&quot; for ip, n in offenders.items())
+    requests.post(slack_url, json={&quot;text&quot;: text}, timeout=(3, 5)).raise_for_status()
+
+if __name__ == &quot;__main__&quot;:
+    off = detect(&quot;/var/log/auth.log&quot;, threshold=10)
+    print(json.dumps(off, indent=2))
+    respond(off, os.environ[&quot;SLACK_WEBHOOK&quot;])   # secret from env
+</code></pre>
+<p>This illustrates the automation/IR agent pattern: <strong>collect → analyze → decide by threshold → act via API → notify</strong>, with secrets taken from env and a timeout on every network call.</p>
+<hr />
+<h2 id="ch17-1716-packaging-running-with-docker">17.16. Packaging &amp; running with Docker</h2>
+<h3 id="ch17-what-it-is_8">What it is</h3>
+<p>A container packages the tool + pinned dependencies into an immutable image → it runs consistently, isolated, without "contaminating" the analysis host.</p>
+<h3 id="ch17-real-world-example-a-multi-stage-non-root-minimal-dockerfile">Real-world example — a multi-stage, non-root, minimal Dockerfile</h3>
+<pre><code class="language-dockerfile"># syntax=docker/dockerfile:1
+# ---- Build stage: install dependencies into a virtualenv ----
+FROM python:3.12-slim AS build
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /opt/venv \
+ &amp;&amp; /opt/venv/bin/pip install --no-cache-dir --require-hashes -r requirements.txt
+
+# ---- Runtime stage: lean image, without the build toolchain ----
+FROM python:3.12-slim AS runtime
+# Create an unprivileged user -&gt; do not run as root (reduces damage if RCE occurs)
+RUN useradd --create-home --uid 10001 appuser
+COPY --from=build /opt/venv /opt/venv
+COPY src/ /app/src/
+WORKDIR /app
+ENV PATH=&quot;/opt/venv/bin:$PATH&quot; \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+USER appuser                       # drop privilege
+ENTRYPOINT [&quot;python&quot;, &quot;-m&quot;, &quot;src.ir_agent&quot;]
+</code></pre>
+<pre><code class="language-bash"># Build &amp; run, passing the secret via env (do not bake it into the image)
+docker build -t ir-agent:1.0 .
+docker run --rm \
+  -e SLACK_WEBHOOK=&quot;$SLACK_WEBHOOK&quot; \
+  -v /var/log/auth.log:/var/log/auth.log:ro \   # mount the log read-only
+  --read-only --cap-drop=ALL --security-opt no-new-privileges \
+  ir-agent:1.0
+
+# Scan the image for vulnerabilities before deploying:
+docker scout cves ir-agent:1.0     # or: trivy image ir-agent:1.0
+</code></pre>
+<p><strong>Explanation of each security directive:</strong>
+- <strong>Multi-stage</strong>: the <code>build</code> stage contains the compiler/headers; the <code>runtime</code> stage only copies the installed venv → a smaller image with less attack surface.
+- <code>--require-hashes</code>: installs only the exact hashed artifact → protects against supply-chain attacks.
+- <code>USER appuser</code> (uid ≠ 0): if the tool is exploited for RCE, the attacker does not have root inside the container.
+- <code>--read-only</code> + <code>--cap-drop=ALL</code> + <code>no-new-privileges</code>: a read-only filesystem, drops all Linux capabilities, forbids escalation via setuid → runtime hardening.
+- <code>:ro</code> on the volume: the audit tool only reads the log and cannot modify it (anti-tamper).
+- <code>PYTHONDONTWRITEBYTECODE=1</code>: does not write <code>.pyc</code> (keeps the FS clean when read-only); <code>PYTHONUNBUFFERED=1</code>: logs appear immediately (important for real-time monitoring).
+- If the tool needs to sniff packets (scapy): add <code>--cap-add=NET_RAW</code> instead of <code>--privileged</code>.</p>
+<p><strong>Note:</strong>
+- Pin the base image <strong>digest</strong> (<code>python:3.12-slim@sha256:...</code>), not just the tag → tags can be re-pushed.
+- Scan the image with <code>trivy</code>/<code>docker scout</code> in CI, failing if there is a Critical CVE.
+- Never <code>COPY .env</code> or a secret into an image layer (layers are stored permanently, and anyone who pulls the image can read them).</p>
+<hr />
+<h2 id="ch17-1717-summary-of-the-core-principles">17.17. Summary of the core principles</h2>
+<ol>
+<li>Distinguish <code>bytes</code> vs <code>str</code>; use <code>struct</code>/<code>int.from_bytes</code> to handle binary data accurately down to the byte.</li>
+<li>I/O-bound → <code>threading</code>/<code>asyncio</code>; CPU-bound → <code>multiprocessing</code> (because of the GIL).</li>
+<li>Every network call must have a <strong>timeout</strong>; every subprocess uses <code>shell=False</code>.</li>
+<li>Crypto: <code>secrets</code> for tokens, <code>hmac.compare_digest</code> for comparison, Argon2/bcrypt for passwords, no MD5/SHA-1 for integrity.</li>
+<li>Untrusted input: validate (<code>ipaddress</code>/<code>pathlib</code>), parameterized queries, no <code>eval/exec/pickle</code>.</li>
+<li>Secrets from env/vault, pin dependencies, scan with <code>bandit</code>/<code>pip-audit</code>/<code>gitleaks</code>/<code>trivy</code>.</li>
+<li>Package with Docker as non-root, read-only, dropping capabilities, scanned before deploy.</li>
+</ol>
+<hr />
+<h2 id="ch17-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch16.html"><span>← Previous</span><b>16 · Compliance &amp; Governance (GRC)</b></a><a class="pg next" href="ch99.html"><span>Next →</span><b>99 · Glossary &amp; Abbreviations</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

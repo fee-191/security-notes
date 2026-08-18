@@ -1,0 +1,1581 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 6 — DevSecOps &amp;amp; Quét bảo mật mã nguồn — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 6 — DevSecOps &amp;amp; Quét bảo mật mã nguồn — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch05.html"><link rel="next" href="ch07.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="06"><a class="nav-ch-title" href="#top"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"><a class="nav-sub" href="#ch06-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch06-moi-cong-cu-trong-chuong-đeu-co-vi-du-chay-đuoc-va-giai-thich-vi-sao-no-đuoc-thiet-ke-nhu-vay-cho-nao-phu-thuoc-phien-ban-thi-co-ghi-chu-rieng">&amp;gt; Mỗi công cụ trong chương đều có ví dụ chạy được và giải thích vì sao nó được thiết kế như vậy — chỗ nào phụ thuộc phiên bản thì có ghi chú riêng.</a><a class="nav-sub" href="#ch06-61-triet-ly-shift-left-mo-hinh-devsecops">6.1. Triết lý shift-left &amp;amp; mô hình DevSecOps</a><a class="nav-sub" href="#ch06-62-phan-loai-ky-thuat-quet-bao-mat">6.2. Phân loại kỹ thuật quét bảo mật</a><a class="nav-sub" href="#ch06-63-semgrep-kien-truc-va-co-che-parse-ast-matching">6.3. Semgrep — kiến trúc và cơ chế parse → AST → matching</a><a class="nav-sub" href="#ch06-64-cu-phap-viet-rule-yaml-cau-truc-truong">6.4. Cú pháp viết rule YAML — cấu trúc trường</a><a class="nav-sub" href="#ch06-65-taint-mode-source-sink-sanitizer">6.5. Taint mode — source / sink / sanitizer</a><a class="nav-sub" href="#ch06-66-nhieu-vi-du-rule-that">6.6. Nhiều ví dụ rule thật</a><a class="nav-sub" href="#ch06-67-gitleaks-secret-scanning-regex-entropy">6.7. Gitleaks — secret scanning (regex + entropy)</a><a class="nav-sub" href="#ch06-68-trivy-quet-image-filesystem-iac">6.8. Trivy — quét image / filesystem / IaC</a><a class="nav-sub" href="#ch06-69-thiet-ke-cong-pipeline-exit-code-va-phan-tang">6.9. Thiết kế cổng pipeline — exit code và phân tầng</a><a class="nav-sub" href="#ch06-610-an-ninh-chuoi-cung-ung-phan-mem">6.10. An ninh chuỗi cung ứng phần mềm</a><a class="nav-sub" href="#ch06-611-quan-ly-secret-vault-dynamic-secret-oidc">6.11. Quản lý secret — Vault, dynamic secret, OIDC</a><a class="nav-sub" href="#ch06-612-pre-commit-hook-chan-o-may-dev-shift-left-toi-muc-tan-cung">6.12. pre-commit hook — chặn ở máy dev (shift-left tới mức tận cùng)</a><a class="nav-sub" href="#ch06-613-tong-ket-kien-truc-phong-thu-phan-tang">6.13. Tổng kết kiến trúc phòng thủ phân tầng</a><a class="nav-sub" href="#ch06-614-kiem-soat-code-do-ai-sinh-ra-mo-hinh-ba-lop">6.14. Kiểm soát code do AI sinh ra — mô hình ba lớp</a><a class="nav-sub" href="#ch06-phu-luc-a-owasp-zap-dast-vi-du-chay-đuoc">Phụ lục A — OWASP ZAP (DAST) ví dụ chạy được</a><a class="nav-sub" href="#ch06-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-06" data-ch="06">
+<h1 id="ch06-chuong-6-devsecops-quet-bao-mat-ma-nguon">Chương 6 — DevSecOps &amp; Quét bảo mật mã nguồn</h1>
+<h2 id="ch06-tong-quan">Tổng quan</h2>
+<p>Bảo mật kiểu cũ là một cửa kiểm ở cuối: code xong, sắp release thì mới có người ngồi soi. Cách đó có một vấn đề rất thực tế — tới lúc phát hiện thì sửa đã đắt, mà thường là đắt tới mức người ta chọn ghi nhận rủi ro rồi cho qua. <strong>DevSecOps</strong> đảo lại thứ tự đó: nhúng kiểm soát bảo mật vào chính quy trình phát triển, và <strong>shift-left</strong> nghĩa là đẩy mỗi phép kiểm về sớm nhất có thể — sớm nhất là ngay trên máy lập trình viên, trước khi code kịp rời khỏi đó.</p>
+<p>Nơi để gắn các phép kiểm ấy là <strong>pipeline CI/CD</strong>. Chương đi qua từng loại quét theo đúng vùng mù của chúng, vì không có loại nào bắt được mọi thứ: <strong>SAST</strong> đọc mã nguồn tĩnh (bắt tốt injection, XSS, path traversal), <strong>DAST</strong> tấn công ứng dụng đang chạy (bắt lỗi runtime và sai cấu hình), <strong>IAST</strong> gắn agent vào runtime để nối data-flow với vị trí code, <strong>SCA</strong> đối chiếu thư viện bên thứ ba với CSDL CVE, cùng <strong>secret scanning</strong>, <strong>IaC scanning</strong> và <strong>container scanning</strong>. Ba công cụ được đào sâu tới mức dùng được ngay: <strong>Semgrep</strong> (SAST khớp theo cấu trúc AST thay vì văn bản thuần — trọng tâm là viết rule YAML, metavariable <code>$X</code> và taint mode), <strong>gitleaks</strong> (quét cả nội dung lẫn lịch sử git, kết hợp regex nhận dạng cấu trúc với Shannon entropy) và <strong>Trivy</strong> (image, filesystem, IaC, SBOM).</p>
+<p>Phần sau chuyển từ công cụ sang cách vận hành chúng mà đội ngũ không quay lưng. <strong>Gate</strong> giao tiếp với pipeline qua exit code và phải phân tầng — lỗi nghiêm trọng chặn build, lỗi nhẹ chỉ cảnh báo — nếu không thì alert fatigue sẽ giết cả hệ thống kiểm soát. Kèm theo là an ninh chuỗi cung ứng (<strong>SBOM</strong> để trả lời "sản phẩm nào của mình chứa thành phần dính CVE", ký artifact bằng cosign/sigstore), quản lý secret tập trung với <strong>Vault</strong> — dynamic secret, và OIDC/workload identity để giải bài toán "secret zero" — cùng <strong>pre-commit hook</strong> như điểm shift-left xa nhất (nhưng dev bỏ qua được, nên CI vẫn phải kiểm lại). Mục cuối dành cho <strong>code do AI sinh ra</strong>: nó "chạy được mà không an toàn", lại thêm rủi ro riêng như slopsquatting, và cách xử lý là tận dụng chính pipeline đã có chứ không dựng quy trình song song.</p>
+<h2 id="ch06-moi-cong-cu-trong-chuong-đeu-co-vi-du-chay-đuoc-va-giai-thich-vi-sao-no-đuoc-thiet-ke-nhu-vay-cho-nao-phu-thuoc-phien-ban-thi-co-ghi-chu-rieng">&gt; Mỗi công cụ trong chương đều có ví dụ chạy được và giải thích vì sao nó được thiết kế như vậy — chỗ nào phụ thuộc phiên bản thì có ghi chú riêng.</h2>
+<h2 id="ch06-61-triet-ly-shift-left-mo-hinh-devsecops">6.1. Triết lý shift-left &amp; mô hình DevSecOps</h2>
+<h3 id="ch06-611-van-đe-kinh-te-đang-sau-shift-left">6.1.1. Vấn đề kinh tế đằng sau shift-left</h3>
+<p>DevSecOps không phải là một công cụ mà là một <strong>mô hình vận hành</strong> trong đó kiểm soát bảo mật được nhúng (embed) vào từng giai đoạn của vòng đời phát triển phần mềm (SDLC) thay vì làm một lần ở cuối.</p>
+<p>Lý do nền tảng là chi phí sửa lỗi tăng theo cấp số nhân theo giai đoạn phát hiện. Mô hình chi phí kinh điển (thường gán cho NIST/IBM Systems Sciences Institute — con số chính xác cần kiểm chứng theo nguồn vì các trích dẫn dao động mạnh) định tính như sau:</p>
+<table>
+<thead>
+<tr>
+<th>Giai đoạn phát hiện lỗi</th>
+<th>Chi phí tương đối (định tính)</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coding / IDE</td>
+<td>1x</td>
+<td>Lập trình viên đang nắm context, sửa ngay</td>
+</tr>
+<tr>
+<td>Build / CI</td>
+<td>~5x</td>
+<td>Phải quay lại, mất context, chạy lại pipeline</td>
+</tr>
+<tr>
+<td>QA / Test</td>
+<td>~10x</td>
+<td>Cần điều tra, viết test tái hiện</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>~30x–100x+</td>
+<td>Hotfix khẩn, downtime, có thể đã bị khai thác, nghĩa vụ pháp lý</td>
+</tr>
+</tbody>
+</table>
+<p>"Shift-left" nghĩa là dịch hoạt động bảo mật về <strong>phía trái</strong> trên trục thời gian SDLC (trái = sớm). Mục tiêu không phải bỏ kiểm thử cuối, mà là <strong>giảm số lỗi sống sót</strong> tới các giai đoạn đắt đỏ.</p>
+<pre><code>TRADITIONAL (security ở cuối):
+[Plan]→[Code]→[Build]→[Test]→[Release]→[Deploy]→[Operate]
+                                                    └── Pentest 1 lần/năm
+
+DEVSECOPS (security ở mọi điểm):
+[Plan]    [Code]      [Build]      [Test]     [Release]   [Deploy]    [Operate]
+  │         │           │            │           │           │           │
+threat    SAST        SCA          DAST       sign        admission   runtime
+model   pre-commit   secret      IAST        SBOM       controller   detection
+        IDE plugin   container   ZAP        provenance   policy      WAF/EDR
+                     scan
+</code></pre>
+<h3 id="ch06-612-nguyen-tac-thiet-ke-cot-loi">6.1.2. Nguyên tắc thiết kế cốt lõi</h3>
+<ul>
+<li><strong>Tự động hóa (automation)</strong>: con người không scale; cổng (gate) phải chạy tự động trong pipeline.</li>
+<li><strong>Feedback nhanh</strong>: cảnh báo phải tới lập trình viên trong vài phút (tại PR/MR), không phải vài tuần (báo cáo PDF).</li>
+<li><strong>Policy as Code</strong>: chính sách bảo mật được mã hóa (rule YAML, OPA Rego, manifest) để versioned, review được, tái lập được.</li>
+<li><strong>Fail tiered (phân tầng)</strong>: không phải mọi phát hiện đều chặn build — phân biệt blocking vs warning (xem 6.9).</li>
+<li><strong>Guardrails, không phải gatekeepers</strong>: cung cấp lan can để đi nhanh an toàn, thay vì cổng chặn làm dev tìm cách đi vòng (shadow IT).</li>
+</ul>
+<h3 id="ch06-613-buc-tranh-pipeline-shift-left-theo-tang-ap-dung-thuc-te">6.1.3. Bức tranh pipeline shift-left theo tầng (áp dụng thực tế)</h3>
+<p>Lý thuyết ở trên khi áp vào hệ thống mình vận hành trở thành một chuỗi tầng cụ thể, toàn bộ bằng công cụ mã nguồn mở. <strong>Mỗi tầng bắt một lớp lỗi riêng, không tầng nào thay được tầng nào</strong> — bỏ một tầng là mở đúng vùng mù của tầng đó.</p>
+<pre><code>IDE ────► pre-commit ────► CI (trên PR) ─────────► staging ────► runtime
+Semgrep    gitleaks         Semgrep + gitleaks      OWASP ZAP     SIEM
+/linter                     + Trivy (image+deps)    (DAST)        giám sát
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Công cụ</th>
+<th>Bắt lớp lỗi gì</th>
+<th>Vì sao không bỏ được</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDE (lúc gõ code)</td>
+<td>Semgrep extension, linter</td>
+<td>Pattern nguy hiểm ngay khi viết (SQLi, <code>eval</code>, hardcode)</td>
+<td>Feedback tức thì, chi phí sửa 1x; nhưng dev có thể tắt</td>
+</tr>
+<tr>
+<td>pre-commit (máy dev)</td>
+<td>gitleaks</td>
+<td>Secret trước khi vào lịch sử git</td>
+<td>Secret đã commit + push coi như đã lộ, phải xoay vòng; nhưng hook bypass được bằng <code>--no-verify</code></td>
+</tr>
+<tr>
+<td>CI trên PR</td>
+<td>Semgrep (SAST) + gitleaks + Trivy (image + dependency)</td>
+<td>Lỗi code, secret lọt qua hook, CVE thư viện và image</td>
+<td>Cổng server-side không bypass được — lặp lại mọi kiểm tra của các tầng trước</td>
+</tr>
+<tr>
+<td>Staging (pre-deploy)</td>
+<td>OWASP ZAP (DAST)</td>
+<td>Lỗi runtime, misconfig, header thiếu — vùng mù của SAST</td>
+<td>Chỉ thấy được khi app chạy thật</td>
+</tr>
+<tr>
+<td>Runtime (production)</td>
+<td>SIEM giám sát &amp; cảnh báo (xem <a href="ch08.html">Chương 8</a>)</td>
+<td>Tấn công thật, hành vi bất thường</td>
+<td>Không bộ scanner nào bắt hết trước khi deploy; phải có mắt ở tầng cuối</td>
+</tr>
+</tbody>
+</table>
+<p>Hai tầng đầu chạy trên máy dev nên chỉ là "lớp lịch sự" — giá trị thật là feedback sớm, còn tính cưỡng chế nằm ở CI (xem 6.12.3). Ngược lại, nếu chỉ có CI mà không có tầng IDE/pre-commit thì dev nhận lỗi muộn hơn hàng giờ và secret đã kịp vào lịch sử git.</p>
+<hr />
+<h2 id="ch06-62-phan-loai-ky-thuat-quet-bao-mat">6.2. Phân loại kỹ thuật quét bảo mật</h2>
+<p>Đây là phần nền tảng: mỗi họ công cụ nhìn phần mềm từ một góc khác nhau, có vùng mù (blind spot) riêng. Hiểu cơ chế giúp chọn đúng công cụ và biết tại sao cần kết hợp nhiều loại (defense in depth cho chính quy trình kiểm thử).</p>
+<h3 id="ch06-621-bang-tong-quan">6.2.1. Bảng tổng quan</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Tên đầy đủ</th>
+<th>Đầu vào</th>
+<th>Cần chạy app?</th>
+<th>Phát hiện tốt</th>
+<th>Vùng mù</th>
+<th>Tool tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SAST</td>
+<td>Static Application Security Testing</td>
+<td>Source/bytecode</td>
+<td>Không</td>
+<td>SQLi, XSS, path traversal, hardcoded crypto</td>
+<td>Lỗi runtime/config, auth logic</td>
+<td>Semgrep, SonarQube</td>
+</tr>
+<tr>
+<td>DAST</td>
+<td>Dynamic Application Security Testing</td>
+<td>App đang chạy (HTTP)</td>
+<td>Có</td>
+<td>Lỗi runtime, server misconfig, auth</td>
+<td>Không thấy code, coverage phụ thuộc crawler</td>
+<td>OWASP ZAP</td>
+</tr>
+<tr>
+<td>IAST</td>
+<td>Interactive AST</td>
+<td>Agent trong runtime + traffic</td>
+<td>Có</td>
+<td>Kết hợp data-flow runtime + vị trí code</td>
+<td>Cần instrument, ngôn ngữ hạn chế</td>
+<td>(chủ yếu thương mại)</td>
+</tr>
+<tr>
+<td>SCA</td>
+<td>Software Composition Analysis</td>
+<td>Manifest/lockfile deps</td>
+<td>Không</td>
+<td>CVE thư viện bên thứ ba, license</td>
+<td>Lỗi code tự viết</td>
+<td>Trivy, Dependabot</td>
+</tr>
+<tr>
+<td>Secret scanning</td>
+<td>—</td>
+<td>Source + git history</td>
+<td>Không</td>
+<td>API key, token, private key bị commit</td>
+<td>Secret đã mã hóa, ngoài repo</td>
+<td>gitleaks</td>
+</tr>
+<tr>
+<td>IaC scanning</td>
+<td>Infrastructure as Code</td>
+<td>Terraform/K8s/CFN</td>
+<td>Không</td>
+<td>S3 public, SG mở 0.0.0.0/0</td>
+<td>Drift runtime so với code</td>
+<td>Checkov, Trivy (misconfig)</td>
+</tr>
+<tr>
+<td>Container scanning</td>
+<td>—</td>
+<td>Image layers / filesystem</td>
+<td>Không</td>
+<td>CVE OS packages, app deps trong image</td>
+<td>Lỗi logic ứng dụng</td>
+<td>Trivy</td>
+</tr>
+</tbody>
+</table>
+<p>Một điểm đáng chú ý với team nhỏ: bộ core (Semgrep, gitleaks, Trivy, ZAP, Checkov) đều mã nguồn mở và gần như miễn phí. Chi phí thật không phải license mà là <strong>thời gian con người vận hành</strong> — tune rule, triage kết quả, giữ pipeline sống. Bài toán không phải "có tiền mua tool" mà là "có kỷ luật dùng tool + automation để ít người kham được".</p>
+<h3 id="ch06-622-sast-phan-tich-tinh">6.2.2. SAST — phân tích tĩnh</h3>
+<p><strong>Là gì</strong>: phân tích mã nguồn (hoặc bytecode) mà không thực thi. </p>
+<p><strong>Cơ chế bên trong</strong>: pipeline điển hình:</p>
+<ol>
+<li><strong>Lexing (tokenize)</strong>: chuỗi ký tự → token. Ví dụ <code>user_id = req.params.id</code> → <code>[IDENT(user_id), OP(=), IDENT(req), DOT, IDENT(params), DOT, IDENT(id)]</code>.</li>
+<li><strong>Parsing</strong>: token → <strong>AST</strong> (Abstract Syntax Tree) theo grammar của ngôn ngữ.</li>
+<li><strong>Phân tích ngữ nghĩa</strong>: xây control-flow graph (CFG), data-flow graph (DFG), call graph.</li>
+<li><strong>Taint analysis</strong>: theo dõi dữ liệu từ <strong>source</strong> (input không tin cậy) tới <strong>sink</strong> (hàm nguy hiểm) mà không qua <strong>sanitizer</strong>.</li>
+</ol>
+<p><strong>Vì sao dùng AST chứ không regex</strong>: regex không hiểu cấu trúc cú pháp. Ví dụ regex tìm <code>query(...)</code> sẽ báo nhầm trên comment, string literal, hoặc bỏ sót khi code xuống dòng. AST hiểu <code>query</code> là một hàm gọi với đối số là biểu thức nối chuỗi chứa biến nhiễm độc.</p>
+<h3 id="ch06-623-dast-phan-tich-đong">6.2.3. DAST — phân tích động</h3>
+<p><strong>Cơ chế</strong>: công cụ đóng vai HTTP client/proxy, <strong>crawl</strong> ứng dụng để lập bản đồ endpoint, rồi <strong>fuzz</strong> từng tham số bằng payload tấn công (<code>' OR 1=1--</code>, <code>&lt;script&gt;</code>, <code>../../etc/passwd</code>), quan sát <strong>phản hồi</strong> (status code, độ trễ, nội dung, error message) để suy ra lỗ hổng. Black-box: không thấy code.</p>
+<h3 id="ch06-624-iast">6.2.4. IAST</h3>
+<p><strong>Cơ chế</strong>: gắn <strong>agent</strong> (instrumentation) vào runtime (ví dụ Java agent qua <code>-javaagent</code>, bytecode instrumentation). Khi DAST/test gửi request, agent quan sát data-flow <strong>thật</strong> bên trong process — biết payload đi từ HTTP parameter tới câu SQL thực thi. Kết hợp độ chính xác data-flow (như SAST) với context runtime (như DAST), nên ít false positive hơn.</p>
+<h3 id="ch06-625-sca">6.2.5. SCA</h3>
+<p><strong>Cơ chế</strong>: đọc manifest/lockfile (<code>package-lock.json</code>, <code>pom.xml</code>, <code>go.sum</code>, <code>requirements.txt</code>), dựng cây phụ thuộc (kể cả transitive), so khớp với CSDL lỗ hổng (NVD, GitHub Advisory, OSV). Sau đó ánh xạ version → CVE qua dải version bị ảnh hưởng. Quan trọng vì &gt;80% codebase hiện đại là code bên thứ ba.</p>
+<hr />
+<h2 id="ch06-63-semgrep-kien-truc-va-co-che-parse-ast-matching">6.3. Semgrep — kiến trúc và cơ chế parse → AST → matching</h2>
+<p>Semgrep ("semantic grep") là công cụ SAST mã nguồn mở, định vị giữa "grep" (nhanh, đơn giản) và SAST nặng (chính xác, chậm). Triết lý: rule <strong>trông giống code cần tìm</strong>.</p>
+<h3 id="ch06-631-pipeline-xu-ly-noi-bo">6.3.1. Pipeline xử lý nội bộ</h3>
+<pre><code>                Source file (vd app.py)
+                        │
+                        ▼
+         ┌──────────────────────────────┐
+         │  Tree-sitter / parser riêng  │  Parse tới CST/AST cụ thể ngôn ngữ
+         └──────────────────────────────┘
+                        │
+                        ▼
+         ┌──────────────────────────────┐
+         │   Generic AST (semgrep core) │  Chuẩn hóa về AST chung đa ngôn ngữ
+         └──────────────────────────────┘
+                        │
+   Rule pattern ──────► │  Pattern cũng được parse thành AST cùng kiểu
+                        ▼
+         ┌──────────────────────────────┐
+         │   Structural matching        │  So khớp cây-với-cây + ràng buộc
+         │   + metavariable binding     │  metavariable, taint propagation
+         └──────────────────────────────┘
+                        │
+                        ▼
+                  Findings (JSON/SARIF)
+</code></pre>
+<p>Cái hay nằm ở chỗ <strong>pattern trong rule cũng được parse thành AST</strong> giống như code đích, rồi Semgrep so khớp <strong>cấu trúc cây với cây</strong> (structural match), không so khớp văn bản. Nhờ vậy:</p>
+<ul>
+<li><code>foo(1, 2)</code> khớp dù code viết <code>foo(1,2)</code>, <code>foo( 1, 2 )</code>, hay xuống dòng.</li>
+<li>Comment, khoảng trắng, dấu ngoặc thừa được bỏ qua một cách tự nhiên.</li>
+<li>Hiểu ngữ nghĩa cơ bản (ví dụ <code>$X == $X</code> hiểu hai vế là cùng biến).</li>
+</ul>
+<h3 id="ch06-632-equivalences-tuong-đuong-ngu-nghia">6.3.2. Equivalences (tương đương ngữ nghĩa)</h3>
+<p>Semgrep tự áp dụng một số phép tương đương để giảm số rule phải viết. Ví dụ: import có alias (<code>import subprocess as sp</code> → pattern <code>subprocess.call(...)</code> vẫn khớp <code>sp.call(...)</code>), constant propagation đơn giản, các kiểu gọi tương đương. Đây là lý do một pattern ngắn bắt được nhiều biến thể.</p>
+<h3 id="ch06-633-cai-đat-va-lenh-cli-co-ban">6.3.3. Cài đặt và lệnh CLI cơ bản</h3>
+<pre><code class="language-bash"># Cài qua pip (Python 3.8+)
+python3 -m pip install semgrep
+semgrep --version        # vd: 1.x.x
+
+# Hoặc Docker (không cần cài local)
+docker run --rm -v &quot;$PWD:/src&quot; semgrep/semgrep semgrep --config auto /src
+</code></pre>
+<p>Lệnh quét cốt lõi:</p>
+<pre><code class="language-bash"># Quét bằng ruleset cộng đồng có sẵn (registry)
+semgrep --config &quot;p/owasp-top-ten&quot; .
+
+# 'auto' = Semgrep tự chọn ruleset theo ngôn ngữ phát hiện được
+semgrep --config auto .
+
+# Dùng 1 file rule cục bộ
+semgrep --config ./rules/sqli.yaml ./src
+
+# Nhiều config cùng lúc
+semgrep --config p/security-audit --config ./rules/ .
+</code></pre>
+<p>Giải thích tham số quan trọng:</p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--config &lt;X&gt;</code></td>
+<td>Nguồn rule: <code>p/&lt;pack&gt;</code> (registry), đường dẫn file/thư mục, URL, hoặc <code>auto</code></td>
+</tr>
+<tr>
+<td><code>--json</code> / <code>--sarif</code></td>
+<td>Định dạng xuất (tích hợp CI / GitHub code scanning)</td>
+</tr>
+<tr>
+<td><code>--output &lt;file&gt;</code></td>
+<td>Ghi kết quả ra file</td>
+</tr>
+<tr>
+<td><code>--severity &lt;LVL&gt;</code></td>
+<td>Lọc theo ERROR/WARNING/INFO</td>
+</tr>
+<tr>
+<td><code>--error</code></td>
+<td>Trả exit code != 0 khi có finding (dùng cho gate — xem 6.9)</td>
+</tr>
+<tr>
+<td><code>--baseline-commit &lt;sha&gt;</code></td>
+<td>Chỉ báo finding <strong>mới</strong> so với commit gốc (diff-aware)</td>
+</tr>
+<tr>
+<td><code>--exclude &lt;glob&gt;</code></td>
+<td>Bỏ qua path (vd <code>--exclude 'tests/*'</code>)</td>
+</tr>
+<tr>
+<td><code>--max-target-bytes</code></td>
+<td>Bỏ file lớn hơn ngưỡng (mặc định ~1MB)</td>
+</tr>
+<tr>
+<td><code>--metrics off</code></td>
+<td>Tắt gửi metrics ẩn danh</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-64-cu-phap-viet-rule-yaml-cau-truc-truong">6.4. Cú pháp viết rule YAML — cấu trúc trường</h2>
+<h3 id="ch06-641-bo-khung-mot-rule">6.4.1. Bộ khung một rule</h3>
+<p>Một file rule Semgrep là YAML với khóa gốc <code>rules</code> (mảng). Mỗi phần tử mô tả một rule. Các trường:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Bắt buộc</th>
+<th>Kiểu</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Có</td>
+<td>string</td>
+<td>Định danh duy nhất (xuất hiện trong báo cáo)</td>
+<td><code>python.sqli.format-string</code></td>
+</tr>
+<tr>
+<td><code>languages</code></td>
+<td>Có</td>
+<td>list</td>
+<td>Ngôn ngữ áp dụng</td>
+<td><code>[python]</code>, <code>[javascript, typescript]</code></td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>Có</td>
+<td>enum</td>
+<td><code>ERROR</code> / <code>WARNING</code> / <code>INFO</code></td>
+<td><code>ERROR</code></td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>Có</td>
+<td>string</td>
+<td>Mô tả gửi tới dev (nên kèm cách sửa)</td>
+<td><code>Phát hiện SQL injection...</code></td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>(1 trong các)</td>
+<td>string</td>
+<td>Pattern đơn cần khớp</td>
+<td><code>eval(...)</code></td>
+</tr>
+<tr>
+<td><code>patterns</code></td>
+<td>—</td>
+<td>list</td>
+<td>AND logic: tất cả con phải đúng</td>
+<td>(xem dưới)</td>
+</tr>
+<tr>
+<td><code>pattern-either</code></td>
+<td>—</td>
+<td>list</td>
+<td>OR logic: bất kỳ con đúng là khớp</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-not</code></td>
+<td>—</td>
+<td>string</td>
+<td>Loại trừ (giảm false positive)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-inside</code></td>
+<td>—</td>
+<td>string</td>
+<td>Chỉ khớp khi nằm trong ngữ cảnh này</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-not-inside</code></td>
+<td>—</td>
+<td>string</td>
+<td>Loại nếu nằm trong ngữ cảnh này</td>
+<td></td>
+</tr>
+<tr>
+<td><code>metavariable-regex</code></td>
+<td>—</td>
+<td>map</td>
+<td>Ràng buộc metavariable theo regex</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td>—</td>
+<td>enum</td>
+<td><code>search</code> (mặc định) hoặc <code>taint</code></td>
+<td><code>taint</code></td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>—</td>
+<td>map</td>
+<td>CWE, OWASP, references, confidence</td>
+<td></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>—</td>
+<td>string</td>
+<td>Tự động sửa (autofix)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-642-metavariable-x">6.4.2. Metavariable <code>$X</code></h3>
+<p>Metavariable là <strong>biến trong pattern</strong>, viết hoa, bắt đầu bằng <code>$</code>: <code>$X</code>, <code>$FUNC</code>, <code>$ARG</code>. Nó khớp một node AST bất kỳ (biểu thức, định danh, lời gọi...) và <strong>ghi nhớ</strong> (bind) giá trị đó. Cùng tên metavariable trong cùng pattern phải khớp cùng nội dung.</p>
+<pre><code class="language-yaml"># [DEMO] Bắt so sánh một biến với chính nó (luôn true/false — lỗi logic); chỉ minh hoạ cơ chế metavariable.
+rules:
+  - id: self-comparison
+    languages: [python]
+    severity: WARNING
+    message: &quot;So sánh $X với chính nó luôn cho kết quả cố định.&quot;
+    pattern: $X == $X
+</code></pre>
+<p>Pattern trên khớp <code>a == a</code>, <code>user.id == user.id</code> (vì hai vế bind cùng <code>$X</code>), nhưng KHÔNG khớp <code>a == b</code>.</p>
+<p>Các dạng metavariable đặc biệt:</p>
+<table>
+<thead>
+<tr>
+<th>Cú pháp</th>
+<th>Khớp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$X</code></td>
+<td>Một node đơn</td>
+</tr>
+<tr>
+<td><code>...</code> (ellipsis)</td>
+<td>Chuỗi 0+ đối số/câu lệnh/phần tử bất kỳ</td>
+</tr>
+<tr>
+<td><code>$...ARGS</code></td>
+<td>Chuỗi đối số nhưng có bind tên</td>
+</tr>
+<tr>
+<td><code>"..."</code></td>
+<td>Bất kỳ chuỗi literal</td>
+</tr>
+<tr>
+<td><code>$X.$METHOD(...)</code></td>
+<td>Gọi method bất kỳ trên <code>$X</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ellipsis <code>...</code> rất quan trọng: <code>foo(...)</code> khớp <code>foo()</code>, <code>foo(1)</code>, <code>foo(a, b, c)</code>. Còn <code>foo(..., $SENSITIVE, ...)</code> khớp <code>$SENSITIVE</code> xuất hiện ở vị trí đối số bất kỳ.</p>
+<h3 id="ch06-643-patterns-and-pattern-either-or-pattern-not-pattern-inside">6.4.3. <code>patterns</code> (AND), <code>pattern-either</code> (OR), <code>pattern-not</code>, <code>pattern-inside</code></h3>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng (đã loại trừ command hằng số qua pattern-not).
+rules:
+  - id: dangerous-subprocess-with-shell
+    languages: [python]
+    severity: ERROR
+    message: &quot;subprocess gọi với shell=True và input động → command injection.&quot;
+    patterns:
+      # AND: phải khớp cả lời gọi VÀ có shell=True VÀ KHÔNG phải literal
+      - pattern-either:
+          - pattern: subprocess.call(...)
+          - pattern: subprocess.run(...)
+          - pattern: subprocess.Popen(...)
+      - pattern: $FN(..., shell=True, ...)
+      - pattern-not: $FN(&quot;...&quot;, ..., shell=True, ...)   # bỏ qua command hằng số
+</code></pre>
+<p>Ngữ nghĩa logic:</p>
+<ul>
+<li><code>patterns:</code> = <strong>AND</strong> — mọi mục con phải đúng trên cùng vùng code.</li>
+<li><code>pattern-either:</code> = <strong>OR</strong> — chỉ cần một mục con đúng.</li>
+<li><code>pattern-not:</code> = phủ định — loại finding nếu pattern này khớp (giảm FP).</li>
+<li><code>pattern-inside:</code> = ràng buộc ngữ cảnh — chỉ khớp khi đoạn code <strong>nằm bên trong</strong> một cấu trúc bao ngoài (ví dụ trong một hàm, một vòng lặp).</li>
+</ul>
+<p>Ví dụ <code>pattern-inside</code> để chỉ bắt lỗi trong route handler:</p>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng (giới hạn ngữ cảnh trong Flask route qua pattern-inside).
+rules:
+  - id: raw-sql-in-flask-route
+    languages: [python]
+    severity: ERROR
+    message: &quot;Câu SQL ghép chuỗi bên trong Flask route.&quot;
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $HANDLER(...):
+              ...
+      - pattern: $CUR.execute(&quot;...&quot; % ...)
+</code></pre>
+<h3 id="ch06-644-metavariable-regex-va-metavariable-pattern">6.4.4. <code>metavariable-regex</code> và <code>metavariable-pattern</code></h3>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng (ràng buộc thuật toán yếu qua metavariable-regex).
+rules:
+  - id: weak-hash-algo
+    languages: [python]
+    severity: WARNING
+    message: &quot;Thuật toán băm yếu: $ALGO&quot;
+    patterns:
+      - pattern: hashlib.new($ALGO, ...)
+      - metavariable-regex:
+          metavariable: $ALGO
+          regex: ^[&quot;'](md5|sha1)[&quot;']$
+</code></pre>
+<p><code>metavariable-regex</code> áp regex lên <strong>giá trị văn bản</strong> mà metavariable đã bind. Ở đây chỉ báo khi thuật toán là <code>md5</code> hoặc <code>sha1</code>.</p>
+<hr />
+<h2 id="ch06-65-taint-mode-source-sink-sanitizer">6.5. Taint mode — source / sink / sanitizer</h2>
+<h3 id="ch06-651-co-che">6.5.1. Cơ chế</h3>
+<p><code>search</code> mode khớp theo cấu trúc tại một điểm. Nhưng SQLi/command injection là vấn đề <strong>luồng dữ liệu</strong> (data flow): dữ liệu bẩn đi từ A tới B qua nhiều bước. <code>mode: taint</code> mô hình hóa điều này bằng three-set:</p>
+<ul>
+<li><strong>source</strong>: nơi dữ liệu không tin cậy xuất hiện (HTTP param, đọc file, env).</li>
+<li><strong>sink</strong>: nơi nguy hiểm nếu nhận dữ liệu bẩn (<code>execute</code>, <code>eval</code>, <code>os.system</code>).</li>
+<li><strong>sanitizer</strong>: nơi "rửa sạch" dữ liệu (escape, parametrize, allowlist). Nếu dữ liệu đi qua sanitizer trước khi tới sink → không báo.</li>
+</ul>
+<p>Semgrep theo dõi sự lan truyền (propagation) của taint qua phép gán, nối chuỗi, lời gọi hàm. Finding chỉ phát sinh khi tồn tại đường đi <strong>source → ... → sink</strong> mà KHÔNG cắt ngang sanitizer.</p>
+<pre><code>[source]──taint──►[var a]──taint──►[a + &quot;x&quot;]──taint──►[sink]   ❌ BÁO LỖI
+[source]──taint──►[sanitize(a)]──clean──►[sink]                ✅ AN TOÀN
+</code></pre>
+<h3 id="ch06-652-vi-du-taint-bat-sql-injection">6.5.2. Ví dụ taint bắt SQL injection</h3>
+<pre><code class="language-yaml"># [PROD] Rule taint đủ chặt để dùng (có source/sink/sanitizer và focus-metavariable).
+rules:
+  - id: python-sqli-taint
+    languages: [python]
+    severity: ERROR
+    message: &gt;
+      Dữ liệu từ HTTP request đi vào câu SQL mà không tham số hóa
+      → SQL injection (CWE-89).
+    mode: taint
+    metadata:
+      cwe: &quot;CWE-89: SQL Injection&quot;
+      owasp: &quot;A05:2025 - Injection&quot;
+      confidence: HIGH
+    pattern-sources:
+      - pattern: flask.request.$ANYTHING
+      - pattern: flask.request.args.get(...)
+      - pattern: flask.request.form[...]
+    pattern-sanitizers:
+      - pattern: int(...)                       # ép kiểu int = an toàn cho SQLi
+      - pattern: $DB.execute($Q, $PARAMS)       # truy vấn tham số hóa
+    pattern-sinks:
+      - patterns:
+          - pattern: $CURSOR.execute($QUERY, ...)
+          - focus-metavariable: $QUERY
+</code></pre>
+<p>Code bị bắt:</p>
+<pre><code class="language-python">from flask import request
+name = request.args.get(&quot;name&quot;)          # SOURCE
+q = &quot;SELECT * FROM users WHERE name='%s'&quot; % name   # taint lan truyền
+cursor.execute(q)                        # SINK  → BÁO LỖI
+</code></pre>
+<p>Code KHÔNG bị bắt (đã sanitize):</p>
+<pre><code class="language-python">uid = int(request.args.get(&quot;id&quot;))        # int() = sanitizer
+cursor.execute(&quot;SELECT * FROM users WHERE id=%s&quot;, (uid,))  # tham số hóa
+</code></pre>
+<p><code>focus-metavariable</code> thu hẹp finding vào đúng phần biểu thức (<code>$QUERY</code>) thay vì cả lời gọi, giúp báo cáo chính xác vị trí.</p>
+<hr />
+<h2 id="ch06-66-nhieu-vi-du-rule-that">6.6. Nhiều ví dụ rule thật</h2>
+<h3 id="ch06-661-bat-eval-tren-input-đong-rce">6.6.1. Bắt <code>eval()</code> trên input động (RCE)</h3>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng.
+rules:
+  - id: js-eval-user-input
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: &quot;eval() với dữ liệu động → remote code execution (CWE-95).&quot;
+    metadata: { cwe: &quot;CWE-95&quot;, owasp: &quot;A05:2025&quot; }
+    patterns:
+      - pattern: eval($X)
+      - pattern-not: eval(&quot;...&quot;)     # cho phép eval chuỗi hằng (vẫn nên tránh)
+</code></pre>
+<pre><code class="language-javascript">eval(req.query.code);   // ❌ khớp
+eval(&quot;1 + 1&quot;);          // ✅ bỏ qua nhờ pattern-not
+</code></pre>
+<h3 id="ch06-662-bat-hardcoded-secret">6.6.2. Bắt hardcoded secret</h3>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng (khớp cấu trúc AWS Access Key ID + ràng buộc tên biến).
+rules:
+  - id: hardcoded-aws-key
+    languages: [python, javascript, go]
+    severity: ERROR
+    message: &quot;AWS Access Key ID hardcode trong source.&quot;
+    patterns:
+      - pattern-regex: AKIA[0-9A-Z]{16}
+  - id: hardcoded-generic-password
+    languages: [python]
+    severity: WARNING
+    message: &quot;Mật khẩu gán cứng cho biến.&quot;
+    patterns:
+      - pattern-either:
+          - pattern: $PWD = &quot;...&quot;
+      - metavariable-regex:
+          metavariable: $PWD
+          regex: (?i)(password|passwd|pwd|secret|token|api_?key)
+      - pattern-not: $PWD = &quot;&quot;
+</code></pre>
+<p><code>AKIA[0-9A-Z]{16}</code> là cấu trúc của AWS Access Key ID: tiền tố <code>AKIA</code> + 16 ký tự (tổng 20 ký tự). Semgrep <code>pattern-regex</code> áp regex trên văn bản nguồn (kết hợp được với AST qua <code>patterns</code>).</p>
+<h3 id="ch06-663-bat-command-injection-go">6.6.3. Bắt command injection (Go)</h3>
+<pre><code class="language-yaml"># [PROD] Rule taint đủ chặt để dùng.
+rules:
+  - id: go-command-injection
+    languages: [go]
+    severity: ERROR
+    message: &quot;exec.Command với input từ HTTP → command injection.&quot;
+    mode: taint
+    pattern-sources:
+      - pattern: $R.URL.Query().Get(...)
+      - pattern: $R.FormValue(...)
+    pattern-sinks:
+      - pattern: exec.Command($CMD, ...)
+      - pattern: exec.Command(&quot;sh&quot;, &quot;-c&quot;, $ARG)
+</code></pre>
+<h3 id="ch06-664-autofix">6.6.4. Autofix</h3>
+<pre><code class="language-yaml"># [PROD] Rule đủ chặt để dùng (kèm autofix sang safe_load).
+rules:
+  - id: insecure-yaml-load
+    languages: [python]
+    severity: ERROR
+    message: &quot;yaml.load không an toàn → dùng safe_load.&quot;
+    pattern: yaml.load($X)
+    fix: yaml.safe_load($X)
+</code></pre>
+<p>Chạy <code>semgrep --config rule.yaml --autofix .</code> sẽ thay <code>yaml.load(data)</code> thành <code>yaml.safe_load(data)</code> ngay trong file.</p>
+<h3 id="ch06-665-output-mau">6.6.5. Output mẫu</h3>
+<pre><code>$ semgrep --config rules/ src/app.py
+
+┌─────────────┐
+│ 2 Findings  │
+└─────────────┘
+
+  src/app.py
+    python-sqli-taint
+        Dữ liệu từ HTTP request đi vào câu SQL... (CWE-89)
+        12┆ cursor.execute(q)
+
+    hardcoded-aws-key
+        AWS Access Key ID hardcode trong source.
+        20┆ KEY = &quot;AKIAIOSFODNN7EXAMPLE&quot;
+
+Ran 5 rules on 1 file: 2 findings.
+</code></pre>
+<h3 id="ch06-666-xu-ly-false-positive-severity">6.6.6. Xử lý false positive &amp; severity</h3>
+<p>Chiến lược giảm false positive theo thứ tự ưu tiên:</p>
+<ol>
+<li><strong>Thêm <code>pattern-not</code> / <code>pattern-not-inside</code></strong> để loại trường hợp an toàn đã biết.</li>
+<li><strong>Thêm sanitizer</strong> (taint mode) cho hàm rửa dữ liệu nội bộ.</li>
+<li><strong>Nolint inline</strong>: thêm comment <code># nosemgrep: &lt;rule-id&gt;</code> ngay dòng để bỏ qua có chủ đích (nên kèm lý do).</li>
+<li><strong><code>.semgrepignore</code></strong> (cú pháp giống <code>.gitignore</code>) để loại path (vendored code, tests, generated).</li>
+</ol>
+<pre><code class="language-python">result = eval(trusted_expr)   # nosemgrep: js-eval-user-input — chuỗi đã whitelist
+</code></pre>
+<p><strong>Chiến lược chống false-positive fatigue ở quy mô team.</strong> Nếu ngày đầu bật cả ruleset lớn và Semgrep báo hàng trăm cảnh báo, dev sẽ bỏ cuộc — đó là lúc scan chết trên thực tế dù vẫn chạy trong pipeline. Cách làm bền hơn:</p>
+<ol>
+<li><strong>Bắt đầu bằng ruleset nhỏ, high-confidence</strong> (SQLi, hardcoded secret, XSS — những rule gần như không báo nhầm) rồi mở rộng dần khi team đã quen.</li>
+<li><strong>Chỉ số ít rule là blocking, còn lại warning</strong> — phân tầng đúng nghĩa (xem 6.9), ưu tiên theo mức nghiêm trọng chứ không chạy theo số lượng finding.</li>
+<li><strong>Triage định kỳ</strong>: lịch cố định xem lại finding warning, tune rule (<code>pattern-not</code>, sanitizer), quyết định nâng lên blocking hay bỏ hẳn. Rule không ai xem là rule nên tắt.</li>
+<li><strong>Custom rule cho pattern nội bộ đáng giá hơn bật hết ruleset</strong>: SAST khó hiểu logic nghiệp vụ, nhưng vài rule tự viết đúng chỗ — kiểu "mọi controller phải có guard phân quyền", "cấm raw query không tham số hóa" — bắt đúng lỗi team hay mắc mà không thêm noise.</li>
+</ol>
+<p>Quy ước severity → hành động (liên kết với cổng pipeline 6.9):</p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Ý nghĩa</th>
+<th>Hành động pipeline đề xuất</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ERROR</td>
+<td>Lỗ hổng khai thác được, độ tin cậy cao</td>
+<td>Chặn build (blocking)</td>
+</tr>
+<tr>
+<td>WARNING</td>
+<td>Có thể là vấn đề / cần review</td>
+<td>Cảnh báo, không chặn</td>
+</tr>
+<tr>
+<td>INFO</td>
+<td>Khuyến nghị, best practice</td>
+<td>Ghi chú</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-67-gitleaks-secret-scanning-regex-entropy">6.7. Gitleaks — secret scanning (regex + entropy)</h2>
+<h3 id="ch06-671-co-che-hai-tang">6.7.1. Cơ chế hai tầng</h3>
+<p>Gitleaks quét <strong>nội dung file VÀ lịch sử git</strong> (mọi commit/blob qua <code>git log -p</code>), tìm secret bằng hai phương pháp bổ sung nhau:</p>
+<ol>
+<li><strong>Regex rule</strong>: bắt secret có <strong>cấu trúc nhận dạng được</strong> (AWS key <code>AKIA...</code>, GitHub PAT <code>ghp_...</code>, JWT <code>eyJ...</code>). Chính xác cao, ít FP.</li>
+<li><strong>Shannon entropy</strong>: bắt secret <strong>không có cấu trúc</strong> (chuỗi ngẫu nhiên cao như base64 token). Entropy đo "độ ngẫu nhiên" của chuỗi:</li>
+</ol>
+<pre><code>H = -Σ p(x) · log2 p(x)        (bit/ký tự)
+</code></pre>
+<p>Chuỗi tiếng Anh thường ~3.5–4.5 bit/ký tự, còn secret ngẫu nhiên base64 thường &gt;4.5. Đặt ngưỡng entropy giúp bắt secret lạ; nhưng nếu để ngưỡng thấp thì dễ báo nhầm (false positive).</p>
+<h3 id="ch06-672-lenh">6.7.2. Lệnh</h3>
+<pre><code class="language-bash"># Quét toàn bộ lịch sử git của repo hiện tại
+gitleaks detect --source . --verbose
+
+# Quét chỉ thư mục làm việc (không lịch sử) — nhanh, dùng cho pre-commit
+gitleaks detect --no-git --source .
+
+# Quét các thay đổi đang staged (pre-commit hook)
+gitleaks protect --staged --source .
+
+# Xuất báo cáo + exit code != 0 nếu có leak
+gitleaks detect --source . --report-format sarif --report-path leaks.sarif
+</code></pre>
+<p>Lưu ý phiên bản: từ gitleaks v8.19 bộ lệnh được tổ chức lại — <code>gitleaks git</code> (quét repo + lịch sử), <code>gitleaks dir</code> (quét thư mục, thay <code>detect --no-git</code>), <code>gitleaks stash</code>; hai lệnh <code>detect</code>/<code>protect</code> cũ bị đánh dấu deprecated nhưng vẫn chạy được (cần kiểm chứng theo version đang dùng):</p>
+<pre><code class="language-bash">gitleaks git .              # thay cho: gitleaks detect --source .
+gitleaks dir .              # thay cho: gitleaks detect --no-git --source .
+gitleaks git --pre-commit --staged .   # dùng trong pre-commit hook
+</code></pre>
+<h3 id="ch06-673-gitleakstoml-vi-du">6.7.3. <code>.gitleaks.toml</code> ví dụ</h3>
+<pre><code class="language-toml"># [PROD] Cấu hình đủ chặt để dùng (kế thừa rule mặc định, bổ sung rule nội bộ + allowlist).
+title = &quot;Cấu hình Gitleaks công ty&quot;
+
+[extend]
+useDefault = true        # kế thừa bộ rule mặc định, rồi bổ sung bên dưới
+
+[[rules]]
+id = &quot;company-internal-token&quot;
+description = &quot;Internal service token (prefix INT_)&quot;
+regex = '''INT_[A-Za-z0-9]{32}'''
+keywords = [&quot;INT_&quot;]      # tối ưu tốc độ: chỉ chạy regex nếu file chứa keyword
+entropy = 3.5            # yêu cầu entropy tối thiểu để giảm FP
+
+[[rules]]
+id = &quot;generic-api-key&quot;
+description = &quot;Generic API key gán cho biến&quot;
+regex = '''(?i)(api[_-]?key|apikey)['&quot;\s:=]{1,5}['&quot;]([0-9a-zA-Z]{32,45})['&quot;]'''
+secretGroup = 2          # nhóm capture chứa giá trị secret thật
+
+[allowlist]
+description = &quot;Bỏ qua mẫu test và example&quot;
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',     # khóa ví dụ chính thức của AWS
+]
+paths = [
+  '''(.*?)(test|spec|fixtures)(.*?)''',
+]
+</code></pre>
+<p>Mô tả các trường rule chính:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Định danh rule</td>
+</tr>
+<tr>
+<td><code>regex</code></td>
+<td>Mẫu nhận diện secret</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td>Lọc nhanh: chỉ chạy regex nếu file chứa từ khóa (tối ưu hiệu năng)</td>
+</tr>
+<tr>
+<td><code>entropy</code></td>
+<td>Ngưỡng entropy tối thiểu của capture group</td>
+</tr>
+<tr>
+<td><code>secretGroup</code></td>
+<td>Nhóm regex chứa giá trị secret (cho entropy/redaction)</td>
+</tr>
+<tr>
+<td><code>[allowlist]</code></td>
+<td>Loại trừ theo regex/path/commit (giảm FP)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-68-trivy-quet-image-filesystem-iac">6.8. Trivy — quét image / filesystem / IaC</h2>
+<p>Trivy là scanner đa năng: container image, filesystem, repo git, IaC, và tạo SBOM.</p>
+<h3 id="ch06-681-quet-container-image">6.8.1. Quét container image</h3>
+<pre><code class="language-bash">trivy image --severity HIGH,CRITICAL nginx:1.21.0
+</code></pre>
+<p>Cơ chế: Trivy <strong>giải nén các layer</strong> của image, đọc cơ sở dữ liệu package của distro (APK/<code>/lib/apk/db</code>, DPKG/<code>/var/lib/dpkg/status</code>, RPM), liệt kê (package, version), so với CSDL lỗ hổng (<code>trivy-db</code> đồng bộ từ NVD, GHSA, distro advisories). Cũng phát hiện dependency ứng dụng (lockfile nhúng trong image).</p>
+<p>Output mẫu (rút gọn):</p>
+<pre><code>nginx:1.21.0 (debian 10.9)
+Total: 142 (HIGH: 130, CRITICAL: 12)
+
+┌──────────┬────────────────┬──────────┬─────────────────┬──────────────────┐
+│ Library  │ Vulnerability  │ Severity │ Installed Ver   │ Fixed Version    │
+├──────────┼────────────────┼──────────┼─────────────────┼──────────────────┤
+│ openssl  │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10  │ 1.1.1d-0+deb10u7 │
+│ libc6    │ CVE-2021-33574 │ CRITICAL │ 2.28-10         │ (won't fix)      │
+└──────────┴────────────────┴──────────┴─────────────────┴──────────────────┘
+</code></pre>
+<p>Tham số quan trọng:</p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--severity</code></td>
+<td>Lọc mức (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)</td>
+</tr>
+<tr>
+<td><code>--ignore-unfixed</code></td>
+<td>Bỏ CVE chưa có bản vá (giảm noise không hành động được)</td>
+</tr>
+<tr>
+<td><code>--exit-code 1</code></td>
+<td>Trả exit != 0 khi tìm thấy (gate)</td>
+</tr>
+<tr>
+<td><code>--scanners vuln,secret,misconfig</code></td>
+<td>Chọn loại quét</td>
+</tr>
+<tr>
+<td><code>--format sarif --output x.sarif</code></td>
+<td>Tích hợp CI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-682-quet-filesystem-iac">6.8.2. Quét filesystem &amp; IaC</h3>
+<pre><code class="language-bash"># Quét deps trong source (lockfile) + secret + misconfig
+trivy fs --scanners vuln,secret,misconfig .
+
+# Quét cấu hình hạ tầng (Terraform / K8s / Dockerfile)
+trivy config ./infra/
+</code></pre>
+<p><code>trivy config</code> phát hiện sai cấu hình kiểu: S3 bucket public, security group mở <code>0.0.0.0/0</code>, container chạy <code>privileged: true</code>, thiếu <code>readOnlyRootFilesystem</code>.</p>
+<h3 id="ch06-683-gate-trong-ci">6.8.3. Gate trong CI</h3>
+<pre><code class="language-bash"># [PROD] Cặp lệnh gate phân tầng đủ chặt để dùng.
+trivy image --exit-code 0 --severity MEDIUM,HIGH --format table myapp:ci   # cảnh báo
+trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed myapp:ci    # chặn
+</code></pre>
+<p>Hai lệnh tách biệt thể hiện nguyên tắc gate phân tầng (6.9): CRITICAL chặn, HIGH chỉ cảnh báo.</p>
+<h3 id="ch06-684-uu-tien-xu-ly-khi-scanner-bao-hang-tram-cve">6.8.4. Ưu tiên xử lý khi scanner báo hàng trăm CVE</h3>
+<p>Lần đầu chạy dependency scan trên một codebase có tuổi, kết quả 200+ CVE là bình thường — và không ai fix hết được, nhất là khi người xử lý chỉ có một. Vấn đề không phải "fix hết" mà là <strong>ưu tiên đúng</strong>. Một CVE chỉ đáng xử lý ngay khi hội đủ:</p>
+<ol>
+<li><strong>Severity cao</strong> (High/Critical) — lọc bằng <code>--severity</code>.</li>
+<li><strong>Đã có fix version</strong> — lọc bằng <code>--ignore-unfixed</code>; CVE chưa có patch thì không hành động trực tiếp được (xem dưới).</li>
+<li><strong>Reachability</strong>: nằm trong đường code thực chạy — không phải devDependency, không phải module import mà không dùng. Đây là yếu tố hay bị bỏ qua nhất: CVE 9.8 ở thư viện mà app không đi qua code path đó ít nguy hiểm hơn CVE 7.5 nằm ngay endpoint public.</li>
+</ol>
+<p>Ngoài CVSS (mức nghiêm trọng lý thuyết), nên đối chiếu thêm hai nguồn đo <strong>khả năng bị khai thác thực tế</strong>: <strong>EPSS</strong> (Exploit Prediction Scoring System — xác suất CVE bị khai thác trong 30 ngày tới) và <strong>CISA KEV</strong> (Known Exploited Vulnerabilities — danh sách lỗ hổng <em>đang</em> bị khai thác thật ngoài kia). CVE nằm trong KEV thì vá trước bất kể điểm CVSS.</p>
+<p>Với CVE Critical chưa có bản vá: xác định có thực sự dùng code path bị ảnh hưởng không; nếu có thì áp mitigation tạm (WAF rule, chặn input, tắt tính năng, cô lập service) và theo dõi advisory; nếu buộc hoãn thì risk acceptance <strong>có thời hạn</strong>, không để rơi vào quên lãng.</p>
+<p>Cơ chế ignore của Trivy phục vụ đúng việc này — nhưng phải có kỷ luật. File <code>.trivyignore</code> đặt ở repo:</p>
+<pre><code># [PROD] Mỗi dòng ignore bắt buộc kèm lý do + ngày review lại.
+# CVE-2025-12345 (lodash): không dùng code path bị ảnh hưởng (chỉ import hàm cloneDeep)
+#   Người quyết: SecOps · Review lại: 2026-09-15
+CVE-2025-12345
+
+# CVE-2025-67890 (openssl trong base image): chưa có fix, đã chặn cipher liên quan ở LB
+#   Người quyết: SecOps · Review lại: 2026-08-30
+CVE-2025-67890
+</code></pre>
+<p>Trivy chỉ đọc các dòng CVE ID (dòng <code>#</code> là comment), nhưng chính phần comment mới là thứ giữ cho danh sách ignore không biến thành "nghĩa địa quyết định không ai nhớ lý do". Ignore không có ngày review là quên vĩnh viễn.</p>
+<hr />
+<h2 id="ch06-69-thiet-ke-cong-pipeline-exit-code-va-phan-tang">6.9. Thiết kế cổng pipeline — exit code và phân tầng</h2>
+<h3 id="ch06-691-exit-code-la-hop-đong-giua-scanner-va-ci">6.9.1. Exit code là hợp đồng giữa scanner và CI</h3>
+<p>CI/CD coi <strong>exit code</strong> của tiến trình là tín hiệu pass/fail: <code>0</code> = pass, <code>!= 0</code> = fail (build dừng). Mọi scanner đều cho phép điều khiển exit code:</p>
+<ul>
+<li>Semgrep: <code>--error</code> → exit 1 nếu có finding; có thể lọc <code>--severity ERROR</code> trước.</li>
+<li>Trivy: <code>--exit-code 1</code>.</li>
+<li>Gitleaks: mặc định exit 1 khi tìm thấy leak.</li>
+</ul>
+<h3 id="ch06-692-vi-sao-tach-hai-tang-blocking-vs-warning">6.9.2. Vì sao tách hai tầng (blocking vs warning)</h3>
+<p>Nếu chặn build trên <strong>mọi</strong> finding (kể cả HIGH/MEDIUM), dev bị "alert fatigue", bắt đầu vô hiệu hóa scan hoặc commit <code>--no-verify</code>. Nếu <strong>không</strong> chặn gì, lỗ hổng nghiêm trọng lọt production. Giải pháp: <strong>hai tầng</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Severity</th>
+<th>Exit</th>
+<th>Hiệu ứng</th>
+<th>Mục tiêu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blocking gate</td>
+<td>CRITICAL (và ERROR có confidence HIGH)</td>
+<td>1</td>
+<td>Build đỏ, không merge</td>
+<td>Chặn lỗ hổng khai thác được</td>
+</tr>
+<tr>
+<td>Warning gate</td>
+<td>HIGH / WARNING</td>
+<td>0</td>
+<td>Build xanh + annotation/comment PR</td>
+<td>Tạo nhận thức, đưa vào backlog</td>
+</tr>
+</tbody>
+</table>
+<p>Tiêu chí chọn thứ được vào tầng blocking: <strong>rõ ràng và gần như không false positive</strong>. Trong thực tế mình chặn cứng ba nhóm — secret bị commit (gitleaks), CVE Critical/High <strong>đã có fix version</strong> (Trivy <code>--ignore-unfixed</code>), và IaC tạo tài nguyên nguy hiểm kiểu public bucket / security group mở <code>0.0.0.0/0</code>. Phần nhiễu (SAST severity thấp, DAST informational, CVE chưa có patch) chỉ cảnh báo + tạo ticket theo SLA. Chặn cứng tất cả thì team ghét pipeline và tìm cách bypass; nới lỏng tất cả thì gate vô nghĩa.</p>
+<h3 id="ch06-693-vi-du-gitlab-ci-gitlab-ciyml">6.9.3. Ví dụ GitLab CI (.gitlab-ci.yml)</h3>
+<pre><code class="language-yaml">stages: [security]
+
+semgrep_block:
+  stage: security
+  image: semgrep/semgrep
+  script:
+    # Chỉ ERROR mới chặn; --error đặt exit code theo finding còn lại
+    - semgrep --config p/security-audit --severity ERROR --error --json --output sg.json .
+  artifacts:
+    when: always
+    reports:
+      sast: sg.json
+
+semgrep_warn:
+  stage: security
+  image: semgrep/semgrep
+  allow_failure: true          # KHÔNG chặn pipeline dù có finding
+  script:
+    - semgrep --config p/security-audit --severity WARNING .
+
+trivy_block:
+  stage: security
+  image: aquasec/trivy
+  script:
+    - trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+gitleaks:
+  stage: security
+  image: ghcr.io/gitleaks/gitleaks:latest   # image chính thức hiện tại (bản cũ zricethezav/gitleaks vẫn tồn tại)
+  script:
+    - gitleaks git . --no-banner
+</code></pre>
+<p><code>allow_failure: true</code> là cơ chế GitLab cho phép job thất bại mà không làm đỏ pipeline — đúng nghĩa "warning gate". Job <code>semgrep_block</code> không có nó nên thất bại của nó chặn merge.</p>
+<p>Để giảm noise trên PR/MR, dùng diff-aware (chỉ báo finding <strong>mới</strong>):</p>
+<pre><code class="language-bash">semgrep ci   # tự dùng baseline = nhánh đích trong môi trường CI
+# hoặc thủ công:
+semgrep --config auto --baseline-commit &quot;$CI_MERGE_REQUEST_DIFF_BASE_SHA&quot; .
+</code></pre>
+<h3 id="ch06-694-co-che-exception-co-kiem-soat">6.9.4. Cơ chế exception có kiểm soát</h3>
+<p>Câu hỏi thực tế nhất về gate: <strong>chặn merge mà release đang gấp thì sao?</strong> Nếu không có câu trả lời trước, đội sẽ tự trả lời bằng cách tắt gate — và một khi đã tắt thì hiếm khi bật lại. Thiết kế exception đúng:</p>
+<ul>
+<li><strong>Cần approve tường minh</strong> của người chịu trách nhiệm bảo mật (hoặc lead được ủy quyền khi người đó vắng) — không phải dev tự quyết.</li>
+<li><strong>Ghi lý do + tạo ticket vá bắt buộc có thời hạn</strong> — override hôm nay là nợ có ngày trả, không phải xí xóa.</li>
+<li><strong>Có dấu vết audit</strong>: exception nằm trong comment PR / ticket, tra lại được ai duyệt, khi nào, vì sao. Không bao giờ override âm thầm (sửa config gate rồi trả lại).</li>
+</ul>
+<p>Exception là <strong>ngoại lệ có kiểm soát, không phải cửa sau mặc định</strong>. Và nó là công cụ đo sức khỏe của gate: nếu tuần nào cũng phải override thì vấn đề không nằm ở quy trình exception mà ở ngưỡng gate đang đặt sai — chỉnh gate, đừng bình thường hóa việc đi vòng.</p>
+<hr />
+<h2 id="ch06-610-an-ninh-chuoi-cung-ung-phan-mem">6.10. An ninh chuỗi cung ứng phần mềm</h2>
+<h3 id="ch06-6101-dependency-confusion">6.10.1. Dependency confusion</h3>
+<p><strong>Cơ chế tấn công</strong>: nếu công ty dùng package nội bộ tên <code>internal-utils</code> chỉ tồn tại trên registry riêng, kẻ tấn công đẩy một package công khai <strong>cùng tên</strong> lên registry public (npm/PyPI) với <strong>version cao hơn</strong>. Trình quản lý gói cấu hình sai có thể ưu tiên registry public (vì version cao hơn) → tải mã độc của kẻ tấn công.</p>
+<pre><code>Resolver thấy: internal-utils
+  ├─ private registry: 1.2.0   ← mong muốn
+  └─ public registry:  99.0.0  ← của attacker (version cao hơn)
+Nếu cả hai được hỏi → có thể chọn 99.0.0  → RCE khi cài đặt (postinstall)
+</code></pre>
+<p><strong>Phòng thủ</strong>: scoped packages (<code>@company/utils</code>), pin registry theo scope, dùng lockfile + hash, bật namespace/scope reservation, mirror nội bộ chỉ-đọc.</p>
+<h3 id="ch06-6102-slsa-levels">6.10.2. SLSA levels</h3>
+<p>SLSA (Supply-chain Levels for Software Artifacts) là khung đánh giá độ toàn vẹn của quy trình build. Mô tả tổng quát các cấp (số hiệu cụ thể nên kiểm chứng theo bản SLSA hiện hành, vì đã đổi giữa v0.1 và v1.0):</p>
+<table>
+<thead>
+<tr>
+<th>Cấp</th>
+<th>Trọng tâm</th>
+<th>Yêu cầu cốt lõi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Provenance tồn tại</td>
+<td>Build sinh ra provenance mô tả cách tạo artifact</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Provenance ký + build service</td>
+<td>Build trên dịch vụ có xác thực, provenance được ký</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Build cô lập, không giả mạo được</td>
+<td>Build platform tăng cường, provenance chống giả mạo</td>
+</tr>
+<tr>
+<td>(L4 trong v0.1, được tái cấu trúc trong v1.0)</td>
+<td>Phụ thuộc + hai người duyệt</td>
+<td>Cần kiểm chứng theo spec hiện hành</td>
+</tr>
+</tbody>
+</table>
+<p>Cốt lõi của SLSA là <strong>provenance</strong>: chứng cứ "artifact này được build từ source nào, bằng builder nào, với tham số gì".</p>
+<h3 id="ch06-6103-sbom-cyclonedx-va-spdx">6.10.3. SBOM — CycloneDX và SPDX</h3>
+<p>SBOM (Software Bill of Materials) = "danh sách thành phần" của phần mềm, để khi một CVE mới công bố (ví dụ Log4Shell) có thể truy nhanh "sản phẩm nào chứa thành phần này".</p>
+<p>Hai định dạng chuẩn:</p>
+<table>
+<thead>
+<tr>
+<th>Đặc điểm</th>
+<th>CycloneDX</th>
+<th>SPDX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tổ chức</td>
+<td>OWASP</td>
+<td>Linux Foundation (ISO/IEC 5962:2021)</td>
+</tr>
+<tr>
+<td>Thiên hướng</td>
+<td>Bảo mật / vuln / VEX</td>
+<td>License compliance + bảo mật</td>
+</tr>
+<tr>
+<td>Định dạng</td>
+<td>JSON, XML</td>
+<td>JSON, YAML, RDF, tag-value</td>
+</tr>
+<tr>
+<td>Mã định danh thành phần</td>
+<td>PURL, CPE</td>
+<td>PURL, CPE, SPDX-ID</td>
+</tr>
+</tbody>
+</table>
+<p>Tạo SBOM bằng Trivy hoặc Syft:</p>
+<pre><code class="language-bash">trivy image --format cyclonedx --output sbom.cdx.json myapp:1.0
+syft myapp:1.0 -o spdx-json=sbom.spdx.json
+</code></pre>
+<p>Cấu trúc CycloneDX (JSON, rút gọn) — các trường chính:</p>
+<pre><code class="language-json">{
+  &quot;bomFormat&quot;: &quot;CycloneDX&quot;,
+  &quot;specVersion&quot;: &quot;1.6&quot;,
+  &quot;serialNumber&quot;: &quot;urn:uuid:3e671687-...&quot;,
+  &quot;version&quot;: 1,
+  &quot;metadata&quot;: { &quot;timestamp&quot;: &quot;2026-06-19T00:00:00Z&quot;,
+                &quot;component&quot;: { &quot;type&quot;: &quot;application&quot;, &quot;name&quot;: &quot;myapp&quot; } },
+  &quot;components&quot;: [
+    {
+      &quot;type&quot;: &quot;library&quot;,
+      &quot;name&quot;: &quot;log4j-core&quot;,
+      &quot;version&quot;: &quot;2.14.1&quot;,
+      &quot;purl&quot;: &quot;pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1&quot;,
+      &quot;hashes&quot;: [ { &quot;alg&quot;: &quot;SHA-256&quot;, &quot;content&quot;: &quot;ab12...&quot; } ]
+    }
+  ]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bomFormat</code> / <code>specVersion</code></td>
+<td>Định dạng và phiên bản spec</td>
+</tr>
+<tr>
+<td><code>serialNumber</code></td>
+<td>UUID duy nhất của SBOM (để tham chiếu)</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Số lần revise SBOM cho cùng serialNumber</td>
+</tr>
+<tr>
+<td><code>components[].purl</code></td>
+<td>Package URL — định danh chuẩn <code>pkg:&lt;type&gt;/&lt;ns&gt;/&lt;name&gt;@&lt;ver&gt;</code></td>
+</tr>
+<tr>
+<td><code>components[].hashes</code></td>
+<td>Băm để xác thực tính toàn vẹn</td>
+</tr>
+</tbody>
+</table>
+<p>PURL là chìa khóa khớp CVE: ví dụ <code>pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1</code> map trực tiếp tới advisory Log4Shell.</p>
+<h3 id="ch06-6104-ky-artifact-voi-cosign-sigstore">6.10.4. Ký artifact với cosign / sigstore</h3>
+<p>Mục tiêu: chứng minh artifact (image, SBOM, blob) <strong>không bị sửa</strong> và <strong>đến từ ai</strong>. Cosign (thuộc Sigstore) hỗ trợ <strong>keyless signing</strong>: thay vì giữ private key dài hạn, dùng OIDC identity (Google/GitHub/CI) để xin chứng chỉ <strong>ngắn hạn</strong> từ Fulcio CA, ký, rồi ghi vào transparency log <strong>Rekor</strong> (bất biến, append-only).</p>
+<pre><code class="language-bash"># Ký keyless: mở OIDC flow, lấy cert ngắn hạn, ký, ghi vào Rekor
+# (từ cosign v2.0 keyless là mặc định, không cần COSIGN_EXPERIMENTAL=1 như bản 1.x — cần kiểm chứng)
+cosign sign myregistry/myapp@sha256:abcd...
+
+# Xác minh: kiểm tra chữ ký + identity được phép + có trong Rekor
+cosign verify \
+  --certificate-identity &quot;https://github.com/org/repo/.github/workflows/build.yml@refs/heads/main&quot; \
+  --certificate-oidc-issuer &quot;https://token.actions.githubusercontent.com&quot; \
+  myregistry/myapp@sha256:abcd...
+</code></pre>
+<p>Vì sao thiết kế keyless: loại bỏ rủi ro rò rỉ private key dài hạn; identity gắn với danh tính workload/CI; transparency log cho phép phát hiện chữ ký lạ.</p>
+<p>Tham chiếu image bằng <strong>digest</strong> (<code>@sha256:...</code>) chứ không phải tag, vì tag có thể bị đẩy đè (mutable), còn digest là băm nội dung (immutable).</p>
+<h3 id="ch06-6105-provenance-trong-ci">6.10.5. Provenance trong CI</h3>
+<p>Ký kèm chứng thực (attestation) provenance để verify được "build từ đâu":</p>
+<pre><code class="language-bash">cosign attest --predicate provenance.json --type slsaprovenance \
+  myregistry/myapp@sha256:abcd...
+</code></pre>
+<p>Admission controller (ví dụ Kyverno/Sigstore policy-controller) ở cluster có thể <strong>từ chối</strong> deploy image nào không có chữ ký + provenance hợp lệ — biến chuỗi cung ứng thành policy enforced lúc deploy.</p>
+<hr />
+<h2 id="ch06-611-quan-ly-secret-vault-dynamic-secret-oidc">6.11. Quản lý secret — Vault, dynamic secret, OIDC</h2>
+<h3 id="ch06-6111-van-đe-secret-tinh">6.11.1. Vấn đề secret tĩnh</h3>
+<p>Secret gán cứng / để trong env file: không xoay vòng (rotation), rò rỉ là lộ vĩnh viễn, khó audit "ai dùng khi nào". Giải pháp: <strong>secret manager tập trung</strong> (HashiCorp Vault, AWS Secrets Manager) với secret <strong>động</strong> và <strong>ngắn hạn</strong>.</p>
+<h3 id="ch06-6112-dynamic-secret">6.11.2. Dynamic secret</h3>
+<p><strong>Cơ chế</strong>: thay vì lưu sẵn password DB, Vault <strong>sinh credential theo yêu cầu</strong> với TTL ngắn. Khi app cần truy cập DB, Vault tạo một user DB tạm (qua database secrets engine), trả về cho app, và <strong>tự thu hồi</strong> (revoke) khi hết TTL hoặc lease bị revoke.</p>
+<pre><code class="language-bash"># Bật engine và cấu hình kết nối tới Postgres
+vault secrets enable database
+vault write database/config/mydb \
+  plugin_name=postgresql-database-plugin \
+  connection_url=&quot;postgresql://{{username}}:{{password}}@db:5432/app&quot; \
+  allowed_roles=&quot;app-role&quot; username=&quot;vaultadmin&quot; password=&quot;...&quot;
+
+# Định nghĩa role: SQL tạo user tạm, TTL 1h
+vault write database/roles/app-role \
+  db_name=mydb \
+  creation_statements=&quot;CREATE ROLE \&quot;{{name}}\&quot; WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT ON ALL TABLES IN SCHEMA public TO \&quot;{{name}}\&quot;;&quot; \
+  default_ttl=&quot;1h&quot; max_ttl=&quot;24h&quot;
+
+# App xin credential (mỗi lần khác nhau, sống 1h)
+vault read database/creds/app-role
+# Key                Value
+# lease_id           database/creds/app-role/abcd...
+# lease_duration     1h
+# password           A1b2-randomgenerated
+# username           v-token-app-role-x9...
+</code></pre>
+<p>Vì sao tốt: credential ngắn hạn → cửa sổ tấn công nhỏ; mỗi consumer có credential riêng → audit chính xác; revoke tức thì khi nghi ngờ.</p>
+<h3 id="ch06-6113-oidc-workload-identity-loai-bo-secret-khoi-đau">6.11.3. OIDC / workload identity (loại bỏ secret khởi đầu)</h3>
+<p>Vấn đề "secret zero": làm sao app/CI <strong>xác thực với Vault</strong> mà không cần một secret cứng để bắt đầu? Lời giải: <strong>OIDC / JWT auth</strong> — workload (GitHub Actions, K8s pod, AWS instance) đã có một <strong>danh tính có chữ ký</strong> (JWT do OIDC provider phát). Vault tin tưởng issuer đó và cấp token theo claim.</p>
+<pre><code class="language-bash"># Cấu hình Vault tin GitHub Actions OIDC
+vault auth enable jwt
+vault write auth/jwt/config \
+  oidc_discovery_url=&quot;https://token.actions.githubusercontent.com&quot;
+
+# Role: chỉ workflow main của repo cụ thể mới được, gắn policy
+vault write auth/jwt/role/ci-role \
+  role_type=&quot;jwt&quot; user_claim=&quot;actor&quot; bound_audiences=&quot;https://vault.company.com&quot; \
+  bound_claims_type=&quot;glob&quot; \
+  bound_claims='{&quot;repository&quot;:&quot;org/repo&quot;,&quot;ref&quot;:&quot;refs/heads/main&quot;}' \
+  policies=&quot;app-policy&quot; ttl=&quot;15m&quot;
+</code></pre>
+<p>Trong GitHub Actions, runner lấy JWT (<code>id-token: write</code>) và đổi lấy Vault token — <strong>không có long-lived secret nào</strong> được lưu. JWT chứa claim như <code>repository</code>, <code>ref</code>, <code>actor</code>, <code>sub</code>; Vault ràng buộc (<code>bound_claims</code>) để chỉ workflow hợp lệ mới nhận quyền.</p>
+<hr />
+<h2 id="ch06-612-pre-commit-hook-chan-o-may-dev-shift-left-toi-muc-tan-cung">6.12. pre-commit hook — chặn ở máy dev (shift-left tới mức tận cùng)</h2>
+<h3 id="ch06-6121-co-che">6.12.1. Cơ chế</h3>
+<p>Git hỗ trợ <strong>hooks</strong>: script trong <code>.git/hooks/</code> chạy tại các sự kiện. <code>pre-commit</code> chạy <strong>trước khi</strong> commit hoàn tất; nếu hook trả exit code != 0, commit bị hủy. Framework <code>pre-commit</code> (Python) quản lý nhiều hook qua một file khai báo và tự cài môi trường cho từng hook.</p>
+<p>Đây là điểm shift-left xa nhất: bắt secret/lỗi <strong>trước cả khi</strong> code rời máy dev — secret chưa từng vào lịch sử git (vì một khi đã commit và push, secret coi như đã lộ, phải xoay vòng).</p>
+<h3 id="ch06-6122-pre-commit-configyaml-vi-du">6.12.2. <code>.pre-commit-config.yaml</code> ví dụ</h3>
+<pre><code class="language-yaml">repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks            # chặn secret trước khi commit
+
+  - repo: https://github.com/semgrep/semgrep   # org đã đổi tên từ returntocorp
+    rev: v1.50.0                               # pin theo bản mới nhất khi dùng (cần kiểm chứng)
+    hooks:
+      - id: semgrep
+        args: [&quot;--config&quot;, &quot;p/security-audit&quot;, &quot;--error&quot;, &quot;--skip-unknown-extensions&quot;]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: detect-private-key  # bắt block PRIVATE KEY
+      - id: check-added-large-files
+        args: [&quot;--maxkb=500&quot;]
+</code></pre>
+<p>Cài đặt và dùng:</p>
+<pre><code class="language-bash">pip install pre-commit
+pre-commit install            # ghi vào .git/hooks/pre-commit
+pre-commit run --all-files    # chạy thử trên toàn repo
+
+# Khi dev commit:
+git commit -m &quot;feat: ...&quot;
+#  → gitleaks, semgrep chạy; nếu fail, commit bị chặn
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repos[].repo</code></td>
+<td>URL repo chứa định nghĩa hook</td>
+</tr>
+<tr>
+<td><code>repos[].rev</code></td>
+<td>Tag/commit pin (đảm bảo tái lập, tránh kéo bản mới bất ngờ)</td>
+</tr>
+<tr>
+<td><code>hooks[].id</code></td>
+<td>Hook cụ thể trong repo đó</td>
+</tr>
+<tr>
+<td><code>hooks[].args</code></td>
+<td>Tham số truyền vào hook</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-6123-luu-y-bao-mat-cua-pre-commit">6.12.3. Lưu ý bảo mật của pre-commit</h3>
+<ul>
+<li>pre-commit <strong>không phải biện pháp duy nhất</strong>: dev có thể <code>git commit --no-verify</code> bỏ qua hook. Vì vậy phải <strong>lặp lại</strong> kiểm tra ở CI (server-side) — đó là cổng không thể bỏ qua.</li>
+<li><code>rev</code> phải pin để chống supply-chain qua hook (kéo nhầm phiên bản độc hại).</li>
+<li>pre-commit chạy nhanh (chỉ trên file staged); kiểm tra nặng để ở CI.</li>
+</ul>
+<hr />
+<h2 id="ch06-613-tong-ket-kien-truc-phong-thu-phan-tang">6.13. Tổng kết kiến trúc phòng thủ phân tầng</h2>
+<table>
+<thead>
+<tr>
+<th>Điểm chèn</th>
+<th>Công cụ tiêu biểu</th>
+<th>Loại</th>
+<th>Tầng gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDE / pre-commit</td>
+<td>Semgrep, Gitleaks</td>
+<td>SAST, secret</td>
+<td>Local (bỏ qua được → cần lặp ở CI)</td>
+</tr>
+<tr>
+<td>CI build</td>
+<td>Semgrep, Trivy fs/config, SCA</td>
+<td>SAST, SCA, IaC</td>
+<td>Blocking (CRITICAL) + Warning (HIGH)</td>
+</tr>
+<tr>
+<td>Image build</td>
+<td>Trivy image, cosign sign, SBOM</td>
+<td>Container, ký, SBOM</td>
+<td>Blocking CVE CRITICAL</td>
+</tr>
+<tr>
+<td>Pre-deploy</td>
+<td>cosign verify, admission controller</td>
+<td>Provenance/policy</td>
+<td>Blocking nếu không ký</td>
+</tr>
+<tr>
+<td>Staging</td>
+<td>OWASP ZAP (DAST)</td>
+<td>DAST</td>
+<td>Baseline mỗi PR, full scan trước release</td>
+</tr>
+<tr>
+<td>Runtime</td>
+<td>WAF, EDR, SIEM</td>
+<td>Monitoring/phát hiện</td>
+<td>Cảnh báo + chặn tấn công</td>
+</tr>
+</tbody>
+</table>
+<p>Nguyên tắc xuyên suốt: <strong>mỗi tầng có vùng mù, chồng các tầng để bù lẫn nhau</strong>; secret bắt càng sớm càng tốt; chỉ chặn build trên rủi ro khai thác được; mọi chính sách là code, versioned và review được.</p>
+<hr />
+<h2 id="ch06-614-kiem-soat-code-do-ai-sinh-ra-mo-hinh-ba-lop">6.14. Kiểm soát code do AI sinh ra — mô hình ba lớp</h2>
+<h3 id="ch06-6141-van-đe">6.14.1. Vấn đề</h3>
+<p>Phần lớn dev hiện nay dùng AI coding assistant hằng ngày (các khảo sát đưa con số ~70%+ — cần kiểm chứng). AI viết code nhanh nhưng thường gợi ý code <strong>chạy được mà không an toàn</strong> — nối chuỗi SQL, thiếu validation, thiếu check phân quyền — vì nó tối ưu cho "hoạt động" chứ không nắm ngữ cảnh bảo mật của hệ thống. Trách nhiệm thì rõ: <strong>người merge chịu trách nhiệm về lỗ hổng, không phải công cụ</strong>. Quy ước dễ thuyết phục nhất: coi output của AI như code của một junior mới vào — hữu ích, nhưng bắt buộc review, và không bao giờ dán secret/PII vào prompt.</p>
+<p>Cách kiểm soát hiệu quả không phải là cấm AI (dev sẽ dùng lén) mà là đặt guardrail ở <strong>ba lớp</strong> — trước, trong và sau khi code sinh ra:</p>
+<table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Kiểm soát</th>
+<th>Biện pháp cụ thể</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input</strong> (trước khi AI sinh code)</td>
+<td>Định hướng AI ngay từ đầu</td>
+<td>File rules cho AI assistant trong repo (vd <code>CLAUDE.md</code>, <code>.cursor/rules</code>) ghi security rule cụ thể: bắt buộc parameterized query, bắt buộc check authz, cấm hardcode secret. Semgrep custom rules cấm các pattern nguy hiểm mà AI hay sinh</td>
+</tr>
+<tr>
+<td><strong>Process</strong> (trong luồng làm việc)</td>
+<td>Bắt sớm trên máy dev và tại PR</td>
+<td>pre-commit hook chạy Semgrep + gitleaks (6.12); AI security review tự động comment vấn đề bảo mật lên PR; PR security checklist bắt buộc (xem <a href="ch07.html">Chương 7</a>)</td>
+</tr>
+<tr>
+<td><strong>Output</strong> (trước khi ra production)</td>
+<td>Cổng không thương lượng</td>
+<td>CI tự động fail theo severity (Critical/High); <strong>human review bắt buộc</strong> cho luồng auth / payment / PII — không giao cho AI review AI ở những chỗ này; DAST trên staging trước khi lên production</td>
+</tr>
+</tbody>
+</table>
+<p>Ba lớp này thực chất là pipeline shift-left ở 6.1.3 áp cho một nguồn code mới: code AI sinh không cần pipeline riêng, nó cần <strong>đi qua đúng pipeline hiện có</strong> cộng thêm lớp input (rules file) mà code người viết không có.</p>
+<h3 id="ch06-6142-slopsquatting-rui-ro-chuoi-cung-ung-đac-thu-cua-ai">6.14.2. Slopsquatting — rủi ro chuỗi cung ứng đặc thù của AI</h3>
+<p>Một rủi ro mới xuất hiện cùng AI assistant: AI <strong>bịa tên package không tồn tại</strong> (hallucination) khi gợi ý dependency — và tên bịa này thường lặp lại giữa các phiên/model. Kẻ tấn công thu thập các tên hay bị bịa, <strong>đăng ký trước</strong> package đó lên registry public (npm/PyPI) kèm mã độc; dev tin gợi ý của AI, chạy <code>npm install</code> và tự tay kéo mã độc về. Kỹ thuật này gọi là <strong>slopsquatting</strong> — họ hàng với typosquatting và dependency confusion (6.10.1), nhưng "mồi" không phải lỗi gõ phím của người mà là tên do AI bịa ra.</p>
+<p>Phòng thủ:</p>
+<ul>
+<li><strong>Verify package trước khi cài</strong>: tồn tại thật không, bao nhiêu download, repo nguồn có thật không — đặc biệt với tên do AI gợi ý mà mình chưa từng nghe.</li>
+<li>Lockfile + SCA scan (Trivy) trong CI để bắt package lạ/độc ngay khi vào dependency tree.</li>
+<li>Đưa vào rules file cho AI: chỉ dùng dependency đã có trong lockfile, muốn thêm mới phải nêu rõ và để người quyết.</li>
+</ul>
+<hr />
+<h2 id="ch06-phu-luc-a-owasp-zap-dast-vi-du-chay-đuoc">Phụ lục A — OWASP ZAP (DAST) ví dụ chạy được</h2>
+<p>ZAP (Zed Attack Proxy) là DAST mã nguồn mở của OWASP (xem thêm <a href="ch12.html">Chương 12</a>). Hai chế độ scan đóng gói sẵn:</p>
+<pre><code class="language-bash"># Baseline scan: passive (spider + phân tích phản hồi), KHÔNG tấn công chủ động.
+# Nhanh, an toàn cho CI, ~1-2 phút.
+docker run --rm -v &quot;$PWD:/zap/wrk:rw&quot; \
+  ghcr.io/zaproxy/zaproxy zap-baseline.py \
+  -t https://app.staging.company.com -r baseline-report.html
+
+# Full scan: active attack (gửi payload XSS/SQLi thực) — chậm, dùng staging.
+docker run --rm -v &quot;$PWD:/zap/wrk:rw&quot; \
+  ghcr.io/zaproxy/zaproxy zap-full-scan.py \
+  -t https://app.staging.company.com -r full-report.html
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-t</code></td>
+<td>URL mục tiêu</td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td>File báo cáo HTML</td>
+</tr>
+<tr>
+<td><code>-J</code></td>
+<td>Báo cáo JSON (CI parse)</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>File config rule (đặt mức WARN/FAIL/IGNORE từng alert)</td>
+</tr>
+<tr>
+<td><code>-I</code></td>
+<td>Không trả exit fail trên cảnh báo (cho warning gate)</td>
+</tr>
+</tbody>
+</table>
+<p>Cơ chế baseline vs full: <strong>baseline</strong> chỉ spider và phân tích <strong>bị động</strong> phản hồi (header thiếu, cookie không <code>Secure/HttpOnly</code>) nên không gây hại — phù hợp gate CI mọi PR. <strong>Full</strong> thực sự <strong>bắn payload tấn công</strong> vào tham số, có thể tạo dữ liệu rác / kích hoạt side-effect — chỉ chạy trên staging có dữ liệu vứt được, không chạy production. Đây là lý do tách hai chế độ giống nguyên tắc gate phân tầng ở 6.9.</p>
+<hr />
+<h2 id="ch06-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li>Mình đang là người làm bảo mật duy nhất ở một công ty nhỏ, và bài học lớn nhất của chương này khi va vào thực tế: <strong>automation + guardrail là cách duy nhất để một người scale</strong>. Một người không thể ngồi review mọi PR — nếu mô hình vận hành là "mọi thứ qua tay SecOps" thì chắc chắn nghẽn, và đó là dấu hiệu phải sửa mô hình chứ không phải cố làm nhiều giờ hơn. Việc của mình là làm cho "làm đúng" thành con đường dễ nhất: rule chạy sẵn trong pipeline, gate tự động, dev tự nhận feedback trong vài phút mà không cần mình online.</li>
+<li>Bài học chọn điểm bắt đầu: mình không dựng cả pipeline một lúc mà chọn <strong>gitleaks trước</strong> làm quick win. Lý do: secret leak là loại lỗi rõ ràng nhất (gần như không false positive, không phải tranh luận), triển khai nhanh (một hook pre-commit + một job CI), và giá trị thấy được ngay tuần đầu. Có "điểm thắng" đầu tiên được team công nhận rồi thì thêm Semgrep, Trivy sau dễ hơn nhiều — thứ tự triển khai là quyết định chính trị chứ không chỉ kỹ thuật.</li>
+<li>Điều từng hiểu sai: tưởng gate càng gắt càng an toàn. Thực tế khi thử chặn build trên cả finding nhiễu, phản ứng của dev không phải là sửa hết mà là tìm đường vòng — <code>--no-verify</code>, xin exception liên tục, và mất niềm tin vào pipeline. Từ đó mình mới thấm bảng phân tầng ở 6.9: gate chỉ đáng tin khi mỗi lần nó đỏ, người ta tin là có chuyện thật. Số lần xin exception mỗi tuần giờ là metric mình dùng để đo ngưỡng gate có đang đặt đúng không.</li>
+<li>Đang tìm hiểu tiếp: đưa EPSS/KEV vào luồng triage CVE một cách tự động thay vì tra tay, và viết thêm Semgrep custom rule cho các pattern nội bộ (kiểu "endpoint mới phải có guard phân quyền") — vài rule đúng chỗ đang bắt được nhiều lỗi thật hơn cả ruleset cộng đồng.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch05.html"><span>← Chương trước</span><b>05 · An ninh ứng dụng Web (OWASP)</b></a><a class="pg next" href="ch07.html"><span>Chương sau →</span><b>07 · CI/CD &amp; GitOps</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

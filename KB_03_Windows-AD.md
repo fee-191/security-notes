@@ -2,23 +2,13 @@
 
 ## Tổng quan
 
-Chương này trình bày cơ chế hoạt động nội tại của hệ điều hành Windows và cơ chế quản trị tập trung hàng nghìn máy qua **Active Directory (AD)**. Đây là nền tảng cốt lõi cho công tác an toàn thông tin doanh nghiệp: phần lớn môi trường doanh nghiệp chạy Windows, nên Windows + AD vừa là bề mặt tấn công chính, vừa là địa hình phòng thủ chính. Nắm vững các thành phần dưới đây là điều kiện tiên quyết để phát hiện xâm nhập, điều tra sự cố và ngăn leo thang đặc quyền tới quyền quản trị toàn miền.
+Đa số môi trường doanh nghiệp mình từng đụng vào đều chạy Windows và nối vào một domain AD nào đó, nên với dân Blue Team, đây gần như là địa hình mặc định chứ không phải lựa chọn. Mình học chương này để trả lời một câu hỏi xuyên suốt: kẻ tấn công đi từ một máy trạm bị chiếm tới quyền quản trị toàn miền bằng con đường nào, và ở bước nào thì có dấu vết để bắt được.
 
-Bản đồ nhanh các khái niệm trong chương (định nghĩa đầy đủ nằm ở thân bài), kèm điểm rủi ro của mỗi khái niệm:
+Chương bắt đầu từ tầng thấp nhất của một máy Windows đơn lẻ: ranh giới đặc quyền CPU giữa **Kernel Mode** và **User Mode** (nơi một driver Ring 0 có lỗ hổng trở thành đường leo quyền kiểu BYOVD), cách hệ thống lưu cấu hình trong **Registry và Hive** (khóa autostart là chỗ mã độc thích bám trụ nhất), rồi tới đơn vị thực thi và danh tính bảo mật — **process, thread và access token** — thứ hay bị đánh cắp hoặc mạo danh để leo quyền. Từ persistence trên một máy, chương mở rộng ra **services** và **scheduled tasks**, hai cơ chế vừa hợp pháp vừa bị lợi dụng phổ biến nhất cho lateral movement. Phần quan sát và điều tra đi cùng: **Windows Event Log** với các Event ID như 4624/4625 là nguồn bằng chứng chính, còn **Sysmon** bù lại những gì audit mặc định không thấy được.
 
-- **Kernel Mode và User Mode** — hai vòng đặc quyền CPU (Ring 0 chạy nhân/driver, Ring 3 chạy ứng dụng cô lập). **Rủi ro: driver Ring 0 có lỗ hổng là vector leo quyền (BYOVD).**
-- **Registry và Hive** — CSDL cấu hình HĐH/phần mềm và file nhị phân lưu nó trên đĩa. **Rủi ro: các khóa autostart là điểm bám trụ (persistence) ưa thích của mã độc.**
-- **Process, Thread và Access Token** — container tài nguyên, đơn vị lập lịch, và ngữ cảnh bảo mật (danh tính/nhóm/đặc quyền + SID). **Rủi ro: mục tiêu của đánh cắp/mạo danh token để leo quyền.**
-- **Services và Scheduled Tasks** — tiến trình nền do SCM quản lý và chương trình chạy theo lịch/sự kiện. **Rủi ro: hai cơ chế persistence và lateral movement phổ biến.**
-- **Windows Event Log** — nhật ký sự kiện, mỗi loại mang một **Event ID** (4624 logon thành công, 4625 thất bại). **Vai trò: nguồn bằng chứng chính cho điều tra sự cố.**
-- **Sysmon** — công cụ Sysinternals bổ sung telemetry vượt audit native (hash file, ProcessGUID, ánh xạ network→process). **Vai trò: lấp khoảng trống quan sát để bắt hành vi tấn công tinh vi.**
-- **Active Directory** — thư mục quản trị tập trung: **Domain** (ranh giới quản trị), **Forest** (ranh giới tin cậy cao nhất), **OU**, **GPO**. **Rủi ro: chiếm được AD là kiểm soát gần như toàn bộ tổ chức.**
-- **LDAP** — giao thức truy vấn dữ liệu thư mục AD. **Rủi ro: cũng là công cụ trinh sát (recon) — truy vấn bất thường là chỉ báo sớm.**
-- **Kerberos** — giao thức xác thực mặc định dựa trên ticket (vé); lấy **TGT** một lần rồi đổi lấy **service ticket** cho từng dịch vụ. **Rủi ro: nền tảng cho Kerberoasting, Golden/Silver Ticket.**
-- **NTLM** — giao thức challenge/response tiền nhiệm, còn lại cho các trường hợp legacy. **Rủi ro: điểm yếu thiết kế dẫn tới pass-the-hash và NTLM relay.**
-- **Tấn công Active Directory** — tổng hợp kỹ thuật thực chiến trên Windows/AD kèm dấu vết Event ID, liên kết mọi khái niệm trên thành chuỗi công–thủ hoàn chỉnh.
+Nửa sau chương chuyển sang tầng domain, nơi **Active Directory** quản trị tập trung qua Domain, Forest, OU và GPO — chiếm được AD gần như đồng nghĩa kiểm soát cả tổ chức, và **LDAP** vừa là giao thức truy vấn thư mục vừa là công cụ recon lộ ý đồ tấn công qua các truy vấn bất thường. Hai giao thức xác thực được đặt cạnh nhau để thấy rõ vì sao chúng là mục tiêu: **Kerberos** dựa trên ticket (TGT rồi service ticket) là nền của Kerberoasting và Golden/Silver Ticket, còn **NTLM** — di sản challenge/response còn sót lại cho các ca legacy — mang điểm yếu thiết kế dẫn tới pass-the-hash và NTLM relay. Chương khép lại bằng phần **tấn công Active Directory**, nối toàn bộ khái niệm trên thành một chuỗi công–thủ có dấu vết Event ID đi kèm.
 
-> Tài liệu tham chiếu kỹ thuật dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi từ **là gì → cơ chế bên trong (tới mức bit/byte/bước/tham số) → ví dụ thực tế → lưu ý bảo mật**. Các con số được lấy từ tài liệu Microsoft Docs, MS-* Open Specifications, RFC 4120/4178, và mã nguồn Sysinternals/Sysmon công khai; những chỗ cần kiểm chứng được ghi chú rõ.
+> Số liệu trong chương bám theo Microsoft Docs, các MS-* Open Specifications, RFC 4120/4178 và mã nguồn công khai của Sysinternals/Sysmon; chỗ nào chưa chắc được ghi "(cần kiểm chứng)".
 
 ---
 

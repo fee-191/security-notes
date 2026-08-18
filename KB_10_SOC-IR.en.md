@@ -2,94 +2,15 @@
 
 ## Overview
 
-This chapter explains how an organization **monitors, detects, and responds to information security incidents** — the "operational, hands-on" complement to the static defensive layer (firewalls, access controls, passwords). The goals of the chapter: understand the data flow (where logs originate, how they are normalized and analyzed), the human roles (who reads, who handles), and the operational sequence when an incident occurs. The foundational terminology is defined below before diving into the technical detail in later sections.
+The first time I sat a SOC shift, what threw me wasn't the attacks — it was the sheer volume of alerts. Thousands a day, the overwhelming majority harmless, and someone has to decide in seconds which ones actually matter. This chapter is what I learned about how a **SOC** (Security Operations Center — a 24/7 team of people, process, and technology) turns that filtering into something systematic instead of relying on individual gut feeling.
 
-### SOC (Security Operations Center)
+Everything starts with **logs** — event records that every server, device, and application generates on its own, except each platform speaks a different dialect (Syslog on Linux, Event Log on Windows, CEF on security appliances), so nothing is analyzable until it's normalized to one schema. A SOC doesn't spread the work evenly: splitting it into **Tier 1/2/3** — quick true/false-positive triage on the front line, up through deep investigation and proactive threat hunting at Tier 3 — keeps expensive specialists off simple work and routes the hard cases to people who can actually handle them. **Triage** itself has to be standardized too, because treating every alert the same way is how a threat disguised as normal traffic slips through.
 
-**Definition.** A SOC is a unit composed of **people + processes + technology**, operating continuously (typically 24/7), responsible for monitoring, detecting, analyzing, and responding to security events across the entire infrastructure.
+When an incident is real, improvising — powering a machine off the moment something looks wrong — can destroy evidence and let it spread. That's why there are two nearly equivalent standard frameworks: **NIST SP 800-61** (4 phases: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-Incident Activity) and **SANS PICERL** (6 steps, breaking Containment/Eradication/Recovery apart), both enforcing the same sequence — contain first, preserve evidence, then eradicate and recover. A **playbook** lays out the high-level process for a given incident type; a **runbook** breaks it down into the exact commands and queries so even a junior analyst gets it right under pressure. **MTTD** and **MTTR** are the two numbers that measure how fast all of this actually runs — the longer an attacker's dwell time in the network, the worse the damage, so shortening these two metrics directly shortens the damage.
 
-**Problem it solves.** Systems generate billions of event logs per day, yet only a tiny fraction represent real attacks. The SOC is the organizational mechanism for **separating signal from noise** in a way that is systematic, repeatable, and measurable.
+The rest of the chapter gets into concrete tooling and technique, since no human can manually process billions of logs or every individual packet — detection and investigation platforms (**SIEM** centralizes logs for querying and rule-based alerting; **Sigma** writes a detection rule once and translates it across SIEMs; **Suricata** analyzes packets by signature; **YARA** identifies malware by pattern within files; **Splunk/SPL** and **osquery/Velociraptor** query endpoint state; **TheHive/SOAR** automates repetitive steps) extend that capability to scale. **Threat hunting** goes further than automated detection: proactively chasing an attacker's traces from a hypothesis, grounded in the **MITRE ATT&CK** framework's classification of attack techniques — because sophisticated attackers know how to evade existing rules. In forensics, **chain of custody** documents who held evidence and when to keep it legally defensible, while volatile data like RAM has to be collected in **order of volatility** before it's lost at power-off — the reason many playbooks call for isolating the network but keeping the machine running. And because an attacker can hide for months before surfacing, **log retention** policy (usually tiered hot/warm/cold) determines whether an investigation still has a trail to follow.
 
-### Logs and log formats
-
-**Definition.** A log is an **event record** that each server, network device, or application generates on its own (for example: the time, subject, action, and result of a login attempt). A log format is the structural convention for that record.
-
-**Problem it solves.** Each platform uses its own format — Linux uses **Syslog**, Windows uses the **Event Log**, security appliances often use **CEF**. For consistent analysis, logs must be normalized to a common schema. Reading each field correctly is a foundational SOC operations skill.
-
-### SOC tiers (Tier 1/2/3)
-
-**Definition.** A SOC divides work by investigation depth, not by rank:
-- **Tier 1** — the front line that receives alerts and quickly triages true positive vs. false positive.
-- **Tier 2** — deep investigation, containment, timeline reconstruction, rule tuning.
-- **Tier 3** — proactive threat hunting, in-depth forensics, malware analysis, handling of major incidents/APTs.
-
-**Problem it solves.** Alerts arrive in high volume, but most are simple or false positives. Having expensive specialists handle simple work is wasteful and causes burnout. Tiering ensures easy work is handled quickly and cheaply, while hard work is routed to people with the right capability.
-
-### Alert triage
-
-**Definition.** Triage is the process of evaluating an alert: is it real or false (TP/FP), what category does it fall into, how severe is it, should it be handled in place or escalated. The term is borrowed from medicine, referring to **prioritizing what to handle first**.
-
-**Problem it solves.** Not every alert can be treated the same. Standardized triage ensures important matters are handled first and that threats disguised as normal activity are not missed.
-
-### Incident response lifecycle (NIST & SANS PICERL)
-
-**Definition.** Two standard incident response frameworks:
-- **NIST SP 800-61** — 4 phases: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-Incident Activity.
-- **SANS PICERL** — 6 steps: Preparation, Identification, Containment, Eradication, Recovery, Lessons Learned.
-
-The two models are essentially equivalent; SANS breaks Containment/Eradication/Recovery into separate steps.
-
-**Problem it solves.** During an incident, ad hoc actions (such as immediately powering off a machine) can destroy evidence and let the incident spread. A standard process imposes the correct sequence: contain first, preserve evidence, then eradicate and recover.
-
-### Playbook / Runbook
-
-**Definition.**
-- **Playbook** — a high-level process for a class of incident (phases, roles, decision points).
-- **Runbook** — the detailed operational steps (commands, queries) that execute part of a playbook.
-
-**Problem it solves.** An emergency is not the time to improvise. A predefined script ensures fast, consistent handling with no missed steps, even for less experienced analysts.
-
-### MTTD and MTTR
-
-**Definition.**
-- **MTTD** (Mean Time To Detect) — the average time from when an incident begins to when it is detected.
-- **MTTR** (Mean Time To Respond/Recover) — the average time from detection to when handling/recovery is complete.
-
-**Problem it solves.** These two metrics quantify defensive speed and the effectiveness of improvements. The longer an attacker persists in the network (dwell time), the greater the damage; reducing MTTD/MTTR directly reduces damage.
-
-### Practical tools (Sigma, Suricata, YARA, Splunk, osquery, SOAR)
-
-- **Sigma** — a generic detection rule description format (YAML) that translates automatically into the query language of each SIEM. Write once, use across many platforms.
-- **SIEM** — a platform that centralizes logs, indexes them for fast querying, and generates alerts based on rules. It is where analysts work.
-- **Suricata** — an IDS/IPS engine that analyzes packets by signature, alerting on or blocking malicious traffic.
-- **YARA** — a tool that identifies malware by patterns (strings, bytes, regex) within files.
-- **Splunk (SPL)** — a popular SIEM; SPL is its log query language.
-- **osquery / Velociraptor** — query endpoint state using SQL-like syntax, supporting threat hunting.
-- **TheHive / SOAR** — manage IR cases and **automate** repetitive steps (lookups, blocking, notifications), freeing humans to focus on the complex parts.
-
-**Problem it solves.** Humans cannot manually process billions of logs or every individual packet. These tools extend detection and response capability at large scale.
-
-### Threat Hunting & MITRE ATT&CK
-
-**Definition.** **Threat hunting** is the proactive activity of searching for traces of an attacker that automated detection has not yet caught, starting from a **hypothesis** (for example: an attacker is performing lateral movement). **MITRE ATT&CK** is a knowledge base that systematically classifies attack techniques (Tactics × Techniques), with each technique assigned a Txxxx code.
-
-**Problem it solves.** Sophisticated attackers know how to evade existing rules. Proactive hunting based on an understanding of TTPs helps detect what automated systems miss.
-
-### Chain of Custody & Forensics
-
-**Definition.** **Forensics** (digital investigation) is the process of collecting and analyzing digital evidence. **Chain of custody** is the record documenting who held the evidence, when, and what was done with it — ensuring integrity and traceability.
-
-**Problem it solves.** Evidence that has been altered or whose origin is unclear loses its legal value. A core principle: volatile data (RAM) is lost when a machine is powered off, so it must be collected according to the **order of volatility** — the reason many playbooks call for isolating the network but keeping the machine running rather than shutting it down.
-
-### Log Retention
-
-**Definition.** A policy defining **how long logs are retained** and how they are stored. It is usually tiered into hot/warm/cold: recent logs are kept in a fast-access tier (high cost), while older logs are compressed and kept in a low-cost tier.
-
-**Problem it solves.** An attacker may hide in a network for months before being detected; retaining logs for too short a period causes an investigation to lose track of the moment of intrusion. In addition, many legal regulations mandate a minimum retention period.
-
-The following sections go deeper into the technical detail of each concept above.
-
-> This chapter is a reference document for self-study and lookup. Each concept is presented along the axis: **WHAT IT IS → INTERNAL MECHANISM (down to the bit/byte/step/parameter) → REAL-WORLD EXAMPLE (commands, configuration, rules, output) → SECURITY NOTES**. Figures are cited to their source; where verification is needed, it is marked "[needs verification]".
+> Each section below follows the same axis — what it is → internal mechanism → real-world example → security notes — and any uncertain figure is flagged "needs verification".
 
 ---
 
@@ -394,7 +315,9 @@ An example mapping into a P1–P4 matrix:
 
 ### 10.5.1. NIST SP 800-61 — 4 phases
 
-NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide) defines a 4-phase lifecycle. Note that the lifecycle is a **repeating cycle** (not linear) — Detection & Analysis and Containment/Eradication/Recovery may loop multiple times.
+The classic 4-phase lifecycle comes from NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide). Note that the lifecycle is a **repeating cycle** (not linear) — Detection & Analysis and Containment/Eradication/Recovery may loop multiple times.
+
+> **Version update:** in April 2025 NIST released **SP 800-61 Rev. 3**, which supersedes Rev. 2. Rev. 3 no longer describes a linear 4-phase lifecycle; instead it is reorganized around the six **NIST CSF 2.0** functions (Govern, Identify, Protect, Detect, Respond, Recover) as a Community Profile. The 4-phase model shown here (Rev. 2) is still widely used for teaching and maps cleanly onto SANS PICERL, but reference the current standard as Rev. 3.
 
 ```
       ┌───────────────────────────────────────────────────────────────────────────┐
@@ -1024,3 +947,8 @@ The takeaway that ties it together:
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- **Investigate the real alert; don't trust the SIEM summary.** On a system I operate (a Wazuh + OpenSearch stack) a public VPS IP once fired a few hundred requests over more than two hours probing for path traversal — `%252e%252e` (double-encoding), `....//`, targeting `.ssh/id_rsa`, `.env`, `.mysql_history`, and even rotating its user-agent and faking a Bing referer to blend in. The alert looked scary at first, but once I opened the raw events (aggregating by `data.url` and `rule.id`, building a date_histogram, reading `full_log` to recover the original log line because the box's access.log had already rotated) it was all `301/400/404` — no "attack returned 200" event anywhere. Conclusion: heavily scanned but **not breached**. The lesson matches section 10.4: real severity lives in the *outcome* (any unexpected 2xx?), not in the *volume* of requests.
+- **Blocking IPs is whack-a-mole.** After that incident I tried blocking the IP, and the next day dozens of other IPs/subnets were scanning the whole fleet. Since then I lean toward *behavior*-based hardening (rate-limiting, restricting access by source, blocking sensitive filenames at the proxy layer) instead of chasing individual IPs.
+- **SOAR is for cutting noise, not replacing people.** I'm building a flow that wires SIEM → SOAR: extract the public IP from an alert, enrich it against a couple of threat-intel sources (an AbuseIPDB-style confidence score plus a VirusTotal-style count of flagging engines) before notifying the ops channel. The biggest value isn't "auto-block" — it's **distinguishing a source with an attack history from legitimate access that got logged by mistake**, which visibly reduces the alerts a human has to touch. In the spirit of section 10.8.6, I still keep destructive actions (block/purge) human-in-the-loop and only automate the enrich/labeling part.
+- **Still exploring:** wiring an auto-block threshold (fail2ban ↔ SIEM style) that won't shoot me in the foot when a legitimate IP accidentally crosses the threshold.

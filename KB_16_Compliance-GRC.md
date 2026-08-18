@@ -2,25 +2,13 @@
 
 ## Tổng quan
 
-**GRC (Governance, Risk, Compliance)** là khuôn khổ để một tổ chức tự quản lý hoạt động an toàn thông tin. Nó trả lời ba câu hỏi: ai chịu trách nhiệm, rủi ro nào cần ưu tiên, và bằng chứng nào chứng minh tổ chức tuân thủ với cơ quan quản lý, khách hàng và đối tác.
+Lần đầu một khách hàng gửi bảng câu hỏi bảo mật vài chục dòng trước khi ký hợp đồng — mã hóa at-rest dùng thuật toán gì, ai được truy cập dữ liệu, log giữ bao lâu, có quy trình ứng phó sự cố không — mình mới nhận ra viết code an toàn và chứng minh được là mình an toàn là hai việc khác nhau. **GRC (Governance, Risk, Compliance)** là khuôn khổ để làm việc thứ hai: trả lời ai chịu trách nhiệm, rủi ro nào ưu tiên, và bằng chứng nào đưa cho cơ quan quản lý, khách hàng, đối tác khi họ hỏi.
 
-Bảo mật không chỉ là vấn đề kỹ thuật (firewall, mã hóa) mà còn là vấn đề **trách nhiệm và bằng chứng**. Khi xảy ra sự cố mà thiếu hồ sơ chứng minh đã thực hiện đúng quy trình, tổ chức có thể bị xử phạt, mất chứng chỉ hoặc chịu trách nhiệm pháp lý. Kỹ thuật xây dựng hệ thống vững chắc; GRC bảo đảm hệ thống đó có cơ sở pháp lý, hồ sơ vận hành và phân định trách nhiệm rõ ràng.
+Chương mở đầu bằng ba lớp lồng nhau của GRC — governance đặt luật chơi, risk đo cái gì có thể hỏng, compliance chứng minh tuân thủ — rồi đi vào cách định lượng và xử lý rủi ro (SLE/ARO/ALE, bốn lựa chọn mitigate/transfer/avoid/accept, và residual risk luôn cần một risk owner ký nhận). Từ đó là các framework tham chiếu: NIST CSF cho ngôn ngữ mô tả tình trạng an ninh ở tầm chiến lược, các SP 800-53/800-61/800-207 cho control và quy trình cụ thể hơn, ISO 27001/27002 cho hệ thống quản lý có thể xin chứng nhận, PCI DSS cho dữ liệu thẻ thanh toán.
 
-Chương này bao gồm các khối kiến thức sau:
+Phần pháp lý Việt Nam — Luật An toàn thông tin mạng, Luật An ninh mạng, các nghị định phân loại hệ thống và bảo vệ dữ liệu cá nhân, cùng luật bảo vệ dữ liệu cá nhân mới có hiệu lực từ 2026 — quyết định trực tiếp hệ thống phải lưu dữ liệu ở đâu và xin consent thế nào, nên dù không phải dân luật cũng không thể bỏ qua. Chương khép lại bằng phần vận hành thực tế: biến framework thành thao tác hằng ngày (phân loại dữ liệu, audit trail, crosswalk giữa các chuẩn) và đặc thù ngành ngân hàng/tài chính với Three Lines Model cùng continuous compliance.
 
-- **GRC** — ba lớp lồng nhau. **Governance (quản trị)** là lớp ngoài: lãnh đạo đặt luật chơi, xác định khẩu vị rủi ro (risk appetite) và thẩm quyền quyết định. **Risk (rủi ro)** là lớp giữa: đánh giá điều gì có thể hỏng và mức thiệt hại. **Compliance (tuân thủ)** là lớp trong: chứng minh tuân thủ các tiêu chuẩn và luật. Thiếu quản trị tập trung, mỗi đội làm theo cách riêng, rủi ro tồn dư không được theo dõi, và không có hồ sơ khi bị kiểm toán.
-- **Quản lý rủi ro (Risk Management)** — rủi ro hình thành từ chuỗi **tài sản → mối đe dọa → điểm yếu → tác động × khả năng xảy ra**. Đo lường theo hai cách: **định lượng** (gán giá trị tiền: SLE, ARO, ALE) để so sánh chi phí kiểm soát, và **định tính** (chấm thang 1–5 likelihood × impact) khi thiếu số liệu tài chính. Xử lý rủi ro có 4 lựa chọn: **giảm thiểu (mitigate), chuyển giao (transfer), né tránh (avoid), chấp nhận (accept)** — phần rủi ro còn lại sau khi xử lý gọi là **residual risk (rủi ro tồn dư)**, và mọi rủi ro tồn dư phải có risk owner ký chấp nhận chính thức. **Risk Register** là kho trung tâm theo dõi mọi rủi ro kèm chủ sở hữu và hạn xử lý.
-- **NIST Cybersecurity Framework (CSF)** — khung tự nguyện cung cấp ngôn ngữ chung để mô tả tình trạng an ninh, chia thành 6 Function (CSF 2.0): **Govern, Identify, Protect, Detect, Respond, Recover**. CSF xác định *cần làm gì* chứ không quy định *công nghệ cụ thể*.
-- **NIST Special Publications** — **SP 800-53** là catalog control chi tiết (trả lời câu hỏi cụ thể mà CSF để ngỏ). **SP 800-61** là quy trình ứng phó sự cố: chuẩn bị → phát hiện và phân tích → khoanh vùng/diệt/phục hồi → rút kinh nghiệm. **SP 800-207 (Zero Trust)** loại bỏ tin tưởng mặc định theo vị trí mạng; mỗi truy cập đều phải xác thực và đánh giá rủi ro lại.
-- **ISO/IEC 27001 & 27002** — **27001** là tiêu chuẩn quốc tế cho Hệ thống quản lý an toàn thông tin (ISMS), **có chứng nhận** bởi bên thứ ba. **27002** là code of practice hướng dẫn triển khai từng control. Tài liệu trung tâm là **SoA (Statement of Applicability)** — liệt kê mọi control kèm lý do áp dụng hay loại trừ, là điểm xuất phát của auditor.
-- **PCI DSS** — tiêu chuẩn bắt buộc theo hợp đồng (không phải luật) cho mọi tổ chức lưu, xử lý hoặc truyền dữ liệu thẻ thanh toán; gồm 12 yêu cầu. Quy tắc cốt lõi: Sensitive Authentication Data (CVV, dữ liệu dải từ, PIN) **tuyệt đối không được lưu** sau khi authorize. **Tokenization** thay số thẻ thật bằng token vô nghĩa để giảm phạm vi tuân thủ.
-- **Pháp lý Việt Nam** — bốn văn bản chính: **Luật An toàn thông tin mạng 2015** (khung kỹ thuật nền), **Luật An ninh mạng 2018** (an ninh quốc gia, yêu cầu lưu dữ liệu trong nước), **Nghị định 85/2016** (phân loại hệ thống thành 5 cấp độ), **Nghị định 13/2023** (bảo vệ dữ liệu cá nhân, tương tự GDPR). Đây là quy định pháp luật bắt buộc; việc xác định cấp độ hệ thống và xin sự đồng ý (consent) khi thu thập dữ liệu cá nhân quyết định thiết kế hệ thống và nơi lưu trữ dữ liệu.
-- **Vận hành tuân thủ (Operational Compliance)** — biến framework thành thao tác hằng ngày: phân loại dữ liệu (data classification) để biết áp control nào, audit trail dạng hash chain chống chối bỏ, log retention và data residency, và crosswalk ánh xạ một control sang nhiều framework để khỏi làm trùng.
-- **GRC ngân hàng/tài chính** — đặc thù ngành: **Three Lines Model** tách trách nhiệm vận hành / giám sát / kiểm toán độc lập, khung giám sát của Ngân hàng Nhà nước và Luật Phòng chống rửa tiền, và continuous compliance (policy-as-code chạy trong CI/CD, fail-closed).
-
-Các mục dưới đây trình bày chi tiết kỹ thuật cho từng khối.
-
-> Chương này dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) cần tra cứu và vận hành thực tế. Mỗi khái niệm đi theo trình tự: **là gì → cơ chế bên trong (tới mức trường/bước/tham số) → ví dụ thực tế chạy được → lưu ý bảo mật**. Các điều khoản pháp lý Việt Nam được trình bày ở mức **ý nghĩa vận hành**; chỗ nào số hiệu/điều khoản cần kiểm chứng sẽ được ghi rõ `[CẦN KIỂM CHỨNG]` thay vì bịa.
+> Các khái niệm dưới đây đi theo cùng một trình tự: là gì → cơ chế bên trong → ví dụ chạy được → lưu ý bảo mật. Điều khoản pháp lý Việt Nam ghi rõ `[CẦN KIỂM CHỨNG]` ở những chỗ số hiệu/điều khoản chưa chắc chắn.
 
 ---
 
@@ -726,6 +714,15 @@ Surveillance audit (năm 1, năm 2) -> Recertification (năm 3)
 
 **Lưu ý bảo mật.** Chứng chỉ 27001 chứng nhận *hệ thống quản lý* tồn tại và vận hành, KHÔNG đảm bảo hệ thống "không thể bị hack". Scope hẹp (vd chỉ 1 phòng ban) vẫn được cấp chứng chỉ hợp lệ — luôn đọc **scope statement** trên chứng chỉ của nhà cung cấp trước khi tin tưởng. Đây là điểm due diligence quan trọng khi đánh giá vendor.
 
+### 16.4.4. Góc nhìn công ty nhỏ: ISO 27001 / SOC 2 khi nguồn lực mỏng
+
+Ở công ty nhỏ (dev outsource, startup), làm 27001 hay SOC 2 "đủ" thường không phải để bảo mật tối đa mà để **qua được cửa bán hàng**: khách lớn không ký hợp đồng nếu vendor không có chứng chỉ hoặc không trả lời nổi bảng câu hỏi bảo mật. Vài kinh nghiệm thực dụng:
+
+- **Thu hẹp scope là đòn bẩy lớn nhất.** Chi phí audit tỉ lệ thuận với scope. Chỉ đưa vào ISMS những hệ thống/đội thực sự chạm dữ liệu khách (vd nền tảng prod + đội vận hành nó), tách bạch môi trường dev/nội bộ ra ngoài scope. Scope hẹp nhưng trung thực tốt hơn scope rộng mà không có bằng chứng.
+- **SOC 2 vs 27001:** SOC 2 (Type I = tại một thời điểm, Type II = hiệu lực control qua một khoảng thời gian 3–12 tháng) là báo cáo attestation của kiểm toán viên (AICPA, phổ biến với khách Mỹ), còn 27001 là chứng chỉ ISMS (phổ biến với khách EU/APAC). Nhiều khách chấp nhận một trong hai; chọn cái đúng thị trường khách hàng.
+- **Bằng chứng nên là output tự động, không phải screenshot thủ công.** Với Type II, auditor lấy mẫu bằng chứng rải theo thời gian → làm thủ công sẽ đuối. Đẩy bằng chứng thành thứ pipeline/hệ thống tự sinh: log truy cập, kết quả scan CI, export chính sách IAM/MFA, ticket review định kỳ (xem thêm 16.7.4 crosswalk và continuous compliance ở 16.8.3). Một control chứng minh được bằng log máy sinh ra sẽ qua audit nhẹ nhàng hơn nhiều so với "ảnh chụp màn hình cấu hình".
+- **Security questionnaire của khách** (SIG, CAIQ, hoặc bảng Excel tự chế của khách) thực chất là mini-audit trước hợp đồng. Trả lời chúng lặp đi lặp lại rất tốn thời gian nếu mỗi lần viết lại từ đầu — nên xây sẵn một **baseline doc / answer bank** (mô tả kiến trúc, control mã hóa, quản lý truy cập, IR, backup, data residency) để tái sử dụng câu trả lời và giữ nhất quán giữa các lần.
+
 ---
 
 ## 16.5. PCI DSS (sơ lược — ngành tài chính/thẻ)
@@ -858,7 +855,9 @@ print(luhn_ok("4111111111111111"))   # -> True
 
 ### 16.6.4. Bảo vệ dữ liệu cá nhân — Nghị định 13/2023/NĐ-CP
 
-**Là gì.** Nghị định **13/2023/NĐ-CP** về **bảo vệ dữ liệu cá nhân (PDPD)**, hiệu lực **01/07/2023**. Đây là văn bản gần với GDPR nhất ở VN tính tới thời điểm hiện tại. Định nghĩa dữ liệu cá nhân, dữ liệu cá nhân nhạy cảm, vai trò các bên, quyền của chủ thể, và nghĩa vụ.
+**Là gì.** Nghị định **13/2023/NĐ-CP** về **bảo vệ dữ liệu cá nhân (PDPD)**, hiệu lực **01/07/2023**. Đây là văn bản pháp lý về dữ liệu cá nhân gần với GDPR nhất ở VN trong giai đoạn 2023–2025. Định nghĩa dữ liệu cá nhân, dữ liệu cá nhân nhạy cảm, vai trò các bên, quyền của chủ thể, và nghĩa vụ.
+
+> **CẬP NHẬT QUAN TRỌNG — nâng cấp từ nghị định lên luật.** Quốc hội đã thông qua **Luật Bảo vệ dữ liệu cá nhân (Luật số 91/2025/QH15)** ngày 26/6/2025, **hiệu lực 01/01/2026**. Đây là văn bản cấp *luật* đầu tiên về dữ liệu cá nhân, đứng trên NĐ 13/2023 (cấp nghị định) và trở thành khung pháp lý cao nhất về PDP tại VN. Một số điểm đáng chú ý (cần đối chiếu văn bản gốc khi trích chính xác): cấm mua bán dữ liệu cá nhân, siết điều kiện chuyển dữ liệu ra nước ngoài, và quy định chế tài. Các nguyên tắc vận hành bên dưới (consent, quyền chủ thể, DPIA/TIA, breach notification) vẫn giữ giá trị nhưng **phải rà lại theo Luật 91/2025 và các nghị định hướng dẫn mới** thay vì chỉ dựa vào NĐ 13/2023. `[CẦN KIỂM CHỨNG]` số hiệu/điều khoản nghị định hướng dẫn Luật 91/2025.
 
 **Phân loại dữ liệu cá nhân (quyết định mức bảo vệ kỹ thuật):**
 
@@ -1190,7 +1189,7 @@ echo "Evidence package: $OUT"
 | Xử lý dữ liệu thẻ thanh toán | PCI DSS v4.0 |
 | Pháp lý VN — an toàn theo cấp độ | Luật ATTT 2015 + NĐ 85/2016 + TCVN 11930 |
 | Pháp lý VN — an ninh quốc gia, localization | Luật ANM 2018 (+ NĐ hướng dẫn) |
-| Pháp lý VN — dữ liệu cá nhân | NĐ 13/2023 |
+| Pháp lý VN — dữ liệu cá nhân | Luật BVDLCN 91/2025/QH15 (hiệu lực 01/01/2026) + NĐ 13/2023 & NĐ hướng dẫn |
 
 **Quy tắc tự bảo vệ khi viết tài liệu tuân thủ:** mọi số hiệu văn bản, điều khoản, thời hạn retention pháp lý phải đối chiếu văn bản gốc trước khi dùng chính thức. Tài liệu này đánh dấu `[CẦN KIỂM CHỨNG]` ở mọi chỗ chưa xác minh được — đặc biệt **Nghị định 356/2025** (chưa có thông tin tin cậy), các số hiệu thông tư NHNN, mã mục TCVN 11930, và thời hạn breach notification của NĐ 13/2023.
 
@@ -1200,3 +1199,8 @@ echo "Evidence package: $OUT"
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- **Bảng câu hỏi bảo mật của khách khiến mình "ngộ ra" GRC là gì.** Lúc đầu mình nghĩ compliance là giấy tờ hình thức. Rồi thực tế ở nơi mình làm, một khách hàng gửi bảng câu hỏi bảo mật vài chục dòng trước khi ký hợp đồng — hỏi mã hóa at-rest thuật toán gì, quản lý khóa ra sao, ai được truy cập dữ liệu, có MFA không, log giữ bao lâu, dữ liệu nằm ở region nào, có quy trình IR không. Trả lời được hay không quyết định trực tiếp việc có deal. Từ đó mình hiểu: control kỹ thuật và "bằng chứng chứng minh mình có control đó" là hai việc khác nhau, và GRC là cầu nối.
+- **Bài học: xây baseline doc để không viết lại từ đầu mỗi lần.** Lần đầu trả lời mất mấy ngày, đi hỏi khắp các đội. Sau đó mình gom thành một tài liệu nền: sơ đồ kiến trúc, danh sách control theo nhóm (mã hóa, IAM/MFA, logging, backup, IR, data residency), kèm chỗ trỏ tới bằng chứng thật (export cấu hình, kết quả scan). Lần sau chỉ việc map câu hỏi của khách vào baseline → nhanh hơn nhiều và câu trả lời nhất quán giữa các khách.
+- **Điều từng hiểu sai:** mình từng tưởng "có chứng chỉ ISO 27001 là hệ thống an toàn". Thực ra chứng chỉ chỉ nói ISMS *tồn tại và vận hành trong scope đã khai*; scope có thể rất hẹp. Giờ khi đánh giá vendor mình đọc scope statement trước tiên.
+- **Đang tìm hiểu tiếp:** cách biến bằng chứng compliance thành output tự động (policy-as-code, gom evidence bằng script) để khỏi phải chụp màn hình thủ công mỗi kỳ audit — hướng continuous compliance ở 16.8.3.

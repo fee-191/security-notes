@@ -1,0 +1,2237 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 8 — SIEM &amp;amp; Quản lý log tập trung — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 8 — SIEM &amp;amp; Quản lý log tập trung — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch07.html"><link rel="next" href="ch09.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter open active" data-ch="08"><a class="nav-ch-title" href="#top"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"><a class="nav-sub" href="#ch08-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch08-81-siem-la-gi-va-vi-sao-ton-tai">8.1. SIEM là gì và vì sao tồn tại</a><a class="nav-sub" href="#ch08-82-kien-truc-siem-data-pipeline">8.2. Kiến trúc SIEM &amp;amp; data pipeline</a><a class="nav-sub" href="#ch08-83-phan-loai-cong-cu-phong-thu-av-edr-siem-soar-xdr-ndr">8.3. Phân loại công cụ phòng thủ: AV / EDR / SIEM / SOAR / XDR / NDR</a><a class="nav-sub" href="#ch08-84-wazuh-tong-quan-va-kien-truc">8.4. WAZUH — Tổng quan và kiến trúc</a><a class="nav-sub" href="#ch08-85-luong-agent-manager-enrollment-va-truyen-du-lieu-byteport-level">8.5. Luồng agent → manager: enrollment và truyền dữ liệu (byte/port-level)</a><a class="nav-sub" href="#ch08-86-file-cau-hinh-ossecconf-mo-xe-tung-khoi">8.6. File cấu hình ossec.conf — mổ xẻ từng khối</a><a class="nav-sub" href="#ch08-87-decoder-boc-tach-field-tu-log-that">8.7. DECODER — bóc tách field từ log thật</a><a class="nav-sub" href="#ch08-88-rule-phat-hien-va-phan-loai">8.8. RULE — phát hiện và phân loại</a><a class="nav-sub" href="#ch08-89-fim-syscheck-giam-sat-toan-ven-tep">8.9. FIM / Syscheck — giám sát toàn vẹn tệp</a><a class="nav-sub" href="#ch08-810-active-response-phan-ung-tu-đong">8.10. Active Response — phản ứng tự động</a><a class="nav-sub" href="#ch08-811-vulnerability-detection">8.11. Vulnerability Detection</a><a class="nav-sub" href="#ch08-812-sca-security-configuration-assessment">8.12. SCA — Security Configuration Assessment</a><a class="nav-sub" href="#ch08-813-tich-hop-mitre-attck">8.13. Tích hợp MITRE ATT&amp;amp;CK</a><a class="nav-sub" href="#ch08-814-detection-engineering-viet-tinh-chinh-rule-fp-vs-fn">8.14. Detection Engineering — viết, tinh chỉnh rule, FP vs FN</a><a class="nav-sub" href="#ch08-815-vi-du-end-to-end-ssh-brute-force-tu-log-tho-toi-alert-dashboard">8.15. Ví dụ end-to-end: SSH brute-force từ log thô tới alert dashboard</a><a class="nav-sub" href="#ch08-816-đieu-tra-mot-canh-bao-thuc-te-bang-wazuh-quy-trinh-tai-dung-đuoc">8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được</a><a class="nav-sub" href="#ch08-817-soar-tu-đong-hoa-phia-tren-siem">8.17. SOAR — tự động hóa phía trên SIEM</a><a class="nav-sub" href="#ch08-818-tong-ket-van-hanh-checklist-bao-mat-wazuh">8.18. Tổng kết vận hành &amp;amp; checklist bảo mật Wazuh</a><a class="nav-sub" href="#ch08-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-08" data-ch="08">
+<h1 id="ch08-chuong-8-siem-quan-ly-log-tap-trung">Chương 8 — SIEM &amp; Quản lý log tập trung</h1>
+<h2 id="ch08-tong-quan">Tổng quan</h2>
+<p>Hồi mới học SIEM, mình cứ nghĩ giá trị của nó nằm ở dashboard đẹp và cảnh báo chạy realtime. Đến lần đầu ngồi điều tra một đợt quét thật, mình mới hiểu giá trị lớn nhất nằm ở chỗ khác hẳn: khả năng đặt câu hỏi lên dữ liệu log đã được gom về một chỗ. Chương này viết theo đúng mạch đó — <strong>SIEM</strong> là lớp phần mềm thu gom, chuẩn hóa, tương quan và lưu trữ log bảo mật từ khắp hạ tầng, còn <strong>Wazuh</strong> là nền tảng SIEM/HIDS mã nguồn mở hiện thực đầy đủ pipeline đó. Không thu được log thì không có gì để phát hiện hay điều tra — khả năng quan sát (visibility) luôn đi trước mọi khả năng phòng thủ.</p>
+<p>Nửa đầu chương đi từ khái niệm nền tới cách phân biệt công cụ. <strong>Pipeline dữ liệu</strong> (collect → parse → normalize → enrich → correlate → alert → store) biến log thô hỗn tạp từ nhiều nguồn thành dạng đồng nhất để một rule dùng được cho mọi nguồn, còn ranh giới giữa <strong>AV, EDR, NDR, SIEM, SOAR và XDR</strong> là chỗ hay bị nhầm nhất — chọn sai lớp công cụ để lại điểm mù mà thường chỉ lộ ra khi đã bị khai thác. Từ đó chương đi sâu vào kiến trúc <strong>Wazuh</strong>: bốn thành phần agent/manager/indexer/dashboard, cơ chế <strong>enrollment</strong> để chỉ host hợp lệ mới gửi được dữ liệu, và file cấu hình <code>ossec.conf</code> điều khiển toàn bộ hành vi đó.</p>
+<p>Phần còn lại là cách Wazuh biến log thành hành động cụ thể: <strong>decoder</strong> trích các trường có nghĩa, <strong>rule</strong> quyết định event nào thành alert và ở mức nào, <strong>FIM/Syscheck</strong> bắt thay đổi file quan trọng kể cả khi kẻ tấn công làm giả mtime, <strong>Active Response</strong> tự chặn rồi tự gỡ sau timeout, còn <strong>Vulnerability Detection</strong> và <strong>SCA</strong> lần lượt rà theo CVE feed và baseline cấu hình an toàn. Khung <strong>MITRE ATT&amp;CK</strong> giúp gọi tên kỹ thuật tấn công bằng một ngôn ngữ chung cho việc viết và tinh chỉnh rule; quy trình điều tra ở 8.16 là cách lặp lại được để đi từ một cảnh báo tới bằng chứng cụ thể trên <code>full_log</code>; và <strong>SOAR</strong> đóng vai trò lớp tự động hóa phía trên cùng — bổ sung chứ không thay thế SIEM.</p>
+<blockquote>
+<p>Mỗi mục trong chương đi kèm ví dụ chạy được trên Wazuh thật; phần nào là quan sát riêng của mình sẽ ghi rõ, không lẫn với nội dung đã kiểm chứng.</p>
+</blockquote>
+<hr />
+<h2 id="ch08-81-siem-la-gi-va-vi-sao-ton-tai">8.1. SIEM là gì và vì sao tồn tại</h2>
+<h3 id="ch08-811-đinh-nghia-va-bai-toan-goc">8.1.1. Định nghĩa và bài toán gốc</h3>
+<p><strong>SIEM (Security Information and Event Management)</strong> là lớp phần mềm thu thập, chuẩn hóa, tương quan và lưu trữ sự kiện (event) bảo mật từ toàn bộ hạ tầng, nhằm phát hiện và điều tra mối đe dọa theo thời gian gần thực (near real-time) và phục vụ tuân thủ (compliance).</p>
+<p>Thuật ngữ này hợp nhất hai dòng sản phẩm cũ:</p>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Viết tắt của</th>
+<th>Trọng tâm gốc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SIM</td>
+<td>Security Information Management</td>
+<td>Lưu trữ log dài hạn, báo cáo compliance, forensic</td>
+</tr>
+<tr>
+<td>SEM</td>
+<td>Security Event Management</td>
+<td>Tương quan thời gian thực, alert, dashboard</td>
+</tr>
+<tr>
+<td>SIEM</td>
+<td>Hợp nhất SIM + SEM</td>
+<td>Cả hai: real-time correlation <strong>và</strong> long-term retention</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao tồn tại:</strong> Trong một hệ thống thật, một cuộc tấn công không để lại dấu vết ở một nơi. Một lần đăng nhập SSH brute-force để lại:
+- Log <code>/var/log/auth.log</code> trên Linux host;
+- Log Netflow/connection trên firewall;
+- Log từ EDR ghi nhận tiến trình bất thường sau khi vào được;
+- Log từ Active Directory nếu attacker lateral movement.</p>
+<p>Không một con người nào ngồi đọc song song hàng triệu dòng log/ngày từ hàng nghìn nguồn. SIEM giải bài toán <strong>gom về một chỗ + một mô hình dữ liệu chung + tương quan tự động</strong>.</p>
+<h3 id="ch08-812-đon-vi-du-lieu-event-log-alert">8.1.2. Đơn vị dữ liệu: Event, Log, Alert</h3>
+<p>Cần phân biệt chính xác ba khái niệm thường bị dùng lẫn:</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Định nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log line / raw event</strong></td>
+<td>Một dòng văn bản (hoặc bản ghi nhị phân) do nguồn sinh ra, định dạng tùy nguồn</td>
+<td><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2</code></td>
+</tr>
+<tr>
+<td><strong>Normalized event</strong></td>
+<td>Bản ghi đã được parse thành các trường có tên chuẩn (structured)</td>
+<td><code>{ "timestamp": ..., "program": "sshd", "srcip": "203.0.113.5", "srcuser": "admin", "action": "auth_failed" }</code></td>
+</tr>
+<tr>
+<td><strong>Alert</strong></td>
+<td>Kết quả của một rule khớp với một hoặc nhiều event, kèm mức độ nghiêm trọng</td>
+<td><code>Rule 5710 (level 5): sshd: Attempt to login using a non-existent user</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch08-82-kien-truc-siem-data-pipeline">8.2. Kiến trúc SIEM &amp; data pipeline</h2>
+<p>Mọi SIEM (Splunk, Elastic SIEM, QRadar, Wazuh, Sentinel...) đều thực thi cùng một đường ống logic. Hiểu pipeline này là chìa khóa để hiểu Wazuh ở phần sau.</p>
+<pre><code>            ┌─────────┐   ┌────────┐   ┌───────────┐   ┌────────┐   ┌──────────┐   ┌───────┐   ┌────────┐
+  Sources──▶│ COLLECT │──▶│ PARSE  │──▶│ NORMALIZE │──▶│ ENRICH │──▶│CORRELATE │──▶│ ALERT │──▶│ STORE  │
+            └─────────┘   └────────┘   └───────────┘   └────────┘   └──────────┘   └───────┘   └────────┘
+             (ship)        (decode)     (field map)     (geoip,      (rules,         (notify)   (index/
+                                                         threat       stateful)                  retain)
+                                                         intel)
+</code></pre>
+<h3 id="ch08-821-collect-thu-thap">8.2.1. COLLECT (thu thập)</h3>
+<p><strong>Là gì:</strong> Đưa event từ nguồn về collector. Hai mô hình:</p>
+<table>
+<thead>
+<tr>
+<th>Mô hình</th>
+<th>Cơ chế</th>
+<th>Ví dụ giao thức/port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Push (agent-based)</strong></td>
+<td>Agent cài trên host đọc file/sự kiện, đẩy về manager</td>
+<td>Wazuh agent → manager (UDP/TCP 1514); Filebeat → Logstash (5044)</td>
+</tr>
+<tr>
+<td><strong>Pull / agentless</strong></td>
+<td>Server kéo log từ nguồn, hoặc nhận qua syslog</td>
+<td>Syslog UDP/TCP 514; WMI; SNMP; API polling (cloud)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cơ chế — Syslog (RFC 5424) ở mức byte.</strong> Vì syslog là phương tiện collect phổ biến nhất, ta mổ xẻ một bản ghi:</p>
+<pre><code>&lt;34&gt;1 2026-06-19T10:22:41.003Z web01 sshd 2931 ID47 - Failed password...
+ └┬┘│ └──────────┬──────────┘ └─┬─┘ └─┬┘ └┬┘ └┬┘ │ └──────┬──────┘
+  │ │            │              │     │    │    │  │        │
+  │ │            │              │     │    │    │  │        └─ MSG (free-form UTF-8, có thể có BOM)
+  │ │            │              │     │    │    │  └─ STRUCTURED-DATA (&quot;-&quot; = none)
+  │ │            │              │     │    │    └─ MSGID
+  │ │            │              │     │    └─ PROCID (PID)
+  │ │            │              │     └─ APP-NAME
+  │ │            │              └─ HOSTNAME
+  │ │            └─ TIMESTAMP (ISO 8601 / RFC 3339)
+  │ └─ VERSION (luôn = 1 trong RFC 5424)
+  └─ PRI = &quot;&lt;34&gt;&quot;  (Priority value)
+</code></pre>
+<p><strong>Trường PRI giải mã tới mức bit:</strong> PRI là số thập phân trong dấu <code>&lt; &gt;</code>, được tính:</p>
+<pre><code>PRI = Facility × 8 + Severity
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Bit</th>
+<th>Dải giá trị</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ với PRI=34</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Facility</td>
+<td>5 bit cao (PRI &gt;&gt; 3)</td>
+<td>0–23</td>
+<td>Nguồn sinh log</td>
+<td>34 &gt;&gt; 3 = <strong>4</strong> → "security/authorization (auth)"</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>3 bit thấp (PRI &amp; 7)</td>
+<td>0–7</td>
+<td>Mức nghiêm trọng</td>
+<td>34 &amp; 7 = <strong>2</strong> → "Critical"</td>
+</tr>
+</tbody>
+</table>
+<p>Bảng Severity (3 bit, RFC 5424 §6.2.1):</p>
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>Hệ thống không dùng được</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Phải xử lý ngay</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Tình trạng nghiêm trọng</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Lỗi</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Cảnh báo</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Bình thường nhưng đáng chú ý</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Thông tin</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Gỡ lỗi</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Lưu ý:</strong> RFC 3164 (BSD syslog cũ) giới hạn message ~1024 byte và timestamp không có năm/timezone, dễ gây lệch thời gian khi tương quan. RFC 5424 cho phép message dài hơn (giới hạn theo transport) và timestamp đầy đủ timezone — đây là lý do nên ưu tiên 5424.</p>
+</blockquote>
+<p><strong>Cảnh báo khi collect:</strong>
+- Syslog UDP 514 <strong>không</strong> xác thực, <strong>không</strong> mã hóa, <strong>không</strong> đảm bảo phân phối → attacker có thể spoof log (log injection) hoặc làm nghẽn để mất log. Ưu tiên TLS (RFC 5425, syslog over TLS, port 6514) hoặc kênh agent có mã hóa.
+- Mất log = mù. Cần đo độ trễ và tỷ lệ rớt gói.</p>
+<h3 id="ch08-822-parse-boc-tach-decode">8.2.2. PARSE (bóc tách / decode)</h3>
+<p><strong>Là gì:</strong> Biến chuỗi văn bản tự do (MSG) thành các trường rời rạc. Đây là nơi regex/grok/decoder hoạt động.</p>
+<p>Ví dụ MSG SSH thô:</p>
+<pre><code>Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p>Sau parse:</p>
+<pre><code>action  = &quot;Failed password&quot;
+srcuser = &quot;admin&quot;
+srcip   = &quot;203.0.113.5&quot;
+srcport = 51244
+</code></pre>
+<h3 id="ch08-823-normalize-chuan-hoa">8.2.3. NORMALIZE (chuẩn hóa)</h3>
+<p><strong>Là gì:</strong> Ánh xạ các trường vừa parse về <strong>một schema chung</strong> để event từ nhiều nguồn khác nhau có thể so sánh/tương quan. Đây là điểm phân biệt SIEM thật với một công cụ grep log.</p>
+<p>Vì sao cần: nguồn A gọi IP nguồn là <code>src</code>, nguồn B gọi là <code>client_ip</code>, nguồn C gọi là <code>SourceAddress</code>. Không chuẩn hóa thì không thể viết một rule "đếm số lần login fail theo IP nguồn" áp dụng cho cả ba.</p>
+<p>Ví dụ trường trước/sau normalize (theo ECS — Elastic Common Schema, hoặc field chuẩn của Wazuh):</p>
+<table>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Trường gốc</th>
+<th>Trường chuẩn hóa (Wazuh)</th>
+<th>Trường chuẩn hóa (ECS)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sshd</td>
+<td><code>from 203.0.113.5</code></td>
+<td><code>srcip</code></td>
+<td><code>source.ip</code></td>
+</tr>
+<tr>
+<td>Windows 4625</td>
+<td><code>Source Network Address</code></td>
+<td><code>srcip</code> / <code>data.win.eventdata.ipAddress</code></td>
+<td><code>source.ip</code></td>
+</tr>
+<tr>
+<td>nginx</td>
+<td><code>$remote_addr</code></td>
+<td><code>srcip</code></td>
+<td><code>source.ip</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-824-enrich-lam-giau">8.2.4. ENRICH (làm giàu)</h3>
+<p><strong>Là gì:</strong> Thêm ngữ cảnh không có trong log gốc:
+- <strong>GeoIP:</strong> <code>203.0.113.5</code> → country=US, ASN=AS64500. (Wazuh hỗ trợ GeoIP qua tích hợp dashboard/indexer với GeoLite2 mmdb.)
+- <strong>Threat intel:</strong> đối chiếu IP/hash với feed IoC (ví dụ AlienVault OTX, AbuseIPDB) → gắn cờ <code>malicious</code>.
+- <strong>Asset context:</strong> host <code>web01</code> thuộc nhóm "production-dmz", owner = team-web.
+- <strong>Vulnerability context:</strong> host này có CVE-2024-XXXX đang mở.</p>
+<h3 id="ch08-825-correlate-tuong-quan">8.2.5. CORRELATE (tương quan)</h3>
+<p><strong>Là gì:</strong> Logic phát hiện. Hai kiểu:</p>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Mô tả</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stateless</strong></td>
+<td>1 event khớp 1 pattern → alert</td>
+<td>"Có dòng <code>Failed password</code>" → alert level 5</td>
+</tr>
+<tr>
+<td><strong>Stateful</strong></td>
+<td>Đếm/nhóm nhiều event theo thời gian/khóa → alert</td>
+<td>"≥ 8 lần <code>Failed password</code> từ cùng <code>srcip</code> trong 120 giây" → brute-force level 10</td>
+</tr>
+</tbody>
+</table>
+<p>Stateful correlation là một <strong>state machine</strong> đếm sự kiện theo khóa (key) trong cửa sổ trượt (sliding window). Wazuh thực thi bằng cặp tham số <code>frequency</code> + <code>timeframe</code> (xem 8.7).</p>
+<h3 id="ch08-826-alert-store">8.2.6. ALERT &amp; STORE</h3>
+<ul>
+<li><strong>ALERT:</strong> sinh thông báo (gửi email, webhook, Slack, kích hoạt SOAR/active response).</li>
+<li><strong>STORE:</strong> ghi vào index để truy vấn (Elasticsearch/OpenSearch/Wazuh indexer). Có chính sách retention (ví dụ hot 7 ngày, warm 30 ngày, cold/frozen cho compliance 1 năm).</li>
+</ul>
+<hr />
+<h2 id="ch08-83-phan-loai-cong-cu-phong-thu-av-edr-siem-soar-xdr-ndr">8.3. Phân loại công cụ phòng thủ: AV / EDR / SIEM / SOAR / XDR / NDR</h2>
+<p>Vì sao phải phân biệt: các nhóm này hay bị marketing trộn lẫn, nhưng vị trí của chúng trong kiến trúc và dữ liệu chúng nhìn thấy là khác nhau.</p>
+<table>
+<thead>
+<tr>
+<th>Công cụ</th>
+<th>Phạm vi quan sát</th>
+<th>Đơn vị dữ liệu</th>
+<th>Hành động chính</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AV (Antivirus)</strong></td>
+<td>1 endpoint</td>
+<td>File, signature, hash</td>
+<td>Quét/chặn malware đã biết</td>
+<td>ClamAV, Defender (chế độ AV)</td>
+</tr>
+<tr>
+<td><strong>EDR (Endpoint Detection &amp; Response)</strong></td>
+<td>1 endpoint, hành vi</td>
+<td>Process tree, syscall, registry, network của host</td>
+<td>Phát hiện hành vi, cô lập host, kill process</td>
+<td>CrowdStrike Falcon, Defender for Endpoint, Wazuh (một phần)</td>
+</tr>
+<tr>
+<td><strong>NDR (Network Detection &amp; Response)</strong></td>
+<td>Lưu lượng mạng</td>
+<td>Packet, flow, metadata (JA3, DNS, TLS SNI)</td>
+<td>Phát hiện C2/exfil/lateral movement</td>
+<td>Zeek, Suricata, Corelight</td>
+</tr>
+<tr>
+<td><strong>SIEM</strong></td>
+<td>Toàn hạ tầng (log)</td>
+<td>Event đã chuẩn hóa từ mọi nguồn</td>
+<td>Tương quan, lưu trữ, điều tra, compliance</td>
+<td>Wazuh, Splunk, Elastic SIEM</td>
+</tr>
+<tr>
+<td><strong>SOAR (Orchestration, Automation &amp; Response)</strong></td>
+<td>Quy trình phản ứng</td>
+<td>Case/playbook</td>
+<td>Tự động hóa phản ứng (block, ticket, enrich)</td>
+<td>Shuffle, TheHive+Cortex, Splunk SOAR</td>
+</tr>
+<tr>
+<td><strong>XDR (Extended Detection &amp; Response)</strong></td>
+<td>EDR + NDR + email + cloud, hợp nhất</td>
+<td>Sự kiện đa lớp đã tương quan sẵn của 1 vendor</td>
+<td>Phát hiện chéo nhiều lớp</td>
+<td>Bộ XDR của một hãng đơn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Phân biệt cốt lõi:</strong>
+- <strong>EDR vs SIEM:</strong> EDR là chuyên gia một endpoint (nhìn sâu telemetry process); SIEM là người tổng hợp toàn cảnh (nhìn rộng, nông hơn per-source). Wazuh thú vị vì nó <strong>vừa là agent kiểu EDR nhẹ vừa là SIEM</strong> (agent thu telemetry endpoint + manager correlation).
+- <strong>SIEM vs SOAR:</strong> SIEM <em>phát hiện</em>; SOAR <em>phản ứng theo playbook</em>. Wazuh có "Active Response" — một dạng SOAR mini tích hợp.
+- <strong>XDR vs SIEM:</strong> XDR thường khóa trong hệ sinh thái một vendor và tương quan sẵn; SIEM mở, nhận mọi nguồn, nhưng tự xây correlation.</p>
+<hr />
+<h2 id="ch08-84-wazuh-tong-quan-va-kien-truc">8.4. WAZUH — Tổng quan và kiến trúc</h2>
+<h3 id="ch08-841-wazuh-la-gi">8.4.1. Wazuh là gì</h3>
+<p><strong>Wazuh</strong> là nền tảng bảo mật mã nguồn mở (fork lịch sử từ OSSEC HIDS, mở rộng thêm indexer/dashboard từ hệ Elastic/OpenSearch). Nó cung cấp đồng thời:</p>
+<ul>
+<li>HIDS (Host Intrusion Detection): phân tích log, FIM, rootcheck;</li>
+<li>Quản lý lỗ hổng (Vulnerability Detection);</li>
+<li>SCA (Security Configuration Assessment — kiểm tra cấu hình theo CIS);</li>
+<li>Active Response (phản ứng tự động);</li>
+<li>Tích hợp khung MITRE ATT&CK;</li>
+<li>Vai trò SIEM nhờ indexer + dashboard.</li>
+</ul>
+<blockquote>
+<p>Lưu ý phiên bản: chi tiết cổng, tên service và cấu trúc một số module thay đổi theo major version (3.x → 4.x). Tài liệu này mô tả theo dòng <strong>4.x</strong>. Các con số quan trọng (port 1514/1515/55000/1516/9200/443) nên đối chiếu lại với phiên bản cụ thể bạn triển khai.</p>
+</blockquote>
+<h3 id="ch08-842-bon-thanh-phan-chinh">8.4.2. Bốn thành phần chính</h3>
+<pre><code>        ┌──────────────────────────────────────────────────────────────┐
+        │                         WAZUH SERVER                          │
+        │                                                               │
+  Agent │   ┌───────────────┐         ┌────────────────────────────┐    │
+  (host)│   │  wazuh-manager │         │   FILTER / FORWARD          │    │
+  ──────┼──▶│  - analysisd   │────────▶│   Filebeat ──▶ Indexer      │    │
+ 1514/  │   │  - remoted     │ alerts  │                             │    │
+ 1515   │   │  - logcollector│ .json   └────────────┬───────────────┘    │
+        │   │  - syscheckd   │                      │                    │
+        │   │  - active-resp │                      ▼                    │
+        │   └───────────────┘            ┌────────────────────┐          │
+        └────────────────────────────────│   WAZUH INDEXER    │──────────┘
+                                          │  (OpenSearch)      │
+                                          └─────────┬──────────┘
+                                                    │ 9200 (REST)
+                                          ┌─────────▼──────────┐
+                                          │  WAZUH DASHBOARD   │ 443
+                                          │  (OpenSearch Dash) │
+                                          └────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Vai trò</th>
+<th>Daemon/process chính</th>
+<th>Cổng tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Wazuh agent</strong></td>
+<td>Cài trên endpoint; thu log, FIM, SCA, gửi về manager</td>
+<td><code>wazuh-agentd</code>, <code>wazuh-logcollector</code>, <code>wazuh-syscheckd</code>, <code>wazuh-execd</code></td>
+<td>(client)</td>
+</tr>
+<tr>
+<td><strong>Wazuh manager (server)</strong></td>
+<td>Nhận, decode, rule, alert, quản lý agent</td>
+<td><code>wazuh-remoted</code> (nhận), <code>wazuh-analysisd</code> (phân tích), <code>wazuh-authd</code> (enroll), <code>wazuh-modulesd</code> (vuln/SCA)</td>
+<td>1514 (data), 1515 (enroll), 1516 (cluster), 55000 (API REST)</td>
+</tr>
+<tr>
+<td><strong>Wazuh indexer</strong></td>
+<td>Lưu trữ + tìm kiếm alert (OpenSearch)</td>
+<td><code>wazuh-indexer</code></td>
+<td>9200 (REST), 9300 (transport node-to-node)</td>
+</tr>
+<tr>
+<td><strong>Wazuh dashboard</strong></td>
+<td>Giao diện web, trực quan hóa, quản lý</td>
+<td><code>wazuh-dashboard</code></td>
+<td>443/5601</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-843-cac-daemon-ben-trong-manager-va-luong-du-lieu-noi-bo">8.4.3. Các daemon bên trong manager và luồng dữ liệu nội bộ</h3>
+<pre><code>agent ─(1514)─▶ wazuh-remoted ─▶ (queue: /var/ossec/queue/sockets/queue)
+                                        │
+                                        ▼
+                                 wazuh-analysisd
+                                  ├─ PreDecoding (tách timestamp/host/program)
+                                  ├─ Decoding    (decoders/*.xml → trích field)
+                                  ├─ Rule matching (rules/*.xml → gán level/id)
+                                  └─ nếu khớp ⇒ ghi alert
+                                        │
+                       ┌────────────────┼─────────────────┐
+                       ▼                ▼                 ▼
+            /var/ossec/logs/        active-response   archives (nếu bật)
+            alerts/alerts.json      (wazuh-execd)     alerts/archives.json
+                       │
+                       ▼
+                   Filebeat ──▶ Wazuh indexer ──▶ Dashboard
+</code></pre>
+<p><strong>Đường đi của một event (decapsulation logic):</strong>
+1. Agent đọc dòng log → đóng gói cùng metadata (agent id, location) → mã hóa → gửi qua <strong>1514</strong>.
+2. <code>wazuh-remoted</code> giải mã, đặt event vào hàng đợi local socket.
+3. <code>wazuh-analysisd</code> lấy event ra, chạy <strong>PreDecoding → Decoding → Rule matching</strong>.
+4. Nếu một rule khớp với level ≥ ngưỡng (<code>&lt;log_alert_level&gt;</code>, mặc định 3), event được ghi vào <code>alerts.json</code>.
+5. Nếu rule có <code>&lt;active-response&gt;</code> liên kết, <code>wazuh-execd</code> chạy script phản ứng trên agent/manager.
+6. <code>Filebeat</code> đọc <code>alerts.json</code>, đẩy vào <strong>indexer (9200)</strong>.
+7. <code>Dashboard</code> truy vấn indexer để hiển thị.</p>
+<hr />
+<h2 id="ch08-85-luong-agent-manager-enrollment-va-truyen-du-lieu-byteport-level">8.5. Luồng agent → manager: enrollment và truyền dữ liệu (byte/port-level)</h2>
+<h3 id="ch08-851-hai-cong-va-vi-sao-tach">8.5.1. Hai cổng và vì sao tách</h3>
+<table>
+<thead>
+<tr>
+<th>Cổng</th>
+<th>Giao thức</th>
+<th>Daemon nghe</th>
+<th>Mục đích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1515/TCP</strong></td>
+<td>TLS</td>
+<td><code>wazuh-authd</code></td>
+<td><strong>Enrollment</strong> (đăng ký agent, cấp key) — chỉ dùng một lần khi agent gia nhập</td>
+</tr>
+<tr>
+<td><strong>1514/UDP hoặc TCP</strong></td>
+<td>Mã hóa khóa chia sẻ (Blowfish/AES tùy cấu hình)</td>
+<td><code>wazuh-remoted</code></td>
+<td><strong>Truyền dữ liệu</strong> event liên tục</td>
+</tr>
+<tr>
+<td><strong>1516/TCP</strong></td>
+<td>—</td>
+<td><code>wazuh-clusterd</code></td>
+<td>Giao tiếp giữa các manager trong cluster</td>
+</tr>
+<tr>
+<td><strong>55000/TCP</strong></td>
+<td>HTTPS</td>
+<td><code>wazuh-apid</code></td>
+<td>API quản trị (RBAC, JWT)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao tách enrollment (1515) khỏi data (1514):</strong> Enrollment là thao tác nhạy cảm (trao khóa). Tách cổng cho phép quản trị bật <code>authd</code> chỉ trong cửa sổ đăng ký rồi tắt, giảm bề mặt tấn công. Kênh data 1514 dùng khóa đối xứng đã trao, tối ưu cho throughput cao và stateless (UDP) hoặc tin cậy (TCP).</p>
+<h3 id="ch08-852-quy-trinh-enrollment-state-machine-tung-buoc">8.5.2. Quy trình enrollment (state machine, từng bước)</h3>
+<pre><code>   AGENT                                   MANAGER (authd:1515)
+     │                                            │
+     │ 1. TLS ClientHello ───────────────────────▶│
+     │◀── 2. TLS handshake hoàn tất (TLS 1.2/1.3) │
+     │                                            │
+     │ 3. Gửi yêu cầu enroll:                      │
+     │    &quot;OSSEC A:'&lt;agent_name&gt;'&quot; [+ password]    │
+     │    (tùy chọn host_name/ip)        ─────────▶│
+     │                                            │ 4. authd:
+     │                                            │    - kiểm tra password (nếu bật)
+     │                                            │    - cấp agent ID (vd 001)
+     │                                            │    - sinh client.key entry
+     │◀── 5. &quot;OSSEC K:'&lt;id&gt; &lt;name&gt; &lt;ip&gt; &lt;key&gt;'&quot; ──│
+     │                                            │
+     │ 6. Lưu vào /var/ossec/etc/client.keys       │
+     │ 7. Khởi động wazuh-agentd, kết nối 1514     │
+     ▼                                            ▼
+</code></pre>
+<p><strong>Cấu trúc một dòng <code>client.keys</code>:</strong></p>
+<pre><code>001 web01 any 6b2c...e1f9a3...   (64 hex chars = khóa 256-bit dạng pre-shared)
+└┬┘ └─┬─┘ └┬┘ └──────────┬─────┘
+ │    │    │             └─ Pre-shared key (hex) dùng để mã hóa kênh 1514
+ │    │    └─ IP cho phép (&quot;any&quot; = bất kỳ)
+ │    └─ Tên agent
+ └─ Agent ID (3 chữ số)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent ID</td>
+<td>thường 3 ký tự số</td>
+<td>Định danh duy nhất agent trong manager</td>
+<td><code>001</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td>chuỗi</td>
+<td>Tên agent</td>
+<td><code>web01</code></td>
+</tr>
+<tr>
+<td>Allowed IP</td>
+<td>chuỗi</td>
+<td>IP/<code>any</code> được phép kết nối với ID này</td>
+<td><code>192.0.2.10</code></td>
+</tr>
+<tr>
+<td>Key</td>
+<td>64 hex (≈256-bit)</td>
+<td>Khóa chia sẻ để mã hóa/giải mã message 1514</td>
+<td><code>6b2c...</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cảnh báo:</strong>
+- <code>client.keys</code> là bí mật cấp host — quyền <code>640 root:wazuh</code>. Lộ key cho phép giả mạo agent và inject log giả.
+- Bật <code>&lt;use_password&gt;yes&lt;/use_password&gt;</code> cho authd để chống đăng ký trái phép. Tốt hơn: dùng chứng chỉ (CA verification) cho cả manager-verify-agent và agent-verify-manager để chống MITM ở bước enroll.
+- Trùng tên/ID agent gây "agent flapping" — đặt tên duy nhất, ổn định.</p>
+<h3 id="ch08-853-đinh-dang-message-data-tren-1514-muc-khai-niem-field">8.5.3. Định dạng message data trên 1514 (mức khái niệm field)</h3>
+<p>Một message từ agent gồm các phần logic sau trước khi mã hóa:</p>
+<pre><code>[counters][random][MSG]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Mục đích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Counter (global + local)</td>
+<td>Chống replay — manager từ chối message có counter cũ</td>
+</tr>
+<tr>
+<td>Random padding</td>
+<td>Làm nhiễu để chống phân tích</td>
+</tr>
+<tr>
+<td>MSG</td>
+<td>Payload thực: <code>&lt;msg_type&gt;:&lt;location&gt;:&lt;log line&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Phần <code>location</code> cho biết log đến từ đâu trên agent, ví dụ <code>/var/log/auth.log</code>, để analysisd biết áp decoder nào. Toàn bộ được mã hóa bằng khóa trong <code>client.keys</code> (Wazuh 4.x mặc định AES, có thể cấu hình Blowfish cho tương thích cũ).</p>
+<hr />
+<h2 id="ch08-86-file-cau-hinh-ossecconf-mo-xe-tung-khoi">8.6. File cấu hình <code>ossec.conf</code> — mổ xẻ từng khối</h2>
+<p><code>ossec.conf</code> (đường dẫn <code>/var/ossec/etc/ossec.conf</code>) là cấu hình XML chính cho cả manager lẫn agent. Cấu trúc gốc nằm trong thẻ <code>&lt;ossec_config&gt;</code>. Dưới đây là các khối quan trọng kèm giải thích từng tham số.</p>
+<h3 id="ch08-861-khoi-global-va-alert-level-tren-manager">8.6.1. Khối <code>&lt;global&gt;</code> và alert level (trên manager)</h3>
+<pre><code class="language-xml">&lt;ossec_config&gt;
+  &lt;global&gt;
+    &lt;jsonout_output&gt;yes&lt;/jsonout_output&gt;     &lt;!-- ghi alerts.json (phục vụ Filebeat/indexer) --&gt;
+    &lt;alerts_log&gt;yes&lt;/alerts_log&gt;             &lt;!-- ghi alerts.log dạng text --&gt;
+    &lt;logall&gt;no&lt;/logall&gt;                       &lt;!-- không lưu mọi event vào archives --&gt;
+    &lt;logall_json&gt;no&lt;/logall_json&gt;
+    &lt;email_notification&gt;no&lt;/email_notification&gt;
+  &lt;/global&gt;
+
+  &lt;alerts&gt;
+    &lt;log_alert_level&gt;3&lt;/log_alert_level&gt;      &lt;!-- chỉ ghi alert khi rule level &gt;= 3 --&gt;
+    &lt;email_alert_level&gt;12&lt;/email_alert_level&gt; &lt;!-- gửi email khi level &gt;= 12 --&gt;
+  &lt;/alerts&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Giá trị ví dụ</th>
+<th>Ý nghĩa</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jsonout_output</code></td>
+<td>yes</td>
+<td>Sinh <code>alerts.json</code></td>
+<td>Filebeat cần JSON để đẩy indexer</td>
+</tr>
+<tr>
+<td><code>logall</code></td>
+<td>no</td>
+<td>Không lưu <em>toàn bộ</em> event vào archives</td>
+<td><code>logall=yes</code> sinh dữ liệu khổng lồ — chỉ bật khi cần điều tra/forensic</td>
+</tr>
+<tr>
+<td><code>log_alert_level</code></td>
+<td>3</td>
+<td>Ngưỡng ghi alert</td>
+<td>Lọc nhiễu — level 0–2 là noise</td>
+</tr>
+<tr>
+<td><code>email_alert_level</code></td>
+<td>12</td>
+<td>Ngưỡng gửi mail</td>
+<td>Tránh spam — chỉ sự cố nghiêm trọng</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-862-khoi-remote-manager-nghe-agent">8.6.2. Khối <code>&lt;remote&gt;</code> (manager nghe agent)</h3>
+<pre><code class="language-xml">  &lt;remote&gt;
+    &lt;connection&gt;secure&lt;/connection&gt;   &lt;!-- secure = mã hóa bằng client.keys --&gt;
+    &lt;port&gt;1514&lt;/port&gt;
+    &lt;protocol&gt;tcp&lt;/protocol&gt;          &lt;!-- tcp đảm bảo phân phối; udp nhẹ hơn nhưng có thể rớt --&gt;
+    &lt;queue_size&gt;131072&lt;/queue_size&gt;
+  &lt;/remote&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>secure</code> (mã hóa) hoặc <code>syslog</code> (nhận syslog thô)</td>
+<td>Dùng <code>secure</code> cho agent; <code>syslog</code> cho thiết bị không cài agent được</td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>tcp/udp</td>
+<td><strong>TCP</strong> ưu tiên: không mất log; UDP cho quy mô cực lớn chịu được mất mát</td>
+</tr>
+<tr>
+<td><code>queue_size</code></td>
+<td>Số message đệm</td>
+<td>Tăng nếu burst lớn để tránh drop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-863-khoi-client-tren-agent">8.6.3. Khối <code>&lt;client&gt;</code> (trên agent)</h3>
+<pre><code class="language-xml">  &lt;client&gt;
+    &lt;server&gt;
+      &lt;address&gt;10.0.0.5&lt;/address&gt;      &lt;!-- IP/hostname manager --&gt;
+      &lt;port&gt;1514&lt;/port&gt;
+      &lt;protocol&gt;tcp&lt;/protocol&gt;
+    &lt;/server&gt;
+    &lt;enrollment&gt;
+      &lt;enabled&gt;yes&lt;/enabled&gt;
+      &lt;manager_address&gt;10.0.0.5&lt;/manager_address&gt;
+      &lt;port&gt;1515&lt;/port&gt;
+      &lt;agent_name&gt;web01&lt;/agent_name&gt;
+    &lt;/enrollment&gt;
+    &lt;crypto_method&gt;aes&lt;/crypto_method&gt;
+    &lt;notify_time&gt;10&lt;/notify_time&gt;        &lt;!-- keepalive mỗi 10s --&gt;
+    &lt;time-reconnect&gt;60&lt;/time-reconnect&gt;  &lt;!-- thử lại sau 60s nếu mất kết nối --&gt;
+  &lt;/client&gt;
+</code></pre>
+<h3 id="ch08-864-khoi-localfile-logcollector-agent-đoc-nguon-log-nao">8.6.4. Khối <code>&lt;localfile&gt;</code> (logcollector — agent đọc nguồn log nào)</h3>
+<pre><code class="language-xml">  &lt;localfile&gt;
+    &lt;log_format&gt;syslog&lt;/log_format&gt;
+    &lt;location&gt;/var/log/auth.log&lt;/location&gt;
+  &lt;/localfile&gt;
+
+  &lt;localfile&gt;
+    &lt;log_format&gt;json&lt;/log_format&gt;
+    &lt;location&gt;/var/log/myapp/audit.json&lt;/location&gt;
+  &lt;/localfile&gt;
+
+  &lt;localfile&gt;
+    &lt;log_format&gt;command&lt;/log_format&gt;
+    &lt;command&gt;df -P&lt;/command&gt;           &lt;!-- chạy lệnh, lấy output làm log --&gt;
+    &lt;frequency&gt;360&lt;/frequency&gt;          &lt;!-- mỗi 360s --&gt;
+  &lt;/localfile&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>log_format</code></th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>syslog</code></td>
+<td>File text dòng kiểu syslog (auth.log, messages)</td>
+</tr>
+<tr>
+<td><code>json</code></td>
+<td>Mỗi dòng là một JSON object — Wazuh tự parse field</td>
+</tr>
+<tr>
+<td><code>command</code> / <code>full_command</code></td>
+<td>Lấy output lệnh làm event định kỳ</td>
+</tr>
+<tr>
+<td><code>eventchannel</code></td>
+<td>Windows Event Log (Security, System, Application)</td>
+</tr>
+<tr>
+<td><code>audit</code></td>
+<td>Linux auditd</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-865-khoi-syscheck-va-rootcheck-xem-chi-tiet-o-89">8.6.5. Khối <code>&lt;syscheck&gt;</code> và <code>&lt;rootcheck&gt;</code> — xem chi tiết ở 8.9.</h3>
+<h3 id="ch08-866-nap-lai-cau-hinh">8.6.6. Nạp lại cấu hình</h3>
+<pre><code class="language-bash"># Kiểm tra cú pháp cấu hình + rule/decoder trước khi restart (rất quan trọng)
+/var/ossec/bin/wazuh-logtest        # test rule/decoder tương tác
+/var/ossec/bin/wazuh-analysisd -t   # -t = test mode, báo lỗi cú pháp rồi thoát
+
+# Khởi động lại
+systemctl restart wazuh-manager
+# hoặc
+/var/ossec/bin/wazuh-control restart
+</code></pre>
+<blockquote>
+<p><strong>Lưu ý:</strong> Luôn chạy <code>wazuh-analysisd -t</code> trước khi restart production. Một lỗi cú pháp trong <code>local_rules.xml</code> khiến analysisd không khởi động → mù toàn bộ.</p>
+</blockquote>
+<hr />
+<h2 id="ch08-87-decoder-boc-tach-field-tu-log-that">8.7. DECODER — bóc tách field từ log thật</h2>
+<h3 id="ch08-871-decoder-la-gi">8.7.1. Decoder là gì</h3>
+<p><strong>Decoder</strong> là quy tắc XML chỉ cho <code>wazuh-analysisd</code> cách trích các trường (srcip, srcuser, ...) ra khỏi một dòng log thô. Decoder <em>không</em> sinh alert — nó chỉ chuẩn bị dữ liệu cho rule.</p>
+<p>Đường dẫn:
+- Decoder gốc: <code>/var/ossec/ruleset/decoders/*.xml</code> (không sửa — bị ghi đè khi update).
+- Decoder tùy biến: <code>/var/ossec/etc/decoders/local_decoder.xml</code>.</p>
+<h3 id="ch08-872-hai-loai-decoder-va-thuoc-tinh">8.7.2. Hai loại decoder và thuộc tính</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Thẻ</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Parent decoder</strong></td>
+<td><code>&lt;decoder name="..."&gt;</code></td>
+<td>Nhận diện <em>chương trình/nguồn</em> (qua <code>program_name</code> hoặc <code>prematch</code>)</td>
+</tr>
+<tr>
+<td><strong>Child decoder</strong></td>
+<td><code>&lt;decoder name="..."&gt;&lt;parent&gt;...&lt;/parent&gt;</code></td>
+<td>Trích field cụ thể, chạy sau khi parent khớp</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thẻ con</th>
+<th>Ý nghĩa</th>
+<th>Thứ tự xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;program_name&gt;</code></td>
+<td>So khớp tên program (lấy từ PreDecoding)</td>
+<td>Lọc nhanh trước</td>
+</tr>
+<tr>
+<td><code>&lt;prematch&gt;</code></td>
+<td>Regex phải khớp trước thì decoder mới chạy <code>&lt;regex&gt;</code></td>
+<td>Bộ lọc tầng 1</td>
+</tr>
+<tr>
+<td><code>&lt;regex&gt;</code></td>
+<td>Regex trích giá trị; nhóm bắt <code>()</code> ánh xạ sang <code>&lt;order&gt;</code></td>
+<td>Trích field</td>
+</tr>
+<tr>
+<td><code>&lt;order&gt;</code></td>
+<td>Danh sách tên field tương ứng nhóm bắt trong regex</td>
+<td>Đặt tên</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-873-vi-du-thuc-te-decoder-cho-ssh-đa-co-san-trong-wazuh-o-đay-mo-xe">8.7.3. Ví dụ thực tế — decoder cho SSH (đã có sẵn trong Wazuh, ở đây mổ xẻ)</h3>
+<p>Log thô:</p>
+<pre><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p><strong>PreDecoding</strong> (tự động, không cần XML) tách phần header syslog:</p>
+<pre><code>hostname    = web01
+program_name= sshd
+timestamp   = Jun 19 10:22:41
+log         = &quot;Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2&quot;
+</code></pre>
+<p><strong>Parent decoder</strong> (nhận diện sshd):</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;sshd&quot;&gt;
+  &lt;program_name&gt;^sshd&lt;/program_name&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p><strong>Child decoder</strong> (trích user + ip):</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;ssh-failed-invalid&quot;&gt;
+  &lt;parent&gt;sshd&lt;/parent&gt;
+  &lt;prematch&gt;^Failed password for invalid user&lt;/prematch&gt;
+  &lt;regex offset=&quot;after_prematch&quot;&gt;^ (\S+) from (\d+.\d+.\d+.\d+) port (\d+)&lt;/regex&gt;
+  &lt;order&gt;srcuser, srcip, srcport&lt;/order&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p>Giải thích từng phần:
+- <code>&lt;parent&gt;sshd&lt;/parent&gt;</code>: chỉ chạy nếu parent <code>sshd</code> đã khớp.
+- <code>&lt;prematch&gt;</code>: yêu cầu dòng bắt đầu bằng <code>Failed password for invalid user</code>. Nếu không khớp → bỏ qua, tiết kiệm CPU (vì sao: regex đầy đủ tốn kém, prematch là cổng lọc rẻ).
+- <code>offset="after_prematch"</code>: bắt đầu <code>&lt;regex&gt;</code> ngay sau phần đã prematch. Đây là tối ưu để regex ngắn gọn.
+- Nhóm bắt <code>(\S+)</code>, <code>(\d+.\d+.\d+.\d+)</code>, <code>(\d+)</code> lần lượt ánh xạ sang <code>srcuser, srcip, srcport</code> qua <code>&lt;order&gt;</code>.</p>
+<blockquote>
+<p>Lưu ý cú pháp regex: Wazuh hỗ trợ cú pháp <strong>OS_Regex</strong> nội bộ (nhanh, hạn chế) và <strong>PCRE2</strong> qua thuộc tính <code>type="pcre2"</code>. Trong OS_Regex, <code>\d</code>, <code>\S</code> là lớp ký tự; <code>.</code> khớp ký tự bất kỳ. Khi cần regex phức tạp (lookahead...), dùng <code>&lt;regex type="pcre2"&gt;</code>.</p>
+</blockquote>
+<p><strong>Kết quả sau decode</strong> (field sẵn sàng cho rule):</p>
+<pre><code class="language-json">{
+  &quot;program_name&quot;: &quot;sshd&quot;,
+  &quot;srcuser&quot;: &quot;admin&quot;,
+  &quot;srcip&quot;: &quot;203.0.113.5&quot;,
+  &quot;srcport&quot;: &quot;51244&quot;
+}
+</code></pre>
+<h3 id="ch08-874-vi-du-viet-decoder-tuy-bien-cho-log-ung-dung-tu-đinh-nghia">8.7.4. Ví dụ — viết decoder tùy biến cho log ứng dụng tự định nghĩa</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> Decoder dưới đây chỉ minh hoạ cơ chế parent/child + <code>&lt;order&gt;</code>; cần kiểm thử bằng <code>wazuh-logtest</code> và neo regex trước khi đưa vào production.</p>
+</blockquote>
+<p>Giả sử ứng dụng nội bộ sinh log:</p>
+<pre><code>Jun 19 11:05:00 app01 paywall: AUTH_FAIL user=jdoe ip=198.51.100.7 reason=bad_token txn=AB12
+</code></pre>
+<p><code>local_decoder.xml</code>:</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;paywall&quot;&gt;
+  &lt;program_name&gt;^paywall&lt;/program_name&gt;
+&lt;/decoder&gt;
+
+&lt;decoder name=&quot;paywall-authfail&quot;&gt;
+  &lt;parent&gt;paywall&lt;/parent&gt;
+  &lt;prematch&gt;^AUTH_FAIL &lt;/prematch&gt;
+  &lt;regex&gt;user=(\S+) ip=(\d+.\d+.\d+.\d+) reason=(\S+) txn=(\S+)&lt;/regex&gt;
+  &lt;order&gt;srcuser, srcip, reason, txn_id&lt;/order&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p>Kiểm thử ngay bằng <code>wazuh-logtest</code>:</p>
+<pre><code class="language-bash">/var/ossec/bin/wazuh-logtest
+# Dán dòng log vào stdin:
+Jun 19 11:05:00 app01 paywall: AUTH_FAIL user=jdoe ip=198.51.100.7 reason=bad_token txn=AB12
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>**Phase 1: Completed pre-decoding.
+        full event: 'Jun 19 11:05:00 app01 paywall: AUTH_FAIL ...'
+        timestamp: 'Jun 19 11:05:00'
+        hostname: 'app01'
+        program_name: 'paywall'
+**Phase 2: Completed decoding.
+        name: 'paywall'
+        srcuser: 'jdoe'
+        srcip: '198.51.100.7'
+        reason: 'bad_token'
+        txn_id: 'AB12'
+**Phase 3: Completed filtering (rules).
+        ... (chưa có rule khớp)
+</code></pre>
+<p><strong>Cảnh báo:</strong> Decoder sai (regex tham lam, thiếu anchor <code>^</code>) có thể trích nhầm field hoặc làm chậm analysisd dưới tải cao → DoS gián tiếp. Luôn neo regex và test với <code>wazuh-logtest</code> trước khi triển khai.</p>
+<hr />
+<h2 id="ch08-88-rule-phat-hien-va-phan-loai">8.8. RULE — phát hiện và phân loại</h2>
+<h3 id="ch08-881-rule-la-gi">8.8.1. Rule là gì</h3>
+<p><strong>Rule</strong> quyết định event nào trở thành alert, gán <strong>level</strong> (0–16), <code>id</code>, nhóm, và (tùy chọn) ánh xạ MITRE. Rule chạy <em>sau</em> decoder, dựa trên field đã trích.</p>
+<p>Đường dẫn:
+- Rule gốc: <code>/var/ossec/ruleset/rules/*.xml</code> (không sửa).
+- Rule tùy biến: <code>/var/ossec/etc/rules/local_rules.xml</code>.</p>
+<h3 id="ch08-882-thuoc-tinh-va-the-cua-mot-rule">8.8.2. Thuộc tính và thẻ của một rule</h3>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính/Thẻ</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Định danh duy nhất. Khoảng <strong>100000–120000</strong> dành cho rule tùy biến (không trùng rule gốc)</td>
+<td><code>100100</code></td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>Mức nghiêm trọng 0–16 (0 = bỏ qua/không alert)</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>&lt;if_sid&gt;</code></td>
+<td>Chỉ xét nếu rule có ID này đã khớp trước (xâu chuỗi rule)</td>
+<td><code>&lt;if_sid&gt;5710&lt;/if_sid&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;if_matched_sid&gt;</code></td>
+<td>Dùng với correlation: rule con khớp khi rule SID kia khớp đủ tần suất</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>&lt;match&gt;</code></td>
+<td>So khớp chuỗi con (substring) trong log</td>
+<td><code>&lt;match&gt;AUTH_FAIL&lt;/match&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;regex&gt;</code></td>
+<td>So khớp regex trong log/field</td>
+<td><code>&lt;regex&gt;reason=bad_token&lt;/regex&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;field&gt;</code></td>
+<td>So khớp một field đã decode</td>
+<td><code>&lt;field name="srcuser"&gt;admin&lt;/field&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;frequency&gt;</code></td>
+<td>Số lần khớp cần để kích hoạt (correlation)</td>
+<td><code>8</code></td>
+</tr>
+<tr>
+<td><code>&lt;timeframe&gt;</code></td>
+<td>Cửa sổ thời gian (giây) cho <code>frequency</code></td>
+<td><code>120</code></td>
+</tr>
+<tr>
+<td><code>&lt;same_source_ip/&gt;</code></td>
+<td>Yêu cầu cùng srcip mới đếm (khóa nhóm)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>&lt;group&gt;</code></td>
+<td>Nhóm phân loại (authentication_failed, attack...)</td>
+<td><code>authentication_failures,</code></td>
+</tr>
+<tr>
+<td><code>&lt;mitre&gt;&lt;id&gt;</code></td>
+<td>Mã kỹ thuật MITRE ATT&amp;CK</td>
+<td><code>T1110</code></td>
+</tr>
+<tr>
+<td><code>&lt;description&gt;</code></td>
+<td>Mô tả hiển thị trên alert</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-883-thang-level-cua-wazuh-016">8.8.3. Thang LEVEL của Wazuh (0–16)</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Ý nghĩa khái quát</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Bỏ qua hoàn toàn (không log) — dùng để giảm FP</td>
+</tr>
+<tr>
+<td>1–3</td>
+<td>Thông tin / ít quan trọng</td>
+</tr>
+<tr>
+<td>4–6</td>
+<td>Đáng chú ý (lỗi auth đơn lẻ, cấu hình)</td>
+</tr>
+<tr>
+<td>7–9</td>
+<td>Quan trọng (nhiều lỗi, hành vi đáng ngờ)</td>
+</tr>
+<tr>
+<td>10–12</td>
+<td>Tấn công khả năng cao (brute-force phát hiện)</td>
+</tr>
+<tr>
+<td>13–16</td>
+<td>Nghiêm trọng (xâm nhập thành công, hệ thống)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-884-vi-du-rule-stateless-anh-vao-decoder-paywall-o-874">8.8.4. Ví dụ — rule stateless ánh vào decoder paywall ở 8.7.4</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> Rule mẫu cho decoder <code>paywall</code> ở trên — minh hoạ cấu trúc <code>&lt;field&gt;</code>, <code>level</code>, ánh xạ MITRE; điều chỉnh <code>level</code> và điều kiện theo môi trường trước khi dùng thật.</p>
+</blockquote>
+<p><code>local_rules.xml</code>:</p>
+<pre><code class="language-xml">&lt;group name=&quot;paywall,authentication,&quot;&gt;
+
+  &lt;!-- Rule cơ sở: một lần AUTH_FAIL của paywall --&gt;
+  &lt;rule id=&quot;100100&quot; level=&quot;5&quot;&gt;
+    &lt;decoded_as&gt;paywall&lt;/decoded_as&gt;
+    &lt;field name=&quot;reason&quot;&gt;bad_token&lt;/field&gt;
+    &lt;description&gt;Paywall: xác thực thất bại do token sai (user $(srcuser), ip $(srcip))&lt;/description&gt;
+    &lt;group&gt;authentication_failed,&lt;/group&gt;
+    &lt;mitre&gt;
+      &lt;id&gt;T1078&lt;/id&gt;   &lt;!-- Valid Accounts (lạm dụng credential) --&gt;
+    &lt;/mitre&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+</code></pre>
+<p>Giải thích:
+- <code>&lt;decoded_as&gt;paywall&lt;/decoded_as&gt;</code>: chỉ áp dụng cho event đã được decoder <code>paywall</code> xử lý.
+- <code>&lt;field name="reason"&gt;bad_token&lt;/field&gt;</code>: khớp field <code>reason</code> đã decode.
+- <code>$(srcuser)</code>, <code>$(srcip)</code>: nội suy field vào mô tả alert.</p>
+<h3 id="ch08-885-vi-du-trong-tam-correlation-brute-force-frequency-timeframe">8.8.5. Ví dụ trọng tâm — correlation brute-force (frequency + timeframe)</h3>
+<p>Đây là ví dụ stateful kinh điển: nhiều lần login fail từ cùng IP trong cửa sổ thời gian → một alert brute-force.</p>
+<blockquote>
+<p><strong>[DEMO]</strong> Rule tương quan minh hoạ cơ chế <code>frequency</code>+<code>timeframe</code>+<code>same_source_ip</code>; ngưỡng cần hiệu chỉnh theo lưu lượng thật (xem quy trình tuning ở 8.14). Việc gắn mã <code>T####</code> được trình bày chi tiết tại <a href="ch15.html">Chương 15</a>.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;group name=&quot;paywall,authentication,attack,&quot;&gt;
+
+  &lt;!-- Rule tương quan: &gt;=8 lần rule 100100 từ CÙNG srcip trong 120 giây --&gt;
+  &lt;rule id=&quot;100110&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+    &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+    &lt;same_source_ip /&gt;
+    &lt;description&gt;Paywall: BRUTE-FORCE token — &gt;=8 lần thất bại từ $(srcip) trong 120s&lt;/description&gt;
+    &lt;group&gt;authentication_failures,brute_force,&lt;/group&gt;
+    &lt;mitre&gt;
+      &lt;id&gt;T1110&lt;/id&gt;   &lt;!-- Brute Force --&gt;
+    &lt;/mitre&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+</code></pre>
+<p><strong>Cơ chế (state machine của analysisd):</strong></p>
+<pre><code>Khởi tạo cho mỗi srcip một bộ đếm + timestamp đầu cửa sổ.
+
+  Sự kiện rule 100100 khớp, srcip=X:
+    ┌─ Tìm bucket cho key=X
+    │     ├─ Nếu chưa có: tạo bucket{count=1, t0=now}
+    │     └─ Nếu có:
+    │           ├─ Nếu (now - t0) &gt; timeframe(120s): RESET bucket{count=1, t0=now}
+    │           └─ Ngược lại: count++
+    │                 └─ Nếu count &gt;= frequency(8): KÍCH HOẠT rule 100110 (level 10) → ALERT
+    │                       (sau khi kích hoạt, đặt lại để tránh spam liên tục)
+    ▼
+</code></pre>
+<p>Bảng minh họa với chuỗi sự kiện (frequency=8, timeframe=120):</p>
+<table>
+<thead>
+<tr>
+<th>t (s)</th>
+<th>srcip</th>
+<th>count(X)</th>
+<th>Hành động</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>203.0.113.5</td>
+<td>1</td>
+<td>tạo bucket</td>
+</tr>
+<tr>
+<td>5</td>
+<td>203.0.113.5</td>
+<td>2</td>
+<td>count++</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td>40</td>
+<td>203.0.113.5</td>
+<td>8</td>
+<td><strong>count==8 ≤ 120s → ALERT 100110 level 10</strong></td>
+</tr>
+<tr>
+<td>200</td>
+<td>203.0.113.5</td>
+<td>1</td>
+<td>t0 cũ hết hạn (200-0&gt;120) → reset</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao thiết kế <code>frequency</code>+<code>timeframe</code>+<code>same_source_ip</code>:</strong>
+- <code>same_source_ip</code> là <em>khóa nhóm</em>: không có nó, 8 lần fail từ 8 IP khác nhau (ví dụ password spraying nhẹ phân tán) sẽ gộp nhầm. Có nó, ta tách bucket theo IP để phát hiện đúng brute-force tập trung.
+- <code>timeframe</code> định nghĩa "tốc độ" — phân biệt brute-force (8 lần/2 phút) với 8 lần fail rải rác cả ngày (người dùng quên mật khẩu).</p>
+<blockquote>
+<p>Các khóa nhóm khác: <code>&lt;same_source_user/&gt;</code>, <code>&lt;same_destination_ip/&gt;</code>, <code>&lt;different_source_ip/&gt;</code> (cho phát hiện distributed). Ngoài ra <code>&lt;if_matched_group&gt;</code> cho phép đếm theo <em>nhóm</em> rule thay vì một SID.</p>
+</blockquote>
+<h3 id="ch08-886-ghi-đe-va-đieu-chinh-rule-goc-overwrite-if_sid">8.8.6. Ghi đè và điều chỉnh rule gốc (overwrite / <code>&lt;if_sid&gt;</code>)</h3>
+<p>Không sửa file gốc; thay vào đó trong <code>local_rules.xml</code>:</p>
+<blockquote>
+<p><strong>[DEMO]</strong> Ví dụ ghi đè/ngoại lệ minh hoạ cơ chế <code>overwrite</code> và <code>&lt;if_sid&gt;</code>; dải <code>srcip</code> tin cậy phải khai theo mạng nội bộ thực tế.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;!-- Hạ level một rule gốc gây nhiễu trong môi trường của bạn --&gt;
+&lt;rule id=&quot;5710&quot; level=&quot;0&quot; overwrite=&quot;yes&quot;&gt;
+  &lt;description&gt;sshd: non-existent user (bị làm câm trong subnet quản trị)&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>Hoặc tạo exception có điều kiện:</p>
+<pre><code class="language-xml">&lt;rule id=&quot;100200&quot; level=&quot;0&quot;&gt;
+  &lt;if_sid&gt;5710&lt;/if_sid&gt;
+  &lt;field name=&quot;srcip&quot;&gt;10.0.0.0/8&lt;/field&gt;   &lt;!-- bỏ qua nếu từ mạng nội bộ tin cậy --&gt;
+  &lt;description&gt;Bỏ qua sshd fail từ mạng quản trị nội bộ&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<hr />
+<h2 id="ch08-89-fim-syscheck-giam-sat-toan-ven-tep">8.9. FIM / Syscheck — giám sát toàn vẹn tệp</h2>
+<h3 id="ch08-891-fim-la-gi">8.9.1. FIM là gì</h3>
+<p><strong>FIM (File Integrity Monitoring)</strong> — module <code>syscheckd</code> — phát hiện thay đổi của file/thư mục/registry: tạo, sửa, xóa. Dùng để bắt webshell, tampering binary, sửa file cấu hình nhạy cảm.</p>
+<h3 id="ch08-892-co-che">8.9.2. Cơ chế</h3>
+<p>Syscheck duy trì một <strong>CSDL trạng thái</strong> (FIM database, SQLite trong Wazuh 4.x) lưu cho mỗi file:</p>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính lưu</th>
+<th>Kích thước/kiểu</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>int</td>
+<td>Kích thước byte</td>
+</tr>
+<tr>
+<td><code>perm</code></td>
+<td>mode bits</td>
+<td>Quyền (rwx)</td>
+</tr>
+<tr>
+<td><code>uid</code>/<code>gid</code></td>
+<td>int</td>
+<td>Chủ sở hữu/nhóm</td>
+</tr>
+<tr>
+<td><code>inode</code></td>
+<td>int</td>
+<td>Số inode (Linux)</td>
+</tr>
+<tr>
+<td><code>mtime</code></td>
+<td>timestamp</td>
+<td>Thời điểm sửa nội dung</td>
+</tr>
+<tr>
+<td><code>md5</code></td>
+<td>128-bit (32 hex)</td>
+<td>Hash MD5</td>
+</tr>
+<tr>
+<td><code>sha1</code></td>
+<td>160-bit (40 hex)</td>
+<td>Hash SHA-1</td>
+</tr>
+<tr>
+<td><code>sha256</code></td>
+<td>256-bit (64 hex)</td>
+<td>Hash SHA-256 (mặc định khuyến nghị)</td>
+</tr>
+</tbody>
+</table>
+<p>Hai chế độ:</p>
+<table>
+<thead>
+<tr>
+<th>Chế độ</th>
+<th>Cơ chế</th>
+<th>Độ trễ phát hiện</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scheduled scan</strong></td>
+<td>Quét định kỳ (<code>&lt;frequency&gt;</code>), so sánh hash mới với DB</td>
+<td>Theo chu kỳ (giây/giờ)</td>
+</tr>
+<tr>
+<td><strong>Real-time</strong></td>
+<td>Dùng <code>inotify</code> (Linux) / <code>ReadDirectoryChangesW</code> (Windows) để nhận sự kiện kernel tức thì</td>
+<td>Gần tức thì</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao dùng hash chứ không chỉ mtime:</strong> attacker có thể <code>touch</code> để khôi phục mtime sau khi sửa. Hash nội dung (SHA-256) bắt được thay đổi nội dung dù metadata bị làm giả. SHA-256 chọn vì kháng va chạm (collision-resistant) tốt hơn MD5/SHA-1.</p>
+<h3 id="ch08-893-vi-du-cau-hinh-syscheck-trong-ossecconf">8.9.3. Ví dụ — cấu hình <code>&lt;syscheck&gt;</code> trong <code>ossec.conf</code></h3>
+<blockquote>
+<p><strong>[PROD]</strong> Cấu hình dưới đây đủ chặt để dùng thật cho host web tiêu biểu (realtime đúng chỗ, loại trừ nhiễu, <code>&lt;nodiff&gt;</code> cho đường nhạy cảm); vẫn nên rà soát danh sách <code>&lt;directories&gt;</code> theo từng hệ thống.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;syscheck&gt;
+  &lt;disabled&gt;no&lt;/disabled&gt;
+  &lt;frequency&gt;43200&lt;/frequency&gt;            &lt;!-- quét scheduled mỗi 12 giờ --&gt;
+  &lt;scan_on_start&gt;yes&lt;/scan_on_start&gt;
+
+  &lt;!-- Thư mục web: realtime + report nội dung thay đổi --&gt;
+  &lt;directories check_all=&quot;yes&quot; realtime=&quot;yes&quot; report_changes=&quot;yes&quot;&gt;/var/www/html&lt;/directories&gt;
+
+  &lt;!-- File cấu hình nhạy cảm: theo dõi mọi thuộc tính --&gt;
+  &lt;directories check_all=&quot;yes&quot; realtime=&quot;yes&quot;&gt;/etc,/usr/bin,/usr/sbin&lt;/directories&gt;
+
+  &lt;!-- Loại trừ để giảm nhiễu --&gt;
+  &lt;ignore&gt;/etc/mtab&lt;/ignore&gt;
+  &lt;ignore&gt;/var/www/html/cache&lt;/ignore&gt;
+  &lt;ignore type=&quot;sregex&quot;&gt;.log$&lt;/ignore&gt;
+
+  &lt;!-- Không tính hash file lớn để tiết kiệm --&gt;
+  &lt;skip_nfs&gt;yes&lt;/skip_nfs&gt;
+  &lt;nodiff&gt;/etc/ssl/private&lt;/nodiff&gt;       &lt;!-- không lưu diff nội dung (chứa secret) --&gt;
+&lt;/syscheck&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính <code>&lt;directories&gt;</code></th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>check_all="yes"</code></td>
+<td>Kiểm tra size+perm+owner+mtime+inode+các hash</td>
+</tr>
+<tr>
+<td><code>realtime="yes"</code></td>
+<td>Bật inotify cho thư mục này</td>
+</tr>
+<tr>
+<td><code>report_changes="yes"</code></td>
+<td>Lưu <em>diff nội dung</em> (cho file text) để xem chính xác dòng nào đổi</td>
+</tr>
+<tr>
+<td><code>whodata="yes"</code></td>
+<td>Dùng auditd để biết <em>ai</em> (uid/process) đã thay đổi (cao cấp hơn realtime)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-894-vi-du-alert-fim-mau-webshell">8.9.4. Ví dụ — alert FIM mẫu (webshell)</h3>
+<p>Khi attacker drop <code>shell.php</code> vào <code>/var/www/html</code>, syscheck (realtime) sinh event, khớp rule FIM gốc (nhóm <code>syscheck</code>, các rule 550–554), alert.json (quy trình điều tra một alert như vậy xem <a href="ch10.html">Chương 10</a>):</p>
+<pre><code class="language-json">{
+  &quot;rule&quot;: { &quot;id&quot;: &quot;554&quot;, &quot;level&quot;: 7, &quot;description&quot;: &quot;File added to the system.&quot; },
+  &quot;syscheck&quot;: {
+    &quot;path&quot;: &quot;/var/www/html/shell.php&quot;,
+    &quot;event&quot;: &quot;added&quot;,
+    &quot;sha256_after&quot;: &quot;9f2c...e1&quot;,
+    &quot;uid_after&quot;: &quot;33&quot;, &quot;gname_after&quot;: &quot;www-data&quot;,
+    &quot;mtime_after&quot;: &quot;2026-06-19T11:30:02&quot;
+  },
+  &quot;location&quot;: &quot;syscheck&quot;
+}
+</code></pre>
+<p><strong>Cảnh báo:</strong>
+- <code>report_changes</code>/<code>nodiff</code>: không lưu diff của file chứa secret (private key, <code>/etc/shadow</code>) — diff được lưu trong DB Wazuh có thể rò bí mật. Dùng <code>&lt;nodiff&gt;</code> cho đường nhạy cảm.
+- Realtime trên thư mục cực lớn (vd <code>/</code>) làm cạn inotify watches kernel (<code>fs.inotify.max_user_watches</code>) → mất giám sát thầm lặng. Chỉ realtime nơi cần.</p>
+<hr />
+<h2 id="ch08-810-active-response-phan-ung-tu-đong">8.10. Active Response — phản ứng tự động</h2>
+<h3 id="ch08-8101-active-response-la-gi">8.10.1. Active Response là gì</h3>
+<p><strong>Active Response (AR)</strong> cho phép Wazuh tự chạy một lệnh (script) khi một rule khớp — ví dụ chặn IP tấn công bằng firewall. Đây là khả năng "SOAR mini" tích hợp, do <code>wazuh-execd</code> thực thi trên agent hoặc manager.</p>
+<h3 id="ch08-8102-co-che-luong-state">8.10.2. Cơ chế (luồng + state)</h3>
+<pre><code>Rule X khớp (vd brute-force level &gt;=10)
+        │
+        ▼
+analysisd kiểm tra có &lt;active-response&gt; nào liên kết (qua &lt;rules_id&gt; hoặc &lt;level&gt;)
+        │  có
+        ▼
+manager gửi lệnh AR xuống agent đích (qua kênh 1514)
+        │
+        ▼
+wazuh-execd trên agent gọi script trong /var/ossec/active-response/bin/
+        ├─ action = &quot;add&quot;     → chặn (vd thêm rule iptables DROP srcip)
+        └─ sau &lt;timeout&gt; giây  → tự gọi lại action = &quot;delete&quot; → gỡ chặn
+</code></pre>
+<p>Script AR nhận tham số qua <strong>stdin (JSON)</strong> trong Wazuh 4.x: gồm <code>command</code> (<code>add</code>/<code>delete</code>), và <code>parameters.alert</code> (toàn bộ alert, có <code>srcip</code>). Vì sao có timeout: chặn vĩnh viễn có rủi ro tự DoS (chặn nhầm IP hợp lệ, hoặc IP NAT chung) — timeout cho phép gỡ tự động.</p>
+<h3 id="ch08-8103-vi-du-thuc-te-chan-ip-brute-force-bang-firewall-drop">8.10.3. Ví dụ thực tế — chặn IP brute-force bằng firewall-drop</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> Cấu hình AR dưới đây minh hoạ luồng chặn/gỡ tự động; trước khi bật trên production phải có allowlist IP hạ tầng và giới hạn <code>&lt;location&gt;</code> (xem phần Cảnh báo cuối mục).</p>
+</blockquote>
+<p>Bước 1 — định nghĩa <strong>command</strong> và <strong>active-response</strong> trong <code>ossec.conf</code> (trên manager):</p>
+<pre><code class="language-xml">&lt;!-- Command: trỏ tới script tích hợp sẵn firewall-drop --&gt;
+&lt;command&gt;
+  &lt;name&gt;firewall-drop&lt;/name&gt;
+  &lt;executable&gt;firewall-drop&lt;/executable&gt;   &lt;!-- /var/ossec/active-response/bin/firewall-drop --&gt;
+  &lt;timeout_allowed&gt;yes&lt;/timeout_allowed&gt;
+&lt;/command&gt;
+
+&lt;!-- Active response: chạy command trên agent có sự kiện, chặn 600s --&gt;
+&lt;active-response&gt;
+  &lt;command&gt;firewall-drop&lt;/command&gt;
+  &lt;location&gt;local&lt;/location&gt;          &lt;!-- local = chạy trên agent nơi sự kiện xảy ra --&gt;
+  &lt;rules_id&gt;100110&lt;/rules_id&gt;         &lt;!-- chính là rule brute-force ở 8.8.5 --&gt;
+  &lt;timeout&gt;600&lt;/timeout&gt;              &lt;!-- gỡ chặn sau 600 giây --&gt;
+&lt;/active-response&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>&lt;location&gt;</code></th>
+<th>Chạy ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local</code></td>
+<td>Trên agent phát sinh sự kiện</td>
+</tr>
+<tr>
+<td><code>server</code></td>
+<td>Trên manager</td>
+</tr>
+<tr>
+<td><code>defined-agent</code></td>
+<td>Trên một agent chỉ định (<code>&lt;agent_id&gt;</code>)</td>
+</tr>
+<tr>
+<td><code>all</code></td>
+<td>Mọi agent (cẩn thận!)</td>
+</tr>
+</tbody>
+</table>
+<p>Bước 2 — <code>firewall-drop</code> (script tích hợp) trên Linux agent thực thi tương đương:</p>
+<pre><code class="language-bash"># action=add:
+iptables -I INPUT -s 203.0.113.5 -j DROP
+# sau 600s, action=delete:
+iptables -D INPUT -s 203.0.113.5 -j DROP
+</code></pre>
+<p>Bước 3 — alert AR ghi trong <code>active-responses.log</code> trên agent:</p>
+<pre><code>2026-06-19 11:31:00 /var/ossec/active-response/bin/firewall-drop: add - 203.0.113.5 - 1718796660.123456 - 100110
+</code></pre>
+<p><strong>Cảnh báo:</strong>
+- <strong>Chống self-DoS:</strong> attacker spoof srcip = IP gateway/DNS nội bộ trong log để ép Wazuh chặn hạ tầng của chính bạn. Luôn duy trì <strong>allowlist</strong> (script firewall-drop có cơ chế bỏ qua IP trong danh sách trắng); không bật AR <code>all</code> cho rule dễ bị giả mạo.
+- AR chạy bằng quyền cao (iptables cần root) → script AR là bề mặt tấn công; chỉ dùng script đã kiểm duyệt, quyền file chặt.
+- Ưu tiên AR <code>local</code> thay vì <code>all</code> để giới hạn tác động.</p>
+<hr />
+<h2 id="ch08-811-vulnerability-detection">8.11. Vulnerability Detection</h2>
+<h3 id="ch08-8111-la-gi-va-co-che">8.11.1. Là gì và cơ chế</h3>
+<p>Module <code>wazuh-modulesd</code> (Vulnerability Detector) đối chiếu <strong>danh sách package đã cài</strong> (do agent gửi qua syscollector) với <strong>CVE feed</strong> để báo host nào có lỗ hổng nào.</p>
+<p>Luồng:</p>
+<pre><code>1. syscollector (trên agent) liệt kê package + version + OS  ──▶ manager
+2. Vulnerability Detector tải/cập nhật feed CVE
+      (nguồn: NVD, Canonical/Ubuntu OVAL, Red Hat, Debian, Microsoft MSU, ALAS...)
+3. Đối chiếu: package P version V vs điều kiện &quot;ảnh hưởng nếu V &lt; V_fixed&quot;
+4. Sinh alert nếu khớp, kèm CVE id, CVSS, package, version vá
+</code></pre>
+<blockquote>
+<p>Lưu ý kiến trúc theo phiên bản: cách cấu hình và nguồn feed của Vulnerability Detection <strong>đã thay đổi đáng kể giữa các minor 4.x</strong> (mô hình feed cũ dựa OVAL/NVD trực tiếp vs mô hình "Vulnerability Detection" mới dựa Content Manager/CTI của Wazuh). Hãy kiểm chứng cú pháp khối cấu hình với tài liệu đúng version đang chạy. Phần dưới minh họa dạng cấu hình OVAL/NVD kiểu cũ để hiểu nguyên lý.</p>
+</blockquote>
+<h3 id="ch08-8112-vi-du-cau-hinh-kieu-cu-minh-hoa-nguyen-ly">8.11.2. Ví dụ — cấu hình kiểu cũ (minh họa nguyên lý)</h3>
+<pre><code class="language-xml">&lt;vulnerability-detector&gt;
+  &lt;enabled&gt;yes&lt;/enabled&gt;
+  &lt;interval&gt;5m&lt;/interval&gt;
+  &lt;run_on_start&gt;yes&lt;/run_on_start&gt;
+
+  &lt;provider name=&quot;canonical&quot;&gt;          &lt;!-- Ubuntu OVAL --&gt;
+    &lt;enabled&gt;yes&lt;/enabled&gt;
+    &lt;os&gt;focal&lt;/os&gt;
+    &lt;os&gt;jammy&lt;/os&gt;
+    &lt;update_interval&gt;1h&lt;/update_interval&gt;
+  &lt;/provider&gt;
+
+  &lt;provider name=&quot;nvd&quot;&gt;                &lt;!-- NVD bổ sung CVSS/CPE --&gt;
+    &lt;enabled&gt;yes&lt;/enabled&gt;
+    &lt;update_interval&gt;1h&lt;/update_interval&gt;
+  &lt;/provider&gt;
+&lt;/vulnerability-detector&gt;
+</code></pre>
+<h3 id="ch08-8113-vi-du-alert-cve-mau">8.11.3. Ví dụ — alert CVE mẫu</h3>
+<pre><code class="language-json">{
+  &quot;rule&quot;: { &quot;level&quot;: 7, &quot;description&quot;: &quot;CVE-2024-XXXX affects openssl&quot; },
+  &quot;data&quot;: {
+    &quot;vulnerability&quot;: {
+      &quot;cve&quot;: &quot;CVE-2024-XXXX&quot;,
+      &quot;package&quot;: { &quot;name&quot;: &quot;openssl&quot;, &quot;version&quot;: &quot;3.0.2-0ubuntu1.10&quot; },
+      &quot;severity&quot;: &quot;High&quot;,
+      &quot;cvss&quot;: { &quot;cvss3&quot;: { &quot;base_score&quot;: &quot;7.5&quot; } },
+      &quot;status&quot;: &quot;Active&quot;,
+      &quot;reference&quot;: &quot;https://ubuntu.com/security/CVE-2024-XXXX&quot;
+    }
+  }
+}
+</code></pre>
+<p><strong>Lưu ý:</strong> Vulnerability Detection báo <strong>lỗ hổng tiềm năng theo version</strong>, không xác nhận khả năng khai thác thực tế (chưa biết có patch backport của distro hay không trong mọi trường hợp). Cần đối chiếu với reachability/exposure trước khi ưu tiên vá — tránh "CVE noise".</p>
+<hr />
+<h2 id="ch08-812-sca-security-configuration-assessment">8.12. SCA — Security Configuration Assessment</h2>
+<h3 id="ch08-8121-sca-la-gi">8.12.1. SCA là gì</h3>
+<p><strong>SCA</strong> kiểm tra cấu hình hệ thống so với baseline (CIS Benchmark, ví dụ "SSH không cho phép root login", "password phải đặt độ phức tạp"). Module này chạy các <strong>policy</strong> dạng YAML trên agent và báo pass/fail từng kiểm tra.</p>
+<h3 id="ch08-8122-co-che-cau-truc-mot-policy-check">8.12.2. Cơ chế — cấu trúc một policy check</h3>
+<p>Policy SCA (file YAML trong <code>/var/ossec/ruleset/sca/</code>) gồm các <code>checks</code>, mỗi check có <code>rules</code> đánh giá theo logic.</p>
+<blockquote>
+<p><strong>[DEMO]</strong> Check mẫu dưới đây minh hoạ cú pháp <code>rules</code>/<code>condition</code>; dùng trực tiếp policy CIS chính thức của Wazuh thay vì tự chép từng check.</p>
+</blockquote>
+<pre><code class="language-yaml">policy:
+  id: &quot;cis_debian12&quot;
+  name: &quot;CIS Debian Linux 12 Benchmark&quot;
+
+checks:
+  - id: 5001
+    title: &quot;Ensure SSH PermitRootLogin is disabled&quot;
+    description: &quot;PermitRootLogin nên = no để chặn đăng nhập root trực tiếp&quot;
+    rationale: &quot;Giảm bề mặt brute-force vào tài khoản quyền cao nhất&quot;
+    remediation: &quot;Đặt 'PermitRootLogin no' trong /etc/ssh/sshd_config rồi reload sshd&quot;
+    condition: all          # tất cả rules phải đúng thì PASS
+    rules:
+      - 'f:/etc/ssh/sshd_config -&gt; r:^\s*PermitRootLogin\s+no'
+</code></pre>
+<p>Cú pháp <code>rules</code> (atomic checks):</p>
+<table>
+<thead>
+<tr>
+<th>Tiền tố</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>f:</code></td>
+<td>File tồn tại</td>
+<td><code>f:/etc/ssh/sshd_config</code></td>
+</tr>
+<tr>
+<td><code>f:... -&gt; r:</code></td>
+<td>File chứa regex</td>
+<td><code>f:/etc/ssh/sshd_config -&gt; r:^PermitRootLogin no</code></td>
+</tr>
+<tr>
+<td><code>c:</code></td>
+<td>Chạy command, so output</td>
+<td><code>c:sysctl net.ipv4.ip_forward -&gt; r:= 0$</code></td>
+</tr>
+<tr>
+<td><code>d:</code></td>
+<td>Thư mục tồn tại</td>
+<td><code>d:/etc/cron.d</code></td>
+</tr>
+<tr>
+<td><code>p:</code></td>
+<td>Process đang chạy</td>
+<td><code>p:auditd</code></td>
+</tr>
+<tr>
+<td><code>r:</code></td>
+<td>Khóa registry (Windows)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>condition</code>: <code>all</code> (mọi rule đúng), <code>any</code> (một rule đúng), <code>none</code> (không rule nào đúng).</p>
+<h3 id="ch08-8123-vi-du-ket-qua-sca-tren-dashboard-alert">8.12.3. Ví dụ — kết quả SCA trên dashboard / alert</h3>
+<pre><code class="language-json">{
+  &quot;data&quot;: {
+    &quot;sca&quot;: {
+      &quot;type&quot;: &quot;check&quot;,
+      &quot;policy&quot;: &quot;CIS Debian Linux 12 Benchmark&quot;,
+      &quot;check&quot;: {
+        &quot;id&quot;: &quot;5001&quot;,
+        &quot;title&quot;: &quot;Ensure SSH PermitRootLogin is disabled&quot;,
+        &quot;result&quot;: &quot;failed&quot;,
+        &quot;remediation&quot;: &quot;Set 'PermitRootLogin no' in /etc/ssh/sshd_config&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>Lưu ý:</strong> SCA là <em>configuration drift detection</em> — chạy định kỳ. Một host "passed 90%" vẫn có thể có 10% fail là lỗ hổng nghiêm trọng; đọc theo từng check, không chỉ điểm tổng.</p>
+<hr />
+<h2 id="ch08-813-tich-hop-mitre-attck">8.13. Tích hợp MITRE ATT&amp;CK</h2>
+<h3 id="ch08-8131-mitre-attck-la-gi">8.13.1. MITRE ATT&amp;CK là gì</h3>
+<p><strong>MITRE ATT&amp;CK</strong> là ma trận chuẩn hóa kỹ thuật của attacker theo Tactic (mục tiêu) → Technique (cách làm). Wazuh gắn mã technique (<code>T####</code>, sub-technique <code>T####.###</code>) vào rule, cho phép dashboard hiển thị tấn công theo ma trận và phục vụ threat hunting. Cách lập bản đồ kỹ thuật và đọc ma trận ATT&amp;CK được trình bày ở <a href="ch15.html">Chương 15</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tactic</td>
+<td><code>Credential Access</code> (TA0006)</td>
+</tr>
+<tr>
+<td>Technique</td>
+<td><code>T1110</code> Brute Force</td>
+</tr>
+<tr>
+<td>Sub-technique</td>
+<td><code>T1110.001</code> Password Guessing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8132-vi-du-gan-mitre-vao-rule-đa-thay-o-885">8.13.2. Ví dụ — gắn MITRE vào rule (đã thấy ở 8.8.5)</h3>
+<pre><code class="language-xml">&lt;rule id=&quot;100110&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;description&gt;Paywall brute-force&lt;/description&gt;
+  &lt;mitre&gt;
+    &lt;id&gt;T1110&lt;/id&gt;
+  &lt;/mitre&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>Trên dashboard, alert này xuất hiện trong module <strong>MITRE ATT&amp;CK</strong>, nhóm theo Tactic <code>Credential Access</code>, cho phép trả lời "trong tuần qua có bao nhiêu sự kiện thuộc Credential Access và trên host nào".</p>
+<p><strong>Lưu ý:</strong> Gắn MITRE đúng technique là phần của detection engineering — gắn sai làm sai lệch coverage report (tưởng đã phủ technique X nhưng thực ra rule bắt việc khác).</p>
+<hr />
+<h2 id="ch08-814-detection-engineering-viet-tinh-chinh-rule-fp-vs-fn">8.14. Detection Engineering — viết, tinh chỉnh rule, FP vs FN</h2>
+<h3 id="ch08-8141-fp-va-fn">8.14.1. FP và FN</h3>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Định nghĩa</th>
+<th>Hậu quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>False Positive (FP)</strong></td>
+<td>Alert nổ nhưng không phải tấn công</td>
+<td>Mệt mỏi analyst (alert fatigue), bỏ sót alert thật</td>
+</tr>
+<tr>
+<td><strong>False Negative (FN)</strong></td>
+<td>Tấn công thật nhưng không có alert</td>
+<td>Lọt lưới — nguy hiểm nhất</td>
+</tr>
+<tr>
+<td><strong>True Positive (TP)</strong></td>
+<td>Alert đúng</td>
+<td>Lý tưởng</td>
+</tr>
+<tr>
+<td><strong>True Negative (TN)</strong></td>
+<td>Không alert, đúng là an toàn</td>
+<td>Lý tưởng</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Đánh đổi cốt lõi:</strong> Hạ ngưỡng (frequency thấp, level cao cho event đơn lẻ) → giảm FN nhưng tăng FP. Nâng ngưỡng → giảm FP nhưng tăng FN. Detection engineering là tìm điểm cân bằng theo ngữ cảnh tài sản.</p>
+<p>Chỉ số định lượng:</p>
+<pre><code>Precision = TP / (TP + FP)     (alert nổ thì đáng tin tới mức nào)
+Recall    = TP / (TP + FN)     (bắt được bao nhiêu phần tấn công thật)
+</code></pre>
+<h3 id="ch08-8142-quy-trinh-tuning-vong-lap">8.14.2. Quy trình tuning (vòng lặp)</h3>
+<pre><code>1. Viết rule giả thuyết (dựa decoder + field).
+2. Test offline với wazuh-logtest trên log mẫu (cả mẫu tấn công lẫn mẫu bình thường).
+3. Triển khai ở level THẤP (vd level 3) — quan sát volume, không hành động.
+4. Đo FP: tỷ lệ alert là benign. Nếu cao → thêm điều kiện (field/srcip allowlist) hoặc tăng frequency.
+5. Đo FN: replay mẫu tấn công đã biết — rule có nổ không?
+6. Khi precision đạt, nâng level + (tùy) gắn active-response.
+7. Lặp lại định kỳ (môi trường thay đổi → rule lỗi thời).
+</code></pre>
+<h3 id="ch08-8143-vi-du-tinh-chinh-rule-brute-force-đe-giam-fp">8.14.3. Ví dụ — tinh chỉnh rule brute-force để giảm FP</h3>
+<p>Vấn đề: rule 100110 nổ khi proxy/NAT làm nhiều user thật cùng srcip fail. Tinh chỉnh:</p>
+<blockquote>
+<p><strong>[DEMO]</strong> Cặp rule tinh chỉnh dưới đây minh hoạ kỹ thuật giảm FP (đổi khoá nhóm, loại trừ dải NAT); dải IP và ngưỡng phải thay theo môi trường thực tế.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;!-- v2: chỉ tính brute-force khi cùng IP NHƯNG khác user (dấu hiệu dò user),
+         và loại trừ dải NAT nội bộ tin cậy --&gt;
+&lt;rule id=&quot;100111&quot; level=&quot;12&quot; frequency=&quot;10&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;different_source_user /&gt;      &lt;!-- nhiều user khác nhau từ 1 IP = dò tài khoản --&gt;
+  &lt;description&gt;Paywall: dò nhiều tài khoản từ $(srcip) (credential stuffing nghi vấn)&lt;/description&gt;
+  &lt;mitre&gt;&lt;id&gt;T1110.004&lt;/id&gt;&lt;/mitre&gt;  &lt;!-- Credential Stuffing --&gt;
+&lt;/rule&gt;
+
+&lt;!-- Triệt FP: bỏ qua dải office NAT --&gt;
+&lt;rule id=&quot;100112&quot; level=&quot;0&quot;&gt;
+  &lt;if_sid&gt;100110&lt;/if_sid&gt;
+  &lt;field name=&quot;srcip&quot;&gt;^10.20.0.&lt;/field&gt;
+  &lt;description&gt;Bỏ qua brute-force giả từ NAT văn phòng&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<h3 id="ch08-8144-nguyen-tac-viet-rule-tot">8.14.4. Nguyên tắc viết rule tốt</h3>
+<table>
+<thead>
+<tr>
+<th>Nguyên tắc</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neo regex (<code>^</code>, <code>$</code>), khớp field thay vì substring khi có thể</td>
+<td>Tránh khớp nhầm, nhanh hơn</td>
+</tr>
+<tr>
+<td>Đặt <code>id</code> trong 100000–120000</td>
+<td>Không đụng rule gốc, không bị mất khi update</td>
+</tr>
+<tr>
+<td>Bắt đầu ở level thấp, nâng dần</td>
+<td>Tránh active-response gây hại do FP</td>
+</tr>
+<tr>
+<td>Tài liệu hóa <code>&lt;description&gt;</code> rõ ràng kèm field nội suy</td>
+<td>Analyst hiểu ngay khi triage</td>
+</tr>
+<tr>
+<td>Gắn <code>&lt;mitre&gt;</code> đúng</td>
+<td>Đo coverage</td>
+</tr>
+<tr>
+<td>Có cả test case dương tính và âm tính</td>
+<td>Đảm bảo không FN và không FP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8145-kinh-nghiem-tuning-tu-van-hanh-that">8.14.5. Kinh nghiệm tuning từ vận hành thật</h3>
+<p>Vài điều mình rút ra sau một thời gian trực hệ thống giám sát thật (không phải lab):</p>
+<ul>
+<li><strong>Whitelist dải IP quản trị nội bộ trước tiên.</strong> Phần lớn alert authentication/web lặp đi lặp lại hóa ra đến từ chính đội vận hành: SSH qua VPN, healthcheck, job CI. Một rule level 0 có điều kiện <code>srcip</code> cho dải quản trị (đúng kiểu 8.8.6) cắt được lượng nhiễu lớn nhất với ít công nhất. Lưu ý: chỉ whitelist dải quản trị/hạ tầng cho đúng nhóm rule gây nhiễu — đừng whitelist cả mạng văn phòng cho mọi loại rule, vì máy văn phòng dính malware là chuyện hoàn toàn có thể xảy ra.</li>
+<li><strong>Chuẩn hóa nội dung alert: phải tự trả lời "máy nào, chuyện gì, từ đâu".</strong> Alert mà người trực còn phải mở dashboard chỉ để biết nó xảy ra trên host nào là alert viết chưa xong. Nội suy field vào <code>&lt;description&gt;</code> (<code>$(srcip)</code>, agent name trong kênh notify) — thời gian triage giảm rõ rệt.</li>
+<li><strong>Thêm alert cho triệu chứng tài nguyên, không chỉ log.</strong> Mình có thêm cảnh báo CPU cao bất thường kéo dài (từ metric node_exporter, hoặc <code>log_format command</code> chạy lệnh định kỳ) — cryptominer thường lộ bằng CPU trước khi lộ bằng dòng log nào đó. SIEM bắt sự kiện; hệ metric bắt triệu chứng; hai nguồn bổ khuyết cho nhau (giám sát metric xem <a href="ch09.html">Chương 9</a>).</li>
+</ul>
+<hr />
+<h2 id="ch08-815-vi-du-end-to-end-ssh-brute-force-tu-log-tho-toi-alert-dashboard">8.15. Ví dụ end-to-end: SSH brute-force từ log thô tới alert dashboard</h2>
+<p>Ghép toàn bộ chuỗi: <strong>log → predecode → decode → rule stateless → rule correlation → alert → (active response) → indexer → dashboard.</strong></p>
+<h3 id="ch08-buoc-0-cau-hinh-agent-đoc-authlog">Bước 0 — Cấu hình agent đọc auth.log</h3>
+<p><code>ossec.conf</code> (agent):</p>
+<pre><code class="language-xml">&lt;localfile&gt;
+  &lt;log_format&gt;syslog&lt;/log_format&gt;
+  &lt;location&gt;/var/log/auth.log&lt;/location&gt;
+&lt;/localfile&gt;
+</code></pre>
+<h3 id="ch08-buoc-1-log-tho-sinh-ra-3-dong-minh-hoa">Bước 1 — Log thô sinh ra (3 dòng minh họa)</h3>
+<pre><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+Jun 19 10:22:43 web01 sshd[2933]: Failed password for invalid user admin from 203.0.113.5 port 51290 ssh2
+... (lặp 8 lần trong ~30s)
+</code></pre>
+<h3 id="ch08-buoc-2-predecoding-analysisd">Bước 2 — PreDecoding (analysisd)</h3>
+<pre><code>timestamp:    Jun 19 10:22:41
+hostname:     web01
+program_name: sshd
+log:          Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<h3 id="ch08-buoc-3-decoding-decoder-sshd-goc">Bước 3 — Decoding (decoder sshd gốc)</h3>
+<pre><code>srcuser: admin
+srcip:   203.0.113.5
+srcport: 51244
+</code></pre>
+<h3 id="ch08-buoc-4-rule-stateless-goc-khop">Bước 4 — Rule stateless gốc khớp</h3>
+<p>Wazuh ship sẵn rule cho việc này:</p>
+<pre><code class="language-xml">&lt;!-- (rule gốc, minh họa) --&gt;
+&lt;rule id=&quot;5710&quot; level=&quot;5&quot;&gt;
+  &lt;if_sid&gt;5700&lt;/if_sid&gt;
+  &lt;match&gt;Failed password|authentication failure|invalid user&lt;/match&gt;
+  &lt;description&gt;sshd: Attempt to login using a non-existent user.&lt;/description&gt;
+  &lt;group&gt;authentication_failed,invalid_login,&lt;/group&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>→ Mỗi dòng fail tạo một alert level 5.</p>
+<h3 id="ch08-buoc-5-rule-correlation-goc-khop-brute-force">Bước 5 — Rule correlation gốc khớp (brute-force)</h3>
+<pre><code class="language-xml">&lt;!-- (rule gốc, minh họa) — nhiều lần authentication_failed cùng IP --&gt;
+&lt;rule id=&quot;5712&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;5710&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;description&gt;sshd: brute force trying to get access to the system. Authentication failed.&lt;/description&gt;
+  &lt;group&gt;authentication_failures,&lt;/group&gt;
+  &lt;mitre&gt;&lt;id&gt;T1110&lt;/id&gt;&lt;/mitre&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>→ Sau lần fail thứ 8 trong 120s từ <code>203.0.113.5</code>, alert level 10 nổ.</p>
+<h3 id="ch08-buoc-6-alert-json-ghi-vao-varosseclogsalertsalertsjson">Bước 6 — Alert JSON (ghi vào <code>/var/ossec/logs/alerts/alerts.json</code>)</h3>
+<p>Alert này là điểm khởi đầu của quy trình điều tra/phản ứng sự cố (xem <a href="ch10.html">Chương 10</a>).</p>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: &quot;2026-06-19T10:23:11.044+0000&quot;,
+  &quot;rule&quot;: {
+    &quot;id&quot;: &quot;5712&quot;,
+    &quot;level&quot;: 10,
+    &quot;description&quot;: &quot;sshd: brute force trying to get access to the system.&quot;,
+    &quot;groups&quot;: [&quot;syslog&quot;, &quot;sshd&quot;, &quot;authentication_failures&quot;],
+    &quot;mitre&quot;: { &quot;id&quot;: [&quot;T1110&quot;], &quot;tactic&quot;: [&quot;Credential Access&quot;], &quot;technique&quot;: [&quot;Brute Force&quot;] },
+    &quot;frequency&quot;: 8
+  },
+  &quot;agent&quot;: { &quot;id&quot;: &quot;001&quot;, &quot;name&quot;: &quot;web01&quot;, &quot;ip&quot;: &quot;192.0.2.10&quot; },
+  &quot;data&quot;: { &quot;srcip&quot;: &quot;203.0.113.5&quot;, &quot;srcuser&quot;: &quot;admin&quot;, &quot;srcport&quot;: &quot;51244&quot; },
+  &quot;decoder&quot;: { &quot;name&quot;: &quot;sshd&quot; },
+  &quot;location&quot;: &quot;/var/log/auth.log&quot;,
+  &quot;full_log&quot;: &quot;Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2&quot;
+}
+</code></pre>
+<h3 id="ch08-buoc-7-active-response-tuy-chon-chan-ip">Bước 7 — Active Response (tùy chọn) chặn IP</h3>
+<p>Nếu cấu hình <code>&lt;active-response&gt;</code> với <code>&lt;rules_id&gt;5712&lt;/rules_id&gt;</code>, manager ra lệnh agent web01 chạy <code>firewall-drop</code>:</p>
+<pre><code>iptables -I INPUT -s 203.0.113.5 -j DROP   # tự gỡ sau &lt;timeout&gt;
+</code></pre>
+<h3 id="ch08-buoc-8-filebeat-indexer-dashboard">Bước 8 — Filebeat → Indexer → Dashboard</h3>
+<ul>
+<li><code>Filebeat</code> (cấu hình <code>/etc/filebeat/filebeat.yml</code> với module <code>wazuh</code>) đọc <code>alerts.json</code>, đẩy vào index <code>wazuh-alerts-4.x-2026.06.19</code> trên indexer (cổng 9200).</li>
+<li>Dashboard truy vấn index, hiển thị alert level 10 trong Security Events; trong module MITRE ATT&amp;CK nó thuộc Tactic <em>Credential Access</em> / Technique <em>T1110</em>.</li>
+</ul>
+<h3 id="ch08-buoc-9-kiem-thu-toan-chuoi-offline">Bước 9 — Kiểm thử toàn chuỗi offline</h3>
+<pre><code class="language-bash"># Mô phỏng nhanh: dán dòng log vào logtest để xác nhận decoder + rule
+/var/ossec/bin/wazuh-logtest
+# input:
+Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p>Output xác nhận Phase 1/2/3 và rule id 5710 → (sau đủ tần suất) 5712.</p>
+<p>Sơ đồ tổng kết end-to-end:</p>
+<pre><code>auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──▶ analysisd
+                                                              │
+                       ┌──────────────────────────────────────┘
+                       ▼
+            PreDecode ▶ Decode(sshd: srcip/srcuser) ▶ Rule 5710(L5) ▶ [×8/120s, same_source_ip] ▶ Rule 5712(L10)
+                                                                                                        │
+                                          ┌─────────────────────────────────────────────┬─────────────┘
+                                          ▼                                             ▼
+                                  active-response: firewall-drop              alerts.json ▶ Filebeat ▶ Indexer(9200) ▶ Dashboard(443)
+                                  iptables DROP 203.0.113.5
+</code></pre>
+<hr />
+<h2 id="ch08-816-đieu-tra-mot-canh-bao-thuc-te-bang-wazuh-quy-trinh-tai-dung-đuoc">8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được</h2>
+<p>Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: <strong>từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận</strong>. Đây là quy trình mình đã dùng để điều tra một đợt quét thật trên hệ thống mình vận hành (giữa 2026); chi tiết nội bộ đã được ẩn danh, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: <em>bị cái gì, thủng chưa, làm gì tiếp</em> — kèm bằng chứng, không phải cảm giác.</p>
+<h3 id="ch08-8161-buoc-1-phat-hien-tu-dashboard-mot-nguon-chiem-ap-đao">8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo</h3>
+<p>Điểm khởi đầu là panel <strong>Top source IPs</strong> (mình tự dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — <code>45.148.10.80</code> — chiếm <strong>536</strong> cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: <code>web</code>, <code>attack</code>. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.</p>
+<p>Bài học ngay ở bước này: dashboard không trả lời câu hỏi — nó chỉ <strong>chỉ chỗ đáng để hỏi</strong>. Toàn bộ kết luận phía sau đến từ query.</p>
+<h3 id="ch08-8162-buoc-2-khoanh-vung-bang-dev-tools-ba-query-tong-hop">8.16.2. Bước 2 — Khoanh vùng bằng Dev Tools: ba query tổng hợp</h3>
+<p>Wazuh dashboard có <strong>Dev Tools</strong> (console gửi query thẳng vào indexer — cú pháp OpenSearch/Elasticsearch DSL) trên index <code>wazuh-alerts-*</code>. Ba aggregation trả lời ba câu hỏi khoanh vùng.</p>
+<p><strong>(a) Nó đập máy nào?</strong> — <code>terms</code> theo <code>agent.name</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;by_agent&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;agent.name&quot;,&quot;size&quot;:10}}}}
+</code></pre>
+<p>Kết quả: toàn bộ 536 alert nằm trên <strong>một máy dev chạy web API</strong> (nginx làm reverse proxy, phơi Internet). Phạm vi gọn lại còn đúng một host.</p>
+<p><strong>(b) Nó sinh ra rule gì?</strong> — <code>terms</code> theo <code>rule.id</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;rules&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;rule.id&quot;,&quot;size&quot;:15}}}}
+</code></pre>
+<p>Kết quả: <code>31516</code> (URL đáng ngờ — 230), <code>31104</code> (pattern web attack — 218), <code>31151</code>/<code>31153</code> (nhiều lỗi 400/404) — toàn bộ thuộc nhóm "dò và bị từ chối". Quan trọng không kém là rule <strong>không</strong> xuất hiện: không có <code>31106</code> — rule "web attack <strong>trả về 200</strong>" (tức tấn công mà server đáp thành công). Chi tiết vắng mặt này là mấu chốt của bước kết luận (8.16.5). Các ID trên thuộc ruleset web access-log mặc định của Wazuh — đối chiếu lại với phiên bản ruleset đang chạy (cần kiểm chứng).</p>
+<p><strong>(c) Nhịp độ ra sao?</strong> — <code>date_histogram</code> theo <code>timestamp</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;timeline&quot;:{&quot;date_histogram&quot;:{&quot;field&quot;:&quot;timestamp&quot;,&quot;fixed_interval&quot;:&quot;5m&quot;}}}}
+</code></pre>
+<p>Kết quả: mở màn bằng 1 request lẻ (thăm dò), ~35 phút sau leo đỉnh <strong>58 request/5 phút</strong> (xấp xỉ 1 request mỗi 5 giây), giữ đều ~2 giờ rồi tắt hẳn. Nhịp đều tăm tắp như vậy không phải người bấm trình duyệt — là scanner tự động. Nhận định này về sau trở thành cơ sở kỹ thuật để đề xuất rate-limit ở reverse proxy.</p>
+<h3 id="ch08-8163-buoc-3-đoc-bang-chung-goc-truong-full_log">8.16.3. Bước 3 — Đọc bằng chứng gốc: trường <code>full_log</code></h3>
+<p>Aggregation cho <em>hình dạng</em> của sự việc; muốn <em>bằng chứng</em> phải đọc document đầy đủ:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:1,&quot;query&quot;:{&quot;bool&quot;:{&quot;filter&quot;:[
+   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
+ &quot;_source&quot;:[&quot;timestamp&quot;,&quot;rule.description&quot;,&quot;full_log&quot;,&quot;data.url&quot;,&quot;GeoLocation&quot;],
+ &quot;sort&quot;:[{&quot;timestamp&quot;:&quot;desc&quot;}]}
+</code></pre>
+<p>Trường <code>full_log</code> giữ nguyên vẹn dòng access log mà agent đã đọc:</p>
+<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&amp;v=zte2h HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
+</code></pre>
+<p>Một chi tiết đáng kể: khi mình SSH vào máy để <code>grep</code> IP này trong <code>/var/log/nginx/access.log</code> thì <strong>không còn dòng nào</strong> — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ <code>full_log</code> trong index. Đây là lần mình thấy giá trị của log tập trung bằng mắt thường: <strong>bằng chứng không phụ thuộc log thô trên máy còn hay mất</strong> — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: <code>sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*</code> trên các file đã nén.)</p>
+<h3 id="ch08-8164-buoc-4-dien-giai-dong-log-no-đang-lam-gi-nham-cai-gi">8.16.4. Bước 4 — Diễn giải dòng log: nó đang làm gì, nhắm cái gì</h3>
+<p>Đọc từng phần của dòng log (kết hợp thêm <code>terms</code> theo <code>data.url</code> để xem toàn bộ danh sách path bị dò):</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;urls&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.url&quot;,&quot;size&quot;:25}}}}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Thành phần quan sát được</th>
+<th>Nhận định</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/....//....//....//home/admin/.ssh/id_rsa</code></td>
+<td><strong>Path traversal</strong> — cố thoát web root để đọc file hệ thống</td>
+</tr>
+<tr>
+<td><code>....//</code> và (request khác) <code>%252e%252e</code></td>
+<td><strong>Double-encoding</strong> — né các bộ lọc chỉ bắt <code>../</code> dạng thô</td>
+</tr>
+<tr>
+<td>Nhắm <code>.ssh/id_rsa</code>, <code>.ssh/id_ed25519</code>, <code>.env</code>, <code>.mysql_history</code></td>
+<td>Săn <strong>SSH key + secret ứng dụng + lịch sử DB</strong> — trúng phát nào ăn phát đó</td>
+</tr>
+<tr>
+<td>Thử lần lượt <code>root/admin/ubuntu/deploy/ec2-user/git/www-data</code></td>
+<td>Dò theo <strong>danh sách user phổ biến</strong> — hành vi wordlist tự động</td>
+</tr>
+<tr>
+<td>Status toàn <code>301</code>/<code>400</code>/<code>404</code></td>
+<td>Proxy/app <strong>từ chối hết</strong>, không thấy dấu hiệu rò rỉ</td>
+</tr>
+<tr>
+<td>Referer <code>https://www.bing.com/search?q=...</code> (chuỗi ngẫu nhiên)</td>
+<td><strong>Referer giả</strong> — ngụy trang thành traffic từ search engine</td>
+</tr>
+<tr>
+<td>User-Agent xoay vòng (Safari/Mac, Chrome/Windows, Android...)</td>
+<td><strong>Xoay UA</strong> — công cụ tự động né chặn theo UA</td>
+</tr>
+<tr>
+<td>GeoIP: VPS tại một hosting nước ngoài</td>
+<td>Không phải người dùng thật của hệ thống</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8165-buoc-5-ket-luan-dua-tren-rule-co-khong-xuat-hien">8.16.5. Bước 5 — Kết luận dựa trên rule có / không xuất hiện</h3>
+<p>Kết luận "<strong>chưa thủng</strong>" của mình đứng trên hai chân bằng chứng:</p>
+<ol>
+<li>Toàn bộ rule đã nổ đều thuộc nhóm "dò và bị từ chối" (URL đáng ngờ, 400/404); nhóm rule "<strong>web attack trả về 200</strong>" — dấu hiệu tấn công <em>thành công</em> — hoàn toàn vắng mặt với IP này.</li>
+<li>Status code trong các <code>full_log</code> mẫu đều là 301/400/404, khớp với (1).</li>
+</ol>
+<p>Hai lưu ý về cách lập luận:</p>
+<ul>
+<li><strong>Vắng alert không đồng nghĩa vắng sự cố</strong> — kết luận chỉ có giá trị trong phạm vi telemetry đang thu (nếu decoder/rule không phủ một dạng tấn công thì SIEM im lặng dù có chuyện). Vì vậy kết luận nên phát biểu kèm phạm vi: "trong dữ liệu alert hiện có, không thấy dấu hiệu thành công".</li>
+<li>Chính nhờ soi theo tiêu chí "trả 200" mà khi mở rộng ra toàn fleet (bước 6), mình phát hiện một nhóm nhỏ alert "attack trả 200" ở <strong>nơi khác</strong> — được tách thành một cuộc điều tra riêng, ưu tiên cao. Một cuộc điều tra tốt thường đẻ ra việc mới có phạm vi rõ ràng, thay vì phình vô hạn.</li>
+</ul>
+<h3 id="ch08-8166-buoc-6-mo-rong-tu-mot-ip-ra-buc-tranh-fleet">8.16.6. Bước 6 — Mở rộng: từ một IP ra bức tranh fleet</h3>
+<p>Bỏ filter theo IP, giữ filter theo nhóm rule — hỏi ba câu ở tầm toàn hệ thống:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;terms&quot;:{&quot;rule.groups&quot;:[&quot;attack&quot;]}},
+ &quot;aggs&quot;:{&quot;ips&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.srcip&quot;,&quot;size&quot;:20}}}}
+</code></pre>
+<p>Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng <strong>thứ ba</strong> về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo <strong>cụm subnet</strong> (<code>185.177.72.x</code> với năm địa chỉ khác nhau, <code>45.148.10.x</code>, <code>195.178.110.x</code>...). Tương tự, <code>terms</code> theo <code>agent.name</code> (lọc <code>rule.groups: ["attack","web"]</code>) cho thấy <strong>mọi máy web-facing đều bị quét</strong>, không riêng máy ban đầu; và <code>terms</code> theo <code>rule.description</code> lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.</p>
+<p>Hệ quả cho phản ứng: <strong>chặn từng IP là "đập chuột chũi"</strong> — scanner đổi địa chỉ liên tục theo cả dải. Biện pháp đúng tầng là kiểm soát <em>hành vi</em> tại reverse proxy (rate-limit, chặn tên tệp nhạy cảm, <code>default_server</code> ngắt Host lạ) và thu hẹp bề mặt (môi trường dev không phơi công khai); phòng thủ tầng mạng/WAF xem <a href="ch11.html">Chương 11</a>.</p>
+<h3 id="ch08-8167-tom-tat-phuong-phap-checklist-tai-dung">8.16.7. Tóm tắt phương pháp — checklist tái dùng</h3>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Câu hỏi</th>
+<th>Công cụ / Query</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Phát hiện</td>
+<td>Có nguồn/nhóm nào bất thường không?</td>
+<td>Dashboard (Top source IPs, Security Events)</td>
+</tr>
+<tr>
+<td>2. Khoanh vùng</td>
+<td>Máy nào? Rule gì? Nhịp độ nào?</td>
+<td><code>terms</code> theo <code>agent.name</code>, <code>rule.id</code> + <code>date_histogram</code> theo <code>timestamp</code>, filter <code>data.srcip</code></td>
+</tr>
+<tr>
+<td>3. Bằng chứng</td>
+<td>Thực sự nó gửi cái gì?</td>
+<td>Đọc document đầy đủ, trường <code>full_log</code> (+ <code>data.url</code>, <code>GeoLocation</code>)</td>
+</tr>
+<tr>
+<td>4. Diễn giải</td>
+<td>Kỹ thuật gì, nhắm cái gì?</td>
+<td>Đọc từng phần dòng log; <code>terms</code> theo <code>data.url</code></td>
+</tr>
+<tr>
+<td>5. Kết luận</td>
+<td>Thủng chưa? Bằng chứng đâu?</td>
+<td>Rule "thành công" có/không xuất hiện + status code; phát biểu kèm phạm vi telemetry</td>
+</tr>
+<tr>
+<td>6. Mở rộng</td>
+<td>Chỉ IP này? Chỉ máy này?</td>
+<td>Bỏ filter srcip, aggs theo <code>data.srcip</code> / <code>agent.name</code> / <code>rule.description</code> trên nhóm <code>attack</code>/<code>web</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch08-817-soar-tu-đong-hoa-phia-tren-siem">8.17. SOAR — tự động hóa phía trên SIEM</h2>
+<h3 id="ch08-8171-soar-la-gi-giai-bai-toan-gi">8.17.1. SOAR là gì, giải bài toán gì</h3>
+<p><strong>SOAR (Security Orchestration, Automation and Response)</strong> là nền tảng nhận alert từ SIEM và chạy các <strong>playbook</strong> (luồng xử lý định nghĩa trước): làm giàu (enrich) alert bằng nguồn dữ liệu ngoài, thông báo, mở case, và — khi quy trình đủ chín — thực thi phản ứng.</p>
+<p>Bài toán gốc: một SIEM được tuning tốt vẫn sinh alert <strong>nhiều hơn sức người đọc</strong>. Quan sát của mình khi trực: phần lớn thời gian triage một alert web không nằm ở phán đoán, mà ở thao tác lặp — copy IP nguồn → mở 2–3 tab tra reputation → nhìn kết quả → quyết định bỏ qua hay đào tiếp. Chuỗi thao tác đó máy làm được toàn bộ, và SOAR sinh ra đúng để làm việc đó: <strong>tự động hóa phần lặp lại, để dành người cho phần phán đoán</strong>.</p>
+<h3 id="ch08-8172-chon-cong-cu-shuffle-vs-thehive-vs-n8n">8.17.2. Chọn công cụ: Shuffle vs TheHive vs n8n</h3>
+<table>
+<thead>
+<tr>
+<th>Công cụ</th>
+<th>Bản chất</th>
+<th>Điểm mạnh</th>
+<th>Cân nhắc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Shuffle</strong></td>
+<td>SOAR mã nguồn mở, workflow kéo-thả, kho app connector thiên về security</td>
+<td>Sinh ra cho use case SOC: có sẵn app cho Wazuh, các nguồn threat intel phổ biến; nhận webhook dễ</td>
+<td>Cộng đồng nhỏ hơn n8n; UI/docs còn thô ở vài chỗ</td>
+</tr>
+<tr>
+<td><strong>TheHive (+ Cortex)</strong></td>
+<td>Nền tảng <strong>case management</strong> + engine phân tích observable (Cortex analyzer)</td>
+<td>Quản lý vòng đời case, phân công, lưu evidence — đúng nghĩa quy trình SOC</td>
+<td>Nặng so với nhu cầu "chỉ cần enrich + notify" ở giai đoạn đầu</td>
+</tr>
+<tr>
+<td><strong>n8n</strong></td>
+<td>Automation tổng quát (không riêng security)</td>
+<td>Connector rất nhiều, dev nào cũng dùng được</td>
+<td>Không có khái niệm alert/case/observable sẵn — phần security phải tự chế</td>
+</tr>
+</tbody>
+</table>
+<p>Ở hệ thống mình vận hành, mình chọn <strong>Shuffle</strong> cho giai đoạn đầu: bài toán trước mắt là <em>enrich + notify</em> (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.</p>
+<h3 id="ch08-8173-kien-truc-wazuh-soar-loc-truoc-khi-đay">8.17.3. Kiến trúc Wazuh → SOAR: lọc trước khi đẩy</h3>
+<pre><code>Wazuh manager ──(integration/webhook, CHỈ alert level ≥ N)──▶ SOAR (Shuffle)
+                                                                 │
+                                          ┌──────────────────────┤
+                                          ▼                      ▼
+                                [playbook enrich IP]     [playbook khác...]
+                                          │
+                                          ▼
+                                kênh chat vận hành (kèm link về alert gốc trong SIEM)
+</code></pre>
+<p>Điểm thiết kế quan trọng nhất nằm ngay cạnh Wazuh: <strong>lọc theo severity trước khi đẩy</strong>. Chỉ những alert từ một mức level nhất định (ví dụ ≥ 7) mới sang SOAR; đẩy tất cả thì SOAR chỉ là bản sao ồn ào của SIEM và quota API threat intel cạn trong một buổi. Wazuh hỗ trợ việc này bằng khối <code>&lt;integration&gt;</code> trong <code>ossec.conf</code> — gọi webhook khi alert thỏa điều kiện:</p>
+<pre><code class="language-xml">&lt;integration&gt;
+  &lt;name&gt;custom-soar&lt;/name&gt;                    &lt;!-- script custom-* trong /var/ossec/integrations/ --&gt;
+  &lt;hook_url&gt;https://soar.example.internal/api/v1/hooks/webhook_xxx&lt;/hook_url&gt;
+  &lt;level&gt;7&lt;/level&gt;                            &lt;!-- chỉ đẩy alert level &gt;= 7 --&gt;
+  &lt;alert_format&gt;json&lt;/alert_format&gt;
+&lt;/integration&gt;
+</code></pre>
+<p>(Ngoài <code>&lt;level&gt;</code> còn lọc được theo <code>&lt;rule_id&gt;</code> / <code>&lt;group&gt;</code>; cú pháp đối chiếu theo phiên bản đang chạy — cần kiểm chứng.)</p>
+<h3 id="ch08-8174-playbook-đau-tien-enrich-ip-notify">8.17.4. Playbook đầu tiên: enrich IP + notify</h3>
+<p>Luồng enrich mình chạy thực tế, theo thứ tự:</p>
+<pre><code>alert JSON từ Wazuh
+   │
+   ▼
+1. Trích data.srcip
+2. Lọc: IP có phải public không?
+      ├─ private (RFC 1918) / IP hạ tầng của mình → dừng (tra threat intel IP private vừa vô nghĩa vừa tốn quota)
+      └─ public → tiếp
+3. Tra threat intel song song hai nguồn:
+      ├─ nguồn kiểu AbuseIPDB  → abuse confidence score (0–100), số report, ISP, usage type
+      └─ nguồn kiểu VirusTotal → bao nhiêu engine gắn cờ malicious
+4. Ghép thành message chuẩn: MÁY NÀO, rule gì (id + description), IP, score, số engine gắn cờ
+5. Notify kênh chat vận hành — luôn kèm link quay về alert gốc trong SIEM
+</code></pre>
+<p>Giá trị thấy ngay trong tuần đầu: <strong>phân biệt được scanner có tiền sử với truy cập hợp lệ bị ghi nhận nhầm</strong>. Cùng một alert brute-force, IP có confidence score 100% với hàng nghìn report là chuyện khác hẳn IP score 0 hóa ra là đối tác đổi dải mạng. Người trực nhìn message là quyết định được ngay, không phải mở ba tab tra tay — alert nhiễu giảm theo đúng nghĩa "giảm chi phí xử lý một alert", chứ không phải giấu bớt alert đi.</p>
+<h3 id="ch08-8175-nguyen-tac-soar-la-lop-bo-sung-khong-thay-the-siem">8.17.5. Nguyên tắc: SOAR là lớp bổ sung, không thay thế SIEM</h3>
+<ul>
+<li><strong>Alert gốc và bằng chứng vẫn nằm trong SIEM.</strong> SOAR chỉ giữ bản sao phục vụ playbook. SOAR chết thì mất tiện nghi, không mất dữ liệu; mọi notify đều có đường dẫn quay về SIEM để điều tra sâu (quy trình ở 8.16).</li>
+<li><strong>Chưa vội tự động hóa phản ứng.</strong> Lộ trình mình theo: (1) enrich + notify — máy chỉ <em>đọc</em>, chưa <em>làm</em>; (2) case management (kiểu TheHive) khi số vụ việc cần theo dấu tăng; (3) phản ứng có <strong>human approval</strong> — playbook chuẩn bị sẵn hành động (chặn IP, cô lập host), người bấm duyệt; (4) cuối cùng mới là tự động hoàn toàn cho một nhóm hẹp tình huống rất chắc chắn — với tinh thần y như Active Response (8.10): allowlist hạ tầng + timeout tự gỡ.</li>
+</ul>
+<hr />
+<h2 id="ch08-818-tong-ket-van-hanh-checklist-bao-mat-wazuh">8.18. Tổng kết vận hành &amp; checklist bảo mật Wazuh</h2>
+<table>
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>Khuyến nghị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Truyền dữ liệu</td>
+<td>TCP 1514 + <code>crypto_method aes</code>; enroll qua 1515 có password/CA</td>
+</tr>
+<tr>
+<td><code>client.keys</code></td>
+<td>Quyền chặt, không lộ; tên agent ổn định, duy nhất</td>
+</tr>
+<tr>
+<td>Rule/decoder tùy biến</td>
+<td>Chỉ trong <code>local_*.xml</code>, id 100000+, test bằng <code>wazuh-logtest</code> &amp; <code>analysisd -t</code> trước restart</td>
+</tr>
+<tr>
+<td>FIM</td>
+<td>Realtime đúng chỗ; <code>&lt;nodiff&gt;</code> cho đường chứa secret; canh <code>inotify</code> watches</td>
+</tr>
+<tr>
+<td>Active Response</td>
+<td>Allowlist IP hạ tầng; ưu tiên <code>local</code>; <code>timeout</code> để tự gỡ; script quyền chặt</td>
+</tr>
+<tr>
+<td>Vuln/SCA</td>
+<td>Đối chiếu version đúng feed; đọc theo từng CVE/check, không chỉ điểm tổng</td>
+</tr>
+<tr>
+<td>Lưu trữ</td>
+<td><code>logall=no</code> trừ khi forensic; chính sách retention rõ ràng (hot/warm/cold)</td>
+</tr>
+<tr>
+<td>Tuning</td>
+<td>Vòng lặp đo FP/FN; nâng level dần; review định kỳ; whitelist dải quản trị đúng nhóm rule</td>
+</tr>
+<tr>
+<td>SOAR</td>
+<td>Lọc theo level trước khi đẩy; alert gốc luôn ở SIEM; phản ứng tự động đi sau human approval</td>
+</tr>
+<tr>
+<td>API 55000</td>
+<td>Đổi credential mặc định, bật RBAC, giới hạn network</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Hết Chương 8.</em></p>
+<hr />
+<h2 id="ch08-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li>Hồi mới học SIEM, mình nghĩ giá trị của nó nằm ở dashboard đẹp và alert realtime. Sau lần đầu điều tra một đợt quét thật (mục 8.16), mình mới thấy giá trị lớn nhất nằm ở chỗ khác: <strong>khả năng đặt câu hỏi lên dữ liệu đã tập trung</strong>. Dashboard chỉ chỉ chỗ bất thường; toàn bộ kết luận đến từ vài query aggregation trên <code>wazuh-alerts-*</code>.</li>
+<li>Bài học đắt nhất về log tập trung: khi mình SSH vào máy để grep access.log thì log đã xoay, <strong>không còn dòng nào</strong> — nhưng <code>full_log</code> trong index vẫn giữ nguyên vẹn từng dòng bằng chứng. Nếu chỉ giám sát bằng cách "có chuyện thì SSH vào xem log", mình đã tay trắng. Log tập trung không phải để cho sang — nó là nơi duy nhất bằng chứng sống sót qua logrotate (và qua cả attacker xóa log trên host).</li>
+<li>Mình từng mặc định phản ứng đúng với IP tấn công là chặn nó. Đến khi bỏ filter IP và aggs theo <code>data.srcip</code> toàn fleet, thấy hàng chục IP đi theo cả cụm subnet, mình mới hiểu vì sao chặn từng IP là "đập chuột chũi". Giờ mình xếp thứ tự khác: thu hẹp bề mặt (dev không phơi công khai) → kiểm soát hành vi ở proxy (rate-limit, chặn tên tệp nhạy cảm) → cuối cùng mới đến chặn IP như biện pháp tạm.</li>
+<li>Điều bất ngờ khi nối SIEM với luồng enrich threat intel (8.17): giá trị đầu tiên không phải "bắt thêm được attacker" mà là <strong>phân biệt nhanh scanner có tiền sử với false positive</strong> — IP confidence score 100% với hàng nghìn report khác hẳn IP score 0 hóa ra là truy cập hợp lệ. Đỡ hẳn những cuộc tranh luận "IP này là của ai" trong kênh vận hành.</li>
+<li>Một kết luận "chưa thủng" mà mình dám viết vào báo cáo là kết luận có hai chân bằng chứng: rule "tấn công trả 200" vắng mặt <em>và</em> status code trong full_log khớp. Mình cũng học được cách phát biểu kèm phạm vi ("trong telemetry hiện có...") — vắng alert không đồng nghĩa vắng sự cố.</li>
+<li>Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng bằng fail2ban kết hợp Wazuh (mới ở mức nghiên cứu, chưa dám bật vì sợ self-DoS — xem cảnh báo 8.10); đưa case management vào quy trình khi số vụ việc cần theo dấu tăng; và WAF (ModSecurity + OWASP CRS) làm lớp chặn traversal triệt để mà nginx thuần không làm được.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch07.html"><span>← Chương trước</span><b>07 · CI/CD &amp; GitOps</b></a><a class="pg next" href="ch09.html"><span>Chương sau →</span><b>09 · Observability &amp; Giám sát hạ tầng</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -2,30 +2,13 @@
 
 ## Overview
 
-This chapter covers how to embed security controls into the software development process rather than performing a single check at the end. The foundational principle: the later a vulnerability is found, the more expensive it is to fix and the greater the risk of exploitation. The goal is to detect and block defects at the earliest feasible point in the software lifecycle.
+Traditional security is a checkpoint at the end: write the code, then someone reviews it right before release. That has a very practical problem — by the time anything turns up, fixing it is expensive, often expensive enough that the finding gets accepted as risk and waved through. **DevSecOps** inverts that order by embedding security controls into the development process itself, and **shift-left** means moving each check as early as it will go — the earliest being the developer's own machine, before the code has left it.
 
-The key concepts and tools in this chapter:
+The place those checks live is the **CI/CD pipeline**. This chapter walks through each class of scanning in terms of its blind spot, because none of them catches everything: **SAST** reads source statically (good at injection, XSS, path traversal), **DAST** attacks the running application (runtime faults and misconfiguration), **IAST** instruments the runtime to connect data flow with code location, **SCA** checks third-party libraries against CVE databases, plus **secret scanning**, **IaC scanning** and **container scanning**. Three tools get covered deeply enough to use immediately: **Semgrep** (SAST matching on AST structure rather than plain text — the focus being YAML rules, metavariables like `$X`, and taint mode), **gitleaks** (scanning both content and git history, combining structural regex with Shannon entropy) and **Trivy** (images, filesystems, IaC, SBOM).
 
-- **DevSecOps & shift-left**: **DevSecOps** is an operating model in which security (Sec) is embedded into development (Dev) and operations (Ops) at every stage, rather than being a separate phase. **Shift-left** means moving security testing activities earlier on the timeline. Problem it solves: fixing a defect at coding time is many times cheaper than fixing it once it has reached production.
-- **CI/CD & pipeline**: **CI** (Continuous Integration) automatically merges, builds, and tests code every time it is submitted; **CD** (Continuous Deployment/Delivery) automatically pushes tested code to a real environment. A **pipeline** is that chain of automated steps. Problem it solves: it standardizes checks and removes error-prone manual steps; this is where security scanning tools are attached to run automatically.
-- **Types of scanning** (each has its own blind spot, so they must be combined):
-  - **SAST** (Static Application Security Testing): analyzes source code without executing it; good at catching injection, XSS, path traversal.
-  - **DAST** (Dynamic Application Security Testing): runs the application and attacks it over HTTP; catches runtime bugs, misconfigurations, authentication flaws.
-  - **IAST** (Interactive Application Security Testing): attaches an agent to the runtime, combining runtime data flow with code location.
-  - **SCA** (Software Composition Analysis): checks third-party libraries against the CVE database.
-  - **Secret scanning**: looks for passwords, API keys, and tokens committed into the code.
-  - **IaC scanning**: checks infrastructure configuration (Terraform, K8s) for misconfigurations.
-  - **Container scanning**: scans image layers for CVEs in OS packages and application dependencies packaged inside the image.
-- **Semgrep**: an open-source SAST tool ("semantic grep") that matches against AST structure rather than plain text. Problem it solves: regexes both false-alarm and miss things, whereas Semgrep balances speed and accuracy. Chapter focus: writing YAML **rules**, using **metavariables** (`$X`), and **taint mode** (tracking tainted data from source to sink).
-- **Gitleaks**: a secret scanner that scans both file contents and git history, using two complementary methods — regexes that recognize structure (for example, AWS keys starting with `AKIA`) and Shannon entropy that measures randomness.
-- **Trivy**: a versatile scanner for container images, filesystems, IaC configuration, and SBOMs; it enumerates components and cross-references them against published CVEs.
-- **Pipeline gates & exit codes**: a **gate** is the decision point that passes or blocks within a pipeline, communicating through an **exit code** (`0` = pass, non-`0` = fail). Use a **tiered** design: critical issues block the build, minor issues only warn, in order to avoid alert fatigue while still blocking exploitable risks.
-- **Supply chain security, SBOM, artifact signing**: the **software supply chain** includes libraries, build tools, and packaging infrastructure — each link can be poisoned. An **SBOM** (Software Bill of Materials) lists every component so you can quickly trace which products contain a component affected by a CVE (for example, Log4Shell). **Artifact signing** (cosign/sigstore) proves that an artifact comes from a trusted source and has not been tampered with.
-- **Secret management & Vault**: instead of static secrets in code, use a centralized secret manager such as **HashiCorp Vault**. **Dynamic secrets** issue short-lived credentials on demand and then automatically revoke them. **OIDC/workload identity** solves the "secret zero" problem by using the pre-signed identity of the runtime environment (for example, GitHub Actions).
-- **pre-commit hook**: a script that runs right before a commit; if it detects a problem, it blocks the commit. This is the furthest-left shift-left point, catching defects before the code leaves the developer's machine. Because developers can bypass the hook, these checks must be repeated on the CI side.
+The second half shifts from tools to operating them without the team turning against you. **Gates** talk to the pipeline through exit codes and must be tiered — serious findings block the build, minor ones only warn — because otherwise alert fatigue kills the whole control. Alongside that: supply chain security (**SBOM** to answer "which of our products contains the component with this CVE", artifact signing with cosign/sigstore), centralised secret management with **Vault** — dynamic secrets, and OIDC/workload identity to solve the "secret zero" problem — and **pre-commit hooks** as the furthest-left checkpoint (which developers can skip, so CI must repeat everything). The final section covers **AI-generated code**: it runs but isn't safe, it brings its own risks like slopsquatting, and the answer is reusing the pipeline you already have rather than building a parallel process.
 
-> This chapter is a reference document for learning and lookup. Every tool comes with a runnable example, every data format is described down to the field/byte level, and every mechanism explains "why it is designed this way."
-
+> Every tool here comes with a runnable example and an explanation of why it was designed that way — anything version-dependent carries its own note.
 ---
 
 ## 6.1. The shift-left philosophy & the DevSecOps model
@@ -67,6 +50,26 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 - **Fail tiered**: not every finding blocks the build — distinguish blocking vs. warning (see 6.9).
 - **Guardrails, not gatekeepers**: provide rails to move fast safely, rather than blocking gates that push developers to find workarounds (shadow IT).
 
+### 6.1.3. The full tiered shift-left pipeline (applied in practice)
+
+When the theory above is applied to the system I operate, it becomes a concrete chain of tiers, built entirely with open-source tools. **Each tier catches its own class of defects, and no tier can replace another** — dropping a tier opens exactly that tier's blind spot.
+
+```
+IDE ────► pre-commit ────► CI (on PR) ─────────► staging ────► runtime
+Semgrep    gitleaks         Semgrep + gitleaks    OWASP ZAP     SIEM
+/linter                     + Trivy (image+deps)  (DAST)        monitoring
+```
+
+| Tier | Tools | What it catches | Why it cannot be dropped |
+|---|---|---|---|
+| IDE (while typing) | Semgrep extension, linter | Dangerous patterns as they are written (SQLi, `eval`, hardcoding) | Instant feedback, 1x fix cost; but the developer can turn it off |
+| pre-commit (dev machine) | gitleaks | Secrets before they enter git history | A committed and pushed secret is considered exposed and must be rotated; but the hook can be bypassed with `--no-verify` |
+| CI on the PR | Semgrep (SAST) + gitleaks + Trivy (image + dependency) | Code defects, secrets that slipped past the hook, CVEs in libraries and images | The server-side gate that cannot be bypassed — repeats every check from the earlier tiers |
+| Staging (pre-deploy) | OWASP ZAP (DAST) | Runtime bugs, misconfig, missing headers — SAST's blind spot | Only visible when the app actually runs |
+| Runtime (production) | SIEM monitoring & alerting (see [Chapter 8](#sec-08)) | Real attacks, anomalous behavior | No set of scanners catches everything before deploy; there must be eyes at the last tier |
+
+The first two tiers run on the developer's machine, so they are only a "courtesy layer" — their real value is early feedback, while enforcement lives in CI (see 6.12.3). Conversely, with CI only and no IDE/pre-commit tier, developers get feedback hours later and the secret has already made it into git history.
+
 ---
 
 ## 6.2. A taxonomy of security scanning techniques
@@ -75,15 +78,17 @@ This is the foundational section: each family of tools views software from a dif
 
 ### 6.2.1. Overview table
 
-| Type | Full name | Input | App must run? | Detects well | Blind spot |
-|---|---|---|---|---|---|
-| SAST | Static Application Security Testing | Source/bytecode | No | SQLi, XSS, path traversal, hardcoded crypto | Runtime/config bugs, auth logic |
-| DAST | Dynamic Application Security Testing | Running app (HTTP) | Yes | Runtime bugs, server misconfig, auth | Cannot see code, coverage depends on the crawler |
-| IAST | Interactive AST | Agent in the runtime + traffic | Yes | Combines runtime data flow + code location | Requires instrumentation, limited languages |
-| SCA | Software Composition Analysis | Dependency manifest/lockfile | No | CVEs in third-party libraries, license | Bugs in your own code |
-| Secret scanning | — | Source + git history | No | API keys, tokens, private keys committed | Encrypted secrets, secrets outside the repo |
-| IaC scanning | Infrastructure as Code | Terraform/K8s/CFN | No | Public S3, SG open to 0.0.0.0/0 | Runtime drift vs. code |
-| Container scanning | — | Image layers / filesystem | No | CVEs in OS packages, app deps in the image | Application logic bugs |
+| Type | Full name | Input | App must run? | Detects well | Blind spot | Representative tools |
+|---|---|---|---|---|---|---|
+| SAST | Static Application Security Testing | Source/bytecode | No | SQLi, XSS, path traversal, hardcoded crypto | Runtime/config bugs, auth logic | Semgrep, SonarQube |
+| DAST | Dynamic Application Security Testing | Running app (HTTP) | Yes | Runtime bugs, server misconfig, auth | Cannot see code, coverage depends on the crawler | OWASP ZAP |
+| IAST | Interactive AST | Agent in the runtime + traffic | Yes | Combines runtime data flow + code location | Requires instrumentation, limited languages | (mostly commercial) |
+| SCA | Software Composition Analysis | Dependency manifest/lockfile | No | CVEs in third-party libraries, license | Bugs in your own code | Trivy, Dependabot |
+| Secret scanning | — | Source + git history | No | API keys, tokens, private keys committed | Encrypted secrets, secrets outside the repo | gitleaks |
+| IaC scanning | Infrastructure as Code | Terraform/K8s/CFN | No | Public S3, SG open to 0.0.0.0/0 | Runtime drift vs. code | Checkov, Trivy (misconfig) |
+| Container scanning | — | Image layers / filesystem | No | CVEs in OS packages, app deps in the image | Application logic bugs | Trivy |
+
+A point worth noting for small teams: the core set (Semgrep, gitleaks, Trivy, ZAP, Checkov) is all open source and essentially free. The real cost is not licenses but **human operating time** — tuning rules, triaging results, keeping the pipeline alive. The problem is not "having budget for tools" but "having the discipline to use the tools + automation so that few people can carry the load."
 
 ### 6.2.2. SAST — static analysis
 
@@ -142,7 +147,7 @@ Semgrep ("semantic grep") is an open-source SAST tool positioned between "grep" 
                   Findings (JSON/SARIF)
 ```
 
-The key point: **the pattern in a rule is also parsed into an AST** just like the target code, and Semgrep then matches **tree against tree** (structural match), not text against text. As a result:
+The trick is that **the pattern in a rule is also parsed into an AST** just like the target code, and Semgrep then matches **tree against tree** (structural match), not text against text. That's why:
 
 - `foo(1, 2)` matches whether the code is written `foo(1,2)`, `foo( 1, 2 )`, or wrapped across lines.
 - Comments, whitespace, and redundant parentheses are naturally ignored.
@@ -340,7 +345,7 @@ rules:
     mode: taint
     metadata:
       cwe: "CWE-89: SQL Injection"
-      owasp: "A03:2021 - Injection"
+      owasp: "A05:2025 - Injection"
       confidence: HIGH
     pattern-sources:
       - pattern: flask.request.$ANYTHING
@@ -386,7 +391,7 @@ rules:
     languages: [javascript, typescript]
     severity: ERROR
     message: "eval() with dynamic data → remote code execution (CWE-95)."
-    metadata: { cwe: "CWE-95", owasp: "A03:2021" }
+    metadata: { cwe: "CWE-95", owasp: "A05:2025" }
     patterns:
       - pattern: eval($X)
       - pattern-not: eval("...")     # allow eval of a constant string (still better avoided)
@@ -490,6 +495,13 @@ A strategy for reducing false positives, in order of priority:
 result = eval(trusted_expr)   # nosemgrep: js-eval-user-input — string is whitelisted
 ```
 
+**A team-scale strategy against false-positive fatigue.** If you enable a large ruleset on day one and Semgrep reports hundreds of warnings, developers give up — and that is when the scan is effectively dead even though it still runs in the pipeline. The more sustainable approach:
+
+1. **Start with a small, high-confidence ruleset** (SQLi, hardcoded secrets, XSS — rules that almost never false-alarm), then expand gradually once the team is used to it.
+2. **Make only a few rules blocking, the rest warnings** — true tiering (see 6.9), prioritizing by severity instead of chasing finding counts.
+3. **Triage periodically**: a fixed schedule for reviewing warning findings, tuning rules (`pattern-not`, sanitizers), and deciding whether to promote them to blocking or drop them entirely. A rule no one looks at is a rule that should be turned off.
+4. **A few custom rules for internal patterns are worth more than enabling everything**: SAST struggles with business logic, but a handful of well-placed self-written rules — things like "every controller must have an authorization guard," "no raw queries without parameterization" — catch exactly the mistakes the team actually makes, without adding noise.
+
 Severity → action convention (linked to the pipeline gate in 6.9):
 
 | Severity | Meaning | Suggested pipeline action |
@@ -529,6 +541,14 @@ gitleaks protect --staged --source .
 
 # Output a report + non-zero exit code if there is a leak
 gitleaks detect --source . --report-format sarif --report-path leaks.sarif
+```
+
+Version note: as of gitleaks v8.19, the command set was reorganized — `gitleaks git` (scan a repo + its history), `gitleaks dir` (scan a directory, replacing `detect --no-git`), `gitleaks stash`; the old `detect`/`protect` commands are marked deprecated but still work (verify against the version you use):
+
+```bash
+gitleaks git .              # replaces: gitleaks detect --source .
+gitleaks dir .              # replaces: gitleaks detect --no-git --source .
+gitleaks git --pre-commit --staged .   # for use in a pre-commit hook
 ```
 
 ### 6.7.3. `.gitleaks.toml` example
@@ -634,6 +654,33 @@ trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed myapp:ci    # blo
 
 The two separate commands express the tiered gate principle (6.9): CRITICAL blocks, HIGH only warns.
 
+### 6.8.4. Prioritizing when the scanner reports hundreds of CVEs
+
+Running a dependency scan for the first time on a codebase of some age and getting 200+ CVEs is normal — and nobody can fix them all, especially when the person handling them is a team of one. The problem is not "fix everything" but **prioritize correctly**. A CVE is only worth immediate action when it meets all of:
+
+1. **High severity** (High/Critical) — filter with `--severity`.
+2. **A fix version exists** — filter with `--ignore-unfixed`; a CVE without a patch admits no direct action (see below).
+3. **Reachability**: it sits on a code path that actually executes — not a devDependency, not a module that is imported but unused. This is the most commonly ignored factor: a 9.8 CVE in a library whose affected code path the app never touches is less dangerous than a 7.5 CVE sitting right on a public endpoint.
+
+Beyond CVSS (theoretical severity), cross-check two sources that measure **real-world exploitability**: **EPSS** (Exploit Prediction Scoring System — the probability the CVE will be exploited within the next 30 days) and **CISA KEV** (Known Exploited Vulnerabilities — the list of vulnerabilities *actively* being exploited in the wild). A CVE on the KEV list gets patched first regardless of its CVSS score.
+
+For a Critical CVE with no patch yet: determine whether the affected code path is actually used; if it is, apply temporary mitigations (a WAF rule, input blocking, disabling the feature, isolating the service) and watch the advisory; if you are forced to defer, make it a **time-boxed** risk acceptance, never one that fades into oblivion.
+
+Trivy's ignore mechanism serves exactly this purpose — but it demands discipline. A `.trivyignore` file in the repo:
+
+```
+# [PROD] Every ignored line must carry a reason + a re-review date.
+# CVE-2025-12345 (lodash): affected code path unused (we only import cloneDeep)
+#   Decided by: SecOps · Re-review: 2026-09-15
+CVE-2025-12345
+
+# CVE-2025-67890 (openssl in the base image): no fix yet, related cipher blocked at the LB
+#   Decided by: SecOps · Re-review: 2026-08-30
+CVE-2025-67890
+```
+
+Trivy only reads the CVE ID lines (`#` lines are comments), but it is precisely the comments that keep the ignore list from becoming "a graveyard of decisions nobody remembers the reasons for." An ignore without a re-review date is forgotten forever.
+
 ---
 
 ## 6.9. Designing pipeline gates — exit codes and tiering
@@ -654,6 +701,8 @@ If you block the build on **every** finding (including HIGH/MEDIUM), developers 
 |---|---|---|---|---|
 | Blocking gate | CRITICAL (and ERROR with HIGH confidence) | 1 | Red build, cannot merge | Block exploitable vulnerabilities |
 | Warning gate | HIGH / WARNING | 0 | Green build + PR annotation/comment | Build awareness, add to the backlog |
+
+The criterion for what belongs in the blocking tier: **unambiguous and almost never a false positive**. In practice I hard-block three groups — a committed secret (gitleaks), a Critical/High CVE **with an available fix version** (Trivy `--ignore-unfixed`), and IaC creating dangerous resources such as a public bucket / a security group open to `0.0.0.0/0`. The noisy remainder (low-severity SAST, DAST informational, CVEs without a patch) only warns + creates a ticket under an SLA. Hard-block everything and the team grows to hate the pipeline and finds ways around it; loosen everything and the gate is meaningless.
 
 ### 6.9.3. GitLab CI example (.gitlab-ci.yml)
 
@@ -686,9 +735,9 @@ trivy_block:
 
 gitleaks:
   stage: security
-  image: zricethezav/gitleaks
+  image: ghcr.io/gitleaks/gitleaks:latest   # the current official image (the old zricethezav/gitleaks still exists)
   script:
-    - gitleaks detect --source . --no-banner
+    - gitleaks git . --no-banner
 ```
 
 `allow_failure: true` is GitLab's mechanism that lets a job fail without turning the pipeline red — exactly what a "warning gate" means. The `semgrep_block` job does not have it, so its failure blocks the merge.
@@ -700,6 +749,16 @@ semgrep ci   # automatically uses baseline = the target branch in the CI environ
 # or manually:
 semgrep --config auto --baseline-commit "$CI_MERGE_REQUEST_DIFF_BASE_SHA" .
 ```
+
+### 6.9.4. A controlled exception mechanism
+
+The most practical question about gates: **what happens when the gate blocks a merge and the release is urgent?** If there is no answer prepared in advance, the team will answer it themselves by turning the gate off — and once off, it rarely comes back on. A proper exception design:
+
+- **Explicit approval required** from the person responsible for security (or a delegated lead when that person is away) — not the developer's own call.
+- **A recorded reason + a mandatory, deadline-bound fix ticket** — today's override is debt with a due date, not a write-off.
+- **An audit trail**: the exception lives in a PR comment / ticket, traceable to who approved it, when, and why. Never override silently (editing the gate config and putting it back).
+
+An exception is a **controlled exception, not a default back door**. It also doubles as a health metric for the gate: if you have to override every single week, the problem is not the exception process but a gate threshold set wrong — fix the gate, do not normalize going around it.
 
 ---
 
@@ -756,7 +815,7 @@ CycloneDX structure (JSON, abridged) — the main fields:
 ```json
 {
   "bomFormat": "CycloneDX",
-  "specVersion": "1.5",
+  "specVersion": "1.6",
   "serialNumber": "urn:uuid:3e671687-...",
   "version": 1,
   "metadata": { "timestamp": "2026-06-19T00:00:00Z",
@@ -789,7 +848,8 @@ Goal: prove that an artifact (image, SBOM, blob) **has not been modified** and *
 
 ```bash
 # Keyless sign: opens the OIDC flow, gets a short-lived cert, signs, records in Rekor
-COSIGN_EXPERIMENTAL=1 cosign sign myregistry/myapp@sha256:abcd...
+# (as of cosign v2.0 keyless is the default, no COSIGN_EXPERIMENTAL=1 needed as in 1.x — needs verification)
+cosign sign myregistry/myapp@sha256:abcd...
 
 # Verify: check the signature + allowed identity + presence in Rekor
 cosign verify \
@@ -889,8 +949,8 @@ repos:
     hooks:
       - id: gitleaks            # block secrets before committing
 
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.50.0
+  - repo: https://github.com/semgrep/semgrep   # the org renamed from returntocorp
+    rev: v1.50.0                               # pin to the latest release when adopting (needs verification)
     hooks:
       - id: semgrep
         args: ["--config", "p/security-audit", "--error", "--skip-unknown-extensions"]
@@ -938,9 +998,38 @@ git commit -m "feat: ..."
 | CI build | Semgrep, Trivy fs/config, SCA | SAST, SCA, IaC | Blocking (CRITICAL) + Warning (HIGH) |
 | Image build | Trivy image, cosign sign, SBOM | Container, signing, SBOM | Blocking on CRITICAL CVE |
 | Pre-deploy | cosign verify, admission controller | Provenance/policy | Blocking if unsigned |
-| Runtime | DAST/ZAP, WAF, EDR | DAST, monitoring | Warn + block attacks |
+| Staging | OWASP ZAP (DAST) | DAST | Baseline on every PR, full scan before release |
+| Runtime | WAF, EDR, SIEM | Monitoring/detection | Warn + block attacks |
 
 The principle running throughout: **each tier has a blind spot, so stack the tiers to compensate for one another**; catch secrets as early as possible; only block the build on exploitable risks; every policy is code, versioned and reviewable.
+
+---
+
+## 6.14. Controlling AI-generated code — the three-layer model
+
+### 6.14.1. The problem
+
+Most developers today use an AI coding assistant daily (surveys put the figure at ~70%+ — needs verification). AI writes code fast, but it tends to suggest code that **runs but is not safe** — string-concatenated SQL, missing validation, missing authorization checks — because it optimizes for "it works" without holding the system's security context. Responsibility is clear enough: **the person who merges is responsible for the vulnerability, not the tool**. The most persuasive convention: treat AI output like code from a brand-new junior — useful, but mandatory to review, and never paste secrets/PII into a prompt.
+
+Effective control is not banning AI (developers will use it covertly) but placing guardrails at **three layers** — before, during, and after the code is generated:
+
+| Layer | Control | Concrete measures |
+|---|---|---|
+| **Input** (before the AI generates code) | Steer the AI from the start | An AI-assistant rules file in the repo (e.g. `CLAUDE.md`, `.cursor/rules`) stating concrete security rules: parameterized queries mandatory, authz checks mandatory, no hardcoded secrets. Semgrep custom rules banning the dangerous patterns AI tends to produce |
+| **Process** (within the workflow) | Catch early on the dev machine and at the PR | pre-commit hooks running Semgrep + gitleaks (6.12); an automated AI security review commenting security issues on the PR; a mandatory PR security checklist (see [Chapter 7](#sec-07)) |
+| **Output** (before production) | Non-negotiable gates | CI automatically fails by severity (Critical/High); **mandatory human review** for auth / payment / PII flows — do not delegate AI reviewing AI in those places; DAST on staging before going to production |
+
+These three layers are really the shift-left pipeline of 6.1.3 applied to a new source of code: AI-generated code does not need its own pipeline, it needs to **go through the existing pipeline** plus the input layer (rules file) that human-written code does not have.
+
+### 6.14.2. Slopsquatting — the AI-specific supply chain risk
+
+A new risk arrived along with AI assistants: the AI **hallucinates package names that do not exist** when suggesting dependencies — and these invented names often repeat across sessions/models. Attackers collect the commonly hallucinated names and **pre-register** those packages on public registries (npm/PyPI) with malicious code; the developer trusts the AI's suggestion, runs `npm install`, and pulls the malware in with their own hands. The technique is called **slopsquatting** — a cousin of typosquatting and dependency confusion (6.10.1), except the "bait" is not a human typo but a name the AI made up.
+
+Defenses:
+
+- **Verify a package before installing it**: does it really exist, how many downloads, does the source repo exist — especially for AI-suggested names you have never heard of.
+- Lockfile + SCA scanning (Trivy) in CI to catch strange/malicious packages as soon as they enter the dependency tree.
+- Put it in the AI rules file: only use dependencies already in the lockfile; adding a new one must be called out explicitly and left for a human to decide.
 
 ---
 
@@ -977,3 +1066,8 @@ Baseline vs. full mechanism: **baseline** only spiders and **passively** analyze
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- I am currently the only security person at a small company, and the biggest lesson of this chapter once it met reality: **automation + guardrails are the only way one person scales**. One person cannot sit and review every PR — if the operating model is "everything goes through SecOps," it will certainly bottleneck, and that is a signal to fix the model, not to work more hours. My job is to make "doing it right" the easiest path: rules already running in the pipeline, automatic gates, developers getting feedback within minutes without me being online.
+- A lesson about picking the starting point: I did not build the whole pipeline at once — I chose **gitleaks first** as the quick win. Reasons: secret leaks are the clearest class of defect (almost no false positives, nothing to argue about), deployment is fast (one pre-commit hook + one CI job), and the value shows in the first week. Once the first "win" is acknowledged by the team, adding Semgrep and Trivy later is much easier — rollout order is a political decision, not just a technical one.
+- Something I got wrong: I assumed the stricter the gate, the safer. In reality, when I tried blocking builds even on noisy findings, the developers' reaction was not to fix everything but to find a way around — `--no-verify`, endless exception requests — and to lose trust in the pipeline. That is when the tiering table in 6.9 truly sank in: a gate is only credible when every time it turns red, people believe something real happened. The number of exception requests per week is now the metric I use to gauge whether the gate threshold is set right.
+- Still exploring: feeding EPSS/KEV into the CVE triage flow automatically instead of looking things up by hand, and writing more Semgrep custom rules for internal patterns (along the lines of "every new endpoint must have an authorization guard") — a few well-placed rules are catching more real bugs than the community rulesets.

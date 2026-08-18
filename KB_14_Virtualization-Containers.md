@@ -2,29 +2,15 @@
 
 ## Tổng quan
 
-Chương này trình bày hai mô hình cô lập workload trên một máy chủ vật lý: **ảo hóa (virtualization)** và **container**. Ranh giới cô lập giữa các VM hoặc container chính là biên giới bảo mật: khi kẻ tấn công chiếm một workload và **escape** (thoát ra ngoài), toàn bộ host và các workload khác trên đó bị đe dọa. Kỹ sư bảo mật cần nắm các biên giới này được dựng bằng cơ chế nào và có thể vỡ ở đâu.
+Một máy chủ vật lý chạy cùng lúc nhiều thứ không liên quan gì tới nhau là chuyện bình thường — và toàn bộ an toàn của cách sắp xếp đó nằm ở một câu hỏi: cái ranh giới ngăn chúng với nhau được dựng bằng gì, và nó vỡ ở đâu. Vì khi kẻ tấn công chiếm được một workload rồi **escape** ra ngoài, cả host lẫn mọi workload còn lại đều mất theo. Chương này đi qua hai mô hình cô lập — **ảo hóa** và **container** — dưới đúng góc nhìn đó.
 
-**Ảo hóa & Hypervisor.** Ảo hóa là kỹ thuật giả lập một máy tính hoàn chỉnh bên trong một máy tính. Mỗi **máy ảo (VM)** chạy hệ điều hành riêng với kernel độc lập. **Hypervisor** là lớp phần mềm phân chia phần cứng thật (CPU, RAM, đĩa) cho các VM và cưỡng chế cô lập giữa chúng. Bài toán giải quyết: chạy nhiều hệ điều hành độc lập trên một dàn phần cứng, vừa cô lập an toàn vừa tối ưu chi phí.
+Ảo hóa dựng ranh giới dày: mỗi **VM** có kernel riêng, và **hypervisor** đứng giữa phân chia phần cứng thật rồi cưỡng chế cô lập. Phần này đi qua **Proxmox VE** (mã nguồn mở, nền KVM) và **VMware ESXi/vSphere**, cùng những thứ làm nên giá trị vận hành của chúng: snapshot để rollback, backup, và live migration chuyển VM đang chạy sang host khác.
 
-**Proxmox & VMware.** **Proxmox VE** (mã nguồn mở, nền Linux/KVM) và **VMware ESXi/vSphere** (thương mại) là các hypervisor cấp trung tâm dữ liệu. Chúng cung cấp **backup**, **snapshot** (chụp trạng thái để rollback), và **live migration** (vMotion — di chuyển VM đang chạy giữa các host). Đây là nền tảng vận hành của phần lớn hạ tầng hiện đại.
+Container thì ngược lại — ranh giới mỏng hơn hẳn, vì mọi container **dùng chung kernel của host**. Đổi lại nó khởi động trong mili giây và gần như không tốn tài nguyên thừa. Cái gọi là "cô lập" ở đây thực chất là hai cơ chế kernel ghép lại: **namespaces** giới hạn container *thấy* được gì (PID, mạng, mount, hostname), còn **cgroups** giới hạn nó *dùng* được bao nhiêu (RAM, CPU, số PID) để một container không vét cạn cả máy. Kèm theo là mô hình **image/layer/registry** và **Dockerfile**, rồi **Trivy** để quét image tìm CVE, misconfig và secret hardcode ngay trong pipeline.
 
-**Container & Docker.** Container đóng gói ứng dụng cùng toàn bộ thư viện phụ thuộc thành một đơn vị bất biến, chạy đồng nhất ở mọi môi trường. Khác VM, container **chia sẻ chung kernel host** nên khởi động trong mili giây và tiêu tốn rất ít tài nguyên. **Docker** là công cụ phổ biến nhất để tạo, đóng gói và chạy container. Hệ quả bảo mật: do dùng chung kernel, biên giới cô lập của container mỏng hơn VM.
+Từ chỗ "ranh giới mỏng" đó, phần sau đi thẳng vào **container escape**: `--privileged`, mount nhầm `docker.sock`, cấp dư capability — biết đường thoát thì mới bịt được. Quy mô lớn hơn là **Kubernetes** với bốn điểm bảo mật trọng yếu: **RBAC**, **NetworkPolicy** (firewall L3/L4 giữa các Pod), **Secret** (mặc định chỉ base64 chứ chưa phải mã hóa — phải bật encryption-at-rest), và **Pod Security Standards**. Cuối cùng là **Falco** — lớp phát hiện lúc đang chạy, giám sát syscall và kêu lên khi có hành vi lạ như mở shell trong container hay đọc `/etc/shadow`, thường đẩy cảnh báo về SIEM.
 
-Các cơ chế kernel nền tảng:
-- **Namespaces**: cô lập *view* tài nguyên (PID, mạng, mount, hostname...) — container chỉ thấy phần thế giới của riêng nó.
-- **cgroups**: giới hạn *lượng* tài nguyên (RAM, CPU, số PID) mỗi container được dùng, chống một container vét cạn tài nguyên host.
-- **Image / layer / registry**: *image* là bản đóng gói bất biến gồm nhiều *layer* xếp chồng (tái sử dụng, dedup); *registry* (ví dụ Docker Hub) là kho lưu trữ image; *Dockerfile* mô tả các bước dựng image.
-
-**Trivy.** Công cụ quét image để phát hiện thư viện dính CVE, cấu hình sai (misconfig) và secret hardcode. Tích hợp trong pipeline **CI/CD** để gate (chặn) image không đạt trước khi triển khai.
-
-**Container escape.** Kịch bản kẻ tấn công vượt khỏi cô lập namespace/cgroup để truy cập host và các container khác. Do container dùng chung kernel host, cấu hình lỏng lẻo (chế độ `--privileged`, mount nhầm `docker.sock`, cấp dư capability) mở đường escape. Nắm các con đường escape là điều kiện để bịt chúng.
-
-**Kubernetes (K8s).** Hệ điều phối container (orchestrator) quy mô lớn trên nhiều node: lập lịch, tự phục hồi, scale theo tải, rolling update không gián đoạn. Các khái niệm bảo mật trọng yếu: **RBAC** (phân quyền theo subject/verb/resource), **NetworkPolicy** (firewall L3/L4 giữa các Pod), **Secret** (lưu khóa/mật khẩu — mặc định chỉ mã hóa base64, không phải mã hóa thật, cần bật encryption-at-rest), và **Pod Security Standards** (ràng buộc container chạy an toàn, ví dụ cấm chạy root).
-
-**Falco.** Bộ phát hiện thời gian thực (runtime detection) cho container và Kubernetes: giám sát **syscall** và cảnh báo hành vi bất thường (mở shell trong container, đọc `/etc/shadow`...). Đây là lớp phát hiện bổ sung cho các biện pháp phòng ngừa (RBAC, firewall), thường chuyển cảnh báo về SIEM.
-
-> Tài liệu tham chiếu chuyên sâu cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo trình tự: *là gì* → *cơ chế bên trong* (tới mức bit/byte/bước/tham số) → *ví dụ thực tế* → *lưu ý bảo mật*.
-
+> Mỗi mục đi theo trình tự: là gì → cơ chế bên trong (tới mức tham số/bước cụ thể) → ví dụ thực tế → lưu ý bảo mật.
 ---
 
 ## 14.1. Nền tảng ảo hóa: vì sao và cô lập ở đâu
@@ -360,6 +346,8 @@ mount | grep overlay   # thấy filesystem type 'overlay'
 ```
 
 > Lưu ý bảo mật: dữ liệu "đã xóa" ở layer dưới VẪN nằm trong image (chỉ bị whiteout che). `docker history` và việc giải nén từng layer (`tar`) có thể phục hồi secret bị `RUN rm` ở instruction sau. Đây là lỗi rò rỉ secret kinh điển — phải dùng multi-stage build hoặc BuildKit secrets, không bao giờ COPY secret rồi xóa.
+
+> Lưu ý vận hành (kinh nghiệm thực tế): image và build cache tích luỹ ở `/var/lib/docker/overlay2/` là thủ phạm đầy đĩa số một trên máy chạy Docker lâu ngày. Ở một máy dev mình vận hành, root FS đầy mỗi 1–2 ngày chỉ vì mỗi lần CI build lại đẻ ra image mới mà không ai dọn image cũ. Dùng `docker system df` để xem dung lượng tách theo Images / Containers / Local Volumes / Build Cache (thêm `-v` để liệt kê chi tiết từng image) trước khi quyết định xoá gì. Cảnh báo quan trọng: `docker system prune` mặc định *không* đụng volume, nhưng `docker system prune --volumes` (hoặc `docker volume prune`) sẽ **xoá volume không được container nào tham chiếu** — trên máy có volume chứa data (DB, upload) mà container tạm thời dừng, đây là đường xoá nhầm dữ liệu. An toàn hơn: chỉ dọn image không dùng bằng `docker image prune -a --filter "until=72h"` chạy định kỳ (cron 3h sáng), và tránh `--volumes` trừ khi đã chắc chắn không còn data cần giữ.
 
 ### 14.5.4. Image, layer, digest — định dạng
 

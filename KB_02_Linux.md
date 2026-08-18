@@ -2,54 +2,21 @@
 
 ## Tổng quan
 
-Chương này nhìn vào cơ chế nội tại của Linux dưới góc nhìn an toàn thông tin: phân quyền, vòng đời tiến trình (process), tổ chức filesystem, ghi log và các biện pháp hardening. Phần lớn hạ tầng máy chủ — web server, database, container, cloud — chạy trên Linux. Vì vậy cả tấn công lẫn phòng thủ đều diễn ra ngay trên các cơ chế mô tả ở đây. Phần dưới đây là bản đồ ngắn của các khái niệm; định nghĩa đầy đủ nằm ở các mục kỹ thuật phía sau.
+Gần như mọi máy chủ mình từng phải vá lỗi hay lục log sự cố — web server, database, container — đều chạy Linux, nên dấu vết tấn công cũng nằm ngay trong các cơ chế của chính hệ điều hành này. Chương này nhìn Linux qua đúng góc đó: không học để quản trị hệ thống, mà học để biết ai vừa làm gì, bằng quyền nào, và tại sao lại được phép làm vậy.
 
-### User space và kernel space
-**Kernel** vận hành ở ring 0, độc quyền truy cập phần cứng và cấu trúc dữ liệu hệ thống. Tiến trình ứng dụng chạy ở **user space** (ring 3) và không truy cập trực tiếp phần cứng hay bộ nhớ tiến trình khác. Mọi yêu cầu tài nguyên (đọc file, mở socket) phải đi qua một **system call (syscall)**, tại đó kernel kiểm tra quyền. Ranh giới này là hàng rào bảo mật gốc: cô lập lỗi và mã độc khỏi phần cứng và khỏi không gian địa chỉ của tiến trình khác.
+Điểm xuất phát là ranh giới gốc của mọi hệ Unix: **kernel** chạy ở ring 0 độc quyền phần cứng, còn tiến trình ứng dụng bị nhốt trong **user space** và phải xin qua **syscall** mỗi khi cần tài nguyên — hàng rào này cô lập lỗi và mã độc khỏi phần cứng lẫn khỏi tiến trình khác. Trên nền đó Linux tổ chức file theo chuẩn **FHS** (cấu hình ở `/etc`, log ở `/var/log`) để công cụ và rule giám sát hoạt động độc lập với distro, rồi kiểm soát ai được làm gì bằng **mô hình quyền rwx** cùng các bit đặc biệt SUID/SGID/sticky — một binary SUID-root cấu hình sai vẫn là đường leo thang đặc quyền kinh điển. Danh tính người dùng nằm ở `/etc/passwd`, còn mật khẩu chỉ tồn tại dưới dạng hash trong `/etc/shadow` mà chỉ root đọc được; việc cấp quyền chạy lệnh có kiểm soát thì giao cho **sudo** và **PAM**, hai lớp vừa phân quyền tối thiểu vừa ghi log truy vết.
 
-### Cây thư mục FHS
-**Filesystem Hierarchy Standard (FHS)** chuẩn hóa vị trí từng loại file: cấu hình ở `/etc`, log ở `/var/log`, binary hệ thống ở `/usr/bin`. Chuẩn này cho phép công cụ, script và rule giám sát hoạt động độc lập với distro. Hệ quả an toàn: vị trí cố định của các tài nguyên nhạy cảm (ví dụ `/etc`) giúp xác định chính xác đối tượng cần theo dõi tính toàn vẹn.
+Lớp tiếp theo là vòng đời tiến trình: một **process** sinh ra qua `fork()` rồi nạp chương trình mới bằng `execve()`, mang theo danh tính bảo mật riêng — khi điều tra, một web server bất ngờ sinh ra shell con chính là chỉ dấu xâm nhập kinh điển. `/proc` phơi bày trạng thái kernel theo từng tiến trình nên là mỏ dữ liệu điều tra, còn **namespaces** và **cgroups** là hai cơ chế cô lập và giới hạn tài nguyên mà mọi container Docker đều dựng trên đó. Toàn bộ vòng đời dịch vụ trên máy, từ khởi động tới giám sát và tự phục hồi, do **systemd** quản lý qua các unit — và cũng chính systemd cho phép hardening từng dịch vụ bằng các directive khai báo.
 
-### Mô hình quyền (permissions)
-Mỗi file mang ba bộ quyền **đọc / ghi / thực thi (rwx)** cho ba nhóm: **chủ sở hữu (owner), nhóm (group), và những người còn lại (other)**. Bổ sung ba bit đặc biệt: **SUID**, **SGID** và **sticky bit**; trong đó SUID cho phép tiến trình chạy với quyền của chủ file (có thể là root). Cấu hình quyền sai — đặc biệt là binary SUID-root viết kém — là một trong các vector leo thang đặc quyền phổ biến nhất.
+Phần còn lại của chương là lớp vận hành và điều tra thường nhật, mỗi mảng khá độc lập nên mình gom thành một danh sách ngắn:
 
-### `/etc/passwd`, `/etc/shadow` và hash mật khẩu
-`/etc/passwd` là cơ sở dữ liệu tài khoản world-readable (tên, UID, shell). Mật khẩu không lưu ở đây; thay vào đó nó được băm (**hash**) và đặt trong `/etc/shadow` — chỉ root đọc được. Hash là phép biến đổi một chiều: không thể tính ngược ra mật khẩu gốc. Việc tách hai file giữ cho bảng tài khoản công khai để ánh xạ UID↔tên, đồng thời cô lập dữ liệu nhạy cảm khỏi việc bị đọc về để bẻ khóa offline.
+- **Logging** qua `rsyslog`/`journald` ghi lại mọi sự kiện nhạy cảm, còn `logrotate` giữ cho đĩa không bị log lấp đầy — nhưng log chỉ có giá trị điều tra thật khi được đẩy khỏi máy trước khi attacker kịp dọn dấu vết cục bộ.
+- Trình quản lý gói (`apt`, `dnf`) không chỉ cài phần mềm, nó còn xác minh **chữ ký số** trên đường tải — nền tảng để tin được nguồn gốc mọi thứ đang chạy trên máy.
+- **cron** tiện cho tự động hóa bao nhiêu thì cũng hấp dẫn kẻ tấn công bấy nhiêu: một dòng crontab lạ là chỗ giấu backdoor chạy định kỳ rất kín, nên luôn nằm trong danh sách cần kiểm khi điều tra.
+- Dưới các câu lệnh vẫn là file descriptor, redirection và pipe của bash ghép thành pipeline, cùng bộ công cụ xử lý text `grep`/`awk`/`sed`/`sort`/`uniq` — thứ giúp truy vấn nhanh trên log dài hàng triệu dòng chỉ bằng một dòng lệnh.
+- Cuối cùng là **hardening**: SSH cấu hình chặt, `fail2ban` tự khóa IP dò mật khẩu, firewall chỉ mở đúng cổng cần, và SELinux/AppArmor giới hạn hành vi dịch vụ ngay cả khi nó đã bị chiếm quyền.
 
-### `sudo`, PAM
-- **sudo**: cho phép user thực thi lệnh xác định với quyền của user khác (mặc định root) mà không cần chia sẻ mật khẩu root; mọi lần gọi đều được ghi log. So với `su`, sudo cung cấp phân quyền tối thiểu và khả năng truy vết.
-- **PAM (Pluggable Authentication Modules)**: tách logic xác thực khỏi ứng dụng. Thay vì mỗi dịch vụ (ssh, login, sudo) tự cài đặt kiểm tra credential, tất cả gọi chung PAM. Quy tắc bổ sung (khóa tài khoản sau N lần sai, ép độ phức tạp mật khẩu) được khai báo tập trung và áp dụng cho toàn hệ thống.
-
-### Tiến trình (process)
-**Tiến trình** là một chương trình đang thực thi, định danh bằng PID và mang một danh tính bảo mật (UID/GID hiệu lực). Tiến trình mới được tạo qua `fork()` (nhân bản tiến trình cha) rồi `execve()` (nạp image chương trình mới). **Tín hiệu (signal)** là cơ chế điều khiển asynchronous (bất đồng bộ — yêu cầu dừng, kết thúc, reload). Khi điều tra, quan hệ cha-con, danh tính và chuỗi syscall của tiến trình là dữ kiện then chốt: web server sinh ra một shell là chỉ dấu xâm nhập điển hình.
-
-### `/proc`, namespaces, cgroups
-- **`/proc`**: pseudo-filesystem phơi bày trạng thái kernel và từng tiến trình (binary đang chạy, file descriptor, kết nối mạng), là nguồn dữ liệu điều tra trọng yếu.
-- **Namespaces**: cơ chế kernel ảo hóa tài nguyên (mạng, cây PID, mount...) để một nhóm tiến trình thấy như sở hữu hệ thống riêng. Đây là nền tảng của **container** (Docker).
-- **cgroups**: giới hạn và đo lường tài nguyên (CPU, RAM, IO, số tiến trình) theo nhóm. Mục tiêu chính là bảo vệ tính sẵn sàng: ngăn một dịch vụ bị lạm dụng làm cạn kiệt tài nguyên toàn host.
-
-### systemd
-**systemd** là tiến trình init (PID 1) trên đa số distro hiện đại, quản lý vòng đời dịch vụ qua các **unit**. So với sysvinit, systemd khởi động song song theo phụ thuộc, tự khởi động lại dịch vụ bị lỗi, giám sát qua cgroup, và cho phép hardening từng dịch vụ bằng các directive khai báo (giới hạn quyền, syscall, filesystem).
-
-### Logging (rsyslog, journald, logrotate)
-**Log** ghi lại sự kiện hệ thống: đăng nhập, lệnh đặc quyền, lỗi. `rsyslog` và `journald` là hai hệ thu thập log; `logrotate` quản lý vòng đời file log để tránh đầy đĩa. Log là bằng chứng điều tra, vì vậy nên chuyển tiếp tới hệ thống tập trung (SIEM) sớm nhất có thể: bản log đã rời máy không bị xóa khi attacker dọn log cục bộ.
-
-### Quản lý gói (apt, dnf)
-Trình quản lý gói cài đặt, gỡ bỏ và cập nhật phần mềm bằng lệnh thống nhất, đồng thời xác minh **chữ ký số** để bảo đảm tính toàn vẹn và nguồn gốc gói trên đường tải. Vá lỗi kịp thời và kiểm soát nguồn phần mềm là nền tảng của một hệ thống an toàn.
-
-### cron
-**cron** thực thi lệnh theo lịch định trước (theo phút, giờ, ngày). Bên cạnh giá trị tự động hóa, cron là vị trí persistence ưa dùng của mã độc (chạy backdoor định kỳ); do đó các cấu hình cron là đối tượng cần kiểm tra khi điều tra.
-
-### Bash: file descriptor, redirection, pipe
-Mỗi tiến trình mở sẵn ba **file descriptor** chuẩn: stdin (0), stdout (1), stderr (2). **Redirection** chuyển hướng các luồng này tới file hoặc descriptor khác; **pipe** (`|`) nối stdout của lệnh này vào stdin của lệnh kia. Cơ chế này cho phép ghép các lệnh nhỏ thành pipeline xử lý mạnh — cơ sở của script tự động hóa và phân tích log.
-
-### Công cụ xử lý text (grep, awk, sed...)
-Bộ công cụ lọc và trích xuất văn bản: `grep` tìm dòng theo mẫu, `awk` xử lý theo cột/trường, `sed` thay thế dòng, `sort`/`uniq` sắp xếp và đếm. Trên log có thể dài hàng triệu dòng, các công cụ này cho phép truy vấn nhanh (ví dụ liệt kê các IP đăng nhập thất bại nhiều nhất) trong một dòng lệnh — kỹ năng điều tra thường nhật.
-
-### Hardening (sshd, fail2ban, firewall, SELinux/AppArmor)
-**Hardening** là tập biện pháp thu hẹp bề mặt tấn công: cấu hình SSH an toàn, dùng `fail2ban` tự chặn IP dò mật khẩu, và dùng firewall (netfilter) chỉ mở cổng cần thiết. Ngoài ra còn có thể áp **Mandatory Access Control** (SELinux/AppArmor) để giới hạn hành vi của dịch vụ ngay cả khi nó đã bị chiếm quyền. Cấu hình mặc định thường khá mở; hardening đưa hệ thống về nguyên tắc đặc quyền tối thiểu.
-
-> Tài liệu tham chiếu kỹ thuật cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mọi cấu trúc dữ liệu được mô tả tới mức trường/byte; mọi công cụ đều có ví dụ thực tế chạy được. Lệnh và output mẫu lấy trên môi trường Linux phổ biến (Debian/Ubuntu, RHEL/Rocky); một vài con số phụ thuộc phiên bản kernel/distro sẽ được ghi chú rõ.
+> Lệnh và output mẫu trong chương đều chạy thật trên Debian/Ubuntu hoặc RHEL/Rocky; chỗ nào phụ thuộc phiên bản kernel/distro thì có ghi chú riêng.
 
 ---
 
@@ -102,7 +69,7 @@ strace -f -e trace=openat,connect,execve -s 200 curl -s https://example.com -o /
 ```
 execve("/usr/bin/curl", ["curl","-s","https://example.com",...], 0x7ffd...) = 0
 openat(AT_FDCWD, "/etc/ssl/certs/ca-certificates.crt", O_RDONLY) = 5
-connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("93.184.216.34")}, 16) = -1 EINPROGRESS (Operation now in progress)
+connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("192.0.2.10")}, 16) = -1 EINPROGRESS (Operation now in progress)
 ```
 
 **Lưu ý bảo mật:** seccomp-bpf (dùng bởi container runtime, systemd `SystemCallFilter=`) lọc chính các số `rax` này. Hiểu bảng syscall giúp viết/đọc seccomp profile và phát hiện hành vi bất thường (vd. một web server bỗng gọi `execve`).
@@ -1020,7 +987,7 @@ Output mẫu:
     207 203.0.113.77
      95 192.0.2.44
 ```
-Kết quả này nuôi trực tiếp vào allowlist/blocklist hoặc cảnh báo (xem fail2ban, 2.12.3).
+Kết quả này nuôi trực tiếp vào allowlist/blocklist hoặc cảnh báo (xem fail2ban, 2.12.2).
 
 ---
 
@@ -1032,7 +999,6 @@ File `/etc/ssh/sshd_config`; áp dụng bằng `systemctl reload sshd`. Cấu h�
 
 ```ini
 Port 22
-Protocol 2
 AddressFamily inet
 
 # Xác thực
@@ -1139,6 +1105,19 @@ gói vào --> [raw->mangle->nat] --> routing? --yes--> [mangle->filter] --> [man
                                                                OUTPUT [...] --> POSTROUTING
 ```
 
+**Bốn bảng (table) của iptables — mỗi bảng một nhiệm vụ, đừng trộn:**
+
+| Bảng | Sinh ra để làm gì | Chain có mặt | Khi nào đụng tới |
+|---|---|---|---|
+| `filter` | Cho/chặn gói — tường lửa đúng nghĩa | INPUT, FORWARD, OUTPUT | 90% thời gian; bảng mặc định khi không có `-t` |
+| `nat` | Đổi địa chỉ/port (SNAT/DNAT/MASQUERADE) | PREROUTING, OUTPUT, POSTROUTING | Máy làm gateway/port-forward; chỉ gói `NEW` đi qua |
+| `mangle` | Sửa header gói (TTL, TOS/DSCP, mark) | Cả 5 chain | Đánh dấu gói cho QoS/policy routing — hiếm dùng |
+| `raw` | Xử lý TRƯỚC conntrack (`NOTRACK`) | PREROUTING, OUTPUT | Loại trừ traffic khối lượng lớn khỏi bảng conntrack |
+
+**Chain là gì?** Danh sách rule gắn vào một hook; gói khớp rule nào trước thì theo verdict (`ACCEPT`/`DROP`/`REJECT`/nhảy chain con) của rule đó — không khớp gì thì theo **policy** của chain. Ngoài 5 chain dựng sẵn có thể tạo chain riêng (`iptables -N ssh-guard`) rồi `-j ssh-guard` để gom rule theo chủ đề — dễ đọc và dễ đếm (mỗi rule có counter riêng, xem bằng `iptables -L -v -n`).
+
+**Cấu trúc một rule đọc cho quen:** `iptables -t <bảng> -A <chain> <match...> -j <verdict>` — match là các điều kiện AND với nhau (`-p tcp --dport 22`, `-s 203.0.113.0/24`, `-i eth0`, `-m conntrack --ctstate NEW`...), verdict là hành động khi khớp toàn bộ.
+
 **iptables** (cú pháp truyền thống) — chính sách deny-by-default cho INPUT:
 ```bash
 iptables -P INPUT DROP                 # policy mặc định: chặn
@@ -1159,14 +1138,42 @@ Phân tích rule SSH:
 
 **Vì sao cần rule `ESTABLISHED,RELATED`?** Stateful: một khi kết nối ra/vào hợp lệ được thiết lập, gói phản hồi thuộc trạng thái `ESTABLISHED` được cho qua mà không cần mở port riêng — nền của tường lửa stateful.
 
+**Vài rule thực dụng hay cần đến:**
+```bash
+# Chặn một IP / một dải IP (chèn lên ĐẦU chain bằng -I để khớp trước mọi ACCEPT)
+iptables -I INPUT -s 198.51.100.9 -j DROP
+iptables -I INPUT -s 185.177.72.0/24 -j DROP
+
+# Giới hạn SSH kiểu "cửa sổ trượt" bằng module recent:
+# quá 4 kết nối NEW tới port 22 trong 60s từ cùng nguồn -> drop
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --set
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --update --seconds 60 --hitcount 4 -j DROP
+
+# Xem rule kèm counter (số gói/byte đã khớp) — cách nhanh biết rule có "ăn" không
+iptables -L INPUT -v -n --line-numbers
+# Xóa rule theo số dòng
+iptables -D INPUT 3
+```
+Chặn danh sách IP dài (hàng trăm/nghìn entry) thì đừng xếp rule tuần tự — mỗi gói phải duyệt qua từng rule. Dùng `ipset` (với iptables) hoặc `set` (nftables, ví dụ dưới): tra cứu hash O(1), một rule duy nhất tham chiếu cả tập.
+
+**Quan hệ iptables ↔ nftables (đọc kỹ kẻo tưởng mình đang dùng cái này mà hóa ra cái kia):** trên distro hiện đại (Debian 10+, Ubuntu 20.04+, RHEL 8+), lệnh `iptables` thường chỉ là lớp vỏ dịch cú pháp cũ sang backend nftables — gọi là **iptables-nft**. Kiểm tra bằng `iptables -V`: in `(nf_tables)` là vỏ nft, in `(legacy)` là backend cũ. Hệ quả thực tế: rule do `iptables` tạo và rule do `nft` tạo nằm chung kernel nhưng **không hiển thị trong công cụ của nhau** đầy đủ — audit firewall phải xem bằng `nft list ruleset` (nó thấy được cả hai) chứ đừng chỉ `iptables -L` rồi kết luận "máy không có rule". Docker/Kubernetes và fail2ban vẫn hay chèn rule qua lớp iptables — thêm lý do để audit bằng `nft list ruleset`.
+
 **nftables** (thay thế hiện đại, một công cụ `nft` cho IPv4/IPv6) — `/etc/nftables.conf`:
 ```nft
 #!/usr/sbin/nft -f
 flush ruleset
 table inet filter {
+    set blocklist {
+        type ipv4_addr
+        flags interval
+        elements = { 198.51.100.9, 185.177.72.0/24 }
+    }
     chain input {
         type filter hook input priority 0; policy drop;
         iif "lo" accept
+        ip saddr @blocklist drop
         ct state established,related accept
         ct state invalid drop
         tcp dport 22 ct state new limit rate 5/minute accept
@@ -1179,13 +1186,27 @@ table inet filter {
 }
 ```
 ```bash
-nft -f /etc/nftables.conf      # nạp
+nft -f /etc/nftables.conf      # nạp (atomic: hoặc toàn bộ hoặc không gì cả)
 nft list ruleset               # xem toàn bộ rule (kèm counter)
 nft list table inet filter
+nft add element inet filter blocklist { 203.0.113.99 }   # thêm IP vào set khi đang chạy
 ```
-**Vì sao nftables thay iptables?** Một framework duy nhất cho v4/v6/arp/bridge, cú pháp set/map gọn (vd. blocklist hàng nghìn IP trong một `set` hiệu năng cao), atomic reload, dễ scripting.
+**Vì sao nftables thay iptables?** Một framework duy nhất cho v4/v6/arp/bridge (bảng `inet` áp cả IPv4+IPv6 một lần — iptables phải duy trì song song `ip6tables`), cú pháp set/map gọn (blocklist hàng nghìn IP trong một `set` tra cứu hash thay vì duyệt tuần tự), atomic reload (không có khoảnh khắc "nửa ruleset cũ nửa mới"), dễ scripting.
 
-**Lưu ý bảo mật:** mặc định `policy drop` cho INPUT/FORWARD; chỉ mở port cần thiết; rate-limit cổng quản trị; log gói bị drop để điều tra. Lưu rule để tồn tại qua reboot (`netfilter-persistent save` hoặc service `nftables`).
+**Lưu rule bền vững qua reboot** — rule iptables/nft chỉ sống trong kernel memory, reboot là mất sạch:
+```bash
+# Hướng nftables (khuyến nghị): rule là FILE cấu hình, service nạp lúc boot
+nft list ruleset > /etc/nftables.conf   # hoặc tự soạn file rồi nft -f kiểm
+systemctl enable --now nftables
+
+# Hướng iptables truyền thống (Debian/Ubuntu)
+apt install iptables-persistent         # lưu ở /etc/iptables/rules.v4 và rules.v6
+netfilter-persistent save
+# RHEL-family: dnf install iptables-services; service iptables save
+```
+Điểm hay của hướng nftables: `/etc/nftables.conf` là một file text — đưa vào git, review diff như code, `nft -c -f` (check) trước khi áp.
+
+**Lưu ý bảo mật:** mặc định `policy drop` cho INPUT/FORWARD; chỉ mở port cần thiết; rate-limit cổng quản trị; log gói bị drop để điều tra. Sửa firewall từ xa thì tự phòng thân: chạy trong `tmux`/để sẵn một phiên SSH đang mở, hoặc đặt job hoàn tác kiểu `echo 'nft -f /etc/nftables.conf.known-good' | at now + 5 minutes` rồi hủy khi xác nhận còn vào được — khóa mình ngoài máy chủ vì một rule DROP là lỗi kinh điển.
 
 ### 2.12.4. SELinux và AppArmor — Mandatory Access Control (MAC)
 
@@ -1243,12 +1264,182 @@ journalctl | grep apparmor      # xem denial (ALLOWED/DENIED)
 
 ---
 
-## 2.13. Tổng kết tư duy phòng thủ trên Linux
+## 2.13. Chẩn đoán hiệu năng & tài nguyên — dashboard nói "cao ở đâu", lệnh nói "process nào gây ra"
+
+Vì sao mục này nằm trong sổ tay bảo mật? Thứ nhất, **availability** là một trụ của tam giác CIA — máy sập vì cạn tài nguyên cũng là sự cố an toàn thông tin. Thứ hai, rất nhiều dấu hiệu xâm nhập biểu hiện đầu tiên dưới dạng bất thường tài nguyên: cryptominer = CPU cao bất thường, DoS = load/network vọt, còn **đĩa đầy thì log ngừng ghi** — attacker được tặng không gian mù. Kỹ năng "nhìn con số bất thường → tìm ra process gây ra" dùng chung cho cả vận hành lẫn điều tra.
+
+Phương pháp luận mình dùng: **hai tầng, mỗi tầng trả lời một câu hỏi khác nhau.**
+- Tầng metric/dashboard (Prometheus + node_exporter, vẽ bằng Grafana — hoặc bất kỳ stack nào tương đương): trả lời "**cao ở đâu, từ lúc nào, xu hướng ra sao**". Metric là số liệu tổng hợp — nó không biết process nào gây ra.
+- Tầng lệnh trên máy (SSH vào): trả lời "**process nào, file nào, kết nối nào gây ra**". Lệnh nhìn được từng process nhưng không có lịch sử.
+
+Hai tầng bù nhau: chỉ có dashboard thì biết bệnh mà không biết thủ phạm; chỉ có lệnh thì bắt được hiện trạng mà không biết "cao từ bao giờ, có chu kỳ không". Quy trình khi có cảnh báo: dashboard khoanh vùng trục nào (CPU/RAM/disk/I-O/network/load) → SSH vào → chạy đúng nhóm lệnh của trục đó.
+
+> Bộ lệnh dưới cần gói `sysstat` (cấp `mpstat`/`iostat`/`pidstat`/`sar`), cùng `htop`, `iotop`, `ncdu`: `apt install sysstat htop iotop ncdu`.
+
+### 2.13.1. Tổng quan 30 giây — chạy trước khi nghĩ
+
+Sáu lệnh, chạy theo thứ tự, cho bức tranh tổng thể trước khi đào sâu:
+
+```bash
+uptime                    # load average 1/5/15 phút — so với số core
+free -h                   # RAM: nhìn cột available, không phải used
+df -h                     # mount nào sắp đầy
+top                       # (hoặc htop) tổng CPU/RAM + process nổi nhất
+dmesg -T | tail -30       # kernel vừa kêu gì: OOM-kill, I/O error, segfault
+systemctl --failed        # service nào đang chết
+```
+30 giây này thường đã khoanh được trục có vấn đề; phần còn lại là đào sâu theo từng trục dưới đây.
+
+### 2.13.2. Trục CPU — đọc theo *mode*, không chỉ theo %
+
+Con số "CPU 90%" chưa nói lên gì; câu hỏi đúng là **90% đó thuộc mode nào**. `mpstat` (gói sysstat) tách CPU theo mode, từng core:
+
+```bash
+mpstat -P ALL 1 3        # mỗi giây một mẫu, 3 lần, mọi core
+```
+```
+CPU    %usr  %nice   %sys %iowait  %irq  %soft %steal  %idle
+all   72.31   0.00   5.12    0.75  0.00   0.51   9.87  11.44
+  0   88.00   0.00   4.00    0.00  0.00   1.00  17.00   7.00
+```
+
+| Cột | Là thời gian CPU dành cho | Cao kéo dài nghĩa là |
+|---|---|---|
+| `%usr` | Code ứng dụng (user space) | Một app thật sự ăn CPU → tìm bằng `htop`/`pidstat`; nếu không nhận ra process thì nghi cryptominer |
+| `%sys` | Kernel (syscall, driver) | App gọi syscall dày đặc (I/O nhỏ, fork liên tục) — soi bằng `strace`/`perf` |
+| `%iowait` | *Ngồi không* chờ I/O đĩa | Nghẽn ở ĐĨA chứ không phải CPU — nhảy sang trục Disk I/O (2.13.5), thêm CPU không giải quyết gì |
+| `%steal` | Bị hypervisor lấy phục vụ VM khác | Trên VM cloud: noisy neighbor / nhà cung cấp bóp CPU (hết credit burstable). Không sửa được từ trong VM — đổi shape/host hoặc chấp nhận |
+| `%irq`/`%soft` | Ngắt cứng/mềm (thường là network) | `%soft` cao bất thường kèm traffic lớn → nghi flood |
+| `%idle` | Rảnh | — |
+
+`%iowait` và `%steal` là hai cái bẫy kinh điển: cả hai đều làm "CPU cao" trên dashboard nhưng thủ phạm không phải CPU. Tìm process theo CPU:
+
+```bash
+ps aux --sort=-%cpu | head -12    # ảnh chụp hiện tại
+pidstat 1 5                       # theo thời gian — thấy được process "nhấp nhô"
+```
+`pidstat` hơn `ps` ở chỗ lấy mẫu liên tục: process chỉ spike từng đợt sẽ hiện ra thay vì lọt khe giữa hai lần chạy `ps`.
+
+### 2.13.3. Trục RAM — PSI thay cho "used cao"
+
+**Cái bẫy lớn nhất của trục RAM: "used cao" thường KHÔNG phải vấn đề.** Linux chủ động dùng RAM rảnh làm page cache (đọc lại file khỏi chạm đĩa), và nhiều app (JVM, Elasticsearch, database) cấp phát heap lớn rồi giữ luôn — đó là hành vi thiết kế, không phải rò rỉ. Con số cần nhìn trong `free -h` là **`available`** (ước lượng RAM có thể cấp ngay cho tiến trình mới, đã tính phần cache thu hồi được), không phải `used`.
+
+Vậy khi nào là thiếu RAM *thật*? Kernel trả lời trực tiếp qua **PSI — Pressure Stall Information** (kernel ≥ 4.20): thay vì đo "đang dùng bao nhiêu", PSI đo **tổng thời gian tiến trình bị đình trệ vì chờ tài nguyên** — tức đo đúng cái ta quan tâm là "có ai đang khổ vì thiếu RAM không".
+
+```bash
+cat /proc/pressure/memory
+```
+```
+some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+```
+- `some` = % thời gian có **ít nhất một** task bị đình trệ vì thiếu memory; `full` = % thời gian **mọi** task không-idle đều đình trệ (cả máy khựng).
+- `avg10/60/300` = trung bình trượt 10 giây / 1 phút / 5 phút.
+- Đọc: toàn 0.00 → RAM ổn bất kể `used` bao nhiêu. `some avg10` dương kéo dài → bắt đầu thiếu; `full` dương → máy đang khựng thấy rõ, thường ngay trước OOM-kill. Cùng định dạng đó có `/proc/pressure/cpu` và `/proc/pressure/io` — node_exporter thu được cả ba, làm panel cảnh báo tốt hơn hẳn % used.
+
+Chuỗi kiểm tra đầy đủ:
+```bash
+free -h                           # nhìn available; swap đã dùng bao nhiêu
+cat /proc/pressure/memory         # PSI — thước đo "thiếu thật"
+vmstat 1 5                        # cột si/so: swap-in/out (KB/s) đang diễn ra
+ps aux --sort=-%mem | head -12    # process ăn RAM nhất (cột RSS)
+dmesg -T | grep -iE "oom|killed process"   # kernel đã phải xử ai chưa
+```
+- `si`/`so` dương liên tục = máy đang swap qua lại (thrashing) — hiệu năng rơi tự do dù "chưa hết RAM".
+- OOM-kill trong `dmesg` là bằng chứng đã quá muộn: kernel chọn giết process điểm `oom_score` cao nhất. Nếu nạn nhân là service quan trọng, cân nhắc `MemoryMax=` (cgroup, mục 2.5.7) cho các service còn lại thay vì tăng RAM theo phản xạ.
+
+### 2.13.4. Trục dung lượng đĩa — df nói dối ở hai chỗ
+
+```bash
+df -h                             # mount nào đầy — nhưng chưa đủ, đọc tiếp
+df -i                             # INODE: hết inode cũng báo "No space left" dù còn hàng chục GB
+sudo du -xh --max-depth=1 / 2>/dev/null | sort -h | tail -15   # thư mục nào to (-x: không lạc sang mount khác)
+ncdu -x /                         # như du nhưng duyệt tương tác — drill-down rất nhanh
+sudo lsof +L1 | grep -i deleted   # file ĐÃ XÓA nhưng process còn giữ fd
+docker system df                  # Docker chiếm bao nhiêu (image/container/volume/build cache)
+journalctl --disk-usage           # journal chiếm bao nhiêu
+```
+Hai chỗ `df -h` "nói dối":
+1. **Hết inode**: filesystem có số inode hữu hạn; hàng triệu file nhỏ (session file, cache, mail queue) ăn hết inode trong khi dung lượng còn thừa — lỗi vẫn là "No space left on device". `df -i` lộ ngay (`IUse%` 100%).
+2. **File đã xóa nhưng chưa giải phóng**: xóa file chỉ gỡ tên khỏi thư mục; **inode và data còn nguyên chừng nào còn process giữ file descriptor mở** (chính cơ chế đã gặp ở logrotate, mục 2.7.5). Triệu chứng kinh điển: `rm` file log 20GB mà `df` không nhúc nhích. `lsof +L1` (liệt kê file có link count 0) chỉ đích danh process; xử đúng là reload/restart process đó (hoặc signal reopen-log kiểu `USR1`), không phải đi xóa tiếp.
+
+Máy chạy Docker thì thủ phạm quen mặt là `/var/lib/docker`: image cũ mỗi lần deploy chồng thêm, build cache, container log. `docker system df -v` liệt kê chi tiết. Dọn có chủ đích (`docker image prune -a --filter "until=168h"` — chỉ image, có mốc thời gian) chứ **đừng phang `docker system prune` trên máy có volume dữ liệu** — thêm nhầm `--volumes` là mất data thật.
+
+**Góc bảo mật:** đĩa đầy = log ngừng ghi = mù điều tra; vì thế "đĩa gần đầy" đáng được coi là cảnh báo an ninh chứ không chỉ vận hành. Chiều ngược lại, attacker cũng biết điều đó — một dạng anti-forensics là cố tình ghi đầy đĩa trước khi hành động.
+
+### 2.13.5. Trục Disk I/O — đĩa "bận" khác đĩa "đầy"
+
+Đĩa còn trống vẫn có thể nghẽn vì **băng thông I/O bão hòa** — triệu chứng lộ ra ở `%iowait` (2.13.2) và app "chậm không rõ lý do".
+
+```bash
+iostat -xz 1 5                    # -x: thống kê mở rộng; -z: ẩn thiết bị im lặng
+```
+```
+Device   r/s   w/s   rkB/s   wkB/s  await  %util
+sda      1.2  310.5    48.0  42817.3  38.20  97.40
+```
+- `%util` = % thời gian thiết bị có I/O đang xử lý. Gần 100% kéo dài = đĩa kín lịch. (Với SSD/NVMe xử lý song song, `%util` 100% chưa chắc đã là trần thật — đọc kèm `await`.)
+- `await` = thời gian trung bình một request hoàn thành, **tính cả thời gian xếp hàng** (ms). Đây là con số app "cảm nhận" được: `%util` cao mà `await` thấp thì đĩa bận nhưng vẫn kịp thở; cả hai cùng cao là bão hòa thật.
+- `r/s`, `w/s`, `rkB/s`, `wkB/s`: hình dạng tải — nghìn request nhỏ hay ít request to, đọc hay ghi.
+
+Tìm thủ phạm:
+```bash
+sudo iotop -o                     # -o: chỉ hiện process ĐANG có I/O
+pidstat -d 1 5                    # kB đọc/ghi theo process theo thời gian
+cat /proc/pressure/io             # PSI cho I/O — đọc y hệt PSI memory
+```
+Thủ phạm hay gặp ở hệ mình vận hành: job backup/nén chạy giờ cao điểm, database thiếu index quét cả bảng, log ghi quá dày, và swap thrashing (khi đó gốc bệnh là RAM — quay lại 2.13.3).
+
+### 2.13.6. Trục network — nhìn drop/error, đừng nhìn % băng thông
+
+```bash
+ss -tulpn                         # cổng đang NGHE + process — soi bề mặt phơi ra ngoài
+ss -s                             # tổng kết nối theo trạng thái (estab, timewait...)
+ss -tan state established | wc -l # đếm kết nối đang mở
+ip -s link                        # counter RX/TX: errors, dropped, overrun theo interface
+sar -n DEV 1 5                    # throughput từng interface theo thời gian
+```
+`ip -s link` in hai khối RX/TX; cột đáng nhìn là `errors`/`dropped`:
+```
+RX: bytes  packets errors dropped overrun mcast
+    9.1G   8123456      0   12043       0     0
+```
+- Băng thông chạm trần hiếm khi là vấn đề thật trên server thường; **drop/error tăng đều mới là bệnh** (buffer tràn, NIC/driver lỗi, máy không kịp nhận → gói rớt, retransmit, độ trễ tăng). Cảnh báo nên đặt trên *tốc độ tăng* của counter drop, không phải % băng thông.
+- `ss -s` với `estab` vọt bất thường + nguồn phân tán là hình dạng của DoS/flood; `ss -tulpn` xuất hiện cổng nghe lạ là chỉ dấu backdoor (đối chiếu baseline).
+
+### 2.13.7. Trục load — load cao không đồng nghĩa thiếu CPU
+
+**Load average trên Linux đếm cả process `R` (chờ CPU) lẫn process `D` (uninterruptible — kẹt I/O, mục 2.5.2).** Đây là điểm dễ hiểu sai nhất: load 20 trên máy 4 core có thể là 20 process tranh CPU, mà cũng có thể là CPU rảnh tênh và 20 process đang treo chờ một cái NFS chết.
+
+```bash
+uptime && nproc                   # load Ở ĐÂU so với SỐ CORE — load/core > 1 kéo dài mới đáng ngại
+vmstat 1 5                        # cột r = chờ CPU; b = blocked; wa = %iowait
+ps -eo state,pid,comm | grep "^D" # điểm danh process trạng thái D
+```
+Đọc phán quyết: load cao + `r` cao + `%usr` cao → thiếu CPU thật. Load cao + `b` cao + nhiều process `D` + `wa` cao → kẹt I/O (đĩa hỏng, NFS treo, storage cloud bị bóp) — quay về trục Disk I/O, và nhớ process `D` không giết được bằng `kill -9` (2.5.2).
+
+### 2.13.8. Bảng tra nhanh: triệu chứng → lệnh đầu tiên
+
+| Dashboard/panel báo | Chạy trước tiên | Đang trả lời câu hỏi |
+|---|---|---|
+| CPU cao | `mpstat -P ALL 1`, `htop` | Mode nào? Process nào? |
+| RAM cao / PSI memory | `cat /proc/pressure/memory`, `ps aux --sort=-%mem` | Thiếu thật hay chỉ used cao? Ai ăn? |
+| Đĩa đầy | `df -h; df -i`, `du -xh --max-depth=1 /`, `lsof +L1` | Đầy dung lượng, hết inode, hay file ma? |
+| Disk I/O / PSI io | `iostat -xz 1`, `iotop -o` | Bão hòa chưa? Process nào ghi? |
+| Network | `ip -s link`, `ss -tulpn` | Drop/error hay chỉ nhiều traffic? Cổng lạ? |
+| Load cao / procs blocked | `vmstat 1`, `ps -eo state,pid,comm \| grep "^D"` | Thiếu CPU hay kẹt I/O? |
+
+Kinh nghiệm của mình: viết hẳn bảng này thành runbook nội bộ (panel nào đỏ → dán nguyên khối lệnh nào) — lúc sự cố 2 giờ sáng không ai nhớ nổi cờ của `iostat`.
+
+---
+
+## 2.14. Tổng kết tư duy phòng thủ trên Linux
 
 - **Ranh giới đặc quyền** là gốc: user/kernel (syscall, seccomp), DAC (rwx/ACL/SUID), MAC (SELinux/AppArmor), capabilities, namespaces. Mỗi lớp thu hẹp thiệt hại khi lớp trên bị phá.
 - **Tối thiểu quyền**: dịch vụ chạy user riêng, `NoNewPrivileges`, firewall deny-by-default, sudoers hẹp, mount `nosuid/noexec`.
 - **Khả năng quan sát**: log có cấu trúc (journald + auditd), đẩy tập trung tới SIEM trước khi attacker xóa, đọc thành thạo `auth.log`/AVC bằng grep/awk.
 - **Toàn vẹn**: `dpkg -V`/`rpm -V`, FSS cho journal, baseline SUID/cron để phát hiện thay đổi.
+- **Sẵn sàng cũng là bảo mật**: cạn tài nguyên (CPU/RAM/đĩa/I-O) vừa là sự cố vừa là triệu chứng tấn công; chẩn đoán hai tầng "dashboard nói cao ở đâu, lệnh nói process nào gây ra" (2.13) là kỹ năng dùng chung cho vận hành lẫn điều tra.
 - **Mọi cấu hình hardening** (sshd, fail2ban, nftables, systemd unit, SELinux) đều có file/cú pháp cụ thể ở trên — dùng làm khuôn mẫu kiểm chứng được trên hệ thật.
 
 
@@ -1257,3 +1448,10 @@ journalctl | grep apparmor      # xem denial (ALLOWED/DENIED)
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- **Runbook là thứ đáng viết nhất mà mình đã trì hoãn lâu nhất.** Hồi mới nhận việc trực máy chủ, mỗi lần panel Grafana chuyển đỏ là mình lại google lại cờ của `iostat`. Sau mình ngồi viết hẳn một runbook "panel nào đỏ → dán nguyên khối lệnh nào" (chính là khung của mục 2.13) và dùng nó gần như hằng ngày. Bài học: kiến thức chẩn đoán chỉ có giá trị khi nó nằm sẵn dưới dạng lệnh copy-paste được lúc 2 giờ sáng, không phải dạng "mình nhớ là có tool đó".
+- **Mình từng hiểu sai "RAM used cao = sắp chết".** Có lần thấy máy báo RAM dùng ~90% là mình lo sốt vó, định đề xuất nâng RAM. Sau mới hiểu app (kiểu JVM/search engine) giữ heap là hành vi thiết kế, và Linux tận dụng RAM rảnh làm cache. Từ ngày biết PSI (`/proc/pressure/memory`), mình gần như không nhìn % used nữa: PSI bằng 0 thì kệ used bao nhiêu; PSI dương kéo dài mới là lúc hành động. Đổi một con số theo dõi mà đỡ hẳn cảnh báo giả.
+- **Lần đầu thấy `%steal` mình tưởng máy hỏng.** Một VM cloud ở hệ mình vận hành chậm bất thường, `%usr` thấp mà máy vẫn ì — hóa ra `%steal` hai chữ số: hypervisor đang chia CPU cho hàng xóm ồn ào. Không có gì để "sửa" từ trong VM cả; cái sửa được là biết đọc đúng cột để khỏi mất một buổi đi soi app oan.
+- **Vụ đầy đĩa lặp lại vì Docker image.** Một máy dev mình trông cứ 1–2 ngày lại đầy đĩa; lần nào cũng `df -h`, `du` loanh quanh rồi mới nhớ ra `/var/lib/docker`. Nguyên nhân: mỗi lần deploy chồng thêm một image mới, không ai dọn image cũ. Xử: cron 3 giờ sáng chạy `docker image prune` có filter thời gian — và tuyệt đối không `docker system prune` bừa trên máy có volume dữ liệu, thêm nhầm một cờ `--volumes` là mất data thật. Bonus học được cùng đợt: `rm` file log to mà `df` không giảm — file chưa chết vì process còn giữ fd, `lsof +L1` chỉ đích danh.
+- **Về firewall, cú lừa lớn nhất với mình là iptables-nft.** `iptables -L` trên máy này, `nft list ruleset` trên máy kia ra hai bức tranh khác nhau làm mình loạn một hồi, cho tới khi hiểu `iptables` giờ thường chỉ là vỏ dịch sang nftables (`iptables -V` in `(nf_tables)`). Giờ audit firewall mình mặc định xem `nft list ruleset` cho đủ, kể cả rule do Docker hay fail2ban chèn.
+- **Đang tìm hiểu tiếp:** nối cảnh báo từ SIEM sang firewall để tự thêm IP vào nftables set theo ngưỡng (kiểu fail2ban nhưng lấy tín hiệu từ log tập trung thay vì log cục bộ) — mới ở mức thử nghiệm, chưa dám cho tự chặn trên production vì sợ ban nhầm dải NAT của người dùng thật.

@@ -6,7 +6,7 @@ Lúc đầu mình viết chỉ để tự ôn cho khỏi quên — viết kỹ m
 
 Cách mình viết: cố gắng nói **"cái này là gì, sinh ra để giải quyết vấn đề gì"** trước, rồi mới đào vào chi tiết kỹ thuật (cấu trúc, cơ chế bên trong, ví dụ lệnh/cấu hình/code). Mình không thích kiểu học thuộc định nghĩa mà không hiểu bản chất.
 
-**Đọc bản web cho dễ nhìn:** https://fee-191.github.io/security-notes/
+**Đọc bản web cho dễ nhìn:** https://feeiuna.io.vn
 
 > Thấy chỗ nào chưa chuẩn hoặc còn thiếu thì bạn cứ mở Issue cho mình biết nhé, cảm ơn nhiều.
 
@@ -20,12 +20,14 @@ Còn mấy mảng mình chưa làm qua (forensics, red team, bảo mật Web3, A
 
 ## Cấu trúc
 
-Nội dung gốc nằm ở các file `KB_*.md`. Trang web `index.html` được sinh ra từ chúng — sửa file `.md` xong thì chạy lại:
+Nội dung gốc nằm ở các file `KB_*.md` (tiếng Việt) và `KB_*.en.md` (tiếng Anh). Mỗi chương được sinh thành một trang riêng (`notes.html` là mục lục, `ch01.html`…`ch99.html` là các chương; bản tiếng Anh nằm trong `en/`) — sửa file `.md` xong thì chạy lại:
 
 ```bash
 pip install markdown
 python3 build_blog.py
 ```
+
+`index.html` (và `en/index.html`) là trang chủ, viết tay, không do script sinh ra — sửa trực tiếp.
 
 ## Giấy phép
 

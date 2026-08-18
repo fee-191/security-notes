@@ -2,34 +2,15 @@
 
 ## Tổng quan
 
-Chương này trình bày **chuỗi tự động hóa đưa mã nguồn từ commit của lập trình viên tới trạng thái chạy thật trên hệ thống phục vụ người dùng**, và các biện pháp giữ cho chuỗi đó không trở thành đường tấn công. Đây là khu vực trọng yếu với kỹ sư an toàn thông tin: pipeline thường nắm giữ secret (mật khẩu, token, quyền truy cập hạ tầng) và chạy với đặc quyền cao, nên việc chiếm được pipeline tương đương chiếm được toàn hệ thống. Phần này định nghĩa các khái niệm cốt lõi và vấn đề mỗi khái niệm giải quyết; các mục sau đi sâu vào cơ chế kỹ thuật.
+Pipeline là thứ ít người coi là "hệ thống production", nhưng nó giữ secret của toàn bộ hạ tầng và chạy với đặc quyền cao — chiếm được pipeline gần như tương đương chiếm được mọi thứ nó chạm tới. Chương này đi qua chuỗi tự động đưa code từ commit của lập trình viên tới lúc chạy thật, và cách giữ cho chính chuỗi đó không trở thành đường tấn công.
 
-**CI/CD (Continuous Integration / Continuous Delivery hoặc Deployment).** Mô hình tự động hóa pipeline phần mềm: mã nguồn lần lượt đi qua các stage (build, test, quét bảo mật, đóng gói, triển khai). **CI** tự động ghép và kiểm tra mọi commit để phát hiện regression ở mức commit. **CD** tự động đưa artifact đã qua kiểm tra ra môi trường đích — *Continuous Delivery* yêu cầu một cổng phê duyệt thủ công trước production, *Continuous Deployment* không có cổng đó.
-- Vấn đề giải quyết: thay quy trình build/deploy thủ công (chậm, dễ sai, không nhất quán) bằng quy trình tự động, lặp lại được, phát hiện lỗi sớm và để lại dấu vết kiểm toán cho mọi thay đổi.
+Mở đầu là các khái niệm nền: **CI** ghép và kiểm tra mọi commit để bắt regression sớm, **CD** đưa artifact đã qua kiểm tra ra môi trường đích (*Delivery* có cổng phê duyệt thủ công trước production, *Deployment* thì không), và **Pipeline as Code** đưa toàn bộ định nghĩa pipeline vào repo dưới dạng file — nhờ đó cấu hình nhạy cảm được review và truy vết như mọi thay đổi code khác, thay vì là thiết lập ẩn ai đó click trên giao diện.
 
-**Pipeline as Code.** Định nghĩa toàn bộ pipeline dưới dạng file mã nguồn (thường là YAML/Groovy) đặt trong chính repository, thay cho cấu hình thủ công qua giao diện (click-ops).
-- Vấn đề giải quyết: pipeline được versioned, review qua merge request, và tái lập được theo từng commit. Cấu hình nhạy cảm trở thành đối tượng kiểm soát thay đổi thay vì thiết lập ẩn không truy vết được.
+Ba engine được mổ xẻ kèm điểm yếu đặc trưng của từng cái: **GitLab CI** (`.gitlab-ci.yml`, runner/executor — rủi ro nằm ở masked/protected variable và lựa chọn executor), **GitHub Actions** (workflow/job/step, hỗ trợ OIDC — nhưng action bên thứ ba là bề mặt chuỗi cung ứng, và nhầm `pull_request` với `pull_request_target` là kiểu rò secret phổ biến nhất), và **Jenkins** (controller/agent, `Jenkinsfile` — linh hoạt và chạy được on-prem, đổi lại hàng nghìn plugin là bề mặt tấn công). Tiếp đó là **GitOps** với **Argo CD**, nơi mô hình đảo chiều: thay vì CI cầm credential đẩy vào cluster, agent trong cluster tự kéo trạng thái từ Git — credential không rời cluster, và self-heal khôi phục cả những thay đổi trái phép làm tay. **Git submodule** xuất hiện như cách chia sẻ template CI/CD giữa nhiều project với commit SHA được pin cứng.
 
-**GitLab CI.** Hệ CI/CD tích hợp sẵn trong GitLab. File `.gitlab-ci.yml` ở repository định nghĩa các **job**; GitLab giao job cho các **runner** thực thi.
-- Vấn đề giải quyết: cung cấp CI/CD all-in-one cho team dùng GitLab mà không cần công cụ ngoài. Điểm bảo mật trọng yếu nằm ở cơ chế lưu secret (masked/protected variable) và lựa chọn runner/executor — cấu hình sai cho phép một merge request độc hại đọc secret hoặc thực thi lệnh trên host.
+Mục cuối (7.8) quay lại chính chủ đề mở đầu: bảo vệ pipeline. Secret ở vault chứ không in ra log, ký và verify artifact, khóa quyền sửa pipeline — cộng với hai công cụ mà tự động hóa không thay thế được: PR security checklist và Definition of Done có phần bảo mật, vì lỗi logic nghiệp vụ thì chỉ người review mới bắt được.
 
-**GitHub Actions.** Hệ CI/CD của GitHub. File workflow trong `.github/workflows/` định nghĩa các **workflow** gồm nhiều **job**, mỗi job gồm nhiều **step**; step có thể tái sử dụng **action** dùng chung.
-- Vấn đề giải quyết: tự động hóa nhanh nhờ hệ sinh thái action sẵn có và hỗ trợ OIDC. Rủi ro trọng yếu: action bên thứ ba có thể bị chèn mã độc, và việc nhầm lẫn giữa hai trigger `pull_request` và `pull_request_target` là lỗ hổng rò rỉ secret phổ biến nhất.
-
-**Jenkins.** Máy chủ tự động hóa self-hosted, độc lập với nền tảng SCM. Kiến trúc gồm một **controller** điều phối và các **agent** thực thi build; pipeline định nghĩa trong `Jenkinsfile` (Groovy DSL).
-- Vấn đề giải quyết: tính linh hoạt cao và khả năng chạy on-prem (không cần Internet), phù hợp môi trường doanh nghiệp lớn. Đánh đổi: hệ sinh thái hàng nghìn **plugin** là bề mặt tấn công lớn, đòi hỏi cập nhật và cấu hình chặt chẽ.
-
-**GitOps và Argo CD.** GitOps coi **Git là single source of truth (nguồn khai báo duy nhất)** cho trạng thái mong muốn của hệ thống. **Argo CD** là agent chạy *trong* cluster Kubernetes, liên tục so sánh trạng thái khai báo trong Git với trạng thái thực tế và reconcile (đồng bộ) cho khớp.
-- Vấn đề giải quyết: thay mô hình CI-push (credential cluster phải mang ra ngoài) bằng mô hình pull — credential không rời cluster, mọi thay đổi là một commit nên truy vết và rollback dễ dàng. Self-heal phát hiện và khôi phục thay đổi trái phép trực tiếp trên cluster, tạo thêm một lớp phòng thủ.
-
-**Git Submodule.** Cơ chế nhúng một repository Git (con) vào một repository khác (cha), **pin theo một commit SHA cụ thể** qua gitlink, không sao chép nội dung repo con.
-- Vấn đề giải quyết: nhiều project chia sẻ chung một bộ template (cấu hình CI/CD, script bảo mật) trong một repo con; mỗi project pin đúng phiên bản đã review nên không bị template thay đổi đột ngột phá build. Đánh đổi: thao tác phức tạp (dễ quên cập nhật/clone đúng cách) và rủi ro chuỗi cung ứng nếu repo con bị chiếm.
-
-**So sánh và lựa chọn công cụ.** Mục cuối đối chiếu ba CI engine (GitLab CI, GitHub Actions, Jenkins) và so sánh mô hình triển khai push (CI tự đẩy lên hạ tầng) với pull (GitOps/Argo CD).
-- Vấn đề giải quyết: không có công cụ tối ưu cho mọi tình huống. Hiểu điểm mạnh, điểm yếu và rủi ro bảo mật của từng loại để chọn đúng. Mô hình hiện đại thường kết hợp: CI lo build và kiểm tra, Argo CD lo triển khai, mỗi thành phần giữ đặc quyền tối thiểu.
-
-> Tài liệu tham chiếu kỹ thuật dành cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo cấu trúc: **là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật**. Các con số phiên bản và hành vi cụ thể của công cụ thay đổi theo version; những chỗ cần kiểm chứng đều được ghi rõ.
-
+> Mỗi mục đi theo mạch: là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật. Con số phiên bản và hành vi công cụ đổi theo thời gian, chỗ nào cần kiểm chứng lại đều có ghi chú.
 ---
 
 ## 7.1. Khái niệm CI/CD, pipeline as code và mô hình dữ liệu nền tảng
@@ -449,7 +430,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20, 22]
+        node: [20, 22, 24]   # Node 18 đã EOL — pin theo các bản còn hỗ trợ (cần kiểm chứng)
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a  # v4.2.0
@@ -590,7 +571,7 @@ pipeline {
 
         stage('SAST') {
             steps {
-                sh 'docker run --rm -v "$PWD:/src" returntocorp/semgrep semgrep --config=auto --error /src'
+                sh 'docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep --config=auto --error /src'   // image chính thức (org đổi tên từ returntocorp)
             }
         }
 
@@ -899,9 +880,51 @@ Tách bạch: CI lo build & verify (không có quyền cluster), Argo lo deploy 
 - Phát hiện drift & self-heal (Argo) như một lớp phòng thủ chống thay đổi cluster trái phép.
 - Quét SAST/SCA/secret-scan trong pipeline; chặn merge khi có finding nghiêm trọng.
 
+---
+
+## 7.8. Bảo vệ pipeline như một hệ thống production & tiêu chuẩn bảo mật cho PR
+
+### 7.8.1. Pipeline là tài sản cần bảo vệ, không chỉ là công cụ
+
+OWASP Top 10 2025 xếp "pipeline CI/CD bị chèn mã" vào nhóm **A08 — Software & Data Integrity Failures**: cập nhật không ký số, build bị can thiệp, deserialize dữ liệu không tin cậy. Với một công ty làm phần mềm cho khách hàng, hệ quả cụ thể hơn nhiều so với lý thuyết: **pipeline bị chiếm nghĩa là kẻ tấn công chèn mã vào đúng bản build giao cho khách** — mình trở thành mắt xích supply chain của họ, lỗ hổng của mình thành lỗ hổng của họ. Vì vậy pipeline phải được đối xử như hệ thống production, với checklist tối thiểu:
+
+- **Secret trong CI để ở vault / secret manager, không in ra log.** Tiêm secret lúc chạy job (OIDC/workload identity nếu được — xem 7.3.4 và [Chương 6](#sec-06) mục 6.11), không gán cứng vào file pipeline hay biến plaintext. Nhớ rằng masking chỉ che log ở dạng nguyên văn (7.2.5) — một dòng `echo $TOKEN | base64` là lộ; quy tắc gốc vẫn là *không đưa secret ra stdout dưới bất kỳ dạng nào*.
+- **Ký số + verify artifact.** Bản build/image phải được ký (cosign — [Chương 6](#sec-06) mục 6.10.4) và verify trước khi deploy; verify checksum và nguồn gốc của dependency kéo vào lúc build. Không có chữ ký thì "artifact đi qua stage được thăng cấp tin cậy" (7.1.2) chỉ là niềm tin suông.
+- **Khóa quyền pipeline.** Ai sửa được file pipeline là thực thi được mã với đặc quyền của pipeline (7.1.3) — nên repo chứa pipeline-as-code cần branch protection + required review; token của job theo least privilege (7.7.3); quyền chỉnh sửa cấu hình CI/CD (variables, runner) giới hạn cho số ít người và có audit log.
+
+### 7.8.2. PR security checklist & Definition of Done bảo mật
+
+Gate tự động (SAST/SCA/secret scan — [Chương 6](#sec-06)) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là **PR security checklist** — danh sách reviewer đối chiếu trước khi approve. Bản mình dùng ở hệ thống mình vận hành (một backend Node/TypeScript có xử lý thanh toán và dữ liệu cá nhân):
+
+- [ ] Mọi truy vấn tài nguyên ràng buộc chủ sở hữu lấy từ token — không tin id client gửi lên (chống IDOR).
+- [ ] Không nối chuỗi SQL; dùng parameterized query / ORM.
+- [ ] Input được validate (allowlist); output được encode đúng ngữ cảnh.
+- [ ] Không hardcode secret; dùng secret manager; `.env` không lên repo.
+- [ ] Endpoint mới có kiểm auth + phân quyền ở server.
+- [ ] Thao tác liên quan tiền: atomic + idempotent, có kiểm số dư/điều kiện.
+- [ ] Không log dữ liệu nhạy cảm (token, mật khẩu, số thẻ, định danh cá nhân).
+- [ ] Lỗi xử lý fail-secure (mặc định từ chối); không lộ stack trace cho user.
+- [ ] Nếu gọi LLM: tách role system/user; không cho gọi API nhạy cảm tự do; thao tác đổi trạng thái phải có xác nhận.
+- [ ] Dependency mới đã được quét, không CVE nghiêm trọng.
+
+Nguyên tắc thiết kế checklist: **phải đủ ngắn để dev thực sự đọc** — checklist 30 mục là checklist không ai đọc. Mỗi mục phải kiểm được bằng mắt trên diff, không phải mục "hãy bảo mật tốt".
+
+Bổ sung cho checklist là **Definition of Done có bảo mật** — một tính năng chỉ "done" khi:
+
+1. Đã viết ít nhất một abuse case ("kẻ xấu lạm dụng tính năng này thế nào?") và xử lý nó.
+2. Qua SAST + secret scan trong CI, không còn lỗi Critical/High.
+3. Luồng nhạy cảm (auth / payment / dữ liệu cá nhân) có human review — không phụ thuộc hoàn toàn scanner hay AI review.
+4. Có log sự kiện bảo mật cần thiết, và log không lộ dữ liệu nhạy cảm.
+
+Điểm khác biệt so với DoD thường: "chạy được" chưa đủ — phải "chạy được và không mở lỗ hổng mới". Đưa tiêu chí bảo mật vào DoD nghĩa là bảo mật nằm trong định nghĩa hoàn thành từ đầu, rẻ và tự nhiên hơn nhiều so với kiểm sau khi xong.
 
 ---
 
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- Là người làm bảo mật duy nhất ở công ty nhỏ, mình học được rằng pipeline chính là "người gác cổng thay mình": gate và scan chạy tự động không cần mình online, và đó là điều kiện để hệ thống vẫn "an toàn mặc định" khi người duy nhất nghỉ phép. Nếu quy trình bảo mật nào cũng cần mình bấm nút thì mình là single point of failure — automation trong chương này (gate, protected branch, OIDC thay secret tĩnh) là cách gỡ điểm nghẽn đó.
+- Điều từng hiểu sai: nghĩ masked variable là "đã an toàn". Thực tế masking chỉ che log dạng nguyên văn — job in secret qua một phép biến đổi là lộ, và MR độc hại trên nhánh không protected vẫn đọc được biến nếu quên set protected cả hai phía (biến VÀ branch). Từ đó mình coi cặp cấu hình protected variable + protected branch là thứ phải kiểm tra cùng nhau, không tách rời.
+- Bài học về gate ở tầng PR: gate quá gắt thì dev bypass — không phải vì họ vô trách nhiệm, mà vì deadline là thật. Giải pháp không phải nới gate mà là có **đường exception chính thức** (approve + ticket + audit, xem [Chương 6](#sec-06) mục 6.9.4); khi có đường đi đàng hoàng lúc gấp, người ta không đục tường nữa. Và checklist PR mình cố tình giữ ngắn — thà 10 mục được đọc thật còn hơn 30 mục bị approve theo quán tính.
+- Đang tìm hiểu tiếp: GitOps/Argo CD mình mới nắm ở mức khái niệm và lab, chưa vận hành thật (hệ thống hiện tại deploy theo mô hình CI-push truyền thống lên VM); thứ mình muốn thử trước là tách quyền deploy khỏi CI theo đúng tinh thần 7.7.2, kể cả khi chưa có Kubernetes.

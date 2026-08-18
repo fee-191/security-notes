@@ -2,20 +2,11 @@
 
 ## Tổng quan
 
-Chương này trình bày cơ chế truyền dữ liệu giữa các máy tính qua mạng, từ khi một byte rời tiến trình ứng dụng cho tới khi tới đích. Đây là nền tảng cho công việc an toàn thông tin: phần lớn kỹ thuật tấn công (nghe lén, giả mạo, chặn bắt, từ chối dịch vụ) diễn ra tại một tầng cụ thể của ngăn xếp mạng. Nắm cơ chế vận hành từng tầng giúp ta xác định được bề mặt tấn công và điểm cần phòng thủ.
+Mở Wireshark lên mà không nắm cơ chế từng tầng thì cũng chỉ là nhìn một đống số chạy qua: gói này bị drop, nhưng drop ở đâu và vì cái gì thì chịu. Chương này bám theo đúng câu hỏi đó: một byte đi từ tiến trình ứng dụng ra tới dây mạng như thế nào, và ở mỗi chặng trên đường đi, kẻ tấn công có thể chen vào bằng cách nào — nghe lén, giả mạo, chặn bắt hay làm nghẽn.
 
-Đây là bản đồ nhanh các khái niệm trong chương; định nghĩa và cơ chế đầy đủ nằm ở từng mục bên dưới.
+Chương mở đầu bằng hai mô hình tham chiếu **OSI** và **TCP/IP** — khung để gọi tên từng tầng — rồi tới cơ chế **encapsulation/decapsulation**, nơi mỗi tầng gắn thêm một header mà cả công cụ phân tích lẫn kẻ tấn công đều đọc được. Từ đó mạch chương đi xuống dần: **tầng 2** với Ethernet, MAC, VLAN, ARP và switch; **tầng 3** với IP, ICMP, định tuyến và NAT; rồi **tầng 4** với TCP/UDP và cổng dịch vụ — mỗi tầng mở ra một lớp bề mặt tấn công riêng. Phần cuối quay về những thứ chạm hằng ngày: các giao thức tầng ứng dụng như DNS, DHCP, HTTP, TLS, và bộ đôi phòng thủ/quan sát là tường lửa, DMZ cùng tcpdump/Wireshark.
 
-- **Mô hình phân tầng (OSI & TCP/IP)** — mạng tổ chức thành các tầng xếp chồng, mỗi tầng phục vụ tầng trên qua một interface cố định. OSI là mô hình lý thuyết 7 tầng; TCP/IP là mô hình 4 tầng chạy thực tế trên Internet.
-- **Encapsulation / Decapsulation** — dữ liệu được bọc tuần tự qua các tầng, mỗi tầng thêm một header rồi truyền xuống; bên nhận bóc ngược. Mỗi header chứa thông tin mà cả công cụ phân tích lẫn kẻ tấn công đều đọc được.
-- **Tầng 2 — Ethernet, MAC, VLAN, ARP, switch** — định danh phần cứng và trao đổi frame trong cùng LAN.
-- **Tầng 3 — IP, ICMP, định tuyến, NAT** — định danh logic và định tuyến qua nhiều mạng tới đích.
-- **Tầng 4 — TCP và UDP** — vận chuyển dữ liệu và dùng port phân hướng tới đúng ứng dụng.
-- **Cổng (port) phổ biến** — một host một IP nhưng nhiều dịch vụ; port phân biệt từng dịch vụ và phản ánh bề mặt tấn công.
-- **Tầng 7 — DNS, DHCP, HTTP, TLS** — các giao thức ứng dụng ta gặp hằng ngày.
-- **Tường lửa, DMZ, công cụ phân tích gói** — lọc gói theo chính sách, cô lập vùng tiếp xúc Internet, và bắt/đọc gói bằng tcpdump/Wireshark.
-
-> Sổ tay này dành cho người học và làm an toàn thông tin (Blue Team / AppSec / DevSecOps). Mỗi mục đi theo một mạch quen thuộc: khái niệm là gì, cơ chế bên trong (tới mức bit/byte/bước/tham số), một ví dụ chạy thật, rồi vài lưu ý bảo mật. Cấu trúc dữ liệu mô tả tới từng trường (field), kích thước và offset; mỗi công cụ kèm lệnh, cấu hình và output mẫu để bạn gõ lại được.
+> Mỗi mục đi từ khái niệm tới cơ chế bit/byte rồi một ví dụ gõ lại được ngay — viết cho ai đang làm Blue Team, AppSec hay DevSecOps và cần đọc được gói tin chứ không chỉ thuộc định nghĩa.
 
 ---
 
@@ -92,14 +83,14 @@ L7   : web server parse "GET / HTTP/1.1"
 
 ```bash
 # -X in hex+ASCII, -e in cả Ethernet header, -nn không phân giải tên/cổng
-sudo tcpdump -i eth0 -e -nn -X 'tcp port 80 and host 93.184.216.34' -c 1
+sudo tcpdump -i eth0 -e -nn -X 'tcp port 80 and host 192.0.2.10' -c 1
 ```
 
 Output mẫu (rút gọn, đã chú thích):
 
 ```
 14:02:11.123456 aa:bb:cc:11:22:33 > de:ad:be:ef:00:01, ethertype IPv4 (0x0800), length 74:
-    10.0.0.5.54321 > 93.184.216.34.80: Flags [S], seq 1001, win 64240,
+    10.0.0.5.54321 > 192.0.2.10.80: Flags [S], seq 1001, win 64240,
     options [mss 1460,sackOK,TS val 1 ecr 0,nop,wscale 7], length 0
     0x0000:  dead beef 0001 aabb cc11 2233 0800 4500   <- Eth(14) + IP bắt đầu (45=Ver4,IHL5)
     0x0010:  003c 1c46 4000 4006 ...                    <- TotalLen 0x3c=60, Flags+FragOff, TTL=0x40=64, Proto=0x06=TCP
@@ -275,7 +266,7 @@ Switch(config-if)# switchport port-security mac-address sticky
 | Protocol | 8 bit | 9 | Giao thức payload: 1=ICMP,6=TCP,17=UDP | `6` |
 | Header Checksum | 16 bit | 10 | Checksum chỉ của header | `0xb1e6` |
 | Source IP | 32 bit | 12 | IP nguồn | `10.0.0.5` |
-| Destination IP | 32 bit | 16 | IP đích | `93.184.216.34` |
+| Destination IP | 32 bit | 16 | IP đích | `192.0.2.10` |
 | Options | 0–40 byte | 20 | Tùy chọn (record route, timestamp…) | — |
 
 **Vì sao TTL?** Ngăn packet quay vòng vô hạn khi routing loop. `traceroute` lợi dụng TTL: gửi gói TTL=1,2,3… mỗi router làm TTL=0 sẽ trả về ICMP Time Exceeded, lộ IP của nó.
@@ -414,7 +405,7 @@ sipcalc 192.168.1.0/24 -s 26
 
 | Inside Local | Inside Global | Outside | Protocol |
 |--------------|---------------|---------|----------|
-| 10.0.0.5:54321 | 203.0.113.10:40001 | 93.184.216.34:80 | TCP |
+| 10.0.0.5:54321 | 203.0.113.10:40001 | 192.0.2.10:80 | TCP |
 | 10.0.0.6:51000 | 203.0.113.10:40002 | 1.1.1.1:443 | TCP |
 
 Router thay Source `10.0.0.5:54321` → `203.0.113.10:40001` khi ra, và làm ngược khi gói trả về dựa vào port 40001.
@@ -698,7 +689,7 @@ Dải port: **0–1023 well-known** (cần quyền root để bind trên Linux),
 ```bash
 dig +trace example.com A      # xem toàn bộ chuỗi iterative từ root
 dig @1.1.1.1 example.com MX
-dig -x 93.184.216.34          # reverse (PTR)
+dig -x 192.0.2.10          # reverse (PTR)
 sudo tcpdump -i eth0 -nn 'udp port 53'
 ```
 
@@ -707,7 +698,7 @@ Output `dig` mẫu (đã chú thích):
 ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6789
 ;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
 ;; ANSWER SECTION:
-example.com.    3600   IN   A   93.184.216.34
+example.com.    3600   IN   A   192.0.2.10
 ```
 
 **DNSSEC:** thêm bản ghi `RRSIG` (chữ ký), `DNSKEY` (khóa công khai), `DS` (delegation signer), `NSEC/NSEC3` (chứng minh không tồn tại). Bit `AD` (Authenticated Data) trong flags báo resolver đã xác thực chữ ký. Mục tiêu: chống cache poisoning/spoofing bằng chữ ký số (không mã hóa nội dung).
@@ -834,7 +825,7 @@ Khác biệt TLS 1.3: bỏ ciphersuite yếu (RSA key exchange tĩnh, RC4, CBC, 
 | Version | v3 | `2` (=v3) |
 | Serial Number | định danh duy nhất từ CA | `0x0a1b...` |
 | Signature Algorithm | thuật toán ký | `sha256WithRSAEncryption` |
-| Issuer | DN của CA cấp | `CN=R3, O=Let's Encrypt` |
+| Issuer | DN của CA cấp | `CN=R11, O=Let's Encrypt` |
 | Validity | notBefore / notAfter | `2026-01-01 .. 2026-04-01` |
 | Subject | DN chủ thể | `CN=example.com` |
 | Subject Public Key Info | thuật toán + khóa công khai | `RSA 2048` / `EC P-256` |
@@ -945,3 +936,7 @@ Quy trình điều tra điển hình: bắt bằng tcpdump trên server không c
 ## Ghi chú của mình
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
+
+- **Đọc access log là cách nhanh nhất nhận diện scanner.** Ở một máy web mình vận hành, chỉ cần lướt access.log là thấy chân dung một con scanner tự động: hàng trăm request/vài phút từ một IP, path toàn `/.env`, `/.git/config`, `/wp-login.php`, `/.ssh/id_rsa`, kèm biến thể path traversal `../`, `....//`, và cả `%252e%252e` (double-encoding — nó encode dấu `.` hai lần để né bộ lọc naïve). User-agent xoay liên tục, thỉnh thoảng giả referer của Bing/Google cho giống bot hợp lệ. Traffic người thật gần như không bao giờ có hình dạng này.
+- **Nhìn status code để biết "thủng hay chưa".** Mẹo thực dụng mình hay dùng: lọc log lấy đúng những request của IP nghi ngờ mà server trả **2xx** — nếu toàn `301/400/404` thì bị quét nhưng chưa lấy được gì; xuất hiện `200` ở một path nhạy cảm mới là lúc phải báo động. Số lượng request lớn tự nó chưa phải sự cố; *kết quả* mới là.
+- **Một điểm từng hiểu nhầm:** mình từng tưởng chặn pattern `../` ngay ở reverse proxy là đủ chống traversal. Thực tế nginx **chuẩn hoá URI trước khi match location**, nên chặn theo chuỗi `../`/`%2e%2e` không đáng tin; chặn theo *tên tệp nhạy cảm* (`\.env`, `id_rsa`, `\.git`) mới bắt được đa số scan, còn traversal triệt để thì cần WAF (ModSecurity + OWASP CRS). Chi tiết vận hành phần này mình để ở chương về hạ tầng/hardening.

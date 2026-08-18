@@ -20,41 +20,41 @@ Hướng tới cả người **mới học** lẫn người **đi làm cần tra
 | # | Chương | Nội dung chính |
 |---|---|---|
 | 01 | **Mạng máy tính (TCP/IP, OSI)** | Encapsulation byte-by-byte, layout header Ethernet/IPv4/IPv6/TCP/UDP, ARP, subnet, TCP handshake & state machine, NAT, DNS, TLS |
-| 02 | **Hệ điều hành Linux** | Quyền & SUID/ACL, passwd/shadow, process/namespace, systemd, logging, bash + grep/awk/sed, hardening |
+| 02 | **Hệ điều hành Linux** | Quyền & SUID/ACL, passwd/shadow, process/namespace, systemd, logging, bash + grep/awk/sed, hardening (iptables/nftables), chẩn đoán hiệu năng & tài nguyên |
 | 03 | **Windows & Active Directory** | Event ID bảo mật, Sysmon, Kerberos vs NTLM, tấn công AD (PtH, Kerberoasting, golden ticket) + dấu hiệu |
 | 04 | **Mật mã & Nền tảng bảo mật** | AES/RSA/ECC/DH, hash & lưu mật khẩu, HMAC, chữ ký số, PKI/X.509, CIA/AAA, CVE/CVSS/CWE |
 
 ### Phần B — An ninh ứng dụng & DevSecOps
 | # | Chương | Nội dung chính |
 |---|---|---|
-| 05 | **An ninh ứng dụng Web (OWASP Top 10)** | SQLi/XSS/CSRF/SSRF/IDOR (payload + fix), JWT/OAuth2/OIDC, STRIDE, Zero Trust |
-| 06 | **DevSecOps & Quét bảo mật mã nguồn** | SAST/DAST/SCA/secret/IaC, Semgrep (AST, viết rule, taint), Gitleaks/Trivy, supply chain (SLSA/SBOM) |
+| 05 | **An ninh ứng dụng Web (OWASP Top 10)** | OWASP Top 10 bản 2025, SQLi/XSS/CSRF/SSRF/IDOR (payload + fix), prompt injection, race condition, JWT/OAuth2/OIDC, STRIDE, Zero Trust |
+| 06 | **DevSecOps & Quét bảo mật mã nguồn** | SAST/DAST/SCA/secret/IaC, Semgrep (AST, viết rule, taint), Gitleaks/Trivy, supply chain (SLSA/SBOM), kiểm soát code do AI sinh |
 | 07 | **CI/CD & GitOps** | GitLab CI, GitHub Actions, Jenkins, Argo CD/GitOps, git submodule — ví dụ thật từng công cụ |
 
 ### Phần C — Giám sát, Phát hiện & Ứng phó
 | # | Chương | Nội dung chính |
 |---|---|---|
-| 08 | **SIEM & Quản lý log tập trung** | Kiến trúc SIEM, Wazuh (decoder/rule, FIM, active response), detection engineering |
-| 09 | **Observability & Giám sát hạ tầng** | Elasticsearch/Logstash/Kibana/Beats, Zabbix; khi nào dùng cái nào |
+| 08 | **SIEM & Quản lý log tập trung** | Kiến trúc SIEM, Wazuh (decoder/rule, FIM, active response), detection engineering, quy trình điều tra thực tế, SOAR |
+| 09 | **Observability & Giám sát hạ tầng** | Elasticsearch/Logstash/Kibana/Beats, Zabbix, Prometheus/PromQL/Alertmanager, Grafana; khi nào dùng cái nào |
 | 10 | **Vận hành SOC & Ứng phó sự cố** | SOC tier, triage, IR lifecycle (NIST/SANS), playbook, threat hunting |
 
 ### Phần D — Phòng thủ mạng & Kiểm thử
 | # | Chương | Nội dung chính |
 |---|---|---|
-| 11 | **Phòng thủ mạng (IDS/IPS, WAF, Firewall, VPN)** | Snort/Suricata (rule + ví dụ), ModSecurity + CRS, pfSense, VPN (IPsec/OpenVPN/WireGuard) |
+| 11 | **Phòng thủ mạng (IDS/IPS, WAF, Firewall, VPN)** | Snort/Suricata (rule + ví dụ), ModSecurity + CRS, pfSense, VPN (IPsec/OpenVPN/WireGuard), hardening nginx reverse proxy, Zeek |
 | 12 | **Kiểm thử xâm nhập & Đánh giá lỗ hổng** | Burp Suite, Acunetix, Nmap (kiểu scan + gói tin, NSE) |
 
 ### Phần E — Hạ tầng, Ảo hóa & Đám mây
 | # | Chương | Nội dung chính |
 |---|---|---|
-| 13 | **Bảo mật Đám mây** | IAM, VPC, SG vs NACL, S3, KMS, CloudTrail/GuardDuty, IMDSv2/SSRF, tấn công cloud (AWS & GCP) |
+| 13 | **Bảo mật Đám mây** | IAM, VPC, SG vs NACL, S3, KMS, CloudTrail/GuardDuty, IMDSv2/SSRF, tấn công cloud; đối chiếu AWS – OCI – GCP |
 | 14 | **Ảo hóa & Container** | Docker internals, container escape, Kubernetes + bảo mật (RBAC/NetworkPolicy/PSS) |
 
 ### Phần F — Tấn công, Tuân thủ & Tự động hóa
 | # | Chương | Nội dung chính |
 |---|---|---|
 | 15 | **Threat Intelligence & Khung tấn công** | 14 tactic + technique, Kill Chain, Diamond Model, IOC vs IOA, phân tích malware |
-| 16 | **Tuân thủ & Quản trị (GRC)** | Risk management, NIST CSF/800-53/61/207, ISO 27001, pháp lý VN |
+| 16 | **Tuân thủ & Quản trị (GRC)** | Risk management, NIST CSF/800-53/61/207, ISO 27001 & SOC 2, pháp lý VN (Luật BVDLCN 91/2025) |
 | 17 | **Lập trình & Tự động hóa cho bảo mật** | socket/requests/scapy/boto3, port scanner, log parser, gọi API, secure coding |
 
 ---

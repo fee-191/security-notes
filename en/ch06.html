@@ -1,0 +1,1581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 6 — DevSecOps &amp;amp; Source Code Security Scanning — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 6 — DevSecOps &amp;amp; Source Code Security Scanning — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch05.html"><link rel="next" href="ch07.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="06"><a class="nav-ch-title" href="#top"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"><a class="nav-sub" href="#ch06-overview">Overview</a><a class="nav-sub" href="#ch06-every-tool-here-comes-with-a-runnable-example-and-an-explanation-of-why-it-was-designed-that-way-anything-version-dependent-carries-its-own-note">&amp;gt; Every tool here comes with a runnable example and an explanation of why it was designed that way — anything version-dependent carries its own note.</a><a class="nav-sub" href="#ch06-61-the-shift-left-philosophy-the-devsecops-model">6.1. The shift-left philosophy &amp;amp; the DevSecOps model</a><a class="nav-sub" href="#ch06-62-a-taxonomy-of-security-scanning-techniques">6.2. A taxonomy of security scanning techniques</a><a class="nav-sub" href="#ch06-63-semgrep-architecture-and-the-parse-ast-matching-mechanism">6.3. Semgrep — architecture and the parse → AST → matching mechanism</a><a class="nav-sub" href="#ch06-64-yaml-rule-writing-syntax-field-structure">6.4. YAML rule-writing syntax — field structure</a><a class="nav-sub" href="#ch06-65-taint-mode-source-sink-sanitizer">6.5. Taint mode — source / sink / sanitizer</a><a class="nav-sub" href="#ch06-66-several-real-world-rule-examples">6.6. Several real-world rule examples</a><a class="nav-sub" href="#ch06-67-gitleaks-secret-scanning-regex-entropy">6.7. Gitleaks — secret scanning (regex + entropy)</a><a class="nav-sub" href="#ch06-68-trivy-scanning-images-filesystems-iac">6.8. Trivy — scanning images / filesystems / IaC</a><a class="nav-sub" href="#ch06-69-designing-pipeline-gates-exit-codes-and-tiering">6.9. Designing pipeline gates — exit codes and tiering</a><a class="nav-sub" href="#ch06-610-software-supply-chain-security">6.10. Software supply chain security</a><a class="nav-sub" href="#ch06-611-secret-management-vault-dynamic-secrets-oidc">6.11. Secret management — Vault, dynamic secrets, OIDC</a><a class="nav-sub" href="#ch06-612-pre-commit-hook-blocking-on-the-developers-machine-shift-left-to-the-extreme">6.12. pre-commit hook — blocking on the developer&#x27;s machine (shift-left to the extreme)</a><a class="nav-sub" href="#ch06-613-summary-of-the-tiered-defense-architecture">6.13. Summary of the tiered defense architecture</a><a class="nav-sub" href="#ch06-614-controlling-ai-generated-code-the-three-layer-model">6.14. Controlling AI-generated code — the three-layer model</a><a class="nav-sub" href="#ch06-appendix-a-owasp-zap-dast-runnable-example">Appendix A — OWASP ZAP (DAST) runnable example</a><a class="nav-sub" href="#ch06-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-06" data-ch="06">
+<h1 id="ch06-chapter-6-devsecops-source-code-security-scanning">Chapter 6 — DevSecOps &amp; Source Code Security Scanning</h1>
+<h2 id="ch06-overview">Overview</h2>
+<p>Traditional security is a checkpoint at the end: write the code, then someone reviews it right before release. That has a very practical problem — by the time anything turns up, fixing it is expensive, often expensive enough that the finding gets accepted as risk and waved through. <strong>DevSecOps</strong> inverts that order by embedding security controls into the development process itself, and <strong>shift-left</strong> means moving each check as early as it will go — the earliest being the developer's own machine, before the code has left it.</p>
+<p>The place those checks live is the <strong>CI/CD pipeline</strong>. This chapter walks through each class of scanning in terms of its blind spot, because none of them catches everything: <strong>SAST</strong> reads source statically (good at injection, XSS, path traversal), <strong>DAST</strong> attacks the running application (runtime faults and misconfiguration), <strong>IAST</strong> instruments the runtime to connect data flow with code location, <strong>SCA</strong> checks third-party libraries against CVE databases, plus <strong>secret scanning</strong>, <strong>IaC scanning</strong> and <strong>container scanning</strong>. Three tools get covered deeply enough to use immediately: <strong>Semgrep</strong> (SAST matching on AST structure rather than plain text — the focus being YAML rules, metavariables like <code>$X</code>, and taint mode), <strong>gitleaks</strong> (scanning both content and git history, combining structural regex with Shannon entropy) and <strong>Trivy</strong> (images, filesystems, IaC, SBOM).</p>
+<p>The second half shifts from tools to operating them without the team turning against you. <strong>Gates</strong> talk to the pipeline through exit codes and must be tiered — serious findings block the build, minor ones only warn — because otherwise alert fatigue kills the whole control. Alongside that: supply chain security (<strong>SBOM</strong> to answer "which of our products contains the component with this CVE", artifact signing with cosign/sigstore), centralised secret management with <strong>Vault</strong> — dynamic secrets, and OIDC/workload identity to solve the "secret zero" problem — and <strong>pre-commit hooks</strong> as the furthest-left checkpoint (which developers can skip, so CI must repeat everything). The final section covers <strong>AI-generated code</strong>: it runs but isn't safe, it brings its own risks like slopsquatting, and the answer is reusing the pipeline you already have rather than building a parallel process.</p>
+<h2 id="ch06-every-tool-here-comes-with-a-runnable-example-and-an-explanation-of-why-it-was-designed-that-way-anything-version-dependent-carries-its-own-note">&gt; Every tool here comes with a runnable example and an explanation of why it was designed that way — anything version-dependent carries its own note.</h2>
+<h2 id="ch06-61-the-shift-left-philosophy-the-devsecops-model">6.1. The shift-left philosophy &amp; the DevSecOps model</h2>
+<h3 id="ch06-611-the-economics-behind-shift-left">6.1.1. The economics behind shift-left</h3>
+<p>DevSecOps is not a tool but an <strong>operating model</strong> in which security controls are embedded into every stage of the software development lifecycle (SDLC) rather than performed once at the end.</p>
+<p>The underlying reason is that the cost of fixing a defect grows exponentially with the stage at which it is found. The classic cost model (often attributed to NIST / the IBM Systems Sciences Institute — the exact figures should be verified against sources, as citations vary widely) is qualitatively as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Stage where the defect is found</th>
+<th>Relative cost (qualitative)</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coding / IDE</td>
+<td>1x</td>
+<td>The developer still holds the context and fixes it immediately</td>
+</tr>
+<tr>
+<td>Build / CI</td>
+<td>~5x</td>
+<td>Must go back, context is lost, the pipeline reruns</td>
+</tr>
+<tr>
+<td>QA / Test</td>
+<td>~10x</td>
+<td>Requires investigation and writing a reproduction test</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>~30x–100x+</td>
+<td>Emergency hotfix, downtime, possible prior exploitation, legal liability</td>
+</tr>
+</tbody>
+</table>
+<p>"Shift-left" means moving security activities <strong>to the left</strong> on the SDLC timeline (left = earlier). The goal is not to abandon final testing, but to <strong>reduce the number of defects that survive</strong> to the expensive stages.</p>
+<pre><code>TRADITIONAL (security at the end):
+[Plan]→[Code]→[Build]→[Test]→[Release]→[Deploy]→[Operate]
+                                                    └── Pentest once/year
+
+DEVSECOPS (security at every point):
+[Plan]    [Code]      [Build]      [Test]     [Release]   [Deploy]    [Operate]
+  │         │           │            │           │           │           │
+threat    SAST        SCA          DAST       sign        admission   runtime
+model   pre-commit   secret      IAST        SBOM       controller   detection
+        IDE plugin   container   ZAP        provenance   policy      WAF/EDR
+                     scan
+</code></pre>
+<h3 id="ch06-612-core-design-principles">6.1.2. Core design principles</h3>
+<ul>
+<li><strong>Automation</strong>: humans do not scale; gates must run automatically in the pipeline.</li>
+<li><strong>Fast feedback</strong>: alerts must reach the developer within minutes (at the PR/MR), not weeks (a PDF report).</li>
+<li><strong>Policy as Code</strong>: security policy is codified (YAML rules, OPA Rego, manifests) so it is versioned, reviewable, and reproducible.</li>
+<li><strong>Fail tiered</strong>: not every finding blocks the build — distinguish blocking vs. warning (see 6.9).</li>
+<li><strong>Guardrails, not gatekeepers</strong>: provide rails to move fast safely, rather than blocking gates that push developers to find workarounds (shadow IT).</li>
+</ul>
+<h3 id="ch06-613-the-full-tiered-shift-left-pipeline-applied-in-practice">6.1.3. The full tiered shift-left pipeline (applied in practice)</h3>
+<p>When the theory above is applied to the system I operate, it becomes a concrete chain of tiers, built entirely with open-source tools. <strong>Each tier catches its own class of defects, and no tier can replace another</strong> — dropping a tier opens exactly that tier's blind spot.</p>
+<pre><code>IDE ────► pre-commit ────► CI (on PR) ─────────► staging ────► runtime
+Semgrep    gitleaks         Semgrep + gitleaks    OWASP ZAP     SIEM
+/linter                     + Trivy (image+deps)  (DAST)        monitoring
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Tools</th>
+<th>What it catches</th>
+<th>Why it cannot be dropped</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDE (while typing)</td>
+<td>Semgrep extension, linter</td>
+<td>Dangerous patterns as they are written (SQLi, <code>eval</code>, hardcoding)</td>
+<td>Instant feedback, 1x fix cost; but the developer can turn it off</td>
+</tr>
+<tr>
+<td>pre-commit (dev machine)</td>
+<td>gitleaks</td>
+<td>Secrets before they enter git history</td>
+<td>A committed and pushed secret is considered exposed and must be rotated; but the hook can be bypassed with <code>--no-verify</code></td>
+</tr>
+<tr>
+<td>CI on the PR</td>
+<td>Semgrep (SAST) + gitleaks + Trivy (image + dependency)</td>
+<td>Code defects, secrets that slipped past the hook, CVEs in libraries and images</td>
+<td>The server-side gate that cannot be bypassed — repeats every check from the earlier tiers</td>
+</tr>
+<tr>
+<td>Staging (pre-deploy)</td>
+<td>OWASP ZAP (DAST)</td>
+<td>Runtime bugs, misconfig, missing headers — SAST's blind spot</td>
+<td>Only visible when the app actually runs</td>
+</tr>
+<tr>
+<td>Runtime (production)</td>
+<td>SIEM monitoring &amp; alerting (see <a href="ch08.html">Chapter 8</a>)</td>
+<td>Real attacks, anomalous behavior</td>
+<td>No set of scanners catches everything before deploy; there must be eyes at the last tier</td>
+</tr>
+</tbody>
+</table>
+<p>The first two tiers run on the developer's machine, so they are only a "courtesy layer" — their real value is early feedback, while enforcement lives in CI (see 6.12.3). Conversely, with CI only and no IDE/pre-commit tier, developers get feedback hours later and the secret has already made it into git history.</p>
+<hr />
+<h2 id="ch06-62-a-taxonomy-of-security-scanning-techniques">6.2. A taxonomy of security scanning techniques</h2>
+<p>This is the foundational section: each family of tools views software from a different angle and has its own blind spot. Understanding the mechanism helps you choose the right tool and understand why multiple types must be combined (defense in depth for the testing process itself).</p>
+<h3 id="ch06-621-overview-table">6.2.1. Overview table</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Full name</th>
+<th>Input</th>
+<th>App must run?</th>
+<th>Detects well</th>
+<th>Blind spot</th>
+<th>Representative tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SAST</td>
+<td>Static Application Security Testing</td>
+<td>Source/bytecode</td>
+<td>No</td>
+<td>SQLi, XSS, path traversal, hardcoded crypto</td>
+<td>Runtime/config bugs, auth logic</td>
+<td>Semgrep, SonarQube</td>
+</tr>
+<tr>
+<td>DAST</td>
+<td>Dynamic Application Security Testing</td>
+<td>Running app (HTTP)</td>
+<td>Yes</td>
+<td>Runtime bugs, server misconfig, auth</td>
+<td>Cannot see code, coverage depends on the crawler</td>
+<td>OWASP ZAP</td>
+</tr>
+<tr>
+<td>IAST</td>
+<td>Interactive AST</td>
+<td>Agent in the runtime + traffic</td>
+<td>Yes</td>
+<td>Combines runtime data flow + code location</td>
+<td>Requires instrumentation, limited languages</td>
+<td>(mostly commercial)</td>
+</tr>
+<tr>
+<td>SCA</td>
+<td>Software Composition Analysis</td>
+<td>Dependency manifest/lockfile</td>
+<td>No</td>
+<td>CVEs in third-party libraries, license</td>
+<td>Bugs in your own code</td>
+<td>Trivy, Dependabot</td>
+</tr>
+<tr>
+<td>Secret scanning</td>
+<td>—</td>
+<td>Source + git history</td>
+<td>No</td>
+<td>API keys, tokens, private keys committed</td>
+<td>Encrypted secrets, secrets outside the repo</td>
+<td>gitleaks</td>
+</tr>
+<tr>
+<td>IaC scanning</td>
+<td>Infrastructure as Code</td>
+<td>Terraform/K8s/CFN</td>
+<td>No</td>
+<td>Public S3, SG open to 0.0.0.0/0</td>
+<td>Runtime drift vs. code</td>
+<td>Checkov, Trivy (misconfig)</td>
+</tr>
+<tr>
+<td>Container scanning</td>
+<td>—</td>
+<td>Image layers / filesystem</td>
+<td>No</td>
+<td>CVEs in OS packages, app deps in the image</td>
+<td>Application logic bugs</td>
+<td>Trivy</td>
+</tr>
+</tbody>
+</table>
+<p>A point worth noting for small teams: the core set (Semgrep, gitleaks, Trivy, ZAP, Checkov) is all open source and essentially free. The real cost is not licenses but <strong>human operating time</strong> — tuning rules, triaging results, keeping the pipeline alive. The problem is not "having budget for tools" but "having the discipline to use the tools + automation so that few people can carry the load."</p>
+<h3 id="ch06-622-sast-static-analysis">6.2.2. SAST — static analysis</h3>
+<p><strong>What it is</strong>: analysis of source code (or bytecode) without executing it.</p>
+<p><strong>Internal mechanism</strong>: the typical pipeline is:</p>
+<ol>
+<li><strong>Lexing (tokenize)</strong>: character stream → tokens. For example, <code>user_id = req.params.id</code> → <code>[IDENT(user_id), OP(=), IDENT(req), DOT, IDENT(params), DOT, IDENT(id)]</code>.</li>
+<li><strong>Parsing</strong>: tokens → <strong>AST</strong> (Abstract Syntax Tree) according to the language grammar.</li>
+<li><strong>Semantic analysis</strong>: build the control-flow graph (CFG), data-flow graph (DFG), and call graph.</li>
+<li><strong>Taint analysis</strong>: track data from a <strong>source</strong> (untrusted input) to a <strong>sink</strong> (dangerous function) without passing through a <strong>sanitizer</strong>.</li>
+</ol>
+<p><strong>Why use an AST instead of a regex</strong>: a regex does not understand syntactic structure. For example, a regex looking for <code>query(...)</code> will false-alarm on comments and string literals, or miss matches when the code wraps across lines. An AST understands that <code>query</code> is a function call whose argument is a string-concatenation expression containing a tainted variable.</p>
+<h3 id="ch06-623-dast-dynamic-analysis">6.2.3. DAST — dynamic analysis</h3>
+<p><strong>Mechanism</strong>: the tool acts as an HTTP client/proxy, <strong>crawls</strong> the application to map out endpoints, then <strong>fuzzes</strong> each parameter with attack payloads (<code>' OR 1=1--</code>, <code>&lt;script&gt;</code>, <code>../../etc/passwd</code>), observing the <strong>response</strong> (status code, latency, content, error message) to infer vulnerabilities. Black-box: it cannot see the code.</p>
+<h3 id="ch06-624-iast">6.2.4. IAST</h3>
+<p><strong>Mechanism</strong>: attach an <strong>agent</strong> (instrumentation) to the runtime (for example, a Java agent via <code>-javaagent</code>, bytecode instrumentation). When DAST/tests send a request, the agent observes the <strong>actual</strong> data flow inside the process — it knows the payload travels from an HTTP parameter into the executed SQL statement. It combines data-flow accuracy (like SAST) with runtime context (like DAST), so it produces fewer false positives.</p>
+<h3 id="ch06-625-sca">6.2.5. SCA</h3>
+<p><strong>Mechanism</strong>: read the manifest/lockfile (<code>package-lock.json</code>, <code>pom.xml</code>, <code>go.sum</code>, <code>requirements.txt</code>), build the dependency tree (including transitive dependencies), and match it against vulnerability databases (NVD, GitHub Advisory, OSV). Then map version → CVE via the affected version ranges. This matters because more than 80% of a modern codebase is third-party code.</p>
+<hr />
+<h2 id="ch06-63-semgrep-architecture-and-the-parse-ast-matching-mechanism">6.3. Semgrep — architecture and the parse → AST → matching mechanism</h2>
+<p>Semgrep ("semantic grep") is an open-source SAST tool positioned between "grep" (fast, simple) and heavyweight SAST (accurate, slow). Its philosophy: a rule <strong>looks like the code you want to find</strong>.</p>
+<h3 id="ch06-631-internal-processing-pipeline">6.3.1. Internal processing pipeline</h3>
+<pre><code>                Source file (e.g. app.py)
+                        │
+                        ▼
+         ┌──────────────────────────────┐
+         │  Tree-sitter / own parser    │  Parse to language-specific CST/AST
+         └──────────────────────────────┘
+                        │
+                        ▼
+         ┌──────────────────────────────┐
+         │   Generic AST (semgrep core) │  Normalize to a shared multi-language AST
+         └──────────────────────────────┘
+                        │
+   Rule pattern ──────► │  The pattern is also parsed into the same kind of AST
+                        ▼
+         ┌──────────────────────────────┐
+         │   Structural matching        │  Tree-against-tree match + metavariable
+         │   + metavariable binding     │  constraints, taint propagation
+         └──────────────────────────────┘
+                        │
+                        ▼
+                  Findings (JSON/SARIF)
+</code></pre>
+<p>The trick is that <strong>the pattern in a rule is also parsed into an AST</strong> just like the target code, and Semgrep then matches <strong>tree against tree</strong> (structural match), not text against text. That's why:</p>
+<ul>
+<li><code>foo(1, 2)</code> matches whether the code is written <code>foo(1,2)</code>, <code>foo( 1, 2 )</code>, or wrapped across lines.</li>
+<li>Comments, whitespace, and redundant parentheses are naturally ignored.</li>
+<li>Basic semantics are understood (for example, <code>$X == $X</code> understands both sides as the same variable).</li>
+</ul>
+<h3 id="ch06-632-equivalences-semantic-equivalence">6.3.2. Equivalences (semantic equivalence)</h3>
+<p>Semgrep automatically applies a number of equivalences to reduce the number of rules you must write. For example: aliased imports (<code>import subprocess as sp</code> → the pattern <code>subprocess.call(...)</code> still matches <code>sp.call(...)</code>), simple constant propagation, and equivalent call forms. This is why a short pattern catches many variants.</p>
+<h3 id="ch06-633-installation-and-basic-cli-commands">6.3.3. Installation and basic CLI commands</h3>
+<pre><code class="language-bash"># Install via pip (Python 3.8+)
+python3 -m pip install semgrep
+semgrep --version        # e.g.: 1.x.x
+
+# Or Docker (no local install needed)
+docker run --rm -v &quot;$PWD:/src&quot; semgrep/semgrep semgrep --config auto /src
+</code></pre>
+<p>The core scan commands:</p>
+<pre><code class="language-bash"># Scan with a ready-made community ruleset (registry)
+semgrep --config &quot;p/owasp-top-ten&quot; .
+
+# 'auto' = Semgrep picks the ruleset based on the detected language
+semgrep --config auto .
+
+# Use a single local rule file
+semgrep --config ./rules/sqli.yaml ./src
+
+# Multiple configs at once
+semgrep --config p/security-audit --config ./rules/ .
+</code></pre>
+<p>Explanation of important parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--config &lt;X&gt;</code></td>
+<td>Rule source: <code>p/&lt;pack&gt;</code> (registry), a file/directory path, a URL, or <code>auto</code></td>
+</tr>
+<tr>
+<td><code>--json</code> / <code>--sarif</code></td>
+<td>Output format (CI integration / GitHub code scanning)</td>
+</tr>
+<tr>
+<td><code>--output &lt;file&gt;</code></td>
+<td>Write results to a file</td>
+</tr>
+<tr>
+<td><code>--severity &lt;LVL&gt;</code></td>
+<td>Filter by ERROR/WARNING/INFO</td>
+</tr>
+<tr>
+<td><code>--error</code></td>
+<td>Return a non-zero exit code when there is a finding (used for gates — see 6.9)</td>
+</tr>
+<tr>
+<td><code>--baseline-commit &lt;sha&gt;</code></td>
+<td>Report only <strong>new</strong> findings relative to a base commit (diff-aware)</td>
+</tr>
+<tr>
+<td><code>--exclude &lt;glob&gt;</code></td>
+<td>Skip a path (e.g. <code>--exclude 'tests/*'</code>)</td>
+</tr>
+<tr>
+<td><code>--max-target-bytes</code></td>
+<td>Skip files larger than the threshold (default ~1MB)</td>
+</tr>
+<tr>
+<td><code>--metrics off</code></td>
+<td>Disable sending anonymous metrics</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-64-yaml-rule-writing-syntax-field-structure">6.4. YAML rule-writing syntax — field structure</h2>
+<h3 id="ch06-641-the-skeleton-of-a-rule">6.4.1. The skeleton of a rule</h3>
+<p>A Semgrep rule file is YAML with the root key <code>rules</code> (an array). Each element describes one rule. The fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Type</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Yes</td>
+<td>string</td>
+<td>Unique identifier (appears in reports)</td>
+<td><code>python.sqli.format-string</code></td>
+</tr>
+<tr>
+<td><code>languages</code></td>
+<td>Yes</td>
+<td>list</td>
+<td>Languages it applies to</td>
+<td><code>[python]</code>, <code>[javascript, typescript]</code></td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>Yes</td>
+<td>enum</td>
+<td><code>ERROR</code> / <code>WARNING</code> / <code>INFO</code></td>
+<td><code>ERROR</code></td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>Yes</td>
+<td>string</td>
+<td>Description sent to the developer (should include how to fix)</td>
+<td><code>SQL injection detected...</code></td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>(one of these)</td>
+<td>string</td>
+<td>A single pattern to match</td>
+<td><code>eval(...)</code></td>
+</tr>
+<tr>
+<td><code>patterns</code></td>
+<td>—</td>
+<td>list</td>
+<td>AND logic: all children must hold</td>
+<td>(see below)</td>
+</tr>
+<tr>
+<td><code>pattern-either</code></td>
+<td>—</td>
+<td>list</td>
+<td>OR logic: any child matching is a match</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-not</code></td>
+<td>—</td>
+<td>string</td>
+<td>Exclusion (reduces false positives)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-inside</code></td>
+<td>—</td>
+<td>string</td>
+<td>Match only when inside this context</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern-not-inside</code></td>
+<td>—</td>
+<td>string</td>
+<td>Exclude if inside this context</td>
+<td></td>
+</tr>
+<tr>
+<td><code>metavariable-regex</code></td>
+<td>—</td>
+<td>map</td>
+<td>Constrain a metavariable by regex</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td>—</td>
+<td>enum</td>
+<td><code>search</code> (default) or <code>taint</code></td>
+<td><code>taint</code></td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>—</td>
+<td>map</td>
+<td>CWE, OWASP, references, confidence</td>
+<td></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>—</td>
+<td>string</td>
+<td>Automatic fix (autofix)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-642-the-metavariable-x">6.4.2. The metavariable <code>$X</code></h3>
+<p>A metavariable is a <strong>variable within a pattern</strong>, written in uppercase and starting with <code>$</code>: <code>$X</code>, <code>$FUNC</code>, <code>$ARG</code>. It matches any AST node (an expression, an identifier, a call, etc.) and <strong>remembers</strong> (binds) that value. The same metavariable name within the same pattern must match the same content.</p>
+<pre><code class="language-yaml"># [DEMO] Catch comparing a variable with itself (always true/false — a logic bug); illustrates the metavariable mechanism only.
+rules:
+  - id: self-comparison
+    languages: [python]
+    severity: WARNING
+    message: &quot;Comparing $X with itself always yields a fixed result.&quot;
+    pattern: $X == $X
+</code></pre>
+<p>The pattern above matches <code>a == a</code> and <code>user.id == user.id</code> (because both sides bind to the same <code>$X</code>), but does NOT match <code>a == b</code>.</p>
+<p>Special metavariable forms:</p>
+<table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$X</code></td>
+<td>A single node</td>
+</tr>
+<tr>
+<td><code>...</code> (ellipsis)</td>
+<td>A sequence of 0+ arbitrary arguments/statements/elements</td>
+</tr>
+<tr>
+<td><code>$...ARGS</code></td>
+<td>A sequence of arguments, but with a bound name</td>
+</tr>
+<tr>
+<td><code>"..."</code></td>
+<td>Any string literal</td>
+</tr>
+<tr>
+<td><code>$X.$METHOD(...)</code></td>
+<td>Any method call on <code>$X</code></td>
+</tr>
+</tbody>
+</table>
+<p>The ellipsis <code>...</code> is very important: <code>foo(...)</code> matches <code>foo()</code>, <code>foo(1)</code>, <code>foo(a, b, c)</code>. And <code>foo(..., $SENSITIVE, ...)</code> matches <code>$SENSITIVE</code> appearing at any argument position.</p>
+<h3 id="ch06-643-patterns-and-pattern-either-or-pattern-not-pattern-inside">6.4.3. <code>patterns</code> (AND), <code>pattern-either</code> (OR), <code>pattern-not</code>, <code>pattern-inside</code></h3>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use (constant commands excluded via pattern-not).
+rules:
+  - id: dangerous-subprocess-with-shell
+    languages: [python]
+    severity: ERROR
+    message: &quot;subprocess called with shell=True and dynamic input → command injection.&quot;
+    patterns:
+      # AND: must match the call AND have shell=True AND NOT be a literal
+      - pattern-either:
+          - pattern: subprocess.call(...)
+          - pattern: subprocess.run(...)
+          - pattern: subprocess.Popen(...)
+      - pattern: $FN(..., shell=True, ...)
+      - pattern-not: $FN(&quot;...&quot;, ..., shell=True, ...)   # skip constant commands
+</code></pre>
+<p>Logical semantics:</p>
+<ul>
+<li><code>patterns:</code> = <strong>AND</strong> — every child item must hold over the same region of code.</li>
+<li><code>pattern-either:</code> = <strong>OR</strong> — only one child item needs to hold.</li>
+<li><code>pattern-not:</code> = negation — drop the finding if this pattern matches (reduces FPs).</li>
+<li><code>pattern-inside:</code> = context constraint — match only when the code is <strong>inside</strong> an enclosing structure (for example, inside a function or a loop).</li>
+</ul>
+<p>Example of <code>pattern-inside</code> to catch the bug only within a route handler:</p>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use (context scoped to a Flask route via pattern-inside).
+rules:
+  - id: raw-sql-in-flask-route
+    languages: [python]
+    severity: ERROR
+    message: &quot;String-concatenated SQL statement inside a Flask route.&quot;
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $HANDLER(...):
+              ...
+      - pattern: $CUR.execute(&quot;...&quot; % ...)
+</code></pre>
+<h3 id="ch06-644-metavariable-regex-and-metavariable-pattern">6.4.4. <code>metavariable-regex</code> and <code>metavariable-pattern</code></h3>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use (weak algorithm constrained via metavariable-regex).
+rules:
+  - id: weak-hash-algo
+    languages: [python]
+    severity: WARNING
+    message: &quot;Weak hash algorithm: $ALGO&quot;
+    patterns:
+      - pattern: hashlib.new($ALGO, ...)
+      - metavariable-regex:
+          metavariable: $ALGO
+          regex: ^[&quot;'](md5|sha1)[&quot;']$
+</code></pre>
+<p><code>metavariable-regex</code> applies a regex to the <strong>textual value</strong> that the metavariable has bound. Here it only reports when the algorithm is <code>md5</code> or <code>sha1</code>.</p>
+<hr />
+<h2 id="ch06-65-taint-mode-source-sink-sanitizer">6.5. Taint mode — source / sink / sanitizer</h2>
+<h3 id="ch06-651-mechanism">6.5.1. Mechanism</h3>
+<p><code>search</code> mode matches structurally at a single point. But SQLi/command injection are <strong>data flow</strong> problems: tainted data travels from A to B through several steps. <code>mode: taint</code> models this with a three-set scheme:</p>
+<ul>
+<li><strong>source</strong>: where untrusted data appears (HTTP param, file read, env).</li>
+<li><strong>sink</strong>: where it is dangerous if it receives tainted data (<code>execute</code>, <code>eval</code>, <code>os.system</code>).</li>
+<li><strong>sanitizer</strong>: where the data is "cleaned" (escape, parametrize, allowlist). If the data passes through a sanitizer before reaching the sink → no report.</li>
+</ul>
+<p>Semgrep tracks the propagation of taint through assignments, string concatenation, and function calls. A finding is only raised when there exists a path <strong>source → ... → sink</strong> that does NOT cross a sanitizer.</p>
+<pre><code>[source]──taint──►[var a]──taint──►[a + &quot;x&quot;]──taint──►[sink]   ❌ REPORT BUG
+[source]──taint──►[sanitize(a)]──clean──►[sink]                ✅ SAFE
+</code></pre>
+<h3 id="ch06-652-taint-example-catching-sql-injection">6.5.2. Taint example catching SQL injection</h3>
+<pre><code class="language-yaml"># [PROD] Taint rule tight enough for production use (has source/sink/sanitizer and focus-metavariable).
+rules:
+  - id: python-sqli-taint
+    languages: [python]
+    severity: ERROR
+    message: &gt;
+      Data from an HTTP request flows into a SQL statement without parameterization
+      → SQL injection (CWE-89).
+    mode: taint
+    metadata:
+      cwe: &quot;CWE-89: SQL Injection&quot;
+      owasp: &quot;A05:2025 - Injection&quot;
+      confidence: HIGH
+    pattern-sources:
+      - pattern: flask.request.$ANYTHING
+      - pattern: flask.request.args.get(...)
+      - pattern: flask.request.form[...]
+    pattern-sanitizers:
+      - pattern: int(...)                       # int cast = safe against SQLi
+      - pattern: $DB.execute($Q, $PARAMS)       # parameterized query
+    pattern-sinks:
+      - patterns:
+          - pattern: $CURSOR.execute($QUERY, ...)
+          - focus-metavariable: $QUERY
+</code></pre>
+<p>Code that is caught:</p>
+<pre><code class="language-python">from flask import request
+name = request.args.get(&quot;name&quot;)          # SOURCE
+q = &quot;SELECT * FROM users WHERE name='%s'&quot; % name   # taint propagates
+cursor.execute(q)                        # SINK  → REPORT BUG
+</code></pre>
+<p>Code that is NOT caught (sanitized):</p>
+<pre><code class="language-python">uid = int(request.args.get(&quot;id&quot;))        # int() = sanitizer
+cursor.execute(&quot;SELECT * FROM users WHERE id=%s&quot;, (uid,))  # parameterized
+</code></pre>
+<p><code>focus-metavariable</code> narrows the finding to the exact part of the expression (<code>$QUERY</code>) rather than the whole call, helping the report pinpoint the location accurately.</p>
+<hr />
+<h2 id="ch06-66-several-real-world-rule-examples">6.6. Several real-world rule examples</h2>
+<h3 id="ch06-661-catching-eval-on-dynamic-input-rce">6.6.1. Catching <code>eval()</code> on dynamic input (RCE)</h3>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use.
+rules:
+  - id: js-eval-user-input
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: &quot;eval() with dynamic data → remote code execution (CWE-95).&quot;
+    metadata: { cwe: &quot;CWE-95&quot;, owasp: &quot;A05:2025&quot; }
+    patterns:
+      - pattern: eval($X)
+      - pattern-not: eval(&quot;...&quot;)     # allow eval of a constant string (still better avoided)
+</code></pre>
+<pre><code class="language-javascript">eval(req.query.code);   // ❌ matches
+eval(&quot;1 + 1&quot;);          // ✅ skipped thanks to pattern-not
+</code></pre>
+<h3 id="ch06-662-catching-hardcoded-secrets">6.6.2. Catching hardcoded secrets</h3>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use (matches AWS Access Key ID structure + constrains the variable name).
+rules:
+  - id: hardcoded-aws-key
+    languages: [python, javascript, go]
+    severity: ERROR
+    message: &quot;AWS Access Key ID hardcoded in source.&quot;
+    patterns:
+      - pattern-regex: AKIA[0-9A-Z]{16}
+  - id: hardcoded-generic-password
+    languages: [python]
+    severity: WARNING
+    message: &quot;Password hardcoded into a variable.&quot;
+    patterns:
+      - pattern-either:
+          - pattern: $PWD = &quot;...&quot;
+      - metavariable-regex:
+          metavariable: $PWD
+          regex: (?i)(password|passwd|pwd|secret|token|api_?key)
+      - pattern-not: $PWD = &quot;&quot;
+</code></pre>
+<p><code>AKIA[0-9A-Z]{16}</code> is the structure of an AWS Access Key ID: the prefix <code>AKIA</code> + 16 characters (20 characters total). Semgrep's <code>pattern-regex</code> applies a regex over the source text (and can be combined with the AST via <code>patterns</code>).</p>
+<h3 id="ch06-663-catching-command-injection-go">6.6.3. Catching command injection (Go)</h3>
+<pre><code class="language-yaml"># [PROD] Taint rule tight enough for production use.
+rules:
+  - id: go-command-injection
+    languages: [go]
+    severity: ERROR
+    message: &quot;exec.Command with input from HTTP → command injection.&quot;
+    mode: taint
+    pattern-sources:
+      - pattern: $R.URL.Query().Get(...)
+      - pattern: $R.FormValue(...)
+    pattern-sinks:
+      - pattern: exec.Command($CMD, ...)
+      - pattern: exec.Command(&quot;sh&quot;, &quot;-c&quot;, $ARG)
+</code></pre>
+<h3 id="ch06-664-autofix">6.6.4. Autofix</h3>
+<pre><code class="language-yaml"># [PROD] Rule tight enough for production use (includes autofix to safe_load).
+rules:
+  - id: insecure-yaml-load
+    languages: [python]
+    severity: ERROR
+    message: &quot;yaml.load is unsafe → use safe_load.&quot;
+    pattern: yaml.load($X)
+    fix: yaml.safe_load($X)
+</code></pre>
+<p>Running <code>semgrep --config rule.yaml --autofix .</code> will replace <code>yaml.load(data)</code> with <code>yaml.safe_load(data)</code> directly in the file.</p>
+<h3 id="ch06-665-sample-output">6.6.5. Sample output</h3>
+<pre><code>$ semgrep --config rules/ src/app.py
+
+┌─────────────┐
+│ 2 Findings  │
+└─────────────┘
+
+  src/app.py
+    python-sqli-taint
+        Data from an HTTP request flows into a SQL statement... (CWE-89)
+        12┆ cursor.execute(q)
+
+    hardcoded-aws-key
+        AWS Access Key ID hardcoded in source.
+        20┆ KEY = &quot;AKIAIOSFODNN7EXAMPLE&quot;
+
+Ran 5 rules on 1 file: 2 findings.
+</code></pre>
+<h3 id="ch06-666-handling-false-positives-severity">6.6.6. Handling false positives &amp; severity</h3>
+<p>A strategy for reducing false positives, in order of priority:</p>
+<ol>
+<li><strong>Add <code>pattern-not</code> / <code>pattern-not-inside</code></strong> to exclude known-safe cases.</li>
+<li><strong>Add a sanitizer</strong> (taint mode) for internal data-cleaning functions.</li>
+<li><strong>Inline nolint</strong>: add a <code># nosemgrep: &lt;rule-id&gt;</code> comment right on the line to intentionally skip it (should include a reason).</li>
+<li><strong><code>.semgrepignore</code></strong> (same syntax as <code>.gitignore</code>) to exclude paths (vendored code, tests, generated files).</li>
+</ol>
+<pre><code class="language-python">result = eval(trusted_expr)   # nosemgrep: js-eval-user-input — string is whitelisted
+</code></pre>
+<p><strong>A team-scale strategy against false-positive fatigue.</strong> If you enable a large ruleset on day one and Semgrep reports hundreds of warnings, developers give up — and that is when the scan is effectively dead even though it still runs in the pipeline. The more sustainable approach:</p>
+<ol>
+<li><strong>Start with a small, high-confidence ruleset</strong> (SQLi, hardcoded secrets, XSS — rules that almost never false-alarm), then expand gradually once the team is used to it.</li>
+<li><strong>Make only a few rules blocking, the rest warnings</strong> — true tiering (see 6.9), prioritizing by severity instead of chasing finding counts.</li>
+<li><strong>Triage periodically</strong>: a fixed schedule for reviewing warning findings, tuning rules (<code>pattern-not</code>, sanitizers), and deciding whether to promote them to blocking or drop them entirely. A rule no one looks at is a rule that should be turned off.</li>
+<li><strong>A few custom rules for internal patterns are worth more than enabling everything</strong>: SAST struggles with business logic, but a handful of well-placed self-written rules — things like "every controller must have an authorization guard," "no raw queries without parameterization" — catch exactly the mistakes the team actually makes, without adding noise.</li>
+</ol>
+<p>Severity → action convention (linked to the pipeline gate in 6.9):</p>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Meaning</th>
+<th>Suggested pipeline action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ERROR</td>
+<td>Exploitable vulnerability, high confidence</td>
+<td>Block the build (blocking)</td>
+</tr>
+<tr>
+<td>WARNING</td>
+<td>Possibly an issue / needs review</td>
+<td>Warn, do not block</td>
+</tr>
+<tr>
+<td>INFO</td>
+<td>Recommendation, best practice</td>
+<td>Note</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-67-gitleaks-secret-scanning-regex-entropy">6.7. Gitleaks — secret scanning (regex + entropy)</h2>
+<h3 id="ch06-671-the-two-tier-mechanism">6.7.1. The two-tier mechanism</h3>
+<p>Gitleaks scans <strong>file contents AND git history</strong> (every commit/blob via <code>git log -p</code>), looking for secrets using two complementary methods:</p>
+<ol>
+<li><strong>Regex rules</strong>: catch secrets with a <strong>recognizable structure</strong> (AWS key <code>AKIA...</code>, GitHub PAT <code>ghp_...</code>, JWT <code>eyJ...</code>). High accuracy, few FPs.</li>
+<li><strong>Shannon entropy</strong>: catch <strong>unstructured</strong> secrets (highly random strings such as base64 tokens). Entropy measures the "randomness" of a string:</li>
+</ol>
+<pre><code>H = -Σ p(x) · log2 p(x)        (bits/character)
+</code></pre>
+<p>English text is typically ~3.5–4.5 bits/character, whereas random base64 secrets are typically &gt;4.5. Setting an entropy threshold helps catch unusual secrets; but if the threshold is set too low, it easily produces false positives.</p>
+<h3 id="ch06-672-commands">6.7.2. Commands</h3>
+<pre><code class="language-bash"># Scan the entire git history of the current repo
+gitleaks detect --source . --verbose
+
+# Scan only the working directory (no history) — fast, for pre-commit
+gitleaks detect --no-git --source .
+
+# Scan the currently staged changes (pre-commit hook)
+gitleaks protect --staged --source .
+
+# Output a report + non-zero exit code if there is a leak
+gitleaks detect --source . --report-format sarif --report-path leaks.sarif
+</code></pre>
+<p>Version note: as of gitleaks v8.19, the command set was reorganized — <code>gitleaks git</code> (scan a repo + its history), <code>gitleaks dir</code> (scan a directory, replacing <code>detect --no-git</code>), <code>gitleaks stash</code>; the old <code>detect</code>/<code>protect</code> commands are marked deprecated but still work (verify against the version you use):</p>
+<pre><code class="language-bash">gitleaks git .              # replaces: gitleaks detect --source .
+gitleaks dir .              # replaces: gitleaks detect --no-git --source .
+gitleaks git --pre-commit --staged .   # for use in a pre-commit hook
+</code></pre>
+<h3 id="ch06-673-gitleakstoml-example">6.7.3. <code>.gitleaks.toml</code> example</h3>
+<pre><code class="language-toml"># [PROD] Configuration tight enough for production use (inherits the default rules, adds internal rules + allowlist).
+title = &quot;Company Gitleaks configuration&quot;
+
+[extend]
+useDefault = true        # inherit the default rule set, then add below
+
+[[rules]]
+id = &quot;company-internal-token&quot;
+description = &quot;Internal service token (prefix INT_)&quot;
+regex = '''INT_[A-Za-z0-9]{32}'''
+keywords = [&quot;INT_&quot;]      # speed optimization: only run the regex if the file contains the keyword
+entropy = 3.5            # require a minimum entropy to reduce FPs
+
+[[rules]]
+id = &quot;generic-api-key&quot;
+description = &quot;Generic API key assigned to a variable&quot;
+regex = '''(?i)(api[_-]?key|apikey)['&quot;\s:=]{1,5}['&quot;]([0-9a-zA-Z]{32,45})['&quot;]'''
+secretGroup = 2          # the capture group containing the real secret value
+
+[allowlist]
+description = &quot;Skip test and example samples&quot;
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',     # AWS's official example key
+]
+paths = [
+  '''(.*?)(test|spec|fixtures)(.*?)''',
+]
+</code></pre>
+<p>Description of the main rule fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Rule identifier</td>
+</tr>
+<tr>
+<td><code>regex</code></td>
+<td>The pattern identifying the secret</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td>Fast filter: only run the regex if the file contains the keyword (performance optimization)</td>
+</tr>
+<tr>
+<td><code>entropy</code></td>
+<td>Minimum entropy threshold of the capture group</td>
+</tr>
+<tr>
+<td><code>secretGroup</code></td>
+<td>The regex group containing the secret value (for entropy/redaction)</td>
+</tr>
+<tr>
+<td><code>[allowlist]</code></td>
+<td>Exclusions by regex/path/commit (reduces FPs)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch06-68-trivy-scanning-images-filesystems-iac">6.8. Trivy — scanning images / filesystems / IaC</h2>
+<p>Trivy is a versatile scanner: container images, filesystems, git repos, IaC, and SBOM generation.</p>
+<h3 id="ch06-681-scanning-a-container-image">6.8.1. Scanning a container image</h3>
+<pre><code class="language-bash">trivy image --severity HIGH,CRITICAL nginx:1.21.0
+</code></pre>
+<p>Mechanism: Trivy <strong>unpacks the layers</strong> of the image, reads the distro's package database (APK/<code>/lib/apk/db</code>, DPKG/<code>/var/lib/dpkg/status</code>, RPM), enumerates (package, version), and compares it against a vulnerability database (<code>trivy-db</code>, synced from NVD, GHSA, distro advisories). It also detects application dependencies (lockfiles embedded in the image).</p>
+<p>Sample output (abridged):</p>
+<pre><code>nginx:1.21.0 (debian 10.9)
+Total: 142 (HIGH: 130, CRITICAL: 12)
+
+┌──────────┬────────────────┬──────────┬─────────────────┬──────────────────┐
+│ Library  │ Vulnerability  │ Severity │ Installed Ver   │ Fixed Version    │
+├──────────┼────────────────┼──────────┼─────────────────┼──────────────────┤
+│ openssl  │ CVE-2021-3711  │ CRITICAL │ 1.1.1d-0+deb10  │ 1.1.1d-0+deb10u7 │
+│ libc6    │ CVE-2021-33574 │ CRITICAL │ 2.28-10         │ (won't fix)      │
+└──────────┴────────────────┴──────────┴─────────────────┴──────────────────┘
+</code></pre>
+<p>Important parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--severity</code></td>
+<td>Filter by level (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)</td>
+</tr>
+<tr>
+<td><code>--ignore-unfixed</code></td>
+<td>Skip CVEs with no patch yet (reduces non-actionable noise)</td>
+</tr>
+<tr>
+<td><code>--exit-code 1</code></td>
+<td>Return a non-zero exit when something is found (gate)</td>
+</tr>
+<tr>
+<td><code>--scanners vuln,secret,misconfig</code></td>
+<td>Select the scan types</td>
+</tr>
+<tr>
+<td><code>--format sarif --output x.sarif</code></td>
+<td>CI integration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-682-scanning-filesystems-iac">6.8.2. Scanning filesystems &amp; IaC</h3>
+<pre><code class="language-bash"># Scan deps in source (lockfile) + secrets + misconfig
+trivy fs --scanners vuln,secret,misconfig .
+
+# Scan infrastructure configuration (Terraform / K8s / Dockerfile)
+trivy config ./infra/
+</code></pre>
+<p><code>trivy config</code> detects misconfigurations such as: a public S3 bucket, a security group open to <code>0.0.0.0/0</code>, a container running <code>privileged: true</code>, or a missing <code>readOnlyRootFilesystem</code>.</p>
+<h3 id="ch06-683-gate-in-ci">6.8.3. Gate in CI</h3>
+<pre><code class="language-bash"># [PROD] Tiered-gate command pair, tight enough for production use.
+trivy image --exit-code 0 --severity MEDIUM,HIGH --format table myapp:ci   # warn
+trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed myapp:ci    # block
+</code></pre>
+<p>The two separate commands express the tiered gate principle (6.9): CRITICAL blocks, HIGH only warns.</p>
+<h3 id="ch06-684-prioritizing-when-the-scanner-reports-hundreds-of-cves">6.8.4. Prioritizing when the scanner reports hundreds of CVEs</h3>
+<p>Running a dependency scan for the first time on a codebase of some age and getting 200+ CVEs is normal — and nobody can fix them all, especially when the person handling them is a team of one. The problem is not "fix everything" but <strong>prioritize correctly</strong>. A CVE is only worth immediate action when it meets all of:</p>
+<ol>
+<li><strong>High severity</strong> (High/Critical) — filter with <code>--severity</code>.</li>
+<li><strong>A fix version exists</strong> — filter with <code>--ignore-unfixed</code>; a CVE without a patch admits no direct action (see below).</li>
+<li><strong>Reachability</strong>: it sits on a code path that actually executes — not a devDependency, not a module that is imported but unused. This is the most commonly ignored factor: a 9.8 CVE in a library whose affected code path the app never touches is less dangerous than a 7.5 CVE sitting right on a public endpoint.</li>
+</ol>
+<p>Beyond CVSS (theoretical severity), cross-check two sources that measure <strong>real-world exploitability</strong>: <strong>EPSS</strong> (Exploit Prediction Scoring System — the probability the CVE will be exploited within the next 30 days) and <strong>CISA KEV</strong> (Known Exploited Vulnerabilities — the list of vulnerabilities <em>actively</em> being exploited in the wild). A CVE on the KEV list gets patched first regardless of its CVSS score.</p>
+<p>For a Critical CVE with no patch yet: determine whether the affected code path is actually used; if it is, apply temporary mitigations (a WAF rule, input blocking, disabling the feature, isolating the service) and watch the advisory; if you are forced to defer, make it a <strong>time-boxed</strong> risk acceptance, never one that fades into oblivion.</p>
+<p>Trivy's ignore mechanism serves exactly this purpose — but it demands discipline. A <code>.trivyignore</code> file in the repo:</p>
+<pre><code># [PROD] Every ignored line must carry a reason + a re-review date.
+# CVE-2025-12345 (lodash): affected code path unused (we only import cloneDeep)
+#   Decided by: SecOps · Re-review: 2026-09-15
+CVE-2025-12345
+
+# CVE-2025-67890 (openssl in the base image): no fix yet, related cipher blocked at the LB
+#   Decided by: SecOps · Re-review: 2026-08-30
+CVE-2025-67890
+</code></pre>
+<p>Trivy only reads the CVE ID lines (<code>#</code> lines are comments), but it is precisely the comments that keep the ignore list from becoming "a graveyard of decisions nobody remembers the reasons for." An ignore without a re-review date is forgotten forever.</p>
+<hr />
+<h2 id="ch06-69-designing-pipeline-gates-exit-codes-and-tiering">6.9. Designing pipeline gates — exit codes and tiering</h2>
+<h3 id="ch06-691-the-exit-code-is-the-contract-between-the-scanner-and-ci">6.9.1. The exit code is the contract between the scanner and CI</h3>
+<p>CI/CD treats a process's <strong>exit code</strong> as a pass/fail signal: <code>0</code> = pass, <code>!= 0</code> = fail (the build stops). Every scanner lets you control the exit code:</p>
+<ul>
+<li>Semgrep: <code>--error</code> → exit 1 if there is a finding; you can filter <code>--severity ERROR</code> first.</li>
+<li>Trivy: <code>--exit-code 1</code>.</li>
+<li>Gitleaks: defaults to exit 1 when a leak is found.</li>
+</ul>
+<h3 id="ch06-692-why-split-into-two-tiers-blocking-vs-warning">6.9.2. Why split into two tiers (blocking vs. warning)</h3>
+<p>If you block the build on <strong>every</strong> finding (including HIGH/MEDIUM), developers suffer "alert fatigue" and start disabling the scan or committing with <code>--no-verify</code>. If you block <strong>nothing</strong>, critical vulnerabilities slip into production. The solution: <strong>two tiers</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Severity</th>
+<th>Exit</th>
+<th>Effect</th>
+<th>Goal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blocking gate</td>
+<td>CRITICAL (and ERROR with HIGH confidence)</td>
+<td>1</td>
+<td>Red build, cannot merge</td>
+<td>Block exploitable vulnerabilities</td>
+</tr>
+<tr>
+<td>Warning gate</td>
+<td>HIGH / WARNING</td>
+<td>0</td>
+<td>Green build + PR annotation/comment</td>
+<td>Build awareness, add to the backlog</td>
+</tr>
+</tbody>
+</table>
+<p>The criterion for what belongs in the blocking tier: <strong>unambiguous and almost never a false positive</strong>. In practice I hard-block three groups — a committed secret (gitleaks), a Critical/High CVE <strong>with an available fix version</strong> (Trivy <code>--ignore-unfixed</code>), and IaC creating dangerous resources such as a public bucket / a security group open to <code>0.0.0.0/0</code>. The noisy remainder (low-severity SAST, DAST informational, CVEs without a patch) only warns + creates a ticket under an SLA. Hard-block everything and the team grows to hate the pipeline and finds ways around it; loosen everything and the gate is meaningless.</p>
+<h3 id="ch06-693-gitlab-ci-example-gitlab-ciyml">6.9.3. GitLab CI example (.gitlab-ci.yml)</h3>
+<pre><code class="language-yaml">stages: [security]
+
+semgrep_block:
+  stage: security
+  image: semgrep/semgrep
+  script:
+    # Only ERROR blocks; --error sets the exit code based on the remaining findings
+    - semgrep --config p/security-audit --severity ERROR --error --json --output sg.json .
+  artifacts:
+    when: always
+    reports:
+      sast: sg.json
+
+semgrep_warn:
+  stage: security
+  image: semgrep/semgrep
+  allow_failure: true          # does NOT block the pipeline even if there are findings
+  script:
+    - semgrep --config p/security-audit --severity WARNING .
+
+trivy_block:
+  stage: security
+  image: aquasec/trivy
+  script:
+    - trivy image --exit-code 1 --severity CRITICAL --ignore-unfixed $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+gitleaks:
+  stage: security
+  image: ghcr.io/gitleaks/gitleaks:latest   # the current official image (the old zricethezav/gitleaks still exists)
+  script:
+    - gitleaks git . --no-banner
+</code></pre>
+<p><code>allow_failure: true</code> is GitLab's mechanism that lets a job fail without turning the pipeline red — exactly what a "warning gate" means. The <code>semgrep_block</code> job does not have it, so its failure blocks the merge.</p>
+<p>To reduce noise on PRs/MRs, use diff-aware scanning (report only <strong>new</strong> findings):</p>
+<pre><code class="language-bash">semgrep ci   # automatically uses baseline = the target branch in the CI environment
+# or manually:
+semgrep --config auto --baseline-commit &quot;$CI_MERGE_REQUEST_DIFF_BASE_SHA&quot; .
+</code></pre>
+<h3 id="ch06-694-a-controlled-exception-mechanism">6.9.4. A controlled exception mechanism</h3>
+<p>The most practical question about gates: <strong>what happens when the gate blocks a merge and the release is urgent?</strong> If there is no answer prepared in advance, the team will answer it themselves by turning the gate off — and once off, it rarely comes back on. A proper exception design:</p>
+<ul>
+<li><strong>Explicit approval required</strong> from the person responsible for security (or a delegated lead when that person is away) — not the developer's own call.</li>
+<li><strong>A recorded reason + a mandatory, deadline-bound fix ticket</strong> — today's override is debt with a due date, not a write-off.</li>
+<li><strong>An audit trail</strong>: the exception lives in a PR comment / ticket, traceable to who approved it, when, and why. Never override silently (editing the gate config and putting it back).</li>
+</ul>
+<p>An exception is a <strong>controlled exception, not a default back door</strong>. It also doubles as a health metric for the gate: if you have to override every single week, the problem is not the exception process but a gate threshold set wrong — fix the gate, do not normalize going around it.</p>
+<hr />
+<h2 id="ch06-610-software-supply-chain-security">6.10. Software supply chain security</h2>
+<h3 id="ch06-6101-dependency-confusion">6.10.1. Dependency confusion</h3>
+<p><strong>Attack mechanism</strong>: if a company uses an internal package named <code>internal-utils</code> that exists only in a private registry, an attacker pushes a public package with the <strong>same name</strong> to a public registry (npm/PyPI) with a <strong>higher version</strong>. A misconfigured package manager may prefer the public registry (because the version is higher) → it downloads the attacker's malicious code.</p>
+<pre><code>The resolver sees: internal-utils
+  ├─ private registry: 1.2.0   ← desired
+  └─ public registry:  99.0.0  ← attacker's (higher version)
+If both are queried → it may pick 99.0.0  → RCE at install time (postinstall)
+</code></pre>
+<p><strong>Defenses</strong>: scoped packages (<code>@company/utils</code>), pin the registry per scope, use a lockfile + hashes, enable namespace/scope reservation, and use a read-only internal mirror.</p>
+<h3 id="ch06-6102-slsa-levels">6.10.2. SLSA levels</h3>
+<p>SLSA (Supply-chain Levels for Software Artifacts) is a framework for evaluating the integrity of a build process. A general description of the levels (the specific numbering should be verified against the current SLSA version, as it changed between v0.1 and v1.0):</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Focus</th>
+<th>Core requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Provenance exists</td>
+<td>The build produces provenance describing how the artifact was created</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Signed provenance + build service</td>
+<td>Build on an authenticated service, provenance is signed</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Isolated build, non-forgeable</td>
+<td>Hardened build platform, tamper-resistant provenance</td>
+</tr>
+<tr>
+<td>(L4 in v0.1, restructured in v1.0)</td>
+<td>Dependencies + two reviewers</td>
+<td>Should be verified against the current spec</td>
+</tr>
+</tbody>
+</table>
+<p>The core of SLSA is <strong>provenance</strong>: evidence of "which source this artifact was built from, by which builder, with what parameters."</p>
+<h3 id="ch06-6103-sbom-cyclonedx-and-spdx">6.10.3. SBOM — CycloneDX and SPDX</h3>
+<p>An SBOM (Software Bill of Materials) = the "component list" of software, so that when a new CVE is published (for example, Log4Shell) you can quickly trace "which product contains this component."</p>
+<p>Two standard formats:</p>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th>CycloneDX</th>
+<th>SPDX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organization</td>
+<td>OWASP</td>
+<td>Linux Foundation (ISO/IEC 5962:2021)</td>
+</tr>
+<tr>
+<td>Orientation</td>
+<td>Security / vuln / VEX</td>
+<td>License compliance + security</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>JSON, XML</td>
+<td>JSON, YAML, RDF, tag-value</td>
+</tr>
+<tr>
+<td>Component identifier</td>
+<td>PURL, CPE</td>
+<td>PURL, CPE, SPDX-ID</td>
+</tr>
+</tbody>
+</table>
+<p>Generate an SBOM with Trivy or Syft:</p>
+<pre><code class="language-bash">trivy image --format cyclonedx --output sbom.cdx.json myapp:1.0
+syft myapp:1.0 -o spdx-json=sbom.spdx.json
+</code></pre>
+<p>CycloneDX structure (JSON, abridged) — the main fields:</p>
+<pre><code class="language-json">{
+  &quot;bomFormat&quot;: &quot;CycloneDX&quot;,
+  &quot;specVersion&quot;: &quot;1.6&quot;,
+  &quot;serialNumber&quot;: &quot;urn:uuid:3e671687-...&quot;,
+  &quot;version&quot;: 1,
+  &quot;metadata&quot;: { &quot;timestamp&quot;: &quot;2026-06-19T00:00:00Z&quot;,
+                &quot;component&quot;: { &quot;type&quot;: &quot;application&quot;, &quot;name&quot;: &quot;myapp&quot; } },
+  &quot;components&quot;: [
+    {
+      &quot;type&quot;: &quot;library&quot;,
+      &quot;name&quot;: &quot;log4j-core&quot;,
+      &quot;version&quot;: &quot;2.14.1&quot;,
+      &quot;purl&quot;: &quot;pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1&quot;,
+      &quot;hashes&quot;: [ { &quot;alg&quot;: &quot;SHA-256&quot;, &quot;content&quot;: &quot;ab12...&quot; } ]
+    }
+  ]
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bomFormat</code> / <code>specVersion</code></td>
+<td>The format and spec version</td>
+</tr>
+<tr>
+<td><code>serialNumber</code></td>
+<td>A unique UUID for the SBOM (for referencing)</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>The number of revisions of the SBOM for the same serialNumber</td>
+</tr>
+<tr>
+<td><code>components[].purl</code></td>
+<td>Package URL — the standard identifier <code>pkg:&lt;type&gt;/&lt;ns&gt;/&lt;name&gt;@&lt;ver&gt;</code></td>
+</tr>
+<tr>
+<td><code>components[].hashes</code></td>
+<td>Hashes to verify integrity</td>
+</tr>
+</tbody>
+</table>
+<p>The PURL is the key to matching CVEs: for example, <code>pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1</code> maps directly to the Log4Shell advisory.</p>
+<h3 id="ch06-6104-artifact-signing-with-cosign-sigstore">6.10.4. Artifact signing with cosign / sigstore</h3>
+<p>Goal: prove that an artifact (image, SBOM, blob) <strong>has not been modified</strong> and <strong>comes from a known party</strong>. Cosign (part of Sigstore) supports <strong>keyless signing</strong>: instead of holding a long-lived private key, it uses an OIDC identity (Google/GitHub/CI) to request a <strong>short-lived</strong> certificate from the Fulcio CA, signs, and then records the signature in the <strong>Rekor</strong> transparency log (immutable, append-only).</p>
+<pre><code class="language-bash"># Keyless sign: opens the OIDC flow, gets a short-lived cert, signs, records in Rekor
+# (as of cosign v2.0 keyless is the default, no COSIGN_EXPERIMENTAL=1 needed as in 1.x — needs verification)
+cosign sign myregistry/myapp@sha256:abcd...
+
+# Verify: check the signature + allowed identity + presence in Rekor
+cosign verify \
+  --certificate-identity &quot;https://github.com/org/repo/.github/workflows/build.yml@refs/heads/main&quot; \
+  --certificate-oidc-issuer &quot;https://token.actions.githubusercontent.com&quot; \
+  myregistry/myapp@sha256:abcd...
+</code></pre>
+<p>Why the keyless design: it eliminates the risk of a leaked long-lived private key; the identity is tied to the workload/CI identity; the transparency log allows detection of unexpected signatures.</p>
+<p>Reference an image by its <strong>digest</strong> (<code>@sha256:...</code>) rather than a tag, because a tag can be overwritten (mutable), whereas a digest is a content hash (immutable).</p>
+<h3 id="ch06-6105-provenance-in-ci">6.10.5. Provenance in CI</h3>
+<p>Sign along with a provenance attestation so that "where it was built from" can be verified:</p>
+<pre><code class="language-bash">cosign attest --predicate provenance.json --type slsaprovenance \
+  myregistry/myapp@sha256:abcd...
+</code></pre>
+<p>An admission controller (for example, Kyverno / the Sigstore policy-controller) in the cluster can <strong>reject</strong> the deployment of any image that lacks a valid signature + provenance — turning the supply chain into a policy enforced at deploy time.</p>
+<hr />
+<h2 id="ch06-611-secret-management-vault-dynamic-secrets-oidc">6.11. Secret management — Vault, dynamic secrets, OIDC</h2>
+<h3 id="ch06-6111-the-problem-with-static-secrets">6.11.1. The problem with static secrets</h3>
+<p>Hardcoded secrets / secrets kept in an env file: no rotation, a leak means permanent exposure, and it is hard to audit "who used it and when." The solution: a <strong>centralized secret manager</strong> (HashiCorp Vault, AWS Secrets Manager) with <strong>dynamic</strong> and <strong>short-lived</strong> secrets.</p>
+<h3 id="ch06-6112-dynamic-secrets">6.11.2. Dynamic secrets</h3>
+<p><strong>Mechanism</strong>: instead of storing a DB password, Vault <strong>generates credentials on demand</strong> with a short TTL. When the app needs to access the DB, Vault creates a temporary DB user (via the database secrets engine), returns it to the app, and <strong>automatically revokes</strong> it when the TTL expires or the lease is revoked.</p>
+<pre><code class="language-bash"># Enable the engine and configure the connection to Postgres
+vault secrets enable database
+vault write database/config/mydb \
+  plugin_name=postgresql-database-plugin \
+  connection_url=&quot;postgresql://{{username}}:{{password}}@db:5432/app&quot; \
+  allowed_roles=&quot;app-role&quot; username=&quot;vaultadmin&quot; password=&quot;...&quot;
+
+# Define the role: SQL that creates a temporary user, TTL 1h
+vault write database/roles/app-role \
+  db_name=mydb \
+  creation_statements=&quot;CREATE ROLE \&quot;{{name}}\&quot; WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT ON ALL TABLES IN SCHEMA public TO \&quot;{{name}}\&quot;;&quot; \
+  default_ttl=&quot;1h&quot; max_ttl=&quot;24h&quot;
+
+# The app requests credentials (different each time, living for 1h)
+vault read database/creds/app-role
+# Key                Value
+# lease_id           database/creds/app-role/abcd...
+# lease_duration     1h
+# password           A1b2-randomgenerated
+# username           v-token-app-role-x9...
+</code></pre>
+<p>Why this is good: short-lived credentials → a small attack window; each consumer has its own credential → accurate auditing; immediate revocation when something is suspected.</p>
+<h3 id="ch06-6113-oidc-workload-identity-eliminating-the-initial-secret">6.11.3. OIDC / workload identity (eliminating the initial secret)</h3>
+<p>The "secret zero" problem: how can an app/CI <strong>authenticate to Vault</strong> without a hardcoded secret to start with? The answer: <strong>OIDC / JWT auth</strong> — a workload (GitHub Actions, K8s pod, AWS instance) already has a <strong>signed identity</strong> (a JWT issued by the OIDC provider). Vault trusts that issuer and grants a token based on the claims.</p>
+<pre><code class="language-bash"># Configure Vault to trust GitHub Actions OIDC
+vault auth enable jwt
+vault write auth/jwt/config \
+  oidc_discovery_url=&quot;https://token.actions.githubusercontent.com&quot;
+
+# Role: only the main workflow of a specific repo is allowed, with an attached policy
+vault write auth/jwt/role/ci-role \
+  role_type=&quot;jwt&quot; user_claim=&quot;actor&quot; bound_audiences=&quot;https://vault.company.com&quot; \
+  bound_claims_type=&quot;glob&quot; \
+  bound_claims='{&quot;repository&quot;:&quot;org/repo&quot;,&quot;ref&quot;:&quot;refs/heads/main&quot;}' \
+  policies=&quot;app-policy&quot; ttl=&quot;15m&quot;
+</code></pre>
+<p>In GitHub Actions, the runner obtains a JWT (<code>id-token: write</code>) and exchanges it for a Vault token — <strong>no long-lived secret</strong> is stored. The JWT contains claims such as <code>repository</code>, <code>ref</code>, <code>actor</code>, <code>sub</code>; Vault binds them (<code>bound_claims</code>) so that only a valid workflow receives permission.</p>
+<hr />
+<h2 id="ch06-612-pre-commit-hook-blocking-on-the-developers-machine-shift-left-to-the-extreme">6.12. pre-commit hook — blocking on the developer's machine (shift-left to the extreme)</h2>
+<h3 id="ch06-6121-mechanism">6.12.1. Mechanism</h3>
+<p>Git supports <strong>hooks</strong>: scripts in <code>.git/hooks/</code> that run at certain events. <code>pre-commit</code> runs <strong>before</strong> a commit completes; if the hook returns a non-zero exit code, the commit is aborted. The <code>pre-commit</code> framework (Python) manages multiple hooks through a single declaration file and automatically installs an environment for each hook.</p>
+<p>This is the furthest-left shift-left point: it catches secrets/defects <strong>before</strong> the code ever leaves the developer's machine — the secret never enters the git history (because once committed and pushed, a secret is considered exposed and must be rotated).</p>
+<h3 id="ch06-6122-pre-commit-configyaml-example">6.12.2. <code>.pre-commit-config.yaml</code> example</h3>
+<pre><code class="language-yaml">repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks            # block secrets before committing
+
+  - repo: https://github.com/semgrep/semgrep   # the org renamed from returntocorp
+    rev: v1.50.0                               # pin to the latest release when adopting (needs verification)
+    hooks:
+      - id: semgrep
+        args: [&quot;--config&quot;, &quot;p/security-audit&quot;, &quot;--error&quot;, &quot;--skip-unknown-extensions&quot;]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: detect-private-key  # catch a PRIVATE KEY block
+      - id: check-added-large-files
+        args: [&quot;--maxkb=500&quot;]
+</code></pre>
+<p>Installation and usage:</p>
+<pre><code class="language-bash">pip install pre-commit
+pre-commit install            # write to .git/hooks/pre-commit
+pre-commit run --all-files    # try it on the whole repo
+
+# When a developer commits:
+git commit -m &quot;feat: ...&quot;
+#  → gitleaks, semgrep run; if they fail, the commit is blocked
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repos[].repo</code></td>
+<td>URL of the repo containing the hook definition</td>
+</tr>
+<tr>
+<td><code>repos[].rev</code></td>
+<td>Pinned tag/commit (ensures reproducibility, avoids unexpectedly pulling a new version)</td>
+</tr>
+<tr>
+<td><code>hooks[].id</code></td>
+<td>The specific hook within that repo</td>
+</tr>
+<tr>
+<td><code>hooks[].args</code></td>
+<td>Arguments passed to the hook</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch06-6123-security-considerations-for-pre-commit">6.12.3. Security considerations for pre-commit</h3>
+<ul>
+<li>pre-commit is <strong>not the only safeguard</strong>: a developer can <code>git commit --no-verify</code> to bypass the hook. Therefore the checks must be <strong>repeated</strong> in CI (server-side) — that is the gate that cannot be bypassed.</li>
+<li><code>rev</code> must be pinned to defend against supply-chain attacks via the hook (accidentally pulling a malicious version).</li>
+<li>pre-commit runs fast (only on staged files); leave heavy checks for CI.</li>
+</ul>
+<hr />
+<h2 id="ch06-613-summary-of-the-tiered-defense-architecture">6.13. Summary of the tiered defense architecture</h2>
+<table>
+<thead>
+<tr>
+<th>Insertion point</th>
+<th>Representative tools</th>
+<th>Type</th>
+<th>Gate tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDE / pre-commit</td>
+<td>Semgrep, Gitleaks</td>
+<td>SAST, secret</td>
+<td>Local (bypassable → must be repeated in CI)</td>
+</tr>
+<tr>
+<td>CI build</td>
+<td>Semgrep, Trivy fs/config, SCA</td>
+<td>SAST, SCA, IaC</td>
+<td>Blocking (CRITICAL) + Warning (HIGH)</td>
+</tr>
+<tr>
+<td>Image build</td>
+<td>Trivy image, cosign sign, SBOM</td>
+<td>Container, signing, SBOM</td>
+<td>Blocking on CRITICAL CVE</td>
+</tr>
+<tr>
+<td>Pre-deploy</td>
+<td>cosign verify, admission controller</td>
+<td>Provenance/policy</td>
+<td>Blocking if unsigned</td>
+</tr>
+<tr>
+<td>Staging</td>
+<td>OWASP ZAP (DAST)</td>
+<td>DAST</td>
+<td>Baseline on every PR, full scan before release</td>
+</tr>
+<tr>
+<td>Runtime</td>
+<td>WAF, EDR, SIEM</td>
+<td>Monitoring/detection</td>
+<td>Warn + block attacks</td>
+</tr>
+</tbody>
+</table>
+<p>The principle running throughout: <strong>each tier has a blind spot, so stack the tiers to compensate for one another</strong>; catch secrets as early as possible; only block the build on exploitable risks; every policy is code, versioned and reviewable.</p>
+<hr />
+<h2 id="ch06-614-controlling-ai-generated-code-the-three-layer-model">6.14. Controlling AI-generated code — the three-layer model</h2>
+<h3 id="ch06-6141-the-problem">6.14.1. The problem</h3>
+<p>Most developers today use an AI coding assistant daily (surveys put the figure at ~70%+ — needs verification). AI writes code fast, but it tends to suggest code that <strong>runs but is not safe</strong> — string-concatenated SQL, missing validation, missing authorization checks — because it optimizes for "it works" without holding the system's security context. Responsibility is clear enough: <strong>the person who merges is responsible for the vulnerability, not the tool</strong>. The most persuasive convention: treat AI output like code from a brand-new junior — useful, but mandatory to review, and never paste secrets/PII into a prompt.</p>
+<p>Effective control is not banning AI (developers will use it covertly) but placing guardrails at <strong>three layers</strong> — before, during, and after the code is generated:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Control</th>
+<th>Concrete measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Input</strong> (before the AI generates code)</td>
+<td>Steer the AI from the start</td>
+<td>An AI-assistant rules file in the repo (e.g. <code>CLAUDE.md</code>, <code>.cursor/rules</code>) stating concrete security rules: parameterized queries mandatory, authz checks mandatory, no hardcoded secrets. Semgrep custom rules banning the dangerous patterns AI tends to produce</td>
+</tr>
+<tr>
+<td><strong>Process</strong> (within the workflow)</td>
+<td>Catch early on the dev machine and at the PR</td>
+<td>pre-commit hooks running Semgrep + gitleaks (6.12); an automated AI security review commenting security issues on the PR; a mandatory PR security checklist (see <a href="ch07.html">Chapter 7</a>)</td>
+</tr>
+<tr>
+<td><strong>Output</strong> (before production)</td>
+<td>Non-negotiable gates</td>
+<td>CI automatically fails by severity (Critical/High); <strong>mandatory human review</strong> for auth / payment / PII flows — do not delegate AI reviewing AI in those places; DAST on staging before going to production</td>
+</tr>
+</tbody>
+</table>
+<p>These three layers are really the shift-left pipeline of 6.1.3 applied to a new source of code: AI-generated code does not need its own pipeline, it needs to <strong>go through the existing pipeline</strong> plus the input layer (rules file) that human-written code does not have.</p>
+<h3 id="ch06-6142-slopsquatting-the-ai-specific-supply-chain-risk">6.14.2. Slopsquatting — the AI-specific supply chain risk</h3>
+<p>A new risk arrived along with AI assistants: the AI <strong>hallucinates package names that do not exist</strong> when suggesting dependencies — and these invented names often repeat across sessions/models. Attackers collect the commonly hallucinated names and <strong>pre-register</strong> those packages on public registries (npm/PyPI) with malicious code; the developer trusts the AI's suggestion, runs <code>npm install</code>, and pulls the malware in with their own hands. The technique is called <strong>slopsquatting</strong> — a cousin of typosquatting and dependency confusion (6.10.1), except the "bait" is not a human typo but a name the AI made up.</p>
+<p>Defenses:</p>
+<ul>
+<li><strong>Verify a package before installing it</strong>: does it really exist, how many downloads, does the source repo exist — especially for AI-suggested names you have never heard of.</li>
+<li>Lockfile + SCA scanning (Trivy) in CI to catch strange/malicious packages as soon as they enter the dependency tree.</li>
+<li>Put it in the AI rules file: only use dependencies already in the lockfile; adding a new one must be called out explicitly and left for a human to decide.</li>
+</ul>
+<hr />
+<h2 id="ch06-appendix-a-owasp-zap-dast-runnable-example">Appendix A — OWASP ZAP (DAST) runnable example</h2>
+<p>ZAP (Zed Attack Proxy) is OWASP's open-source DAST tool (see also <a href="ch12.html">Chapter 12</a>). It ships with two packaged scan modes:</p>
+<pre><code class="language-bash"># Baseline scan: passive (spider + response analysis), NO active attacks.
+# Fast, safe for CI, ~1-2 minutes.
+docker run --rm -v &quot;$PWD:/zap/wrk:rw&quot; \
+  ghcr.io/zaproxy/zaproxy zap-baseline.py \
+  -t https://app.staging.company.com -r baseline-report.html
+
+# Full scan: active attack (sends real XSS/SQLi payloads) — slow, use on staging.
+docker run --rm -v &quot;$PWD:/zap/wrk:rw&quot; \
+  ghcr.io/zaproxy/zaproxy zap-full-scan.py \
+  -t https://app.staging.company.com -r full-report.html
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-t</code></td>
+<td>Target URL</td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td>HTML report file</td>
+</tr>
+<tr>
+<td><code>-J</code></td>
+<td>JSON report (parsed by CI)</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>Rule config file (set WARN/FAIL/IGNORE per alert)</td>
+</tr>
+<tr>
+<td><code>-I</code></td>
+<td>Do not return a failing exit on warnings (for a warning gate)</td>
+</tr>
+</tbody>
+</table>
+<p>Baseline vs. full mechanism: <strong>baseline</strong> only spiders and <strong>passively</strong> analyzes responses (missing headers, cookies without <code>Secure/HttpOnly</code>), so it is harmless — suitable as a CI gate on every PR. <strong>Full</strong> actually <strong>fires attack payloads</strong> at parameters, which can create junk data / trigger side effects — run it only on staging with disposable data, never on production. This is why the two modes are split, mirroring the tiered gate principle in 6.9.</p>
+<hr />
+<h2 id="ch06-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li>I am currently the only security person at a small company, and the biggest lesson of this chapter once it met reality: <strong>automation + guardrails are the only way one person scales</strong>. One person cannot sit and review every PR — if the operating model is "everything goes through SecOps," it will certainly bottleneck, and that is a signal to fix the model, not to work more hours. My job is to make "doing it right" the easiest path: rules already running in the pipeline, automatic gates, developers getting feedback within minutes without me being online.</li>
+<li>A lesson about picking the starting point: I did not build the whole pipeline at once — I chose <strong>gitleaks first</strong> as the quick win. Reasons: secret leaks are the clearest class of defect (almost no false positives, nothing to argue about), deployment is fast (one pre-commit hook + one CI job), and the value shows in the first week. Once the first "win" is acknowledged by the team, adding Semgrep and Trivy later is much easier — rollout order is a political decision, not just a technical one.</li>
+<li>Something I got wrong: I assumed the stricter the gate, the safer. In reality, when I tried blocking builds even on noisy findings, the developers' reaction was not to fix everything but to find a way around — <code>--no-verify</code>, endless exception requests — and to lose trust in the pipeline. That is when the tiering table in 6.9 truly sank in: a gate is only credible when every time it turns red, people believe something real happened. The number of exception requests per week is now the metric I use to gauge whether the gate threshold is set right.</li>
+<li>Still exploring: feeding EPSS/KEV into the CVE triage flow automatically instead of looking things up by hand, and writing more Semgrep custom rules for internal patterns (along the lines of "every new endpoint must have an authorization guard") — a few well-placed rules are catching more real bugs than the community rulesets.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch05.html"><span>← Previous</span><b>05 · Web App Security (OWASP)</b></a><a class="pg next" href="ch07.html"><span>Next →</span><b>07 · CI/CD &amp; GitOps</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

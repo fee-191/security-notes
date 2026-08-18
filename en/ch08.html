@@ -1,0 +1,2241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 8 — SIEM &amp;amp; Centralized Log Management — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 8 — SIEM &amp;amp; Centralized Log Management — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch07.html"><link rel="next" href="ch09.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter open active" data-ch="08"><a class="nav-ch-title" href="#top"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"><a class="nav-sub" href="#ch08-overview">Overview</a><a class="nav-sub" href="#ch08-81-what-a-siem-is-and-why-it-exists">8.1. What a SIEM is and why it exists</a><a class="nav-sub" href="#ch08-82-siem-architecture-data-pipeline">8.2. SIEM architecture &amp;amp; data pipeline</a><a class="nav-sub" href="#ch08-83-classifying-defensive-tools-av-edr-siem-soar-xdr-ndr">8.3. Classifying defensive tools: AV / EDR / SIEM / SOAR / XDR / NDR</a><a class="nav-sub" href="#ch08-84-wazuh-overview-and-architecture">8.4. WAZUH — Overview and architecture</a><a class="nav-sub" href="#ch08-85-the-agent-manager-flow-enrollment-and-data-transmission-byteport-level">8.5. The agent → manager flow: enrollment and data transmission (byte/port level)</a><a class="nav-sub" href="#ch08-86-the-ossecconf-configuration-file-dissecting-each-block">8.6. The ossec.conf configuration file — dissecting each block</a><a class="nav-sub" href="#ch08-87-decoder-extracting-fields-from-real-logs">8.7. DECODER — extracting fields from real logs</a><a class="nav-sub" href="#ch08-88-rule-detection-and-classification">8.8. RULE — detection and classification</a><a class="nav-sub" href="#ch08-89-fim-syscheck-file-integrity-monitoring">8.9. FIM / Syscheck — file integrity monitoring</a><a class="nav-sub" href="#ch08-810-active-response-automated-response">8.10. Active Response — automated response</a><a class="nav-sub" href="#ch08-811-vulnerability-detection">8.11. Vulnerability Detection</a><a class="nav-sub" href="#ch08-812-sca-security-configuration-assessment">8.12. SCA — Security Configuration Assessment</a><a class="nav-sub" href="#ch08-813-mitre-attck-integration">8.13. MITRE ATT&amp;amp;CK integration</a><a class="nav-sub" href="#ch08-814-detection-engineering-writing-and-tuning-rules-fp-vs-fn">8.14. Detection Engineering — writing and tuning rules, FP vs FN</a><a class="nav-sub" href="#ch08-815-end-to-end-example-ssh-brute-force-from-raw-log-to-dashboard-alert">8.15. End-to-end example: SSH brute-force from raw log to dashboard alert</a><a class="nav-sub" href="#ch08-816-investigating-a-real-alert-with-wazuh-a-reusable-process">8.16. Investigating a real alert with Wazuh — a reusable process</a><a class="nav-sub" href="#ch08-817-soar-automation-on-top-of-the-siem">8.17. SOAR — automation on top of the SIEM</a><a class="nav-sub" href="#ch08-818-operational-summary-wazuh-security-checklist">8.18. Operational summary &amp;amp; Wazuh security checklist</a><a class="nav-sub" href="#ch08-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-08" data-ch="08">
+<h1 id="ch08-chapter-8-siem-centralized-log-management">Chapter 8 — SIEM &amp; Centralized Log Management</h1>
+<h2 id="ch08-overview">Overview</h2>
+<p>When I was first learning SIEM, I assumed its value was in the pretty dashboard and the real-time alerts. It wasn't until I sat down to investigate an actual scan for the first time that I understood where the real value sits: the ability to ask questions of log data that has already been pulled into one place. This chapter follows that same thread. A <strong>SIEM</strong> is the software layer that centralizes logs from many sources — servers, firewalls, applications, network devices — synchronizes their timestamps, normalizes them into a common data model, and correlates them to generate alerts. Without it, the traces of an attack stay scattered across many systems and log files, at a volume that outpaces anything a human could read by hand; a SIEM gathers everything in one place, reduces it to a common language, and stitches fragments of evidence together automatically. <strong>Wazuh</strong>, the open-source SIEM/HIDS platform this chapter centers on, implements that full pipeline end to end. Visibility always comes before any capacity to defend — if you don't collect the logs of a password-guessing attempt or a file change on a server, there's nothing to detect or respond to.</p>
+<p>The first half of the chapter moves from foundational concepts to telling the tools apart. The <strong>data pipeline</strong> — collect → parse → normalize → enrich → correlate → alert → store — is the fixed sequence every event passes through, turning raw logs that arrive in a different shape from every source into one structured, uniform form; the <strong>normalize</strong> step matters most here, since it maps a field like "source IP" from many different pieces of software, each using its own field name, onto one common name so a single rule can apply everywhere. Choosing the right defensive layer matters just as much: <strong>AV</strong> protects a single endpoint by blocking known malware via signature or hash; <strong>EDR</strong> watches that same endpoint far more deeply, down to the process tree, syscalls, registry, and host network; <strong>NDR</strong> watches network traffic itself — packets, flows, metadata — to catch C2, exfiltration, and lateral movement; <strong>SIEM</strong> sits above all of them, correlating the full picture from every normalized source for investigation and compliance; <strong>SOAR</strong> automates the response once an alert fires, following a playbook; and <strong>XDR</strong> bundles several of these layers from a single vendor, already correlated. Each layer sees a different slice of the data, and picking the wrong one leaves a blind spot that usually only shows up after it's been exploited — Wazuh itself plays double duty here, acting as both a lightweight EDR-style agent and a SIEM.</p>
+<p>From there the chapter goes deep into <strong>Wazuh's architecture</strong>: an <strong>agent</strong> on each endpoint that collects logs and telemetry, a <strong>manager</strong> that receives, decodes, applies rules, and generates alerts, an <strong>indexer</strong> built on OpenSearch for storage and search, and a <strong>dashboard</strong> for visualization and administration. Wazuh's appeal is delivering a complete SIEM without depending on expensive commercial software, and understanding these four pieces makes it easier to picture how data actually moves from an endpoint to an operator's screen.</p>
+<p>The rest of the chapter is about how Wazuh turns logs into action. Before an agent can send anything, it goes through <strong>enrollment</strong>, registering with the manager to obtain a pre-shared key it then uses to encrypt and continuously transmit logs over a dedicated channel — a step that ensures only valid hosts can ever send data, and keeping the enrollment port separate from the data-transmission port helps shrink the attack surface further. All of that behavior, on both manager and agent, is driven by <code>ossec.conf</code>, an XML file declaring which log sources to read, where to send them, and what alert thresholds to use; a syntax error here can silently leave a system unmonitored, so it's worth checking before applying.</p>
+<p>Turning a raw log line into an alert happens in two steps. A <strong>decoder</strong> extracts meaningful fields — user, source IP, action — from free text that detection logic otherwise couldn't operate on; it prepares the data but never fires an alert on its own. A <strong>rule</strong> is what makes that decision: given the decoded fields, it decides which event becomes an alert and at what severity — an IP that fails to log in eight times within 120 seconds, say, gets classified as a high-severity brute-force attempt. This is the layer that actually separates normal behavior from dangerous behavior.</p>
+<p>A few features round out what Wazuh watches and does. <strong>FIM/Syscheck</strong> tracks the creation, modification, and deletion of important files by comparing content hashes rather than just metadata, which is why it still catches a change even when an attacker forges the file's mtime. <strong>Active Response</strong> lets Wazuh act on a rule match automatically — blocking an attacking IP and lifting the block again after a timeout — trading speed (faster than any human on call) for the need to control it tightly, since a misfire can just as easily block legitimate infrastructure. <strong>Vulnerability Detection</strong> cross-references installed package versions against a CVE feed to flag hosts running something exploitable, and <strong>SCA</strong> checks system configuration against a secure baseline like the CIS Benchmark, since plenty of breaches trace back to loose configuration rather than a software bug at all.</p>
+<p>The last stretch of the chapter is about making sense of what all this produces. <strong>MITRE ATT&amp;CK</strong> gives attacker techniques a shared vocabulary (<code>T####</code> identifiers), and <strong>Detection Engineering</strong> is the ongoing work of writing and tuning rules to balance false negatives against false positives — the difference between a SIEM people actually trust and one that becomes noise they learn to ignore. Section 8.16 turns that into a concrete, repeatable workflow: the dashboard points at an anomaly, aggregation queries on <code>wazuh-alerts-*</code> scope it down, <code>full_log</code> evidence confirms or rules it out, and the conclusion widens out to the whole fleet — because a dashboard shows that something looks odd, not what actually happened, and without a method that gap turns into random clicking. Closing the chapter is <strong>SOAR</strong>, the automation layer sitting on top of the SIEM: it takes filtered alerts, enriches them automatically with threat intelligence, and notifies the operations channel per playbook — not a replacement for the SIEM, but relief for the repetitive part of triage so people can spend their time on judgment calls instead.</p>
+<blockquote>
+<p>Every section pairs its concepts with an example that runs on a real Wazuh setup; anywhere a note reflects my own observation rather than verified fact, it's called out as such.</p>
+</blockquote>
+<hr />
+<h2 id="ch08-81-what-a-siem-is-and-why-it-exists">8.1. What a SIEM is and why it exists</h2>
+<h3 id="ch08-811-definition-and-the-root-problem">8.1.1. Definition and the root problem</h3>
+<p><strong>SIEM (Security Information and Event Management)</strong> is the software layer that collects, normalizes, correlates, and stores security events from the entire infrastructure, in order to detect and investigate threats in near real-time and to support compliance.</p>
+<p>This term unifies two older product lines:</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Stands for</th>
+<th>Original focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SIM</td>
+<td>Security Information Management</td>
+<td>Long-term log storage, compliance reporting, forensics</td>
+</tr>
+<tr>
+<td>SEM</td>
+<td>Security Event Management</td>
+<td>Real-time correlation, alerting, dashboards</td>
+</tr>
+<tr>
+<td>SIEM</td>
+<td>Unification of SIM + SEM</td>
+<td>Both: real-time correlation <strong>and</strong> long-term retention</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why:</strong> In a real system, an attack does not leave its traces in one place. A single SSH brute-force login leaves:
+- A log in <code>/var/log/auth.log</code> on the Linux host;
+- A Netflow/connection log on the firewall;
+- A log from the EDR recording an abnormal process after entry is gained;
+- A log from Active Directory if the attacker performs lateral movement.</p>
+<p>No single human sits and reads, in parallel, millions of log lines per day from thousands of sources. SIEM solves the problem of <strong>gathering into one place + one common data model + automatic correlation</strong>.</p>
+<h3 id="ch08-812-units-of-data-event-log-alert">8.1.2. Units of data: Event, Log, Alert</h3>
+<p>You must distinguish precisely between three concepts that are often confused:</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Definition</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log line / raw event</strong></td>
+<td>A line of text (or a binary record) produced by a source, in a source-specific format</td>
+<td><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2</code></td>
+</tr>
+<tr>
+<td><strong>Normalized event</strong></td>
+<td>A record that has been parsed into fields with standard names (structured)</td>
+<td><code>{ "timestamp": ..., "program": "sshd", "srcip": "203.0.113.5", "srcuser": "admin", "action": "auth_failed" }</code></td>
+</tr>
+<tr>
+<td><strong>Alert</strong></td>
+<td>The result of a rule matching one or more events, together with a severity</td>
+<td><code>Rule 5710 (level 5): sshd: Attempt to login using a non-existent user</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch08-82-siem-architecture-data-pipeline">8.2. SIEM architecture &amp; data pipeline</h2>
+<p>Every SIEM (Splunk, Elastic SIEM, QRadar, Wazuh, Sentinel, etc.) executes the same logical pipeline. Understanding this pipeline is the key to understanding Wazuh in the sections that follow.</p>
+<pre><code>            ┌─────────┐   ┌────────┐   ┌───────────┐   ┌────────┐   ┌──────────┐   ┌───────┐   ┌────────┐
+  Sources──▶│ COLLECT │──▶│ PARSE  │──▶│ NORMALIZE │──▶│ ENRICH │──▶│CORRELATE │──▶│ ALERT │──▶│ STORE  │
+            └─────────┘   └────────┘   └───────────┘   └────────┘   └──────────┘   └───────┘   └────────┘
+             (ship)        (decode)     (field map)     (geoip,      (rules,         (notify)   (index/
+                                                         threat       stateful)                  retain)
+                                                         intel)
+</code></pre>
+<h3 id="ch08-821-collect">8.2.1. COLLECT</h3>
+<p><strong>What it is:</strong> Bringing an event from the source to the collector. Two models:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Mechanism</th>
+<th>Example protocol/port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Push (agent-based)</strong></td>
+<td>An agent installed on the host reads files/events and pushes them to the manager</td>
+<td>Wazuh agent → manager (UDP/TCP 1514); Filebeat → Logstash (5044)</td>
+</tr>
+<tr>
+<td><strong>Pull / agentless</strong></td>
+<td>The server pulls logs from the source, or receives them via syslog</td>
+<td>Syslog UDP/TCP 514; WMI; SNMP; API polling (cloud)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mechanism — Syslog (RFC 5424) at the byte level.</strong> Because syslog is the most common collection medium, let us dissect one record:</p>
+<pre><code>&lt;34&gt;1 2026-06-19T10:22:41.003Z web01 sshd 2931 ID47 - Failed password...
+ └┬┘│ └──────────┬──────────┘ └─┬─┘ └─┬┘ └┬┘ └┬┘ │ └──────┬──────┘
+  │ │            │              │     │    │    │  │        │
+  │ │            │              │     │    │    │  │        └─ MSG (free-form UTF-8, may contain a BOM)
+  │ │            │              │     │    │    │  └─ STRUCTURED-DATA (&quot;-&quot; = none)
+  │ │            │              │     │    │    └─ MSGID
+  │ │            │              │     │    └─ PROCID (PID)
+  │ │            │              │     └─ APP-NAME
+  │ │            │              └─ HOSTNAME
+  │ │            └─ TIMESTAMP (ISO 8601 / RFC 3339)
+  │ └─ VERSION (always = 1 in RFC 5424)
+  └─ PRI = &quot;&lt;34&gt;&quot;  (Priority value)
+</code></pre>
+<p><strong>The PRI field decoded down to the bit:</strong> PRI is a decimal number inside the <code>&lt; &gt;</code> brackets, computed as:</p>
+<pre><code>PRI = Facility × 8 + Severity
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Bits</th>
+<th>Value range</th>
+<th>Meaning</th>
+<th>Example with PRI=34</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Facility</td>
+<td>high 5 bits (PRI &gt;&gt; 3)</td>
+<td>0–23</td>
+<td>Source generating the log</td>
+<td>34 &gt;&gt; 3 = <strong>4</strong> → "security/authorization (auth)"</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>low 3 bits (PRI &amp; 7)</td>
+<td>0–7</td>
+<td>Severity level</td>
+<td>34 &amp; 7 = <strong>2</strong> → "Critical"</td>
+</tr>
+</tbody>
+</table>
+<p>Severity table (3 bits, RFC 5424 §6.2.1):</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>System is unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Must be handled immediately</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Critical condition</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Error</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Warning</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Normal but noteworthy</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Information</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Debugging</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> RFC 3164 (the old BSD syslog) limits the message to ~1024 bytes and its timestamp has no year/timezone, which easily causes time skew during correlation. RFC 5424 allows longer messages (limited by the transport) and a full timestamp with timezone — this is why you should prefer 5424.</p>
+</blockquote>
+<p><strong>Warning (when collecting):</strong>
+- Syslog UDP 514 does <strong>not</strong> authenticate, does <strong>not</strong> encrypt, and does <strong>not</strong> guarantee delivery → an attacker can spoof logs (log injection) or cause congestion to drop logs. Prefer TLS (RFC 5425, syslog over TLS, port 6514) or an encrypted agent channel.
+- Lost logs = blindness. You must measure latency and packet drop rate.</p>
+<h3 id="ch08-822-parse-extract-decode">8.2.2. PARSE (extract / decode)</h3>
+<p><strong>What it is:</strong> Turning the free-text string (MSG) into discrete fields. This is where regex/grok/decoders operate.</p>
+<p>Example raw SSH MSG:</p>
+<pre><code>Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p>After parsing:</p>
+<pre><code>action  = &quot;Failed password&quot;
+srcuser = &quot;admin&quot;
+srcip   = &quot;203.0.113.5&quot;
+srcport = 51244
+</code></pre>
+<h3 id="ch08-823-normalize">8.2.3. NORMALIZE</h3>
+<p><strong>What it is:</strong> Mapping the freshly parsed fields to <strong>a common schema</strong> so that events from many different sources can be compared/correlated. This is the point that distinguishes a real SIEM from a log-grepping tool.</p>
+<p>Why: source A calls the source IP <code>src</code>, source B calls it <code>client_ip</code>, source C calls it <code>SourceAddress</code>. Without normalization you cannot write a single rule that "counts login failures by source IP" applicable to all three.</p>
+<p>Example fields before/after normalization (per ECS — the Elastic Common Schema, or Wazuh's standard fields):</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Original field</th>
+<th>Normalized field (Wazuh)</th>
+<th>Normalized field (ECS)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sshd</td>
+<td><code>from 203.0.113.5</code></td>
+<td><code>srcip</code></td>
+<td><code>source.ip</code></td>
+</tr>
+<tr>
+<td>Windows 4625</td>
+<td><code>Source Network Address</code></td>
+<td><code>srcip</code> / <code>data.win.eventdata.ipAddress</code></td>
+<td><code>source.ip</code></td>
+</tr>
+<tr>
+<td>nginx</td>
+<td><code>$remote_addr</code></td>
+<td><code>srcip</code></td>
+<td><code>source.ip</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-824-enrich">8.2.4. ENRICH</h3>
+<p><strong>What it is:</strong> Adding context not present in the original log:
+- <strong>GeoIP:</strong> <code>203.0.113.5</code> → country=US, ASN=AS64500. (Wazuh supports GeoIP through dashboard/indexer integration with the GeoLite2 mmdb.)
+- <strong>Threat intel:</strong> cross-referencing IPs/hashes against IoC feeds (for example AlienVault OTX, AbuseIPDB) → flagging as <code>malicious</code>.
+- <strong>Asset context:</strong> host <code>web01</code> belongs to the "production-dmz" group, owner = team-web.
+- <strong>Vulnerability context:</strong> this host has an open CVE-2024-XXXX.</p>
+<h3 id="ch08-825-correlate">8.2.5. CORRELATE</h3>
+<p><strong>What it is:</strong> The detection logic. Two kinds:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stateless</strong></td>
+<td>1 event matches 1 pattern → alert</td>
+<td>"There is a <code>Failed password</code> line" → alert level 5</td>
+</tr>
+<tr>
+<td><strong>Stateful</strong></td>
+<td>Counting/grouping many events over time/key → alert</td>
+<td>"≥ 8 <code>Failed password</code> from the same <code>srcip</code> within 120 seconds" → brute-force level 10</td>
+</tr>
+</tbody>
+</table>
+<p>Stateful correlation is a <strong>state machine</strong> that counts events by key within a sliding window. Wazuh implements it with the <code>frequency</code> + <code>timeframe</code> parameter pair (see 8.7).</p>
+<h3 id="ch08-826-alert-store">8.2.6. ALERT &amp; STORE</h3>
+<ul>
+<li><strong>ALERT:</strong> generate a notification (send an email, webhook, Slack, trigger SOAR/active response).</li>
+<li><strong>STORE:</strong> write to an index for querying (Elasticsearch/OpenSearch/Wazuh indexer). There is a retention policy (for example hot for 7 days, warm for 30 days, cold/frozen for 1-year compliance).</li>
+</ul>
+<hr />
+<h2 id="ch08-83-classifying-defensive-tools-av-edr-siem-soar-xdr-ndr">8.3. Classifying defensive tools: AV / EDR / SIEM / SOAR / XDR / NDR</h2>
+<p>Why distinguish them: these categories are often blended by marketing, but their position in the architecture and the data they see are different.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Scope of visibility</th>
+<th>Unit of data</th>
+<th>Primary action</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AV (Antivirus)</strong></td>
+<td>1 endpoint</td>
+<td>File, signature, hash</td>
+<td>Scan/block known malware</td>
+<td>ClamAV, Defender (AV mode)</td>
+</tr>
+<tr>
+<td><strong>EDR (Endpoint Detection &amp; Response)</strong></td>
+<td>1 endpoint, behavior</td>
+<td>Process tree, syscalls, registry, host network</td>
+<td>Detect behavior, isolate host, kill process</td>
+<td>CrowdStrike Falcon, Defender for Endpoint, Wazuh (partial)</td>
+</tr>
+<tr>
+<td><strong>NDR (Network Detection &amp; Response)</strong></td>
+<td>Network traffic</td>
+<td>Packets, flows, metadata (JA3, DNS, TLS SNI)</td>
+<td>Detect C2/exfil/lateral movement</td>
+<td>Zeek, Suricata, Corelight</td>
+</tr>
+<tr>
+<td><strong>SIEM</strong></td>
+<td>The whole infrastructure (logs)</td>
+<td>Normalized events from all sources</td>
+<td>Correlation, storage, investigation, compliance</td>
+<td>Wazuh, Splunk, Elastic SIEM</td>
+</tr>
+<tr>
+<td><strong>SOAR (Orchestration, Automation &amp; Response)</strong></td>
+<td>The response process</td>
+<td>Case/playbook</td>
+<td>Automate response (block, ticket, enrich)</td>
+<td>Shuffle, TheHive+Cortex, Splunk SOAR</td>
+</tr>
+<tr>
+<td><strong>XDR (Extended Detection &amp; Response)</strong></td>
+<td>EDR + NDR + email + cloud, unified</td>
+<td>Pre-correlated multi-layer events from a single vendor</td>
+<td>Cross-layer detection</td>
+<td>A single vendor's XDR suite</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Core distinctions:</strong>
+- <strong>EDR vs SIEM:</strong> EDR is the specialist for a single endpoint (deep into process telemetry); SIEM is the aggregator of the full picture (broad view, shallower per-source). Wazuh is interesting because it is <strong>both a lightweight EDR-style agent and a SIEM</strong> (the agent collects endpoint telemetry + the manager does correlation).
+- <strong>SIEM vs SOAR:</strong> the SIEM <em>detects</em>; SOAR <em>responds according to a playbook</em>. Wazuh has "Active Response" — a kind of integrated mini-SOAR.
+- <strong>XDR vs SIEM:</strong> XDR is usually locked into a single vendor's ecosystem and pre-correlated; a SIEM is open, ingests any source, but you build the correlation yourself.</p>
+<hr />
+<h2 id="ch08-84-wazuh-overview-and-architecture">8.4. WAZUH — Overview and architecture</h2>
+<h3 id="ch08-841-what-wazuh-is">8.4.1. What Wazuh is</h3>
+<p><strong>Wazuh</strong> is an open-source security platform (historically forked from OSSEC HIDS, extended with an indexer/dashboard from the Elastic/OpenSearch family). It provides, at the same time:</p>
+<ul>
+<li>HIDS (Host Intrusion Detection): log analysis, FIM, rootcheck;</li>
+<li>Vulnerability management (Vulnerability Detection);</li>
+<li>SCA (Security Configuration Assessment — configuration checks against CIS);</li>
+<li>Active Response (automated response);</li>
+<li>MITRE ATT&amp;CK framework integration;</li>
+<li>The SIEM role via the indexer + dashboard.</li>
+</ul>
+<blockquote>
+<p>Version note: the details of ports, service names, and the structure of some modules change by major version (3.x → 4.x). This document describes the <strong>4.x</strong> line. The important numbers (ports 1514/1515/55000/1516/9200/443) should be re-checked against the specific version you deploy.</p>
+</blockquote>
+<h3 id="ch08-842-the-four-main-components">8.4.2. The four main components</h3>
+<pre><code>        ┌──────────────────────────────────────────────────────────────┐
+        │                         WAZUH SERVER                          │
+        │                                                               │
+  Agent │   ┌───────────────┐         ┌────────────────────────────┐    │
+  (host)│   │  wazuh-manager │         │   FILTER / FORWARD          │    │
+  ──────┼──▶│  - analysisd   │────────▶│   Filebeat ──▶ Indexer      │    │
+ 1514/  │   │  - remoted     │ alerts  │                             │    │
+ 1515   │   │  - logcollector│ .json   └────────────┬───────────────┘    │
+        │   │  - syscheckd   │                      │                    │
+        │   │  - active-resp │                      ▼                    │
+        │   └───────────────┘            ┌────────────────────┐          │
+        └────────────────────────────────│   WAZUH INDEXER    │──────────┘
+                                          │  (OpenSearch)      │
+                                          └─────────┬──────────┘
+                                                    │ 9200 (REST)
+                                          ┌─────────▼──────────┐
+                                          │  WAZUH DASHBOARD   │ 443
+                                          │  (OpenSearch Dash) │
+                                          └────────────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+<th>Main daemon/process</th>
+<th>Typical ports</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Wazuh agent</strong></td>
+<td>Installed on the endpoint; collects logs, FIM, SCA, sends to the manager</td>
+<td><code>wazuh-agentd</code>, <code>wazuh-logcollector</code>, <code>wazuh-syscheckd</code>, <code>wazuh-execd</code></td>
+<td>(client)</td>
+</tr>
+<tr>
+<td><strong>Wazuh manager (server)</strong></td>
+<td>Receives, decodes, applies rules, alerts, manages agents</td>
+<td><code>wazuh-remoted</code> (receive), <code>wazuh-analysisd</code> (analyze), <code>wazuh-authd</code> (enroll), <code>wazuh-modulesd</code> (vuln/SCA)</td>
+<td>1514 (data), 1515 (enroll), 1516 (cluster), 55000 (REST API)</td>
+</tr>
+<tr>
+<td><strong>Wazuh indexer</strong></td>
+<td>Stores + searches alerts (OpenSearch)</td>
+<td><code>wazuh-indexer</code></td>
+<td>9200 (REST), 9300 (node-to-node transport)</td>
+</tr>
+<tr>
+<td><strong>Wazuh dashboard</strong></td>
+<td>Web interface, visualization, management</td>
+<td><code>wazuh-dashboard</code></td>
+<td>443/5601</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-843-the-daemons-inside-the-manager-and-the-internal-data-flow">8.4.3. The daemons inside the manager and the internal data flow</h3>
+<pre><code>agent ─(1514)─▶ wazuh-remoted ─▶ (queue: /var/ossec/queue/sockets/queue)
+                                        │
+                                        ▼
+                                 wazuh-analysisd
+                                  ├─ PreDecoding (extract timestamp/host/program)
+                                  ├─ Decoding    (decoders/*.xml → extract fields)
+                                  ├─ Rule matching (rules/*.xml → assign level/id)
+                                  └─ if matched ⇒ write alert
+                                        │
+                       ┌────────────────┼─────────────────┐
+                       ▼                ▼                 ▼
+            /var/ossec/logs/        active-response   archives (if enabled)
+            alerts/alerts.json      (wazuh-execd)     alerts/archives.json
+                       │
+                       ▼
+                   Filebeat ──▶ Wazuh indexer ──▶ Dashboard
+</code></pre>
+<p><strong>The path of an event (decapsulation logic):</strong>
+1. The agent reads a log line → packages it with metadata (agent id, location) → encrypts it → sends it over <strong>1514</strong>.
+2. <code>wazuh-remoted</code> decrypts it and places the event in a local socket queue.
+3. <code>wazuh-analysisd</code> takes the event and runs <strong>PreDecoding → Decoding → Rule matching</strong>.
+4. If a rule matches with a level ≥ the threshold (<code>&lt;log_alert_level&gt;</code>, default 3), the event is written to <code>alerts.json</code>.
+5. If the rule has an associated <code>&lt;active-response&gt;</code>, <code>wazuh-execd</code> runs the response script on the agent/manager.
+6. <code>Filebeat</code> reads <code>alerts.json</code> and pushes it into the <strong>indexer (9200)</strong>.
+7. The <code>Dashboard</code> queries the indexer to display it.</p>
+<hr />
+<h2 id="ch08-85-the-agent-manager-flow-enrollment-and-data-transmission-byteport-level">8.5. The agent → manager flow: enrollment and data transmission (byte/port level)</h2>
+<h3 id="ch08-851-the-two-ports-and-why-they-are-separated">8.5.1. The two ports and why they are separated</h3>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>Listening daemon</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1515/TCP</strong></td>
+<td>TLS</td>
+<td><code>wazuh-authd</code></td>
+<td><strong>Enrollment</strong> (registering the agent, issuing the key) — used only once when the agent joins</td>
+</tr>
+<tr>
+<td><strong>1514/UDP or TCP</strong></td>
+<td>Shared-key encryption (Blowfish/AES depending on configuration)</td>
+<td><code>wazuh-remoted</code></td>
+<td><strong>Data transmission</strong> of events, continuous</td>
+</tr>
+<tr>
+<td><strong>1516/TCP</strong></td>
+<td>—</td>
+<td><code>wazuh-clusterd</code></td>
+<td>Communication between managers in a cluster</td>
+</tr>
+<tr>
+<td><strong>55000/TCP</strong></td>
+<td>HTTPS</td>
+<td><code>wazuh-apid</code></td>
+<td>Management API (RBAC, JWT)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why enrollment (1515) is separated from data (1514):</strong> Enrollment is a sensitive operation (handing over a key). Separating the ports lets an administrator enable <code>authd</code> only during the registration window and then disable it, reducing the attack surface. The 1514 data channel uses the symmetric key that was already exchanged, optimized for high throughput and either stateless (UDP) or reliable (TCP).</p>
+<h3 id="ch08-852-the-enrollment-process-state-machine-step-by-step">8.5.2. The enrollment process (state machine, step by step)</h3>
+<pre><code>   AGENT                                   MANAGER (authd:1515)
+     │                                            │
+     │ 1. TLS ClientHello ───────────────────────▶│
+     │◀── 2. TLS handshake complete (TLS 1.2/1.3) │
+     │                                            │
+     │ 3. Send the enroll request:                 │
+     │    &quot;OSSEC A:'&lt;agent_name&gt;'&quot; [+ password]    │
+     │    (optional host_name/ip)        ─────────▶│
+     │                                            │ 4. authd:
+     │                                            │    - check the password (if enabled)
+     │                                            │    - issue an agent ID (e.g. 001)
+     │                                            │    - generate a client.key entry
+     │◀── 5. &quot;OSSEC K:'&lt;id&gt; &lt;name&gt; &lt;ip&gt; &lt;key&gt;'&quot; ──│
+     │                                            │
+     │ 6. Save to /var/ossec/etc/client.keys       │
+     │ 7. Start wazuh-agentd, connect to 1514      │
+     ▼                                            ▼
+</code></pre>
+<p><strong>Structure of a <code>client.keys</code> line:</strong></p>
+<pre><code>001 web01 any 6b2c...e1f9a3...   (64 hex chars = 256-bit pre-shared key)
+└┬┘ └─┬─┘ └┬┘ └──────────┬─────┘
+ │    │    │             └─ Pre-shared key (hex) used to encrypt the 1514 channel
+ │    │    └─ Allowed IP (&quot;any&quot; = any)
+ │    └─ Agent name
+ └─ Agent ID (3 digits)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent ID</td>
+<td>usually 3 numeric characters</td>
+<td>Unique identifier of the agent within the manager</td>
+<td><code>001</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td>string</td>
+<td>Agent name</td>
+<td><code>web01</code></td>
+</tr>
+<tr>
+<td>Allowed IP</td>
+<td>string</td>
+<td>IP/<code>any</code> allowed to connect with this ID</td>
+<td><code>192.0.2.10</code></td>
+</tr>
+<tr>
+<td>Key</td>
+<td>64 hex (≈256-bit)</td>
+<td>Shared key to encrypt/decrypt 1514 messages</td>
+<td><code>6b2c...</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Warning:</strong>
+- <code>client.keys</code> is a host-level secret — permissions <code>640 root:wazuh</code>. Leaking the key allows agent spoofing and injection of fake logs.
+- Enable <code>&lt;use_password&gt;yes&lt;/use_password&gt;</code> for authd to prevent unauthorized registration. Better still: use certificates (CA verification) for both manager-verifies-agent and agent-verifies-manager to prevent MITM at the enroll step.
+- Duplicate agent name/ID causes "agent flapping" — assign unique, stable names.</p>
+<h3 id="ch08-853-the-data-message-format-on-1514-at-the-conceptual-field-level">8.5.3. The data message format on 1514 (at the conceptual field level)</h3>
+<p>A message from the agent comprises the following logical parts before encryption:</p>
+<pre><code>[counters][random][MSG]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Counter (global + local)</td>
+<td>Anti-replay — the manager rejects messages with an old counter</td>
+</tr>
+<tr>
+<td>Random padding</td>
+<td>Noise to resist analysis</td>
+</tr>
+<tr>
+<td>MSG</td>
+<td>The actual payload: <code>&lt;msg_type&gt;:&lt;location&gt;:&lt;log line&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>location</code> part indicates where the log came from on the agent, for example <code>/var/log/auth.log</code>, so that analysisd knows which decoder to apply. The whole thing is encrypted with the key in <code>client.keys</code> (Wazuh 4.x defaults to AES, and Blowfish can be configured for backward compatibility).</p>
+<hr />
+<h2 id="ch08-86-the-ossecconf-configuration-file-dissecting-each-block">8.6. The <code>ossec.conf</code> configuration file — dissecting each block</h2>
+<p><code>ossec.conf</code> (path <code>/var/ossec/etc/ossec.conf</code>) is the main XML configuration for both the manager and the agent. The root structure is inside the <code>&lt;ossec_config&gt;</code> tag. Below are the important blocks with an explanation of each parameter.</p>
+<h3 id="ch08-861-the-global-block-and-alert-level-on-the-manager">8.6.1. The <code>&lt;global&gt;</code> block and alert level (on the manager)</h3>
+<pre><code class="language-xml">&lt;ossec_config&gt;
+  &lt;global&gt;
+    &lt;jsonout_output&gt;yes&lt;/jsonout_output&gt;     &lt;!-- write alerts.json (for Filebeat/indexer) --&gt;
+    &lt;alerts_log&gt;yes&lt;/alerts_log&gt;             &lt;!-- write alerts.log in text form --&gt;
+    &lt;logall&gt;no&lt;/logall&gt;                       &lt;!-- do not save every event to the archives --&gt;
+    &lt;logall_json&gt;no&lt;/logall_json&gt;
+    &lt;email_notification&gt;no&lt;/email_notification&gt;
+  &lt;/global&gt;
+
+  &lt;alerts&gt;
+    &lt;log_alert_level&gt;3&lt;/log_alert_level&gt;      &lt;!-- only write an alert when rule level &gt;= 3 --&gt;
+    &lt;email_alert_level&gt;12&lt;/email_alert_level&gt; &lt;!-- send email when level &gt;= 12 --&gt;
+  &lt;/alerts&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Example value</th>
+<th>Meaning</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jsonout_output</code></td>
+<td>yes</td>
+<td>Generates <code>alerts.json</code></td>
+<td>Filebeat needs JSON to push to the indexer</td>
+</tr>
+<tr>
+<td><code>logall</code></td>
+<td>no</td>
+<td>Does not save <em>all</em> events to the archives</td>
+<td><code>logall=yes</code> generates a huge amount of data — enable it only when investigation/forensics is needed</td>
+</tr>
+<tr>
+<td><code>log_alert_level</code></td>
+<td>3</td>
+<td>Threshold for writing an alert</td>
+<td>Filters noise — levels 0–2 are noise</td>
+</tr>
+<tr>
+<td><code>email_alert_level</code></td>
+<td>12</td>
+<td>Threshold for sending email</td>
+<td>Avoids spam — only serious incidents</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-862-the-remote-block-the-manager-listens-to-agents">8.6.2. The <code>&lt;remote&gt;</code> block (the manager listens to agents)</h3>
+<pre><code class="language-xml">  &lt;remote&gt;
+    &lt;connection&gt;secure&lt;/connection&gt;   &lt;!-- secure = encrypted with client.keys --&gt;
+    &lt;port&gt;1514&lt;/port&gt;
+    &lt;protocol&gt;tcp&lt;/protocol&gt;          &lt;!-- tcp guarantees delivery; udp is lighter but can drop --&gt;
+    &lt;queue_size&gt;131072&lt;/queue_size&gt;
+  &lt;/remote&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>secure</code> (encrypted) or <code>syslog</code> (receive raw syslog)</td>
+<td>Use <code>secure</code> for agents; <code>syslog</code> for devices on which an agent cannot be installed</td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>tcp/udp</td>
+<td><strong>TCP</strong> preferred: no log loss; UDP for extremely large scale that can tolerate loss</td>
+</tr>
+<tr>
+<td><code>queue_size</code></td>
+<td>Number of buffered messages</td>
+<td>Increase it if there are large bursts to avoid drops</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-863-the-client-block-on-the-agent">8.6.3. The <code>&lt;client&gt;</code> block (on the agent)</h3>
+<pre><code class="language-xml">  &lt;client&gt;
+    &lt;server&gt;
+      &lt;address&gt;10.0.0.5&lt;/address&gt;      &lt;!-- manager IP/hostname --&gt;
+      &lt;port&gt;1514&lt;/port&gt;
+      &lt;protocol&gt;tcp&lt;/protocol&gt;
+    &lt;/server&gt;
+    &lt;enrollment&gt;
+      &lt;enabled&gt;yes&lt;/enabled&gt;
+      &lt;manager_address&gt;10.0.0.5&lt;/manager_address&gt;
+      &lt;port&gt;1515&lt;/port&gt;
+      &lt;agent_name&gt;web01&lt;/agent_name&gt;
+    &lt;/enrollment&gt;
+    &lt;crypto_method&gt;aes&lt;/crypto_method&gt;
+    &lt;notify_time&gt;10&lt;/notify_time&gt;        &lt;!-- keepalive every 10s --&gt;
+    &lt;time-reconnect&gt;60&lt;/time-reconnect&gt;  &lt;!-- retry after 60s if the connection is lost --&gt;
+  &lt;/client&gt;
+</code></pre>
+<h3 id="ch08-864-the-localfile-block-logcollector-which-log-sources-the-agent-reads">8.6.4. The <code>&lt;localfile&gt;</code> block (logcollector — which log sources the agent reads)</h3>
+<pre><code class="language-xml">  &lt;localfile&gt;
+    &lt;log_format&gt;syslog&lt;/log_format&gt;
+    &lt;location&gt;/var/log/auth.log&lt;/location&gt;
+  &lt;/localfile&gt;
+
+  &lt;localfile&gt;
+    &lt;log_format&gt;json&lt;/log_format&gt;
+    &lt;location&gt;/var/log/myapp/audit.json&lt;/location&gt;
+  &lt;/localfile&gt;
+
+  &lt;localfile&gt;
+    &lt;log_format&gt;command&lt;/log_format&gt;
+    &lt;command&gt;df -P&lt;/command&gt;           &lt;!-- run a command, take its output as a log --&gt;
+    &lt;frequency&gt;360&lt;/frequency&gt;          &lt;!-- every 360s --&gt;
+  &lt;/localfile&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>log_format</code></th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>syslog</code></td>
+<td>Text files with syslog-style lines (auth.log, messages)</td>
+</tr>
+<tr>
+<td><code>json</code></td>
+<td>Each line is a JSON object — Wazuh parses the fields automatically</td>
+</tr>
+<tr>
+<td><code>command</code> / <code>full_command</code></td>
+<td>Take a command's output as a periodic event</td>
+</tr>
+<tr>
+<td><code>eventchannel</code></td>
+<td>Windows Event Log (Security, System, Application)</td>
+</tr>
+<tr>
+<td><code>audit</code></td>
+<td>Linux auditd</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-865-the-syscheck-and-rootcheck-blocks-see-details-in-89">8.6.5. The <code>&lt;syscheck&gt;</code> and <code>&lt;rootcheck&gt;</code> blocks — see details in 8.9.</h3>
+<h3 id="ch08-866-reloading-the-configuration">8.6.6. Reloading the configuration</h3>
+<pre><code class="language-bash"># Check the configuration + rule/decoder syntax before restarting (very important)
+/var/ossec/bin/wazuh-logtest        # interactive rule/decoder testing
+/var/ossec/bin/wazuh-analysisd -t   # -t = test mode, reports syntax errors then exits
+
+# Restart
+systemctl restart wazuh-manager
+# or
+/var/ossec/bin/wazuh-control restart
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Always run <code>wazuh-analysisd -t</code> before restarting in production. A syntax error in <code>local_rules.xml</code> prevents analysisd from starting → total blindness.</p>
+</blockquote>
+<hr />
+<h2 id="ch08-87-decoder-extracting-fields-from-real-logs">8.7. DECODER — extracting fields from real logs</h2>
+<h3 id="ch08-871-what-it-is">8.7.1. What it is</h3>
+<p>A <strong>decoder</strong> is an XML rule that tells <code>wazuh-analysisd</code> how to extract fields (srcip, srcuser, ...) from a raw log line. The decoder does <em>not</em> generate an alert — it only prepares the data for rules.</p>
+<p>Paths:
+- Base decoders: <code>/var/ossec/ruleset/decoders/*.xml</code> (do not edit — overwritten on update).
+- Custom decoders: <code>/var/ossec/etc/decoders/local_decoder.xml</code>.</p>
+<h3 id="ch08-872-the-two-decoder-types-and-their-attributes">8.7.2. The two decoder types and their attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Tag</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Parent decoder</strong></td>
+<td><code>&lt;decoder name="..."&gt;</code></td>
+<td>Identifies the <em>program/source</em> (via <code>program_name</code> or <code>prematch</code>)</td>
+</tr>
+<tr>
+<td><strong>Child decoder</strong></td>
+<td><code>&lt;decoder name="..."&gt;&lt;parent&gt;...&lt;/parent&gt;</code></td>
+<td>Extracts specific fields, runs after the parent matches</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Child tag</th>
+<th>Meaning</th>
+<th>Processing order</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;program_name&gt;</code></td>
+<td>Matches the program name (taken from PreDecoding)</td>
+<td>Fast filter first</td>
+</tr>
+<tr>
+<td><code>&lt;prematch&gt;</code></td>
+<td>A regex that must match before the decoder runs its <code>&lt;regex&gt;</code></td>
+<td>Tier-1 filter</td>
+</tr>
+<tr>
+<td><code>&lt;regex&gt;</code></td>
+<td>Regex that extracts values; capture groups <code>()</code> map to <code>&lt;order&gt;</code></td>
+<td>Field extraction</td>
+</tr>
+<tr>
+<td><code>&lt;order&gt;</code></td>
+<td>The list of field names corresponding to the regex capture groups</td>
+<td>Naming</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-873-real-world-example-the-ssh-decoder-already-built-into-wazuh-dissected-here">8.7.3. Real-world example — the SSH decoder (already built into Wazuh, dissected here)</h3>
+<p>Raw log:</p>
+<pre><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p><strong>PreDecoding</strong> (automatic, no XML required) extracts the syslog header:</p>
+<pre><code>hostname    = web01
+program_name= sshd
+timestamp   = Jun 19 10:22:41
+log         = &quot;Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2&quot;
+</code></pre>
+<p><strong>Parent decoder</strong> (identifies sshd):</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;sshd&quot;&gt;
+  &lt;program_name&gt;^sshd&lt;/program_name&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p><strong>Child decoder</strong> (extracts user + ip):</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;ssh-failed-invalid&quot;&gt;
+  &lt;parent&gt;sshd&lt;/parent&gt;
+  &lt;prematch&gt;^Failed password for invalid user&lt;/prematch&gt;
+  &lt;regex offset=&quot;after_prematch&quot;&gt;^ (\S+) from (\d+.\d+.\d+.\d+) port (\d+)&lt;/regex&gt;
+  &lt;order&gt;srcuser, srcip, srcport&lt;/order&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p>Explanation of each part:
+- <code>&lt;parent&gt;sshd&lt;/parent&gt;</code>: runs only if the <code>sshd</code> parent matched.
+- <code>&lt;prematch&gt;</code>: requires the line to begin with <code>Failed password for invalid user</code>. If it does not match → skip, saving CPU (why: the full regex is expensive, the prematch is a cheap filter gate).
+- <code>offset="after_prematch"</code>: starts the <code>&lt;regex&gt;</code> right after the prematched portion. This is an optimization to keep the regex short.
+- The capture groups <code>(\S+)</code>, <code>(\d+.\d+.\d+.\d+)</code>, <code>(\d+)</code> map respectively to <code>srcuser, srcip, srcport</code> via <code>&lt;order&gt;</code>.</p>
+<blockquote>
+<p>Note on regex syntax: Wazuh supports its internal <strong>OS_Regex</strong> syntax (fast, limited) and <strong>PCRE2</strong> via the <code>type="pcre2"</code> attribute. In OS_Regex, <code>\d</code>, <code>\S</code> are character classes; <code>.</code> matches any character. When you need complex regex (lookahead, etc.), use <code>&lt;regex type="pcre2"&gt;</code>.</p>
+</blockquote>
+<p><strong>Result after decoding</strong> (fields ready for rules):</p>
+<pre><code class="language-json">{
+  &quot;program_name&quot;: &quot;sshd&quot;,
+  &quot;srcuser&quot;: &quot;admin&quot;,
+  &quot;srcip&quot;: &quot;203.0.113.5&quot;,
+  &quot;srcport&quot;: &quot;51244&quot;
+}
+</code></pre>
+<h3 id="ch08-874-example-writing-a-custom-decoder-for-a-self-defined-application-log">8.7.4. Example — writing a custom decoder for a self-defined application log</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> The decoder below only illustrates the parent/child + <code>&lt;order&gt;</code> mechanism; test it with <code>wazuh-logtest</code> and anchor the regex before using it in production.</p>
+</blockquote>
+<p>Suppose an internal application produces the log:</p>
+<pre><code>Jun 19 11:05:00 app01 paywall: AUTH_FAIL user=jdoe ip=198.51.100.7 reason=bad_token txn=AB12
+</code></pre>
+<p><code>local_decoder.xml</code>:</p>
+<pre><code class="language-xml">&lt;decoder name=&quot;paywall&quot;&gt;
+  &lt;program_name&gt;^paywall&lt;/program_name&gt;
+&lt;/decoder&gt;
+
+&lt;decoder name=&quot;paywall-authfail&quot;&gt;
+  &lt;parent&gt;paywall&lt;/parent&gt;
+  &lt;prematch&gt;^AUTH_FAIL &lt;/prematch&gt;
+  &lt;regex&gt;user=(\S+) ip=(\d+.\d+.\d+.\d+) reason=(\S+) txn=(\S+)&lt;/regex&gt;
+  &lt;order&gt;srcuser, srcip, reason, txn_id&lt;/order&gt;
+&lt;/decoder&gt;
+</code></pre>
+<p>Test it immediately with <code>wazuh-logtest</code>:</p>
+<pre><code class="language-bash">/var/ossec/bin/wazuh-logtest
+# Paste the log line into stdin:
+Jun 19 11:05:00 app01 paywall: AUTH_FAIL user=jdoe ip=198.51.100.7 reason=bad_token txn=AB12
+</code></pre>
+<p>Sample output:</p>
+<pre><code>**Phase 1: Completed pre-decoding.
+        full event: 'Jun 19 11:05:00 app01 paywall: AUTH_FAIL ...'
+        timestamp: 'Jun 19 11:05:00'
+        hostname: 'app01'
+        program_name: 'paywall'
+**Phase 2: Completed decoding.
+        name: 'paywall'
+        srcuser: 'jdoe'
+        srcip: '198.51.100.7'
+        reason: 'bad_token'
+        txn_id: 'AB12'
+**Phase 3: Completed filtering (rules).
+        ... (no rule matched yet)
+</code></pre>
+<p><strong>Warning:</strong> A bad decoder (greedy regex, missing the <code>^</code> anchor) can extract the wrong field or slow analysisd under heavy load → an indirect DoS. Always anchor your regex and test with <code>wazuh-logtest</code> before deploying.</p>
+<hr />
+<h2 id="ch08-88-rule-detection-and-classification">8.8. RULE — detection and classification</h2>
+<h3 id="ch08-881-what-it-is">8.8.1. What it is</h3>
+<p>A <strong>rule</strong> decides which event becomes an alert, assigns a <strong>level</strong> (0–16), an <code>id</code>, groups, and (optionally) a MITRE mapping. Rules run <em>after</em> decoders, based on the extracted fields.</p>
+<p>Paths:
+- Base rules: <code>/var/ossec/ruleset/rules/*.xml</code> (do not edit).
+- Custom rules: <code>/var/ossec/etc/rules/local_rules.xml</code>.</p>
+<h3 id="ch08-882-attributes-and-tags-of-a-rule">8.8.2. Attributes and tags of a rule</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute/Tag</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>Unique identifier. The range <strong>100000–120000</strong> is reserved for custom rules (so as not to collide with base rules)</td>
+<td><code>100100</code></td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>Severity 0–16 (0 = ignore/no alert)</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>&lt;if_sid&gt;</code></td>
+<td>Considered only if a rule with this ID matched earlier (rule chaining)</td>
+<td><code>&lt;if_sid&gt;5710&lt;/if_sid&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;if_matched_sid&gt;</code></td>
+<td>Used with correlation: the child rule matches when that SID rule matches frequently enough</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>&lt;match&gt;</code></td>
+<td>Matches a substring within the log</td>
+<td><code>&lt;match&gt;AUTH_FAIL&lt;/match&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;regex&gt;</code></td>
+<td>Matches a regex within the log/field</td>
+<td><code>&lt;regex&gt;reason=bad_token&lt;/regex&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;field&gt;</code></td>
+<td>Matches a decoded field</td>
+<td><code>&lt;field name="srcuser"&gt;admin&lt;/field&gt;</code></td>
+</tr>
+<tr>
+<td><code>&lt;frequency&gt;</code></td>
+<td>The number of matches required to trigger (correlation)</td>
+<td><code>8</code></td>
+</tr>
+<tr>
+<td><code>&lt;timeframe&gt;</code></td>
+<td>The time window (seconds) for <code>frequency</code></td>
+<td><code>120</code></td>
+</tr>
+<tr>
+<td><code>&lt;same_source_ip/&gt;</code></td>
+<td>Requires the same srcip to count (group key)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>&lt;group&gt;</code></td>
+<td>Classification group (authentication_failed, attack, etc.)</td>
+<td><code>authentication_failures,</code></td>
+</tr>
+<tr>
+<td><code>&lt;mitre&gt;&lt;id&gt;</code></td>
+<td>A MITRE ATT&amp;CK technique code</td>
+<td><code>T1110</code></td>
+</tr>
+<tr>
+<td><code>&lt;description&gt;</code></td>
+<td>The description shown on the alert</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-883-wazuhs-level-scale-016">8.8.3. Wazuh's LEVEL scale (0–16)</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>General meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Ignored completely (not logged) — used to reduce FPs</td>
+</tr>
+<tr>
+<td>1–3</td>
+<td>Informational / low importance</td>
+</tr>
+<tr>
+<td>4–6</td>
+<td>Noteworthy (a single auth failure, configuration)</td>
+</tr>
+<tr>
+<td>7–9</td>
+<td>Important (multiple failures, suspicious behavior)</td>
+</tr>
+<tr>
+<td>10–12</td>
+<td>High probability of attack (brute-force detected)</td>
+</tr>
+<tr>
+<td>13–16</td>
+<td>Critical (successful intrusion, system)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-884-example-a-stateless-rule-mapped-onto-the-paywall-decoder-from-874">8.8.4. Example — a stateless rule mapped onto the paywall decoder from 8.7.4</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> A sample rule for the <code>paywall</code> decoder above — it illustrates the <code>&lt;field&gt;</code> structure, <code>level</code>, and MITRE mapping; adjust the <code>level</code> and conditions to your environment before real use.</p>
+</blockquote>
+<p><code>local_rules.xml</code>:</p>
+<pre><code class="language-xml">&lt;group name=&quot;paywall,authentication,&quot;&gt;
+
+  &lt;!-- Base rule: a single AUTH_FAIL from paywall --&gt;
+  &lt;rule id=&quot;100100&quot; level=&quot;5&quot;&gt;
+    &lt;decoded_as&gt;paywall&lt;/decoded_as&gt;
+    &lt;field name=&quot;reason&quot;&gt;bad_token&lt;/field&gt;
+    &lt;description&gt;Paywall: authentication failed due to a bad token (user $(srcuser), ip $(srcip))&lt;/description&gt;
+    &lt;group&gt;authentication_failed,&lt;/group&gt;
+    &lt;mitre&gt;
+      &lt;id&gt;T1078&lt;/id&gt;   &lt;!-- Valid Accounts (credential abuse) --&gt;
+    &lt;/mitre&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+</code></pre>
+<p>Explanation:
+- <code>&lt;decoded_as&gt;paywall&lt;/decoded_as&gt;</code>: applies only to events processed by the <code>paywall</code> decoder.
+- <code>&lt;field name="reason"&gt;bad_token&lt;/field&gt;</code>: matches the decoded <code>reason</code> field.
+- <code>$(srcuser)</code>, <code>$(srcip)</code>: interpolate the fields into the alert description.</p>
+<h3 id="ch08-885-key-example-brute-force-correlation-frequency-timeframe">8.8.5. Key example — brute-force correlation (frequency + timeframe)</h3>
+<p>This is the classic stateful example: many login failures from the same IP within a time window → a single brute-force alert.</p>
+<blockquote>
+<p><strong>[DEMO]</strong> A correlation rule illustrating the <code>frequency</code>+<code>timeframe</code>+<code>same_source_ip</code> mechanism; the thresholds must be tuned to real traffic (see the tuning process in 8.14). Attaching the <code>T####</code> code is covered in detail in <a href="ch15.html">Chapter 15</a>.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;group name=&quot;paywall,authentication,attack,&quot;&gt;
+
+  &lt;!-- Correlation rule: &gt;=8 occurrences of rule 100100 from the SAME srcip within 120 seconds --&gt;
+  &lt;rule id=&quot;100110&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+    &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+    &lt;same_source_ip /&gt;
+    &lt;description&gt;Paywall: token BRUTE-FORCE — &gt;=8 failures from $(srcip) within 120s&lt;/description&gt;
+    &lt;group&gt;authentication_failures,brute_force,&lt;/group&gt;
+    &lt;mitre&gt;
+      &lt;id&gt;T1110&lt;/id&gt;   &lt;!-- Brute Force --&gt;
+    &lt;/mitre&gt;
+  &lt;/rule&gt;
+
+&lt;/group&gt;
+</code></pre>
+<p><strong>Mechanism (the analysisd state machine):</strong></p>
+<pre><code>Initialize, for each srcip, a counter + a window-start timestamp.
+
+  Event rule 100100 matches, srcip=X:
+    ┌─ Find the bucket for key=X
+    │     ├─ If none yet: create bucket{count=1, t0=now}
+    │     └─ If it exists:
+    │           ├─ If (now - t0) &gt; timeframe(120s): RESET bucket{count=1, t0=now}
+    │           └─ Otherwise: count++
+    │                 └─ If count &gt;= frequency(8): TRIGGER rule 100110 (level 10) → ALERT
+    │                       (after triggering, reset to avoid continuous spam)
+    ▼
+</code></pre>
+<p>A table illustrating an event sequence (frequency=8, timeframe=120):</p>
+<table>
+<thead>
+<tr>
+<th>t (s)</th>
+<th>srcip</th>
+<th>count(X)</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>203.0.113.5</td>
+<td>1</td>
+<td>create the bucket</td>
+</tr>
+<tr>
+<td>5</td>
+<td>203.0.113.5</td>
+<td>2</td>
+<td>count++</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td>40</td>
+<td>203.0.113.5</td>
+<td>8</td>
+<td><strong>count==8 ≤ 120s → ALERT 100110 level 10</strong></td>
+</tr>
+<tr>
+<td>200</td>
+<td>203.0.113.5</td>
+<td>1</td>
+<td>the old t0 has expired (200-0&gt;120) → reset</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the <code>frequency</code>+<code>timeframe</code>+<code>same_source_ip</code> design:</strong>
+- <code>same_source_ip</code> is the <em>group key</em>: without it, 8 failures from 8 different IPs (for example mild distributed password spraying) would be lumped together incorrectly. With it, we split the buckets by IP to correctly detect concentrated brute-force.
+- <code>timeframe</code> defines the "speed" — distinguishing brute-force (8 times in 2 minutes) from 8 failures scattered across the whole day (a user who forgot their password).</p>
+<blockquote>
+<p>Other group keys: <code>&lt;same_source_user/&gt;</code>, <code>&lt;same_destination_ip/&gt;</code>, <code>&lt;different_source_ip/&gt;</code> (for distributed detection). In addition, <code>&lt;if_matched_group&gt;</code> allows counting by a rule <em>group</em> rather than a single SID.</p>
+</blockquote>
+<h3 id="ch08-886-overriding-and-adjusting-base-rules-overwrite-if_sid">8.8.6. Overriding and adjusting base rules (overwrite / <code>&lt;if_sid&gt;</code>)</h3>
+<p>Do not edit the base files; instead, in <code>local_rules.xml</code>:</p>
+<blockquote>
+<p><strong>[DEMO]</strong> The override/exception example illustrates the <code>overwrite</code> and <code>&lt;if_sid&gt;</code> mechanisms; the trusted <code>srcip</code> range must be set to your real internal network.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;!-- Lower the level of a noisy base rule in your environment --&gt;
+&lt;rule id=&quot;5710&quot; level=&quot;0&quot; overwrite=&quot;yes&quot;&gt;
+  &lt;description&gt;sshd: non-existent user (silenced in the admin subnet)&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>Or create a conditional exception:</p>
+<pre><code class="language-xml">&lt;rule id=&quot;100200&quot; level=&quot;0&quot;&gt;
+  &lt;if_sid&gt;5710&lt;/if_sid&gt;
+  &lt;field name=&quot;srcip&quot;&gt;10.0.0.0/8&lt;/field&gt;   &lt;!-- ignore if from the trusted internal network --&gt;
+  &lt;description&gt;Ignore sshd failures from the internal admin network&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<hr />
+<h2 id="ch08-89-fim-syscheck-file-integrity-monitoring">8.9. FIM / Syscheck — file integrity monitoring</h2>
+<h3 id="ch08-891-what-it-is">8.9.1. What it is</h3>
+<p><strong>FIM (File Integrity Monitoring)</strong> — the <code>syscheckd</code> module — detects changes to files/directories/registry: creation, modification, deletion. It is used to catch webshells, binary tampering, and modifications to sensitive configuration files.</p>
+<h3 id="ch08-892-mechanism">8.9.2. Mechanism</h3>
+<p>Syscheck maintains a <strong>state database</strong> (the FIM database, SQLite in Wazuh 4.x) storing for each file:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute stored</th>
+<th>Size/type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>int</td>
+<td>Size in bytes</td>
+</tr>
+<tr>
+<td><code>perm</code></td>
+<td>mode bits</td>
+<td>Permissions (rwx)</td>
+</tr>
+<tr>
+<td><code>uid</code>/<code>gid</code></td>
+<td>int</td>
+<td>Owner/group</td>
+</tr>
+<tr>
+<td><code>inode</code></td>
+<td>int</td>
+<td>Inode number (Linux)</td>
+</tr>
+<tr>
+<td><code>mtime</code></td>
+<td>timestamp</td>
+<td>Content-modification time</td>
+</tr>
+<tr>
+<td><code>md5</code></td>
+<td>128-bit (32 hex)</td>
+<td>MD5 hash</td>
+</tr>
+<tr>
+<td><code>sha1</code></td>
+<td>160-bit (40 hex)</td>
+<td>SHA-1 hash</td>
+</tr>
+<tr>
+<td><code>sha256</code></td>
+<td>256-bit (64 hex)</td>
+<td>SHA-256 hash (the recommended default)</td>
+</tr>
+</tbody>
+</table>
+<p>Two modes:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Mechanism</th>
+<th>Detection latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scheduled scan</strong></td>
+<td>Periodic scan (<code>&lt;frequency&gt;</code>), comparing the new hash to the DB</td>
+<td>Per cycle (seconds/hours)</td>
+</tr>
+<tr>
+<td><strong>Real-time</strong></td>
+<td>Uses <code>inotify</code> (Linux) / <code>ReadDirectoryChangesW</code> (Windows) to receive kernel events instantly</td>
+<td>Near-instant</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why use a hash and not just mtime:</strong> An attacker can <code>touch</code> a file to restore the mtime after editing it. A content hash (SHA-256) catches content changes even when metadata is forged. SHA-256 is chosen because it is more collision-resistant than MD5/SHA-1.</p>
+<h3 id="ch08-893-example-syscheck-configuration-in-ossecconf">8.9.3. Example — <code>&lt;syscheck&gt;</code> configuration in <code>ossec.conf</code></h3>
+<blockquote>
+<p><strong>[PROD]</strong> The configuration below is tight enough to use for a typical web host (realtime in the right places, noise exclusions, <code>&lt;nodiff&gt;</code> for sensitive paths); still review the <code>&lt;directories&gt;</code> list per system.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;syscheck&gt;
+  &lt;disabled&gt;no&lt;/disabled&gt;
+  &lt;frequency&gt;43200&lt;/frequency&gt;            &lt;!-- scheduled scan every 12 hours --&gt;
+  &lt;scan_on_start&gt;yes&lt;/scan_on_start&gt;
+
+  &lt;!-- Web directory: realtime + report content changes --&gt;
+  &lt;directories check_all=&quot;yes&quot; realtime=&quot;yes&quot; report_changes=&quot;yes&quot;&gt;/var/www/html&lt;/directories&gt;
+
+  &lt;!-- Sensitive configuration files: track every attribute --&gt;
+  &lt;directories check_all=&quot;yes&quot; realtime=&quot;yes&quot;&gt;/etc,/usr/bin,/usr/sbin&lt;/directories&gt;
+
+  &lt;!-- Exclusions to reduce noise --&gt;
+  &lt;ignore&gt;/etc/mtab&lt;/ignore&gt;
+  &lt;ignore&gt;/var/www/html/cache&lt;/ignore&gt;
+  &lt;ignore type=&quot;sregex&quot;&gt;.log$&lt;/ignore&gt;
+
+  &lt;!-- Do not hash large files to save resources --&gt;
+  &lt;skip_nfs&gt;yes&lt;/skip_nfs&gt;
+  &lt;nodiff&gt;/etc/ssl/private&lt;/nodiff&gt;       &lt;!-- do not store content diffs (they contain secrets) --&gt;
+&lt;/syscheck&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>&lt;directories&gt;</code> attribute</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>check_all="yes"</code></td>
+<td>Checks size+perm+owner+mtime+inode+the hashes</td>
+</tr>
+<tr>
+<td><code>realtime="yes"</code></td>
+<td>Enables inotify for this directory</td>
+</tr>
+<tr>
+<td><code>report_changes="yes"</code></td>
+<td>Stores the <em>content diff</em> (for text files) so you can see exactly which line changed</td>
+</tr>
+<tr>
+<td><code>whodata="yes"</code></td>
+<td>Uses auditd to know <em>who</em> (uid/process) made the change (more advanced than realtime)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-894-example-a-sample-fim-alert-webshell">8.9.4. Example — a sample FIM alert (webshell)</h3>
+<p>When an attacker drops <code>shell.php</code> into <code>/var/www/html</code>, syscheck (realtime) generates an event that matches a base FIM rule (the <code>syscheck</code> group, rules 550–554), and alerts.json (for investigating such an alert, see <a href="ch10.html">Chapter 10</a>):</p>
+<pre><code class="language-json">{
+  &quot;rule&quot;: { &quot;id&quot;: &quot;554&quot;, &quot;level&quot;: 7, &quot;description&quot;: &quot;File added to the system.&quot; },
+  &quot;syscheck&quot;: {
+    &quot;path&quot;: &quot;/var/www/html/shell.php&quot;,
+    &quot;event&quot;: &quot;added&quot;,
+    &quot;sha256_after&quot;: &quot;9f2c...e1&quot;,
+    &quot;uid_after&quot;: &quot;33&quot;, &quot;gname_after&quot;: &quot;www-data&quot;,
+    &quot;mtime_after&quot;: &quot;2026-06-19T11:30:02&quot;
+  },
+  &quot;location&quot;: &quot;syscheck&quot;
+}
+</code></pre>
+<p><strong>Warning:</strong>
+- <code>report_changes</code>/<code>nodiff</code>: do not store the diff of files containing secrets (private keys, <code>/etc/shadow</code>) — the diff stored in the Wazuh DB could leak secrets. Use <code>&lt;nodiff&gt;</code> for sensitive paths.
+- Realtime on an extremely large directory (e.g. <code>/</code>) exhausts the kernel's inotify watches (<code>fs.inotify.max_user_watches</code>) → silent loss of monitoring. Use realtime only where it is needed.</p>
+<hr />
+<h2 id="ch08-810-active-response-automated-response">8.10. Active Response — automated response</h2>
+<h3 id="ch08-8101-what-it-is">8.10.1. What it is</h3>
+<p><strong>Active Response (AR)</strong> allows Wazuh to automatically run a command (script) when a rule matches — for example, blocking an attacking IP with a firewall. This is the integrated "mini-SOAR" capability, executed by <code>wazuh-execd</code> on the agent or the manager.</p>
+<h3 id="ch08-8102-mechanism-flow-state">8.10.2. Mechanism (flow + state)</h3>
+<pre><code>Rule X matches (e.g. brute-force level &gt;=10)
+        │
+        ▼
+analysisd checks for any linked &lt;active-response&gt; (via &lt;rules_id&gt; or &lt;level&gt;)
+        │  yes
+        ▼
+the manager sends the AR command down to the target agent (over the 1514 channel)
+        │
+        ▼
+wazuh-execd on the agent calls a script in /var/ossec/active-response/bin/
+        ├─ action = &quot;add&quot;     → block (e.g. add an iptables DROP rule for srcip)
+        └─ after &lt;timeout&gt; seconds  → call back with action = &quot;delete&quot; → unblock
+</code></pre>
+<p>The AR script receives parameters via <strong>stdin (JSON)</strong> in Wazuh 4.x: comprising <code>command</code> (<code>add</code>/<code>delete</code>) and <code>parameters.alert</code> (the entire alert, which contains <code>srcip</code>). Why a timeout: blocking permanently risks a self-DoS (mistakenly blocking a legitimate IP, or a shared NAT IP) — the timeout allows automatic removal.</p>
+<h3 id="ch08-8103-real-world-example-blocking-a-brute-force-ip-with-firewall-drop">8.10.3. Real-world example — blocking a brute-force IP with firewall-drop</h3>
+<blockquote>
+<p><strong>[DEMO]</strong> The AR configuration below illustrates the automatic block/unblock flow; before enabling it in production you must have an allowlist of infrastructure IPs and restrict <code>&lt;location&gt;</code> (see the Warning at the end of this section).</p>
+</blockquote>
+<p>Step 1 — define the <strong>command</strong> and the <strong>active-response</strong> in <code>ossec.conf</code> (on the manager):</p>
+<pre><code class="language-xml">&lt;!-- Command: points to the built-in firewall-drop script --&gt;
+&lt;command&gt;
+  &lt;name&gt;firewall-drop&lt;/name&gt;
+  &lt;executable&gt;firewall-drop&lt;/executable&gt;   &lt;!-- /var/ossec/active-response/bin/firewall-drop --&gt;
+  &lt;timeout_allowed&gt;yes&lt;/timeout_allowed&gt;
+&lt;/command&gt;
+
+&lt;!-- Active response: run the command on the agent that has the event, block for 600s --&gt;
+&lt;active-response&gt;
+  &lt;command&gt;firewall-drop&lt;/command&gt;
+  &lt;location&gt;local&lt;/location&gt;          &lt;!-- local = run on the agent where the event occurred --&gt;
+  &lt;rules_id&gt;100110&lt;/rules_id&gt;         &lt;!-- this is the brute-force rule from 8.8.5 --&gt;
+  &lt;timeout&gt;600&lt;/timeout&gt;              &lt;!-- unblock after 600 seconds --&gt;
+&lt;/active-response&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>&lt;location&gt;</code></th>
+<th>Where it runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local</code></td>
+<td>On the agent that generated the event</td>
+</tr>
+<tr>
+<td><code>server</code></td>
+<td>On the manager</td>
+</tr>
+<tr>
+<td><code>defined-agent</code></td>
+<td>On a specified agent (<code>&lt;agent_id&gt;</code>)</td>
+</tr>
+<tr>
+<td><code>all</code></td>
+<td>All agents (be careful!)</td>
+</tr>
+</tbody>
+</table>
+<p>Step 2 — <code>firewall-drop</code> (the built-in script) on the Linux agent executes the equivalent of:</p>
+<pre><code class="language-bash"># action=add:
+iptables -I INPUT -s 203.0.113.5 -j DROP
+# after 600s, action=delete:
+iptables -D INPUT -s 203.0.113.5 -j DROP
+</code></pre>
+<p>Step 3 — the AR alert is written in <code>active-responses.log</code> on the agent:</p>
+<pre><code>2026-06-19 11:31:00 /var/ossec/active-response/bin/firewall-drop: add - 203.0.113.5 - 1718796660.123456 - 100110
+</code></pre>
+<p><strong>Warning:</strong>
+- <strong>Anti self-DoS:</strong> an attacker spoofs srcip = the IP of an internal gateway/DNS in the log to force Wazuh to block your own infrastructure. Always maintain an <strong>allowlist</strong> (the firewall-drop script has a mechanism to skip IPs on a whitelist); do not enable AR <code>all</code> for rules that are easily spoofed.
+- AR runs with high privileges (iptables requires root) → the AR script is an attack surface; use only vetted scripts with tight file permissions.
+- Prefer AR <code>local</code> over <code>all</code> to limit the impact.</p>
+<hr />
+<h2 id="ch08-811-vulnerability-detection">8.11. Vulnerability Detection</h2>
+<h3 id="ch08-8111-what-it-is-and-the-mechanism">8.11.1. What it is and the mechanism</h3>
+<p>The <code>wazuh-modulesd</code> module (Vulnerability Detector) cross-references the <strong>list of installed packages</strong> (sent by the agent via syscollector) against a <strong>CVE feed</strong> to report which host has which vulnerability.</p>
+<p>Flow:</p>
+<pre><code>1. syscollector (on the agent) lists packages + versions + OS  ──▶ manager
+2. The Vulnerability Detector downloads/updates the CVE feed
+      (sources: NVD, Canonical/Ubuntu OVAL, Red Hat, Debian, Microsoft MSU, ALAS, ...)
+3. Compare: package P version V vs the condition &quot;affected if V &lt; V_fixed&quot;
+4. Generate an alert if it matches, with the CVE id, CVSS, package, fixed version
+</code></pre>
+<blockquote>
+<p>Version-specific architecture note: the configuration approach and feed sources of Vulnerability Detection <strong>have changed significantly between 4.x minor versions</strong> (the old feed model based directly on OVAL/NVD vs the new "Vulnerability Detection" model based on Wazuh's Content Manager/CTI). Verify the syntax of the configuration block against the documentation for the exact version you are running. The section below illustrates the old OVAL/NVD-style configuration to convey the principle.</p>
+</blockquote>
+<h3 id="ch08-8112-example-the-old-style-configuration-illustrating-the-principle">8.11.2. Example — the old-style configuration (illustrating the principle)</h3>
+<pre><code class="language-xml">&lt;vulnerability-detector&gt;
+  &lt;enabled&gt;yes&lt;/enabled&gt;
+  &lt;interval&gt;5m&lt;/interval&gt;
+  &lt;run_on_start&gt;yes&lt;/run_on_start&gt;
+
+  &lt;provider name=&quot;canonical&quot;&gt;          &lt;!-- Ubuntu OVAL --&gt;
+    &lt;enabled&gt;yes&lt;/enabled&gt;
+    &lt;os&gt;focal&lt;/os&gt;
+    &lt;os&gt;jammy&lt;/os&gt;
+    &lt;update_interval&gt;1h&lt;/update_interval&gt;
+  &lt;/provider&gt;
+
+  &lt;provider name=&quot;nvd&quot;&gt;                &lt;!-- NVD supplements CVSS/CPE --&gt;
+    &lt;enabled&gt;yes&lt;/enabled&gt;
+    &lt;update_interval&gt;1h&lt;/update_interval&gt;
+  &lt;/provider&gt;
+&lt;/vulnerability-detector&gt;
+</code></pre>
+<h3 id="ch08-8113-example-a-sample-cve-alert">8.11.3. Example — a sample CVE alert</h3>
+<pre><code class="language-json">{
+  &quot;rule&quot;: { &quot;level&quot;: 7, &quot;description&quot;: &quot;CVE-2024-XXXX affects openssl&quot; },
+  &quot;data&quot;: {
+    &quot;vulnerability&quot;: {
+      &quot;cve&quot;: &quot;CVE-2024-XXXX&quot;,
+      &quot;package&quot;: { &quot;name&quot;: &quot;openssl&quot;, &quot;version&quot;: &quot;3.0.2-0ubuntu1.10&quot; },
+      &quot;severity&quot;: &quot;High&quot;,
+      &quot;cvss&quot;: { &quot;cvss3&quot;: { &quot;base_score&quot;: &quot;7.5&quot; } },
+      &quot;status&quot;: &quot;Active&quot;,
+      &quot;reference&quot;: &quot;https://ubuntu.com/security/CVE-2024-XXXX&quot;
+    }
+  }
+}
+</code></pre>
+<p><strong>Note:</strong> Vulnerability Detection reports a <strong>potential vulnerability based on version</strong>; it does not confirm actual exploitability (it does not always know whether the distro has backported a patch). You must cross-reference with reachability/exposure before prioritizing a patch — to avoid "CVE noise".</p>
+<hr />
+<h2 id="ch08-812-sca-security-configuration-assessment">8.12. SCA — Security Configuration Assessment</h2>
+<h3 id="ch08-8121-what-it-is">8.12.1. What it is</h3>
+<p><strong>SCA</strong> checks system configuration against a baseline (the CIS Benchmark, for example "SSH does not allow root login", "passwords must have a complexity requirement"). This module runs <strong>policies</strong> in YAML form on the agent and reports pass/fail for each check.</p>
+<h3 id="ch08-8122-mechanism-the-structure-of-a-policy-check">8.12.2. Mechanism — the structure of a policy check</h3>
+<p>An SCA policy (a YAML file in <code>/var/ossec/ruleset/sca/</code>) comprises <code>checks</code>, each check having <code>rules</code> evaluated by logic.</p>
+<blockquote>
+<p><strong>[DEMO]</strong> The sample check below illustrates the <code>rules</code>/<code>condition</code> syntax; use Wazuh's official CIS policy directly rather than copying individual checks by hand.</p>
+</blockquote>
+<pre><code class="language-yaml">policy:
+  id: &quot;cis_debian12&quot;
+  name: &quot;CIS Debian Linux 12 Benchmark&quot;
+
+checks:
+  - id: 5001
+    title: &quot;Ensure SSH PermitRootLogin is disabled&quot;
+    description: &quot;PermitRootLogin should = no to block direct root login&quot;
+    rationale: &quot;Reduces the brute-force surface against the highest-privilege account&quot;
+    remediation: &quot;Set 'PermitRootLogin no' in /etc/ssh/sshd_config then reload sshd&quot;
+    condition: all          # all rules must be true to PASS
+    rules:
+      - 'f:/etc/ssh/sshd_config -&gt; r:^\s*PermitRootLogin\s+no'
+</code></pre>
+<p><code>rules</code> syntax (atomic checks):</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>f:</code></td>
+<td>File exists</td>
+<td><code>f:/etc/ssh/sshd_config</code></td>
+</tr>
+<tr>
+<td><code>f:... -&gt; r:</code></td>
+<td>File contains a regex</td>
+<td><code>f:/etc/ssh/sshd_config -&gt; r:^PermitRootLogin no</code></td>
+</tr>
+<tr>
+<td><code>c:</code></td>
+<td>Run a command, compare its output</td>
+<td><code>c:sysctl net.ipv4.ip_forward -&gt; r:= 0$</code></td>
+</tr>
+<tr>
+<td><code>d:</code></td>
+<td>Directory exists</td>
+<td><code>d:/etc/cron.d</code></td>
+</tr>
+<tr>
+<td><code>p:</code></td>
+<td>Process is running</td>
+<td><code>p:auditd</code></td>
+</tr>
+<tr>
+<td><code>r:</code></td>
+<td>Registry key (Windows)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>condition</code>: <code>all</code> (every rule true), <code>any</code> (one rule true), <code>none</code> (no rule true).</p>
+<h3 id="ch08-8123-example-an-sca-result-on-the-dashboard-alert">8.12.3. Example — an SCA result on the dashboard / alert</h3>
+<pre><code class="language-json">{
+  &quot;data&quot;: {
+    &quot;sca&quot;: {
+      &quot;type&quot;: &quot;check&quot;,
+      &quot;policy&quot;: &quot;CIS Debian Linux 12 Benchmark&quot;,
+      &quot;check&quot;: {
+        &quot;id&quot;: &quot;5001&quot;,
+        &quot;title&quot;: &quot;Ensure SSH PermitRootLogin is disabled&quot;,
+        &quot;result&quot;: &quot;failed&quot;,
+        &quot;remediation&quot;: &quot;Set 'PermitRootLogin no' in /etc/ssh/sshd_config&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>Note:</strong> SCA is <em>configuration drift detection</em> — it runs periodically. A host that "passed 90%" may still have a 10% failure that is a serious vulnerability; read it check by check, not just by the total score.</p>
+<hr />
+<h2 id="ch08-813-mitre-attck-integration">8.13. MITRE ATT&amp;CK integration</h2>
+<h3 id="ch08-8131-what-it-is">8.13.1. What it is</h3>
+<p><strong>MITRE ATT&amp;CK</strong> is a matrix that standardizes attacker techniques by Tactic (the objective) → Technique (the method). Wazuh attaches a technique code (<code>T####</code>, sub-technique <code>T####.###</code>) to rules, allowing the dashboard to display attacks by the matrix and to support threat hunting. How to map techniques and read the ATT&amp;CK matrix is covered in <a href="ch15.html">Chapter 15</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tactic</td>
+<td><code>Credential Access</code> (TA0006)</td>
+</tr>
+<tr>
+<td>Technique</td>
+<td><code>T1110</code> Brute Force</td>
+</tr>
+<tr>
+<td>Sub-technique</td>
+<td><code>T1110.001</code> Password Guessing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8132-example-attaching-mitre-to-a-rule-as-seen-in-885">8.13.2. Example — attaching MITRE to a rule (as seen in 8.8.5)</h3>
+<pre><code class="language-xml">&lt;rule id=&quot;100110&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;description&gt;Paywall brute-force&lt;/description&gt;
+  &lt;mitre&gt;
+    &lt;id&gt;T1110&lt;/id&gt;
+  &lt;/mitre&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>On the dashboard, this alert appears in the <strong>MITRE ATT&amp;CK</strong> module, grouped by the <code>Credential Access</code> Tactic, allowing you to answer "how many events belonging to Credential Access occurred in the past week, and on which hosts."</p>
+<p><strong>Note:</strong> Attaching the correct MITRE technique is part of detection engineering — attaching the wrong one distorts the coverage report (you think you have covered technique X but the rule actually catches something else).</p>
+<hr />
+<h2 id="ch08-814-detection-engineering-writing-and-tuning-rules-fp-vs-fn">8.14. Detection Engineering — writing and tuning rules, FP vs FN</h2>
+<h3 id="ch08-8141-fp-and-fn">8.14.1. FP and FN</h3>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Definition</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>False Positive (FP)</strong></td>
+<td>An alert fires but is not an attack</td>
+<td>Analyst fatigue (alert fatigue), missing real alerts</td>
+</tr>
+<tr>
+<td><strong>False Negative (FN)</strong></td>
+<td>A real attack but no alert</td>
+<td>Slips through — the most dangerous</td>
+</tr>
+<tr>
+<td><strong>True Positive (TP)</strong></td>
+<td>A correct alert</td>
+<td>Ideal</td>
+</tr>
+<tr>
+<td><strong>True Negative (TN)</strong></td>
+<td>No alert, and it really is safe</td>
+<td>Ideal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The core trade-off:</strong> Lowering the threshold (low frequency, high level for a single event) → reduces FN but increases FP. Raising the threshold → reduces FP but increases FN. Detection engineering is finding the balance point according to the asset's context.</p>
+<p>Quantitative metrics:</p>
+<pre><code>Precision = TP / (TP + FP)     (how trustworthy a fired alert is)
+Recall    = TP / (TP + FN)     (what fraction of real attacks are caught)
+</code></pre>
+<h3 id="ch08-8142-the-tuning-process-a-loop">8.14.2. The tuning process (a loop)</h3>
+<pre><code>1. Write a hypothesis rule (based on the decoder + fields).
+2. Test offline with wazuh-logtest on sample logs (both attack samples and benign samples).
+3. Deploy at a LOW level (e.g. level 3) — observe the volume, take no action.
+4. Measure FP: the fraction of alerts that are benign. If high → add conditions (field/srcip allowlist) or increase frequency.
+5. Measure FN: replay known attack samples — does the rule fire?
+6. When precision is acceptable, raise the level + (optionally) attach an active-response.
+7. Repeat periodically (the environment changes → rules become outdated).
+</code></pre>
+<h3 id="ch08-8143-example-tuning-the-brute-force-rule-to-reduce-fp">8.14.3. Example — tuning the brute-force rule to reduce FP</h3>
+<p>The problem: rule 100110 fires when a proxy/NAT makes many real users fail from the same srcip. Tuning:</p>
+<blockquote>
+<p><strong>[DEMO]</strong> The tuned rule pair below illustrates FP-reduction techniques (changing the group key, excluding a NAT range); the IP ranges and thresholds must be changed to your real environment.</p>
+</blockquote>
+<pre><code class="language-xml">&lt;!-- v2: only count brute-force when the same IP BUT a different user (a sign of user enumeration),
+         and exclude the trusted internal NAT range --&gt;
+&lt;rule id=&quot;100111&quot; level=&quot;12&quot; frequency=&quot;10&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;100100&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;different_source_user /&gt;      &lt;!-- many different users from 1 IP = account enumeration --&gt;
+  &lt;description&gt;Paywall: enumeration of many accounts from $(srcip) (suspected credential stuffing)&lt;/description&gt;
+  &lt;mitre&gt;&lt;id&gt;T1110.004&lt;/id&gt;&lt;/mitre&gt;  &lt;!-- Credential Stuffing --&gt;
+&lt;/rule&gt;
+
+&lt;!-- Suppress FP: ignore the office NAT range --&gt;
+&lt;rule id=&quot;100112&quot; level=&quot;0&quot;&gt;
+  &lt;if_sid&gt;100110&lt;/if_sid&gt;
+  &lt;field name=&quot;srcip&quot;&gt;^10.20.0.&lt;/field&gt;
+  &lt;description&gt;Ignore fake brute-force from the office NAT&lt;/description&gt;
+&lt;/rule&gt;
+</code></pre>
+<h3 id="ch08-8144-principles-of-writing-good-rules">8.14.4. Principles of writing good rules</h3>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anchor your regex (<code>^</code>, <code>$</code>), match fields rather than substrings when possible</td>
+<td>Avoids mismatches, faster</td>
+</tr>
+<tr>
+<td>Place the <code>id</code> in 100000–120000</td>
+<td>Does not collide with base rules, not lost on update</td>
+</tr>
+<tr>
+<td>Start at a low level, raise gradually</td>
+<td>Avoids harm from active-response due to FPs</td>
+</tr>
+<tr>
+<td>Document the <code>&lt;description&gt;</code> clearly with field interpolation</td>
+<td>The analyst understands immediately during triage</td>
+</tr>
+<tr>
+<td>Attach the correct <code>&lt;mitre&gt;</code></td>
+<td>Measures coverage</td>
+</tr>
+<tr>
+<td>Have both positive and negative test cases</td>
+<td>Ensures no FN and no FP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8145-tuning-lessons-from-real-operations">8.14.5. Tuning lessons from real operations</h3>
+<p>A few things I learned after some time on duty with a real monitoring stack (not a lab):</p>
+<ul>
+<li><strong>Whitelist your internal admin IP ranges first.</strong> Most of the repetitive authentication/web alerts turned out to come from the operations team itself: SSH over VPN, healthchecks, CI jobs. A conditional level-0 rule keyed on <code>srcip</code> for the admin range (exactly the pattern in 8.8.6) cuts the largest amount of noise for the least effort. Caveat: only whitelist admin/infrastructure ranges for the specific noisy rule groups — do not whitelist the whole office network for every rule type, because an office machine catching malware is entirely possible.</li>
+<li><strong>Standardize alert content: an alert must answer "which host, what, from where" on its own.</strong> If the on-call person has to open the dashboard just to learn which host an alert fired on, the alert is not finished. Interpolate fields into <code>&lt;description&gt;</code> (<code>$(srcip)</code>, the agent name in the notification channel) — triage time drops noticeably.</li>
+<li><strong>Alert on resource symptoms, not only on logs.</strong> I added an alert for abnormally sustained high CPU (from node_exporter metrics, or a <code>log_format command</code> entry running a periodic command) — cryptominers usually reveal themselves through CPU before they reveal themselves through any log line. The SIEM catches events; the metrics stack catches symptoms; the two sources complement each other (for metric monitoring see <a href="ch09.html">Chapter 9</a>).</li>
+</ul>
+<hr />
+<h2 id="ch08-815-end-to-end-example-ssh-brute-force-from-raw-log-to-dashboard-alert">8.15. End-to-end example: SSH brute-force from raw log to dashboard alert</h2>
+<p>Putting the whole chain together: <strong>log → predecode → decode → stateless rule → correlation rule → alert → (active response) → indexer → dashboard.</strong></p>
+<h3 id="ch08-step-0-configure-the-agent-to-read-authlog">Step 0 — Configure the agent to read auth.log</h3>
+<p><code>ossec.conf</code> (agent):</p>
+<pre><code class="language-xml">&lt;localfile&gt;
+  &lt;log_format&gt;syslog&lt;/log_format&gt;
+  &lt;location&gt;/var/log/auth.log&lt;/location&gt;
+&lt;/localfile&gt;
+</code></pre>
+<h3 id="ch08-step-1-the-raw-logs-are-produced-3-illustrative-lines">Step 1 — The raw logs are produced (3 illustrative lines)</h3>
+<pre><code>Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+Jun 19 10:22:43 web01 sshd[2933]: Failed password for invalid user admin from 203.0.113.5 port 51290 ssh2
+... (repeated 8 times within ~30s)
+</code></pre>
+<h3 id="ch08-step-2-predecoding-analysisd">Step 2 — PreDecoding (analysisd)</h3>
+<pre><code>timestamp:    Jun 19 10:22:41
+hostname:     web01
+program_name: sshd
+log:          Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<h3 id="ch08-step-3-decoding-the-base-sshd-decoder">Step 3 — Decoding (the base sshd decoder)</h3>
+<pre><code>srcuser: admin
+srcip:   203.0.113.5
+srcport: 51244
+</code></pre>
+<h3 id="ch08-step-4-a-base-stateless-rule-matches">Step 4 — A base stateless rule matches</h3>
+<p>Wazuh ships a rule for this out of the box:</p>
+<pre><code class="language-xml">&lt;!-- (base rule, illustrative) --&gt;
+&lt;rule id=&quot;5710&quot; level=&quot;5&quot;&gt;
+  &lt;if_sid&gt;5700&lt;/if_sid&gt;
+  &lt;match&gt;Failed password|authentication failure|invalid user&lt;/match&gt;
+  &lt;description&gt;sshd: Attempt to login using a non-existent user.&lt;/description&gt;
+  &lt;group&gt;authentication_failed,invalid_login,&lt;/group&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>→ Each failure line creates a level-5 alert.</p>
+<h3 id="ch08-step-5-a-base-correlation-rule-matches-brute-force">Step 5 — A base correlation rule matches (brute-force)</h3>
+<pre><code class="language-xml">&lt;!-- (base rule, illustrative) — many authentication_failed from the same IP --&gt;
+&lt;rule id=&quot;5712&quot; level=&quot;10&quot; frequency=&quot;8&quot; timeframe=&quot;120&quot;&gt;
+  &lt;if_matched_sid&gt;5710&lt;/if_matched_sid&gt;
+  &lt;same_source_ip /&gt;
+  &lt;description&gt;sshd: brute force trying to get access to the system. Authentication failed.&lt;/description&gt;
+  &lt;group&gt;authentication_failures,&lt;/group&gt;
+  &lt;mitre&gt;&lt;id&gt;T1110&lt;/id&gt;&lt;/mitre&gt;
+&lt;/rule&gt;
+</code></pre>
+<p>→ After the 8th failure within 120s from <code>203.0.113.5</code>, a level-10 alert fires.</p>
+<h3 id="ch08-step-6-the-alert-json-written-to-varosseclogsalertsalertsjson">Step 6 — The alert JSON (written to <code>/var/ossec/logs/alerts/alerts.json</code>)</h3>
+<p>This alert is the starting point of the incident investigation/response process (see <a href="ch10.html">Chapter 10</a>).</p>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: &quot;2026-06-19T10:23:11.044+0000&quot;,
+  &quot;rule&quot;: {
+    &quot;id&quot;: &quot;5712&quot;,
+    &quot;level&quot;: 10,
+    &quot;description&quot;: &quot;sshd: brute force trying to get access to the system.&quot;,
+    &quot;groups&quot;: [&quot;syslog&quot;, &quot;sshd&quot;, &quot;authentication_failures&quot;],
+    &quot;mitre&quot;: { &quot;id&quot;: [&quot;T1110&quot;], &quot;tactic&quot;: [&quot;Credential Access&quot;], &quot;technique&quot;: [&quot;Brute Force&quot;] },
+    &quot;frequency&quot;: 8
+  },
+  &quot;agent&quot;: { &quot;id&quot;: &quot;001&quot;, &quot;name&quot;: &quot;web01&quot;, &quot;ip&quot;: &quot;192.0.2.10&quot; },
+  &quot;data&quot;: { &quot;srcip&quot;: &quot;203.0.113.5&quot;, &quot;srcuser&quot;: &quot;admin&quot;, &quot;srcport&quot;: &quot;51244&quot; },
+  &quot;decoder&quot;: { &quot;name&quot;: &quot;sshd&quot; },
+  &quot;location&quot;: &quot;/var/log/auth.log&quot;,
+  &quot;full_log&quot;: &quot;Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2&quot;
+}
+</code></pre>
+<h3 id="ch08-step-7-active-response-optional-blocks-the-ip">Step 7 — Active Response (optional) blocks the IP</h3>
+<p>If you configure <code>&lt;active-response&gt;</code> with <code>&lt;rules_id&gt;5712&lt;/rules_id&gt;</code>, the manager instructs agent web01 to run <code>firewall-drop</code>:</p>
+<pre><code>iptables -I INPUT -s 203.0.113.5 -j DROP   # auto-removed after &lt;timeout&gt;
+</code></pre>
+<h3 id="ch08-step-8-filebeat-indexer-dashboard">Step 8 — Filebeat → Indexer → Dashboard</h3>
+<ul>
+<li><code>Filebeat</code> (configured in <code>/etc/filebeat/filebeat.yml</code> with the <code>wazuh</code> module) reads <code>alerts.json</code> and pushes it into the index <code>wazuh-alerts-4.x-2026.06.19</code> on the indexer (port 9200).</li>
+<li>The Dashboard queries the index and displays the level-10 alert in Security Events; in the MITRE ATT&amp;CK module it belongs to Tactic <em>Credential Access</em> / Technique <em>T1110</em>.</li>
+</ul>
+<h3 id="ch08-step-9-offline-testing-of-the-whole-chain">Step 9 — Offline testing of the whole chain</h3>
+<pre><code class="language-bash"># Quick simulation: paste the log line into logtest to confirm the decoder + rule
+/var/ossec/bin/wazuh-logtest
+# input:
+Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 203.0.113.5 port 51244 ssh2
+</code></pre>
+<p>The output confirms Phase 1/2/3 and rule id 5710 → (after sufficient frequency) 5712.</p>
+<p>End-to-end summary diagram:</p>
+<pre><code>auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──▶ analysisd
+                                                              │
+                       ┌──────────────────────────────────────┘
+                       ▼
+            PreDecode ▶ Decode(sshd: srcip/srcuser) ▶ Rule 5710(L5) ▶ [×8/120s, same_source_ip] ▶ Rule 5712(L10)
+                                                                                                        │
+                                          ┌─────────────────────────────────────────────┬─────────────┘
+                                          ▼                                             ▼
+                                  active-response: firewall-drop              alerts.json ▶ Filebeat ▶ Indexer(9200) ▶ Dashboard(443)
+                                  iptables DROP 203.0.113.5
+</code></pre>
+<hr />
+<h2 id="ch08-816-investigating-a-real-alert-with-wazuh-a-reusable-process">8.16. Investigating a real alert with Wazuh — a reusable process</h2>
+<p>The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: <strong>from one anomalous number on a dashboard back to the original evidence and a conclusion</strong>. This is the process I used to investigate a real scanning campaign on a system I operate (mid-2026); internal details are anonymized, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — <em>what hit us, did it get through, what next</em> — with evidence, not gut feeling.</p>
+<h3 id="ch08-8161-step-1-detection-from-the-dashboard-one-source-dominating">8.16.1. Step 1 — Detection from the dashboard: one source dominating</h3>
+<p>The starting point was a <strong>Top source IPs</strong> panel (mine is self-built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — <code>45.148.10.80</code> — accounted for <strong>536</strong> alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: <code>web</code>, <code>attack</code>. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.</p>
+<p>The lesson right at this step: the dashboard does not answer questions — it only <strong>points at where to ask</strong>. Every conclusion that follows comes from queries.</p>
+<h3 id="ch08-8162-step-2-scoping-with-dev-tools-three-aggregation-queries">8.16.2. Step 2 — Scoping with Dev Tools: three aggregation queries</h3>
+<p>The Wazuh dashboard has <strong>Dev Tools</strong> (a console that sends queries straight to the indexer — OpenSearch/Elasticsearch DSL syntax) against the <code>wazuh-alerts-*</code> index. Three aggregations answer three scoping questions.</p>
+<p><strong>(a) Which hosts is it hitting?</strong> — <code>terms</code> on <code>agent.name</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;by_agent&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;agent.name&quot;,&quot;size&quot;:10}}}}
+</code></pre>
+<p>Result: all 536 alerts sat on <strong>a single dev machine running a web API</strong> (nginx as the reverse proxy, exposed to the Internet). The scope collapsed to exactly one host.</p>
+<p><strong>(b) Which rules is it triggering?</strong> — <code>terms</code> on <code>rule.id</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;rules&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;rule.id&quot;,&quot;size&quot;:15}}}}
+</code></pre>
+<p>Result: <code>31516</code> (suspicious URL — 230), <code>31104</code> (web attack pattern — 218), <code>31151</code>/<code>31153</code> (many 400/404 errors) — all in the "probed and refused" family. Just as important is the rule that did <strong>not</strong> appear: no <code>31106</code> — the rule for a "web attack <strong>returning 200</strong>" (i.e., an attack the server answered successfully). This absent detail is the crux of the conclusion step (8.16.5). These IDs belong to Wazuh's default web access-log ruleset — cross-check against the ruleset version you actually run (needs verification).</p>
+<p><strong>(c) What is the tempo?</strong> — <code>date_histogram</code> on <code>timestamp</code>:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;timeline&quot;:{&quot;date_histogram&quot;:{&quot;field&quot;:&quot;timestamp&quot;,&quot;fixed_interval&quot;:&quot;5m&quot;}}}}
+</code></pre>
+<p>Result: it opened with a single stray request (a probe), climbed ~35 minutes later to a peak of <strong>58 requests per 5 minutes</strong> (roughly one request every 5 seconds), held that steady rhythm for ~2 hours, then went silent. A rhythm that steady is not a human clicking through a browser — it is an automated scanner. This observation later became the technical basis for proposing rate-limiting at the reverse proxy.</p>
+<h3 id="ch08-8163-step-3-reading-the-original-evidence-the-full_log-field">8.16.3. Step 3 — Reading the original evidence: the <code>full_log</code> field</h3>
+<p>Aggregations give you the <em>shape</em> of the incident; for <em>evidence</em> you must read a full document:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:1,&quot;query&quot;:{&quot;bool&quot;:{&quot;filter&quot;:[
+   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
+ &quot;_source&quot;:[&quot;timestamp&quot;,&quot;rule.description&quot;,&quot;full_log&quot;,&quot;data.url&quot;,&quot;GeoLocation&quot;],
+ &quot;sort&quot;:[{&quot;timestamp&quot;:&quot;desc&quot;}]}
+</code></pre>
+<p>The <code>full_log</code> field preserves the access-log line exactly as the agent read it:</p>
+<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&amp;v=zte2h HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
+</code></pre>
+<p>One detail worth dwelling on: when I SSHed into the machine to <code>grep</code> this IP in <code>/var/log/nginx/access.log</code>, there was <strong>not a single line left</strong> — the events had happened the previous day and the log had rotated (logrotate). But the centralized SIEM still held <code>full_log</code> in the index. This was the moment I saw the value of centralized logging with my own eyes: <strong>the evidence does not depend on whether the raw log on the host still exists</strong> — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: <code>sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*</code> against the compressed files.)</p>
+<h3 id="ch08-8164-step-4-interpreting-the-log-line-what-it-is-doing-what-it-is-after">8.16.4. Step 4 — Interpreting the log line: what it is doing, what it is after</h3>
+<p>Read the log line part by part (combined with a <code>terms</code> on <code>data.url</code> to see the full list of probed paths):</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+ &quot;aggs&quot;:{&quot;urls&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.url&quot;,&quot;size&quot;:25}}}}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Observed component</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/....//....//....//home/admin/.ssh/id_rsa</code></td>
+<td><strong>Path traversal</strong> — trying to escape the web root to read system files</td>
+</tr>
+<tr>
+<td><code>....//</code> and (in other requests) <code>%252e%252e</code></td>
+<td><strong>Double encoding</strong> — evading filters that only catch a plain <code>../</code></td>
+</tr>
+<tr>
+<td>Targeting <code>.ssh/id_rsa</code>, <code>.ssh/id_ed25519</code>, <code>.env</code>, <code>.mysql_history</code></td>
+<td>Hunting <strong>SSH keys + application secrets + DB history</strong> — any hit is a jackpot</td>
+</tr>
+<tr>
+<td>Trying <code>root/admin/ubuntu/deploy/ec2-user/git/www-data</code> in turn</td>
+<td>Probing a <strong>wordlist of common users</strong> — automated behavior</td>
+</tr>
+<tr>
+<td>Status codes all <code>301</code>/<code>400</code>/<code>404</code></td>
+<td>The proxy/app <strong>refused everything</strong>; no sign of leakage</td>
+</tr>
+<tr>
+<td>Referer <code>https://www.bing.com/search?q=...</code> (random string)</td>
+<td><strong>Fake referer</strong> — disguised as search-engine traffic</td>
+</tr>
+<tr>
+<td>Rotating User-Agents (Safari/Mac, Chrome/Windows, Android...)</td>
+<td><strong>UA rotation</strong> — an automated tool evading UA-based blocking</td>
+</tr>
+<tr>
+<td>GeoIP: a VPS at a foreign hosting provider</td>
+<td>Not a real user of the system</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch08-8165-step-5-concluding-from-the-rules-that-did-and-did-not-appear">8.16.5. Step 5 — Concluding from the rules that did and did not appear</h3>
+<p>My conclusion of "<strong>not breached</strong>" stood on two legs of evidence:</p>
+<ol>
+<li>Every rule that fired belonged to the "probed and refused" family (suspicious URL, 400/404); the "<strong>web attack returning 200</strong>" rule group — the signature of a <em>successful</em> attack — was entirely absent for this IP.</li>
+<li>The status codes in the sampled <code>full_log</code> lines were all 301/400/404, consistent with (1).</li>
+</ol>
+<p>Two notes on the reasoning:</p>
+<ul>
+<li><strong>The absence of an alert is not the absence of an incident</strong> — the conclusion is only valid within the telemetry currently collected (if decoders/rules do not cover some attack form, the SIEM stays silent even when something happens). So state the conclusion with its scope: "in the alert data available, no sign of success."</li>
+<li>It was precisely by using the "returns 200" criterion that, when widening to the whole fleet (step 6), I found a small group of "attack returning 200" alerts <strong>elsewhere</strong> — which was split off into its own high-priority investigation. A good investigation typically spawns new, well-scoped work items instead of expanding without bounds.</li>
+</ul>
+<h3 id="ch08-8166-step-6-widening-out-from-one-ip-to-the-fleet-picture">8.16.6. Step 6 — Widening out: from one IP to the fleet picture</h3>
+<p>Drop the IP filter, keep the rule-group filter — ask three questions at fleet scale:</p>
+<pre><code class="language-json">GET wazuh-alerts-*/_search
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;terms&quot;:{&quot;rule.groups&quot;:[&quot;attack&quot;]}},
+ &quot;aggs&quot;:{&quot;ips&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.srcip&quot;,&quot;size&quot;:20}}}}
+</code></pre>
+<p>The result completely changed the picture: the IP under investigation ranked only <strong>third</strong> by alert count; above it were sources with thousands of alerts, and many IPs came in <strong>subnet clusters</strong> (<code>185.177.72.x</code> with five distinct addresses, <code>45.148.10.x</code>, <code>195.178.110.x</code>...). Likewise, a <code>terms</code> on <code>agent.name</code> (filtered on <code>rule.groups: ["attack","web"]</code>) showed that <strong>every web-facing machine was being scanned</strong>, not just the initial one; and a <code>terms</code> on <code>rule.description</code> revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.</p>
+<p>The consequence for response: <strong>blocking IPs one by one is "whack-a-mole"</strong> — scanners rotate addresses across whole ranges. The right-layer measures are controlling <em>behavior</em> at the reverse proxy (rate limiting, blocking sensitive file names, a <code>default_server</code> that cuts off unknown Hosts) and shrinking the attack surface (dev environments should not be publicly exposed); for network-layer defense and WAFs see <a href="ch11.html">Chapter 11</a>.</p>
+<h3 id="ch08-8167-method-summary-a-reusable-checklist">8.16.7. Method summary — a reusable checklist</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Question</th>
+<th>Tool / Query</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Detect</td>
+<td>Is any source/group anomalous?</td>
+<td>Dashboard (Top source IPs, Security Events)</td>
+</tr>
+<tr>
+<td>2. Scope</td>
+<td>Which host? Which rules? What tempo?</td>
+<td><code>terms</code> on <code>agent.name</code>, <code>rule.id</code> + <code>date_histogram</code> on <code>timestamp</code>, filtered on <code>data.srcip</code></td>
+</tr>
+<tr>
+<td>3. Evidence</td>
+<td>What is it actually sending?</td>
+<td>Read a full document, the <code>full_log</code> field (+ <code>data.url</code>, <code>GeoLocation</code>)</td>
+</tr>
+<tr>
+<td>4. Interpret</td>
+<td>What technique, targeting what?</td>
+<td>Read the log line part by part; <code>terms</code> on <code>data.url</code></td>
+</tr>
+<tr>
+<td>5. Conclude</td>
+<td>Did it get through? Where is the evidence?</td>
+<td>Presence/absence of "success" rules + status codes; state the conclusion with its telemetry scope</td>
+</tr>
+<tr>
+<td>6. Widen</td>
+<td>Only this IP? Only this host?</td>
+<td>Drop the srcip filter; aggs on <code>data.srcip</code> / <code>agent.name</code> / <code>rule.description</code> over the <code>attack</code>/<code>web</code> groups</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch08-817-soar-automation-on-top-of-the-siem">8.17. SOAR — automation on top of the SIEM</h2>
+<h3 id="ch08-8171-what-soar-is-and-what-problem-it-solves">8.17.1. What SOAR is and what problem it solves</h3>
+<p><strong>SOAR (Security Orchestration, Automation and Response)</strong> is a platform that receives alerts from the SIEM and runs <strong>playbooks</strong> (predefined processing flows): enriching alerts with external data sources, notifying, opening cases, and — once the process has matured — executing responses.</p>
+<p>The root problem: even a well-tuned SIEM produces alerts <strong>faster than humans can read them</strong>. My observation while on duty: most of the time spent triaging a web alert goes not into judgment but into repetitive motions — copy the source IP → open 2–3 tabs to check its reputation → look at the results → decide to dismiss or dig further. A machine can do that entire chain, and SOAR exists precisely for it: <strong>automate the repetitive part, save the humans for the judgment part</strong>.</p>
+<h3 id="ch08-8172-choosing-a-tool-shuffle-vs-thehive-vs-n8n">8.17.2. Choosing a tool: Shuffle vs TheHive vs n8n</h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Nature</th>
+<th>Strength</th>
+<th>Consideration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Shuffle</strong></td>
+<td>Open-source SOAR, drag-and-drop workflows, a security-oriented app/connector store</td>
+<td>Built for the SOC use case: ready-made apps for Wazuh and popular threat-intel sources; easy webhook ingestion</td>
+<td>Smaller community than n8n; UI/docs still rough in places</td>
+</tr>
+<tr>
+<td><strong>TheHive (+ Cortex)</strong></td>
+<td>A <strong>case-management</strong> platform + an observable-analysis engine (Cortex analyzers)</td>
+<td>Case lifecycle management, assignment, evidence storage — a SOC process in the true sense</td>
+<td>Heavy for a first-stage "just enrich + notify" need</td>
+</tr>
+<tr>
+<td><strong>n8n</strong></td>
+<td>General-purpose automation (not security-specific)</td>
+<td>A huge number of connectors; any developer can use it</td>
+<td>No native alert/case/observable concepts — you build the security part yourself</td>
+</tr>
+</tbody>
+</table>
+<p>On the system I operate, I chose <strong>Shuffle</strong> for the first stage: the immediate problem is <em>enrich + notify</em> (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.</p>
+<h3 id="ch08-8173-wazuh-soar-architecture-filter-before-you-push">8.17.3. Wazuh → SOAR architecture: filter before you push</h3>
+<pre><code>Wazuh manager ──(integration/webhook, ONLY alerts level ≥ N)──▶ SOAR (Shuffle)
+                                                                  │
+                                           ┌──────────────────────┤
+                                           ▼                      ▼
+                                 [IP-enrichment playbook]  [other playbooks...]
+                                           │
+                                           ▼
+                                 ops chat channel (with a link back to the original alert in the SIEM)
+</code></pre>
+<p>The most important design point sits right next to Wazuh: <strong>filter by severity before pushing</strong>. Only alerts from a certain level upward (e.g. ≥ 7) go to the SOAR; push everything and the SOAR becomes a noisy mirror of the SIEM while your threat-intel API quota evaporates within an afternoon. Wazuh supports this with the <code>&lt;integration&gt;</code> block in <code>ossec.conf</code> — calling a webhook when an alert meets the condition:</p>
+<pre><code class="language-xml">&lt;integration&gt;
+  &lt;name&gt;custom-soar&lt;/name&gt;                    &lt;!-- a custom-* script in /var/ossec/integrations/ --&gt;
+  &lt;hook_url&gt;https://soar.example.internal/api/v1/hooks/webhook_xxx&lt;/hook_url&gt;
+  &lt;level&gt;7&lt;/level&gt;                            &lt;!-- only push alerts level &gt;= 7 --&gt;
+  &lt;alert_format&gt;json&lt;/alert_format&gt;
+&lt;/integration&gt;
+</code></pre>
+<p>(Besides <code>&lt;level&gt;</code> you can also filter by <code>&lt;rule_id&gt;</code> / <code>&lt;group&gt;</code>; cross-check the syntax against the version you run — needs verification.)</p>
+<h3 id="ch08-8174-the-first-playbook-enrich-the-ip-notify">8.17.4. The first playbook: enrich the IP + notify</h3>
+<p>The enrichment flow I actually run, in order:</p>
+<pre><code>alert JSON from Wazuh
+   │
+   ▼
+1. Extract data.srcip
+2. Filter: is the IP public?
+      ├─ private (RFC 1918) / our own infrastructure IPs → stop (threat-intel lookups on private IPs are both meaningless and quota-burning)
+      └─ public → continue
+3. Query two threat-intel sources in parallel:
+      ├─ an AbuseIPDB-style source  → abuse confidence score (0–100), report count, ISP, usage type
+      └─ a VirusTotal-style source  → how many engines flag it malicious
+4. Assemble a standardized message: WHICH HOST, which rule (id + description), the IP, the score, the engine-flag count
+5. Notify the ops chat channel — always with a link back to the original alert in the SIEM
+</code></pre>
+<p>The value showed within the first week: <strong>distinguishing scanners with a track record from legitimate access flagged by mistake</strong>. For the very same brute-force alert, an IP with a 100% confidence score and thousands of reports is a completely different story from an IP with a score of 0 that turns out to be a partner who changed network ranges. The on-call person can decide from the message alone, without opening three tabs for manual lookups — alert noise drops in the true sense of "lowering the cost of handling one alert," not by hiding alerts.</p>
+<h3 id="ch08-8175-principle-soar-is-a-supplementary-layer-not-a-siem-replacement">8.17.5. Principle: SOAR is a supplementary layer, not a SIEM replacement</h3>
+<ul>
+<li><strong>The original alert and its evidence stay in the SIEM.</strong> The SOAR only keeps a copy for its playbooks. If the SOAR dies, you lose convenience, not data; every notification carries a path back to the SIEM for deep investigation (the process in 8.16).</li>
+<li><strong>Do not rush into automated response.</strong> The roadmap I follow: (1) enrich + notify — the machine only <em>reads</em>, it does not <em>act</em> yet; (2) case management (TheHive-style) once the number of incidents worth tracking grows; (3) response with <strong>human approval</strong> — the playbook stages the action (block an IP, isolate a host) and a human clicks approve; (4) only at the end, full automation for a narrow set of very-high-confidence situations — in exactly the same spirit as Active Response (8.10): an infrastructure allowlist + a self-removing timeout.</li>
+</ul>
+<hr />
+<h2 id="ch08-818-operational-summary-wazuh-security-checklist">8.18. Operational summary &amp; Wazuh security checklist</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data transmission</td>
+<td>TCP 1514 + <code>crypto_method aes</code>; enroll over 1515 with a password/CA</td>
+</tr>
+<tr>
+<td><code>client.keys</code></td>
+<td>Tight permissions, no leaks; stable, unique agent names</td>
+</tr>
+<tr>
+<td>Custom rules/decoders</td>
+<td>Only in <code>local_*.xml</code>, ids 100000+, test with <code>wazuh-logtest</code> &amp; <code>analysisd -t</code> before restart</td>
+</tr>
+<tr>
+<td>FIM</td>
+<td>Realtime in the right places; <code>&lt;nodiff&gt;</code> for paths containing secrets; watch the <code>inotify</code> watches</td>
+</tr>
+<tr>
+<td>Active Response</td>
+<td>Allowlist infrastructure IPs; prefer <code>local</code>; use <code>timeout</code> for auto-removal; tight script permissions</td>
+</tr>
+<tr>
+<td>Vuln/SCA</td>
+<td>Cross-reference the version against the correct feed; read by individual CVE/check, not just the total score</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td><code>logall=no</code> unless doing forensics; a clear retention policy (hot/warm/cold)</td>
+</tr>
+<tr>
+<td>Tuning</td>
+<td>A loop measuring FP/FN; raise the level gradually; review periodically; whitelist admin ranges for the right rule groups</td>
+</tr>
+<tr>
+<td>SOAR</td>
+<td>Filter by level before pushing; the original alert always stays in the SIEM; automated response comes after human approval</td>
+</tr>
+<tr>
+<td>API 55000</td>
+<td>Change default credentials, enable RBAC, restrict the network</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>End of Chapter 8.</em></p>
+<hr />
+<h2 id="ch08-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li>When I first studied SIEMs, I thought their value lay in pretty dashboards and real-time alerts. After my first investigation of a real scanning campaign (section 8.16), I saw that the biggest value lies elsewhere: <strong>the ability to ask questions of centralized data</strong>. The dashboard only points at the anomaly; the entire conclusion came from a few aggregation queries on <code>wazuh-alerts-*</code>.</li>
+<li>My most expensive lesson about centralized logging: when I SSHed into the machine to grep the access log, it had already rotated — <strong>not a single line left</strong> — yet <code>full_log</code> in the index preserved every line of evidence intact. If my monitoring had been "SSH in and read the logs when something happens," I would have been left with nothing. Centralized logging is not for show — it is the only place where evidence survives logrotate (and an attacker wiping logs on the host).</li>
+<li>I used to assume the correct response to an attacking IP was to block it. Only when I dropped the IP filter and aggregated on <code>data.srcip</code> across the fleet — and saw dozens of IPs arriving in whole subnet clusters — did I understand why blocking IPs one by one is "whack-a-mole." My ordering is different now: shrink the attack surface (dev environments not publicly exposed) → control behavior at the proxy (rate limiting, blocking sensitive file names) → and only then IP blocking, as a stopgap.</li>
+<li>The surprise when I wired the SIEM into a threat-intel enrichment flow (8.17): the first value was not "catching more attackers" but <strong>quickly telling scanners with a track record apart from false positives</strong> — an IP with a 100% confidence score and thousands of reports is nothing like an IP with a score of 0 that turns out to be legitimate access. It spared us a lot of "whose IP is this?" debates in the ops channel.</li>
+<li>A "not breached" conclusion I dare to put into a report is one standing on two legs of evidence: the "attack returning 200" rules were absent <em>and</em> the status codes in <code>full_log</code> agreed. I also learned to state conclusions with their scope ("within the telemetry available...") — the absence of an alert is not the absence of an incident.</li>
+<li>Still exploring: automatic IP blocking by threshold using fail2ban combined with Wazuh (still at the research stage — I have not dared enable it for fear of self-DoS, see the warning in 8.10); introducing case management once the number of incidents worth tracking grows; and a WAF (ModSecurity + OWASP CRS) as the layer that blocks traversal thoroughly, which plain nginx cannot.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch07.html"><span>← Previous</span><b>07 · CI/CD &amp; GitOps</b></a><a class="pg next" href="ch09.html"><span>Next →</span><b>09 · Observability &amp; Monitoring</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

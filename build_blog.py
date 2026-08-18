@@ -28,12 +28,14 @@ SLUGS = {
 
 LANGS = {
     "vi": {
-        "out": "index.html", "ext": ".md", "htmllang": "vi",
+        "out": "notes.html", "ext": ".md", "htmllang": "vi",
+        "home": "Trang chủ", "home_href": "./",
         "title": "Sổ tay An toàn thông tin",
         "metadesc": "Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.",
         "tag": "Chia sẻ kiến thức · ghi chép khi học &amp; làm",
         "search": "Lọc mục lục…", "intro": "Giới thiệu & Mục lục",
-        "other": "EN", "other_href": "en/",
+        "other": "EN", "other_href": "en/notes.html",
+        "prev": "Chương trước", "next": "Chương sau", "theme_title": "Sáng / Tối / Wibu",
         "groups": {
             "A": "Phần A · Nền tảng", "B": "Phần B · An ninh ứng dụng & DevSecOps",
             "C": "Phần C · Giám sát, Phát hiện & Ứng phó", "D": "Phần D · Phòng thủ mạng & Kiểm thử",
@@ -54,12 +56,14 @@ LANGS = {
         "foot2": "Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.",
     },
     "en": {
-        "out": "en/index.html", "ext": ".en.md", "htmllang": "en",
+        "out": "en/notes.html", "ext": ".en.md", "htmllang": "en",
+        "home": "Home", "home_href": "../",
         "title": "Security Handbook",
         "metadesc": "A security knowledge handbook — notes collected while learning and working in security.",
         "tag": "Notes from learning &amp; working in security",
         "search": "Filter contents…", "intro": "Intro & Contents",
-        "other": "VI", "other_href": "../",
+        "other": "VI", "other_href": "../notes.html",
+        "prev": "Previous", "next": "Next", "theme_title": "Light / Dark / Wibu",
         "groups": {
             "A": "Part A · Fundamentals", "B": "Part B · Application Security & DevSecOps",
             "C": "Part C · Monitoring, Detection & Response", "D": "Part D · Network Defense & Testing",
@@ -91,6 +95,11 @@ def make_slugify(prefix):
     return slug
 
 
+def page_name(n):
+    """Tên file HTML của một chương. Chương 00 (mục lục) là trang gốc của sổ tay."""
+    return "notes.html" if n == "00" else f"ch{n}.html"
+
+
 def render(cfg, n):
     slug = SLUGS[n]
     path = f"{DIR}/KB_{n}_{slug}{cfg['ext']}"
@@ -103,11 +112,9 @@ def render(cfg, n):
         TocExtension(slugify=make_slugify(f"ch{n}"), toc_depth="1-3"),
     ])
     body = md.convert(text)
+    # Cross-reference giữa các chương: #sec-NN giờ là một trang riêng.
+    body = re.sub(r'href="#sec-(\d{2})"', lambda m: f'href="{page_name(m.group(1))}"', body)
     toks = md.toc_tokens
-    ch_id = f"sec-{n}"
-    for t in toks:
-        if t.get("level") == 1:
-            ch_id = t["id"]; break
     subs = []
     def walk(nodes):
         for t in nodes:
@@ -115,16 +122,28 @@ def render(cfg, n):
                 subs.append(t)
             walk(t.get("children", []))
     walk(toks)
+    title = SLUGS[n]
+    for t in toks:
+        if t.get("level") == 1:
+            title = t["name"]; break
     section = f'<section class="chapter" id="sec-{n}" data-ch="{n}">\n{body}\n</section>'
-    sub_links = "".join(
-        f'<a class="nav-sub" href="#{s["id"]}">{_html.escape(s["name"])}</a>' for s in subs
-    )
+    return {"n": n, "section": section, "subs": subs, "title": title}
+
+
+def nav_block(cfg, r, current):
+    """Một mục chương trong sidebar. Chương đang mở mới hiện danh sách mục con."""
+    n = r["n"]
     short = cfg["intro"] if n == "00" else cfg["short"][n]
-    nav = (f'<div class="nav-chapter" data-ch="{n}">'
-           f'<a class="nav-ch-title" href="#{ch_id}"><span class="num">{n}</span>'
-           f'<span class="t">{_html.escape(short)}</span></a>'
-           f'<div class="nav-subs">{sub_links}</div></div>')
-    return section, nav
+    is_cur = (n == current)
+    subs = "".join(
+        f'<a class="nav-sub" href="#{s["id"]}">{_html.escape(s["name"])}</a>' for s in r["subs"]
+    ) if is_cur else ""
+    cls = "nav-chapter open active" if is_cur else "nav-chapter"
+    href = "#top" if is_cur else page_name(n)
+    return (f'<div class="{cls}" data-ch="{n}">'
+            f'<a class="nav-ch-title" href="{href}"><span class="num">{n}</span>'
+            f'<span class="t">{_html.escape(short)}</span></a>'
+            f'<div class="nav-subs">{subs}</div></div>')
 
 
 CSS = r"""
@@ -243,6 +262,19 @@ tbody tr:nth-child(even){background:var(--tbl-zebra)}
 .site-foot a{color:var(--accent)}
 .site-foot .name{color:var(--ink);font-weight:700}
 @media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
 """
 
 JS = r"""
@@ -257,21 +289,33 @@ document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=
   const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
 }));
 const navChapters=[...document.querySelectorAll('.nav-chapter')];
-function openOnly(ch){navChapters.forEach(c=>{c.classList.toggle('open',c.dataset.ch===ch);c.classList.toggle('active',c.dataset.ch===ch);});}
-navChapters.forEach(c=>{c.querySelector('.nav-ch-title').addEventListener('click',()=>{openOnly(c.dataset.ch);if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');});});
-document.querySelectorAll('.nav-sub').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
-const secs=[...document.querySelectorAll('.chapter')];
-const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){openOnly(e.target.dataset.ch);const act=document.querySelector('.nav-chapter.active');if(act)act.scrollIntoView({block:'nearest'});}});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
-secs.forEach(s=>obs.observe(s));
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
 const box=document.getElementById('q');
-box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
   navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
     const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
     subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
-    c.style.display=(!q||any)?'block':'none';if(q&&any)c.classList.add('open');});
+    c.style.display=(!q||any)?'block':'none';});
 });
 const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
-if(navChapters[0])navChapters[0].classList.add('open','active');
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
 """
 
 HEAD_THEME = "<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>"
@@ -283,30 +327,59 @@ def build(lang, other_exists):
     rendered = {n: render(cfg, n) for n in order}
     if rendered["00"] is None:
         return False
-    sections, nav = [], []
-    intro = rendered["00"]
-    sections.append(intro[0]); nav.append(intro[1])
-    for g, ns in GROUPS_BASE:
-        items = [(n, rendered[n]) for n in ns if rendered[n]]
-        if not items:
-            continue
-        nav.append(f'<div class="nav-group">{_html.escape(cfg["groups"][g])}</div>')
-        for n, r in items:
-            sections.append(r[0]); nav.append(r[1])
+    present = [n for n in order if rendered[n]]
 
     lang_btn = (f'<a class="ctrl-btn themeLink" href="{cfg["other_href"]}">🌐 {cfg["other"]}</a>'
                 if other_exists else "")
-    controls = f'<button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}'
+    home_btn = f'<a class="ctrl-btn" href="{cfg["home_href"]}">🏠 {cfg["home"]}</a>'
+    controls = f'{home_btn}<button class="ctrl-btn themeBtn" title="{cfg["theme_title"]}">🌙</button>{lang_btn}'
     prefix = "../" if lang == "en" else ""
     # Nền Wibu trỏ cố định tới assets/wibu-bg.jpg — thay file đó + push là đổi nền, không cần rebuild.
     wibu_style = f'<style>:root{{--wibu-bg:url("{prefix}assets/wibu-bg.jpg")}}</style>'
-    page = f"""<!doctype html>
+    outdir = os.path.dirname(f"{DIR}/{cfg['out']}")
+    if outdir:
+        os.makedirs(outdir, exist_ok=True)
+
+    for idx, n in enumerate(present):
+        r = rendered[n]
+        # Sidebar: mọi chương, nhưng chỉ chương hiện tại mở danh sách mục con
+        nav = [nav_block(cfg, rendered["00"], n)]
+        for g, ns in GROUPS_BASE:
+            items = [x for x in ns if rendered[x]]
+            if not items:
+                continue
+            nav.append(f'<div class="nav-group">{_html.escape(cfg["groups"][g])}</div>')
+            nav += [nav_block(cfg, rendered[x], n) for x in items]
+
+        prev_n = present[idx - 1] if idx > 0 else None
+        next_n = present[idx + 1] if idx + 1 < len(present) else None
+        rel = ""
+        if prev_n: rel += f'<link rel="prev" href="{page_name(prev_n)}">'
+        if next_n: rel += f'<link rel="next" href="{page_name(next_n)}">'
+
+        def label(x):
+            return cfg["intro"] if x == "00" else f'{x} · {cfg["short"][x]}'
+        pager = '<nav class="pager">'
+        pager += (f'<a class="pg prev" href="{page_name(prev_n)}"><span>← {cfg["prev"]}</span>'
+                  f'<b>{_html.escape(label(prev_n))}</b></a>') if prev_n else '<span class="pg"></span>'
+        pager += (f'<a class="pg next" href="{page_name(next_n)}"><span>{cfg["next"]} →</span>'
+                  f'<b>{_html.escape(label(next_n))}</b></a>') if next_n else '<span class="pg"></span>'
+        pager += '</nav>'
+
+        ch_title = r["title"] if n != "00" else cfg["title"]
+        page_title = f"{ch_title} — {cfg['title']}" if n != "00" else f"{cfg['title']} — Fee"
+        page = f"""<!doctype html>
 <html lang="{cfg['htmllang']}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{cfg['title']} — Fee</title>
+<title>{_html.escape(page_title)}</title>
 <meta name="description" content="{cfg['metadesc']}">
+<meta property="og:title" content="{_html.escape(page_title)}">
+<meta property="og:description" content="{cfg['metadesc']}">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+{rel}
 {HEAD_THEME}
 {wibu_style}
 <style>{CSS}</style>
@@ -314,7 +387,7 @@ def build(lang, other_exists):
 <body>
 <div class="wrap">
   <aside class="sidebar" id="sidebar">
-    <div class="brand"><h1>{cfg['title']}</h1>
+    <div class="brand"><h1><a href="{page_name('00')}">{cfg['title']}</a></h1>
       <p class="tag">{cfg['tag']}</p>
       <span class="author">✍️ Fee</span>
       <div class="controls">{controls}</div></div>
@@ -323,9 +396,10 @@ def build(lang, other_exists):
   </aside>
   <div class="content">
     <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">{cfg['title']}</span>
-      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button>{lang_btn}</div>
-    <main class="main">
-      {''.join(sections)}
+      <button class="ctrl-btn themeBtn" title="{cfg['theme_title']}">🌙</button>{lang_btn}</div>
+    <main class="main" id="top">
+      {r['section']}
+      {pager}
     </main>
     <footer class="site-foot">
       <p>{cfg['foot1']}
@@ -339,10 +413,9 @@ def build(lang, other_exists):
 </body>
 </html>
 """
-    out = f"{DIR}/{cfg['out']}"
-    os.makedirs(os.path.dirname(out), exist_ok=True) if os.path.dirname(cfg["out"]) else None
-    with open(out, "w", encoding="utf-8") as f:
-        f.write(page)
+        out = os.path.join(outdir or DIR, page_name(n))
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(page)
     return True
 
 

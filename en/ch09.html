@@ -1,0 +1,2323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 9 — Observability &amp;amp; Infrastructure Monitoring — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 9 — Observability &amp;amp; Infrastructure Monitoring — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch08.html"><link rel="next" href="ch10.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="09"><a class="nav-ch-title" href="#top"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"><a class="nav-sub" href="#ch09-overview">Overview</a><a class="nav-sub" href="#ch09-90-overview-and-positioning-of-the-tools">9.0 Overview and Positioning of the Tools</a><a class="nav-sub" href="#ch09-91-elasticsearch-the-storage-and-search-core">9.1 Elasticsearch — The Storage and Search Core</a><a class="nav-sub" href="#ch09-92-logstash-the-data-processing-pipeline">9.2 Logstash — The Data Processing Pipeline</a><a class="nav-sub" href="#ch09-93-kibana-visualization-and-querying">9.3 Kibana — Visualization and Querying</a><a class="nav-sub" href="#ch09-94-beats-collecting-data-at-the-source">9.4 Beats — Collecting Data at the Source</a><a class="nav-sub" href="#ch09-95-zabbix-infrastructure-and-performance-monitoring">9.5 Zabbix — Infrastructure and Performance Monitoring</a><a class="nav-sub" href="#ch09-96-prometheus-pull-model-metric-monitoring">9.6 Prometheus — Pull-Model Metric Monitoring</a><a class="nav-sub" href="#ch09-97-grafana-a-single-pane-of-glass-for-many-data-sources">9.7 Grafana — A Single Pane of Glass for Many Data Sources</a><a class="nav-sub" href="#ch09-98-zabbixprometheus-vs-siem-a-fundamental-distinction">9.8 Zabbix/Prometheus vs SIEM — A Fundamental Distinction</a><a class="nav-sub" href="#ch09-99-when-to-use-elk-vs-wazuh-vs-zabbix-vs-prometheusgrafana">9.9 When to Use ELK vs Wazuh vs Zabbix vs Prometheus/Grafana</a><a class="nav-sub" href="#ch09-910-summary-of-the-core-design-decisions">9.10 Summary of the Core Design Decisions</a><a class="nav-sub" href="#ch09-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-09" data-ch="09">
+<h1 id="ch09-chapter-9-observability-infrastructure-monitoring">Chapter 9 — Observability &amp; Infrastructure Monitoring</h1>
+<h2 id="ch09-overview">Overview</h2>
+<p>I started paying attention to this after getting asked more than once "since when has the load been this high" and having nothing to check but a guess — no log, no graph. Serious infrastructure monitoring needs two separate things: logs tell you what happened, metrics tell you whether the system is healthy right now. This chapter walks through four tools that answer those two questions — the evidence of an attack lives in the logs, while infrastructure incidents often start from an anomalous metric, so both matter to security.</p>
+<p>The first half of the chapter is the <strong>ELK Stack</strong> — Elasticsearch, Logstash, Kibana, plus the <strong>Beats</strong> family of agents (Filebeat, Metricbeat, Winlogbeat...) collecting logs at the source. A log by itself is just a scattered event record on one machine; ELK solves the problem of gathering those logs in one place and making them searchable: Elasticsearch uses an inverted index to do full-text lookups at a scale relational databases can't touch, Logstash sits in between parsing and normalizing raw logs into clean data, and Kibana turns that indexed data into charts and dashboards — spotting anomalies far faster than reading raw logs ever could.</p>
+<p>The second half covers metrics, represented by two tools solving the same problem with different philosophies. <strong>Zabbix</strong> continuously measures CPU, RAM, disk, and service status, alerting automatically through triggers once a threshold is breached — classic monitoring, configured through a GUI/templates. <strong>Prometheus</strong> is the cloud-native generation: the server actively pulls (scrapes) values through the <code>/metrics</code> endpoint each <strong>exporter</strong> exposes on a host, stores them in its own TSDB, queries them with PromQL, and hands alerting off to Alertmanager. <strong>Grafana</strong> sits above both, collecting nothing itself — just drawing dashboards pulled from multiple datasources (Prometheus, Elasticsearch/OpenSearch...) in one place, instead of every tool having its own separate UI.</p>
+<p>The chapter closes with a nod to SIEM, drawing a clean line: Zabbix and Prometheus watch infrastructure health, while detecting attacks through event correlation is SIEM's job — two layers that complement, not replace, each other.</p>
+<h2 id="ch09-90-overview-and-positioning-of-the-tools">9.0 Overview and Positioning of the Tools</h2>
+<p>The Overview above introduced each tool individually. This section does not repeat those definitions; instead it places the tool families side by side to show clearly where they differ — before we dive into each part. The chapter also goes down to the level of <strong>wire format, on-disk record structure, every configuration field, and every processing step</strong> — enough for a Blue Team/AppSec/DevSecOps engineer to operate, debug, and assess risk for real.</p>
+<p>One fundamental distinction worth keeping in mind before reading on:</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>ELK Stack</th>
+<th>Zabbix</th>
+<th>Prometheus</th>
+<th>SIEM (e.g., Wazuh, Splunk ES)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unit of data</td>
+<td>JSON document (full-text + structured)</td>
+<td>Metric (numeric/string value over time)</td>
+<td>Metric time-series (name + labels, float value)</td>
+<td>Normalized security event + rule correlation</td>
+</tr>
+<tr>
+<td>Storage model</td>
+<td>Inverted index + doc values (Lucene)</td>
+<td>Time-series in RDBMS/TSDB</td>
+<td>Local TSDB (blocks + WAL)</td>
+<td>Index + alert store</td>
+</tr>
+<tr>
+<td>Collection model</td>
+<td>Agents (Beats) push into a pipeline</td>
+<td>Passive/active agents, SNMP, proxies</td>
+<td>Server <strong>pulls</strong> (scrapes) the exporters' <code>/metrics</code> endpoints</td>
+<td>Agents push events to a manager</td>
+</tr>
+<tr>
+<td>Typical question</td>
+<td>"Find every 5xx request containing string X in the last 15 minutes"</td>
+<td>"Did host A's CPU exceed 90% over 5 minutes?"</td>
+<td>"What is the fleet-wide CPU rate by mode over the last 5 minutes?"</td>
+<td>"Is there any behavioral chain matching MITRE T1110?"</td>
+</tr>
+<tr>
+<td>Alerting mechanism</td>
+<td>Watcher/Kibana alerting/ElastAlert (add-on)</td>
+<td>Trigger expression (core)</td>
+<td>Alerting rules + Alertmanager (separated)</td>
+<td>Correlation rules + decoder (core)</td>
+</tr>
+<tr>
+<td>Essential nature</td>
+<td>Search engine</td>
+<td>Monitoring system</td>
+<td>Monitoring system (TSDB + query engine)</td>
+<td>Detection &amp; response</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Grafana</strong> is deliberately absent from the table: it is not a place where data lives but a <strong>display layer</strong> on top of the systems above — a single Grafana dashboard can simultaneously draw panels from Prometheus (performance) and from Elasticsearch/OpenSearch (logs/security).</p>
+<p>Remember: Elasticsearch <strong>is a search engine</strong>, not an RDBMS (relational database); Zabbix and Prometheus <strong>are monitoring systems</strong>, not log stores; Grafana <strong>is a pane of glass</strong>, not a data store. Most of the design decisions below can be traced back to these essential natures.</p>
+<hr />
+<h2 id="ch09-91-elasticsearch-the-storage-and-search-core">9.1 Elasticsearch — The Storage and Search Core</h2>
+<h3 id="ch09-911-the-inverted-index-why-and-its-internal-structure">9.1.1 The Inverted Index — Why, and Its Internal Structure</h3>
+<p>Elasticsearch is built on the <strong>Apache Lucene</strong> library. Its central data structure is the <strong>inverted index</strong>. In an RDBMS, you go from row → column → value (forward). The inverted index reverses this: it goes from <strong>term (word) → list of documents containing that term</strong>. This is why full-text search across billions of documents still runs at millisecond latency: instead of a linear scan, you look up the term and then union/intersect the posting lists.</p>
+<p>The process of indexing a text field:</p>
+<pre><code>Original text:  &quot;The Quick Brown Fox&quot;
+   │
+   ▼ (1) Character filter   — e.g., strip HTML tags, normalize characters
+   │
+   ▼ (2) Tokenizer          — e.g., the standard tokenizer splits on word boundaries
+   │      → [&quot;The&quot;, &quot;Quick&quot;, &quot;Brown&quot;, &quot;Fox&quot;]
+   │
+   ▼ (3) Token filter       — e.g., lowercase, stop words, stemming
+   │      → [&quot;quick&quot;, &quot;brown&quot;, &quot;fox&quot;]   (&quot;the&quot; removed as a stop word)
+   │
+   ▼ Terms are written into the inverted index
+</code></pre>
+<p>The inverted index structure (simplified) for 3 documents:</p>
+<pre><code>doc1 = &quot;quick brown fox&quot;
+doc2 = &quot;quick brown dog&quot;
+doc3 = &quot;lazy fox&quot;
+
+Term      | Doc Freq | Posting list (docId : positions)
+----------|----------|----------------------------------
+brown     |    2     | doc1:[1], doc2:[1]
+dog       |    1     | doc2:[2]
+fox       |    2     | doc1:[2], doc3:[1]
+lazy      |    1     | doc3:[0]
+quick     |    2     | doc1:[0], doc2:[0]
+</code></pre>
+<p>The Lucene components stored on disk for each segment (the actual files in the <code>index/.../&lt;segment&gt;</code> directory):</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>File extension</th>
+<th>Contents</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Term dictionary</td>
+<td><code>.tim</code>, <code>.tip</code></td>
+<td>Sorted list of terms + an FST index into it</td>
+<td>Term lookup in O(log)</td>
+</tr>
+<tr>
+<td>Postings</td>
+<td><code>.doc</code>, <code>.pos</code>, <code>.pay</code></td>
+<td>docId, position, payload</td>
+<td>Return documents, support phrase queries</td>
+</tr>
+<tr>
+<td>Stored fields</td>
+<td><code>.fdt</code>, <code>.fdx</code></td>
+<td>Original document (<code>_source</code>)</td>
+<td>Return the full document</td>
+</tr>
+<tr>
+<td>Doc values</td>
+<td><code>.dvd</code>, <code>.dvm</code></td>
+<td>Column of values by docId</td>
+<td>Sort, aggregation, scripting</td>
+</tr>
+<tr>
+<td>Norms</td>
+<td><code>.nvd</code>, <code>.nvm</code></td>
+<td>Field-length normalization</td>
+<td>Compute relevance score (BM25)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why separate out <code>doc values</code>?</strong> The inverted index is optimized for "term → docs" but poor at "docId → value" (which is needed for sort/aggregation). Doc values are a <strong>columnar</strong> structure stored by column, compress well, and read sequentially fast. This is why a <code>text</code> field (which only has an inverted index) cannot be sorted or aggregated, while a <code>keyword</code> field (which has doc values) can.</p>
+<p>The default relevance score is <strong>BM25</strong> (Best Matching 25), which replaced the older TF-IDF. The simplified formula for each term:</p>
+<pre><code>score(D,q) = IDF(q) · ( f(q,D) · (k1 + 1) ) / ( f(q,D) + k1 · (1 - b + b · |D|/avgdl) )
+
+IDF(q) = ln( 1 + (N - n(q) + 0.5) / (n(q) + 0.5) )
+</code></pre>
+<ul>
+<li><code>f(q,D)</code>: frequency of term q in document D</li>
+<li><code>|D|</code>: document length; <code>avgdl</code>: average document length</li>
+<li><code>k1</code> (default 1.2): term-frequency saturation; <code>b</code> (default 0.75): the influence of length</li>
+<li><code>N</code>: total number of documents; <code>n(q)</code>: number of documents containing q</li>
+</ul>
+<p><strong>Why BM25?</strong> TF-IDF increases the score linearly with frequency, making it easy to manipulate by keyword stuffing. BM25 has a saturation coefficient <code>k1</code> that makes the score converge — repeating a word 100 times is not much better than 10 times.</p>
+<h3 id="ch09-912-document-index-mapping">9.1.2 Document, Index, Mapping</h3>
+<p>A <strong>Document</strong> is the basic unit of data, a JSON object. Each document has metadata:</p>
+<pre><code class="language-json">{
+  &quot;_index&quot;: &quot;logs-nginx-2026.06.19&quot;,
+  &quot;_id&quot;: &quot;kJ3xY4cBz1aQ&quot;,
+  &quot;_version&quot;: 1,
+  &quot;_seq_no&quot;: 42,
+  &quot;_primary_term&quot;: 1,
+  &quot;_source&quot;: {
+    &quot;@timestamp&quot;: &quot;2026-06-19T08:15:30.123Z&quot;,
+    &quot;clientip&quot;: &quot;203.0.113.45&quot;,
+    &quot;method&quot;: &quot;GET&quot;,
+    &quot;request&quot;: &quot;/login&quot;,
+    &quot;status&quot;: 401,
+    &quot;bytes&quot;: 512
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Meta field</th>
+<th>Type</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_index</code></td>
+<td>string</td>
+<td>The index containing the document</td>
+<td><code>logs-nginx-2026.06.19</code></td>
+</tr>
+<tr>
+<td><code>_id</code></td>
+<td>string</td>
+<td>Unique identifier within the index (auto-generated if not provided)</td>
+<td><code>kJ3xY4cBz1aQ</code></td>
+</tr>
+<tr>
+<td><code>_version</code></td>
+<td>long</td>
+<td>Number of times the document has been overwritten</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>_seq_no</code></td>
+<td>long</td>
+<td>Operation sequence number on the shard (used for optimistic concurrency)</td>
+<td><code>42</code></td>
+</tr>
+<tr>
+<td><code>_primary_term</code></td>
+<td>long</td>
+<td>The "term" of the primary shard, incremented on failover</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>_source</code></td>
+<td>object</td>
+<td>The user's original data</td>
+<td>(JSON)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Optimistic concurrency control</strong>: conditional writes via <code>if_seq_no</code> + <code>if_primary_term</code>. If the values do not match (someone wrote first), the operation returns <code>409 Conflict</code>. This mechanism replaces locks — why? Because locking is not feasible in a distributed system with network latency.</p>
+<p><strong>Mapping</strong> defines the data type of each field. Create an index with an explicit mapping (always recommended in production, to avoid dynamic mapping guessing wrong):</p>
+<pre><code class="language-bash">curl -X PUT &quot;https://es:9200/logs-nginx-2026.06.19&quot; \
+  -u elastic:$PASS --cacert ca.crt \
+  -H 'Content-Type: application/json' -d '{
+  &quot;settings&quot;: {
+    &quot;number_of_shards&quot;: 3,
+    &quot;number_of_replicas&quot;: 1,
+    &quot;refresh_interval&quot;: &quot;5s&quot;
+  },
+  &quot;mappings&quot;: {
+    &quot;dynamic&quot;: &quot;strict&quot;,
+    &quot;properties&quot;: {
+      &quot;@timestamp&quot;: { &quot;type&quot;: &quot;date&quot; },
+      &quot;clientip&quot;:   { &quot;type&quot;: &quot;ip&quot; },
+      &quot;method&quot;:     { &quot;type&quot;: &quot;keyword&quot; },
+      &quot;request&quot;:    {
+        &quot;type&quot;: &quot;text&quot;,
+        &quot;fields&quot;: { &quot;raw&quot;: { &quot;type&quot;: &quot;keyword&quot;, &quot;ignore_above&quot;: 256 } }
+      },
+      &quot;status&quot;:     { &quot;type&quot;: &quot;short&quot; },
+      &quot;bytes&quot;:      { &quot;type&quot;: &quot;long&quot; },
+      &quot;user_agent&quot;: { &quot;type&quot;: &quot;text&quot; },
+      &quot;geo&quot;:        { &quot;type&quot;: &quot;geo_point&quot; }
+    }
+  }
+}'
+</code></pre>
+<p>A table of important data types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Storage size</th>
+<th>Inverted index</th>
+<th>Doc values</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td>variable (analyzed)</td>
+<td>Yes</td>
+<td>No</td>
+<td>Full-text search</td>
+</tr>
+<tr>
+<td><code>keyword</code></td>
+<td>verbatim</td>
+<td>Yes (not analyzed)</td>
+<td>Yes</td>
+<td>Filter, sort, aggregate, exact match</td>
+</tr>
+<tr>
+<td><code>byte</code></td>
+<td>8-bit signed</td>
+<td>—</td>
+<td>Yes</td>
+<td>-128..127</td>
+</tr>
+<tr>
+<td><code>short</code></td>
+<td>16-bit signed</td>
+<td>—</td>
+<td>Yes</td>
+<td>-32768..32767</td>
+</tr>
+<tr>
+<td><code>integer</code></td>
+<td>32-bit signed</td>
+<td>—</td>
+<td>Yes</td>
+<td>integers</td>
+</tr>
+<tr>
+<td><code>long</code></td>
+<td>64-bit signed</td>
+<td>—</td>
+<td>Yes</td>
+<td>large numbers, epoch ms</td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td>32-bit IEEE 754</td>
+<td>—</td>
+<td>Yes</td>
+<td>floating point</td>
+</tr>
+<tr>
+<td><code>double</code></td>
+<td>64-bit IEEE 754</td>
+<td>—</td>
+<td>Yes</td>
+<td>high-precision floating point</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>long (epoch ms) internally</td>
+<td>—</td>
+<td>Yes</td>
+<td>time</td>
+</tr>
+<tr>
+<td><code>ip</code></td>
+<td>IPv4 (32-bit) / IPv6 (128-bit)</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>IP addresses, supports CIDR</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td>true/false</td>
+<td>—</td>
+<td>Yes</td>
+<td>flags</td>
+</tr>
+<tr>
+<td><code>geo_point</code></td>
+<td>lat/lon</td>
+<td>—</td>
+<td>Yes</td>
+<td>coordinates, geo queries</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>—</code> in the Inverted index column means that type is not stored in a term-based inverted index; instead Lucene indexes it with a point/BKD-tree structure optimized for range queries over numbers, dates, IPs, and coordinates.</p>
+<p><strong>Why is the <code>request</code> field both <code>text</code> and given a <code>raw</code> sub-field of type <code>keyword</code>?</strong> This is the classic multi-field pattern: the <code>text</code> version allows full-text search ("find requests containing /admin"), while the <code>keyword</code> version allows exact aggregation ("top 10 most-called URLs"). One piece of data, two ways to use it.</p>
+<p><strong>Security note</strong>: <code>dynamic: "strict"</code> rejects documents with unknown fields → preventing <strong>mapping explosion</strong> (an attacker sends logs with thousands of random keys to bloat the mapping, causing a heap-memory DoS). <code>ignore_above: 256</code> prevents an overly long keyword term from corrupting the index.</p>
+<h3 id="ch09-913-shard-replica-segment">9.1.3 Shard, Replica, Segment</h3>
+<p>An index is divided into <strong>shards</strong>. Each shard is a <strong>complete, independent Lucene index</strong>. There are two kinds:</p>
+<ul>
+<li><strong>Primary shard</strong>: the original copy, which receives writes first.</li>
+<li><strong>Replica shard</strong>: a copy of the primary, serving reads and providing HA.</li>
+</ul>
+<pre><code>Index &quot;logs&quot; : 3 primaries, 1 replica  → 6 shards total
+
+      Node A            Node B            Node C
+  ┌───────────┐    ┌───────────┐    ┌───────────┐
+  │  P0       │    │  P1       │    │  P2       │
+  │  R2       │    │  R0       │    │  R1       │
+  └───────────┘    └───────────┘    └───────────┘
+
+Rule: a replica is NEVER placed on the same node as its primary
+      (losing 1 node still leaves enough data)
+</code></pre>
+<p>The write flow for a single document:</p>
+<pre><code>1. Client sends an index request to the coordinating node
+2. The coordinating node hashes the routing:  shard = hash(_routing) % number_of_primary_shards
+   (by default _routing = _id) → determines the primary shard
+3. Write to the primary shard:
+   a. Write into the in-memory buffer
+   b. Append to the translog (write-ahead log, fsync by default per request)
+4. The primary forwards in parallel to every replica
+5. Once enough replicas acknowledge → return 200 to the client
+</code></pre>
+<p>The lifecycle from buffer to segment:</p>
+<pre><code>in-memory buffer ──refresh (default 1s)──▶ new segment (searchable, in the filesystem cache)
+                                              │
+   many segments ──merge (background)──▶ a larger segment (purging deleted docs)
+                                              │
+   translog ──flush──▶ fsync the segment to disk, truncate the translog
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Meaning</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>refresh_interval</code></td>
+<td>1s</td>
+<td>How often the buffer becomes a searchable segment</td>
+<td>Smaller = more "near real-time" but costs CPU/IO</td>
+</tr>
+<tr>
+<td><code>number_of_shards</code></td>
+<td>(version-dependent)</td>
+<td>Number of primaries, <strong>fixed after creation</strong></td>
+<td>Too many small shards = overhead; too few = won't scale</td>
+</tr>
+<tr>
+<td><code>number_of_replicas</code></td>
+<td>1</td>
+<td>Number of copies, <strong>dynamically changeable</strong></td>
+<td>More replicas = faster reads, higher HA, more disk</td>
+</tr>
+<tr>
+<td><code>translog.durability</code></td>
+<td>request</td>
+<td><code>request</code> fsyncs every write; <code>async</code> periodically</td>
+<td><code>async</code> is faster but risks data loss on crash</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why is the number of primary shards fixed?</strong> Because routing uses <code>% number_of_primary_shards</code>. Changing the shard count would change the routing destination of every existing document → requiring a full reindex. This is the most important design decision when creating an index.</p>
+<p><strong>Why is there a translog?</strong> A refresh creates a segment in RAM/cache but has not yet fsynced it to disk. If the node crashes between two flushes, the data in the un-fsynced segment is lost — the translog (which has been fsynced) allows replay to recover it.</p>
+<h3 id="ch09-914-query-dsl-querying-down-to-each-clause">9.1.4 Query DSL — Querying Down to Each Clause</h3>
+<p>The Query DSL distinguishes between <strong>query context</strong> (computes a relevance score, "how well does it match") and <strong>filter context</strong> (true/false, cached, "does it match"). Filters are faster because they do not compute a score and are cached as bitsets.</p>
+<p><strong>match</strong> (full-text, analyzed):</p>
+<pre><code class="language-json">GET /logs-nginx-*/_search
+{ &quot;query&quot;: { &quot;match&quot;: { &quot;user_agent&quot;: &quot;curl python&quot; } } }
+</code></pre>
+<p>→ analyzes "curl python" into the terms <code>curl</code>, <code>python</code>; defaults to OR; returns documents containing at least one term, scored with BM25.</p>
+<p><strong>term</strong> (exact, NOT analyzed — used for keyword/numeric/ip):</p>
+<pre><code class="language-json">{ &quot;query&quot;: { &quot;term&quot;: { &quot;status&quot;: 401 } } }
+</code></pre>
+<p>→ Note the classic mistake: using <code>term</code> on a <code>text</code> field usually does not match, because the value was lowercased/tokenized at index time, but the term query is not analyzed.</p>
+<p><strong>range</strong>:</p>
+<pre><code class="language-json">{ &quot;query&quot;: { &quot;range&quot;: { &quot;@timestamp&quot;: { &quot;gte&quot;: &quot;now-15m&quot;, &quot;lte&quot;: &quot;now&quot; } } } }
+</code></pre>
+<p><strong>bool</strong> (composition — the backbone of every real query):</p>
+<pre><code class="language-json">GET /logs-nginx-*/_search
+{
+  &quot;query&quot;: {
+    &quot;bool&quot;: {
+      &quot;must&quot;:     [ { &quot;match&quot;: { &quot;request&quot;: &quot;login&quot; } } ],
+      &quot;filter&quot;:   [
+        { &quot;term&quot;:  { &quot;status&quot;: 401 } },
+        { &quot;range&quot;: { &quot;@timestamp&quot;: { &quot;gte&quot;: &quot;now-1h&quot; } } }
+      ],
+      &quot;should&quot;:   [ { &quot;term&quot;: { &quot;method&quot;: &quot;POST&quot; } } ],
+      &quot;must_not&quot;: [ { &quot;term&quot;: { &quot;clientip&quot;: &quot;10.0.0.5&quot; } } ],
+      &quot;minimum_should_match&quot;: 0
+    }
+  },
+  &quot;size&quot;: 20,
+  &quot;sort&quot;: [ { &quot;@timestamp&quot;: &quot;desc&quot; } ],
+  &quot;aggs&quot;: {
+    &quot;by_ip&quot;: { &quot;terms&quot;: { &quot;field&quot;: &quot;clientip&quot;, &quot;size&quot;: 10 } }
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Clause</th>
+<th>Context</th>
+<th>Affects score</th>
+<th>Semantics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>must</code></td>
+<td>query</td>
+<td>Yes</td>
+<td>AND, contributes to score</td>
+</tr>
+<tr>
+<td><code>filter</code></td>
+<td>filter</td>
+<td>No (cached)</td>
+<td>AND, filter only</td>
+</tr>
+<tr>
+<td><code>should</code></td>
+<td>query</td>
+<td>Yes</td>
+<td>soft OR, boosts score</td>
+</tr>
+<tr>
+<td><code>must_not</code></td>
+<td>filter</td>
+<td>No</td>
+<td>NOT</td>
+</tr>
+</tbody>
+</table>
+<p>The query above (read with security semantics): "Find up to 20 login requests (full-text 'login') with status 401, in the last hour, not originating from 10.0.0.5, prioritizing POST higher in the display, and at the same time aggregate the top 10 IPs." This is exactly the shape of brute-force hunting.</p>
+<p><strong>Query security note</strong>: avoid <code>script</code> queries/aggregations with untrusted input (Painless runs in a sandbox but still has a history of script-related CVEs). Set <code>search.max_buckets</code> to block aggregation explosions that cause OOM. Limit <code>size</code> and use <code>search_after</code>/PIT instead of deep pagination with a large <code>from</code>.</p>
+<h3 id="ch09-915-node-cluster-roles-and-security">9.1.5 Node, Cluster, Roles, and Security</h3>
+<p>A <strong>cluster</strong> consists of multiple <strong>nodes</strong>, each of which can take on a role:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Symbol</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>master-eligible</td>
+<td><code>m</code></td>
+<td>Elects the master, manages cluster state (mapping, shard allocation)</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>d</code> (<code>data_hot</code>, <code>data_warm</code>, <code>data_cold</code>, <code>data_frozen</code>)</td>
+<td>Stores shards, handles CRUD/search</td>
+</tr>
+<tr>
+<td>ingest</td>
+<td><code>i</code></td>
+<td>Runs ingest pipelines (preprocessing before indexing)</td>
+</tr>
+<tr>
+<td>coordinating</td>
+<td>(every node)</td>
+<td>Receives requests, distributes them, gathers results</td>
+</tr>
+<tr>
+<td>ml</td>
+<td><code>l</code></td>
+<td>Machine learning jobs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Master election &amp; quorum</strong>: a cluster needs <code>(number of master-eligible / 2) + 1</code> nodes to elect a master (to avoid <strong>split-brain</strong>). With 3 master-eligible nodes, the quorum is 2. Why always use an odd number of master-eligible nodes (3, 5)? To have a clear quorum during a network partition.</p>
+<p>A minimal <code>elasticsearch.yml</code> for production with security:</p>
+<pre><code class="language-yaml">cluster.name: prod-siem
+node.name: es-data-01
+node.roles: [ data_hot, ingest ]
+network.host: 0.0.0.0
+discovery.seed_hosts: [&quot;es-master-01&quot;, &quot;es-master-02&quot;, &quot;es-master-03&quot;]
+cluster.initial_master_nodes: [&quot;es-master-01&quot;, &quot;es-master-02&quot;, &quot;es-master-03&quot;]
+
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: certs/transport.p12
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: certs/http.p12
+</code></pre>
+<p><strong>Security notes (critically important)</strong>:
+- Elasticsearch has a history of massive data leaks because it ran <strong>without authentication, bound to 0.0.0.0, with port 9200 open to the Internet</strong>. Always enable <code>xpack.security.enabled: true</code>, TLS for both transport (9300) and HTTP (9200), and RBAC.
+- Separate the two TLS layers: <strong>transport (9300)</strong> is internal node-to-node (cluster) communication; <strong>HTTP (9200)</strong> is the client API. Both must be encrypted.
+- Use role-based access: create a role that can only read a specific index, and assign it to an API key instead of using the <code>elastic</code> superuser.</p>
+<pre><code class="language-bash"># Create a role that can only read logs-* indices
+curl -X POST &quot;https://es:9200/_security/role/log_reader&quot; -u elastic:$PASS --cacert ca.crt \
+ -H 'Content-Type: application/json' -d '{
+   &quot;indices&quot;:[{&quot;names&quot;:[&quot;logs-*&quot;],&quot;privileges&quot;:[&quot;read&quot;,&quot;view_index_metadata&quot;]}]
+ }'
+</code></pre>
+<hr />
+<h2 id="ch09-92-logstash-the-data-processing-pipeline">9.2 Logstash — The Data Processing Pipeline</h2>
+<h3 id="ch09-921-the-input-filter-output-pipeline-architecture">9.2.1 The input → filter → output Pipeline Architecture</h3>
+<p>Logstash processes data through a 3-stage pipeline, where each event is an object with <code>@timestamp</code>, <code>@version</code>, <code>@metadata</code>, and fields:</p>
+<pre><code>            ┌──────────────────────── Logstash Pipeline ────────────────────────┐
+  source ──▶│  INPUT  ──▶  [queue]  ──▶  FILTER (worker threads)  ──▶  OUTPUT   │──▶ destination
+            └────────────────────────────────────────────────────────────────────┘
+   beats        beats     in-memory      grok → date → mutate         elasticsearch
+   syslog       plugin    or             → geoip → ...                stdout
+   kafka                  persistent                                  kafka
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Role</th>
+<th>Example plugins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>input</td>
+<td>Receive data</td>
+<td><code>beats</code>, <code>tcp</code>, <code>udp</code>, <code>syslog</code>, <code>kafka</code>, <code>file</code>, <code>http</code></td>
+</tr>
+<tr>
+<td>filter</td>
+<td>Transform, enrich, parse</td>
+<td><code>grok</code>, <code>date</code>, <code>mutate</code>, <code>geoip</code>, <code>kv</code>, <code>json</code>, <code>dissect</code>, <code>useragent</code></td>
+</tr>
+<tr>
+<td>output</td>
+<td>Send onward</td>
+<td><code>elasticsearch</code>, <code>stdout</code>, <code>kafka</code>, <code>file</code>, <code>s3</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Persistent queue</strong>: by default the queue is in RAM (events are lost on crash). Enable <code>queue.type: persisted</code> to write events to disk (with ACK) — important for security logs that must not be lost.</p>
+<h3 id="ch09-922-grok-parsing-unstructured-logs">9.2.2 GROK — Parsing Unstructured Logs</h3>
+<p><strong>GROK</strong> translates free-form log strings into fields using named patterns; it is essentially regex with aliases. Syntax: <code>%{PATTERN:field_name}</code> or <code>%{PATTERN:field_name:type}</code>.</p>
+<p>Some built-in patterns (defined in <code>grok-patterns</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Equivalent regex (simplified)</th>
+<th>Matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IPV4</code></td>
+<td><code>(?:[0-9]{1,3}\.){3}[0-9]{1,3}</code></td>
+<td><code>203.0.113.45</code></td>
+</tr>
+<tr>
+<td><code>NUMBER</code></td>
+<td><code>(?:-?\d+(\.\d+)?)</code></td>
+<td><code>512</code>, <code>-3.14</code></td>
+</tr>
+<tr>
+<td><code>WORD</code></td>
+<td><code>\b\w+\b</code></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><code>DATA</code></td>
+<td><code>.*?</code> (lazy)</td>
+<td>anything, shortest</td>
+</tr>
+<tr>
+<td><code>GREEDYDATA</code></td>
+<td><code>.*</code> (greedy)</td>
+<td>the remainder</td>
+</tr>
+<tr>
+<td><code>QS</code></td>
+<td>a quoted string</td>
+<td><code>"GET /x HTTP/1.1"</code></td>
+</tr>
+<tr>
+<td><code>HTTPDATE</code></td>
+<td>Apache date format</td>
+<td><code>19/Jun/2026:08:15:30 +0700</code></td>
+</tr>
+<tr>
+<td><code>COMBINEDAPACHELOG</code></td>
+<td>composite Nginx/Apache pattern</td>
+<td>the whole line</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example of parsing an Nginx log line (combined format):</strong></p>
+<p>The actual line:</p>
+<pre><code>203.0.113.45 - alice [19/Jun/2026:08:15:30 +0700] &quot;POST /login HTTP/1.1&quot; 401 512 &quot;https://app/&quot; &quot;Mozilla/5.0&quot;
+</code></pre>
+<p>The GROK pattern:</p>
+<pre><code>%{IPV4:clientip} - %{DATA:auth} \[%{HTTPDATE:timestamp}\] &quot;%{WORD:method} %{DATA:request} HTTP/%{NUMBER:httpversion}&quot; %{NUMBER:status:int} %{NUMBER:bytes:int} %{QS:referrer} %{QS:agent}
+</code></pre>
+<p>The extracted fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>clientip</code></td>
+<td><code>203.0.113.45</code></td>
+<td>string→ip</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td><code>alice</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td><code>19/Jun/2026:08:15:30 +0700</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><code>POST</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>request</code></td>
+<td><code>/login</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>httpversion</code></td>
+<td><code>1.1</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>401</code></td>
+<td>int</td>
+</tr>
+<tr>
+<td><code>bytes</code></td>
+<td><code>512</code></td>
+<td>int</td>
+</tr>
+<tr>
+<td><code>referrer</code></td>
+<td><code>"https://app/"</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td><code>"Mozilla/5.0"</code></td>
+<td>string</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why use <code>DATA</code> (lazy) vs <code>GREEDYDATA</code> (greedy)?</strong> <code>DATA</code> (<code>.*?</code>) matches the shortest span, stopping as soon as it meets the next delimiter character (space, bracket). <code>GREEDYDATA</code> (<code>.*</code>) swallows as much as possible — use it only at the end of a line. Placing it in the wrong spot causes a <code>_grokparsefailure</code>.</p>
+<p><strong>Example of parsing an SSH log (auth.log) to hunt brute-force:</strong></p>
+<p>The actual line:</p>
+<pre><code>Jun 19 08:15:30 web01 sshd[2451]: Failed password for invalid user admin from 203.0.113.45 port 51324 ssh2
+</code></pre>
+<p>The pattern:</p>
+<pre><code>%{SYSLOGTIMESTAMP:syslog_ts} %{HOSTNAME:host} %{WORD:program}\[%{NUMBER:pid}\]: Failed password for( invalid user)? %{USERNAME:ssh_user} from %{IP:src_ip} port %{NUMBER:src_port} ssh2
+</code></pre>
+<h3 id="ch09-923-mutate-date-geoip">9.2.3 mutate, date, geoip</h3>
+<p><strong>date filter</strong> — converts a timestamp string into the standard <code>@timestamp</code> (why this matters: without it, Kibana uses the ingest time rather than the event time, distorting the investigation timeline):</p>
+<pre><code>date {
+  match =&gt; [ &quot;timestamp&quot;, &quot;dd/MMM/yyyy:HH:mm:ss Z&quot; ]
+  target =&gt; &quot;@timestamp&quot;
+  timezone =&gt; &quot;Asia/Ho_Chi_Minh&quot;
+}
+</code></pre>
+<p><strong>mutate filter</strong> — transforms fields:</p>
+<pre><code>mutate {
+  convert    =&gt; { &quot;status&quot; =&gt; &quot;integer&quot; &quot;bytes&quot; =&gt; &quot;integer&quot; }
+  lowercase  =&gt; [ &quot;method&quot; ]
+  rename     =&gt; { &quot;clientip&quot; =&gt; &quot;[source][ip]&quot; }
+  remove_field =&gt; [ &quot;timestamp&quot;, &quot;host&quot; ]
+  gsub       =&gt; [ &quot;referrer&quot;, &quot;[\&quot;]&quot;, &quot;&quot; ]
+}
+</code></pre>
+<p><strong>geoip filter</strong> — enriches an IP into coordinates/country (based on the MaxMind GeoLite2 DB):</p>
+<pre><code>geoip {
+  source =&gt; &quot;[source][ip]&quot;
+  target =&gt; &quot;[source][geo]&quot;
+}
+</code></pre>
+<p>→ adds <code>[source][geo][country_name]</code>, <code>[source][geo][location]</code> (geo_point) → draw a map of attacking IPs in Kibana.</p>
+<h3 id="ch09-924-a-complete-logstashconf-runnable">9.2.4 A Complete logstash.conf (runnable)</h3>
+<pre><code class="language-ruby">input {
+  beats {
+    port =&gt; 5044
+    ssl_enabled =&gt; true
+    ssl_certificate =&gt; &quot;/etc/logstash/certs/logstash.crt&quot;
+    ssl_key =&gt; &quot;/etc/logstash/certs/logstash.key&quot;
+  }
+}
+
+filter {
+  if [event][module] == &quot;nginx&quot; {
+    grok {
+      match =&gt; { &quot;message&quot; =&gt; &quot;%{IPV4:clientip} - %{DATA:auth} \[%{HTTPDATE:timestamp}\] \&quot;%{WORD:method} %{DATA:request} HTTP/%{NUMBER:httpversion}\&quot; %{NUMBER:status:int} %{NUMBER:bytes:int} %{QS:referrer} %{QS:agent}&quot; }
+      tag_on_failure =&gt; [&quot;_grokparsefailure_nginx&quot;]
+    }
+    date {
+      match =&gt; [ &quot;timestamp&quot;, &quot;dd/MMM/yyyy:HH:mm:ss Z&quot; ]
+      target =&gt; &quot;@timestamp&quot;
+    }
+    mutate {
+      convert =&gt; { &quot;status&quot; =&gt; &quot;integer&quot; }
+      lowercase =&gt; [ &quot;method&quot; ]
+      remove_field =&gt; [ &quot;timestamp&quot; ]
+    }
+    geoip { source =&gt; &quot;clientip&quot; target =&gt; &quot;geo&quot; }
+    useragent { source =&gt; &quot;agent&quot; target =&gt; &quot;ua&quot; }
+
+    if [status] &gt;= 400 and [status] &lt; 500 {
+      mutate { add_tag =&gt; [&quot;client_error&quot;] }
+    }
+  }
+}
+
+output {
+  if &quot;_grokparsefailure_nginx&quot; in [tags] {
+    file { path =&gt; &quot;/var/log/logstash/failed_nginx.log&quot; }
+  } else {
+    elasticsearch {
+      hosts =&gt; [&quot;https://es-01:9200&quot;]
+      index =&gt; &quot;logs-nginx-%{+YYYY.MM.dd}&quot;
+      user =&gt; &quot;logstash_writer&quot;
+      password =&gt; &quot;${LS_ES_PASS}&quot;
+      ssl_enabled =&gt; true
+      cacert =&gt; &quot;/etc/logstash/certs/ca.crt&quot;
+    }
+  }
+}
+</code></pre>
+<p>Explanation of the decisions:
+- <code>index =&gt; "logs-nginx-%{+YYYY.MM.dd}"</code>: a daily index → makes it easy to apply <strong>ILM</strong> (deletion/rollover) and to limit shard size.
+- Splitting the output for parse-failure events → no "silent swallowing" of malformed data, so it remains investigable.
+- <code>useragent</code> parses the user-agent into OS/browser → useful for detecting automated tools (curl, sqlmap, nikto).</p>
+<p><strong>Logstash security notes</strong>:
+- Use a dedicated ES user <code>logstash_writer</code> with only <code>create_index</code>/<code>write</code> privileges on <code>logs-*</code> indices, not the <code>elastic</code> user.
+- Pass the password via a <strong>keystore</strong> (<code>logstash-keystore add LS_ES_PASS</code>), do not hardcode it.
+- GROK with greedy/backtracking regex on hostile input can cause <strong>ReDoS</strong> (100% CPU). Prefer <code>dissect</code> (no regex) for logs with a fixed structure; set <code>timeout_millis</code> for grok.</p>
+<hr />
+<h2 id="ch09-93-kibana-visualization-and-querying">9.3 Kibana — Visualization and Querying</h2>
+<h3 id="ch09-931-index-pattern-data-view">9.3.1 Index Pattern / Data View</h3>
+<p>Kibana does not store data; it queries Elasticsearch. An <strong>Index pattern</strong> (new name: <strong>Data view</strong>) declares the group of indices Kibana is allowed to query, e.g., <code>logs-nginx-*</code>, and specifies the <strong>time field</strong> (<code>@timestamp</code>) so the time picker works.</p>
+<h3 id="ch09-932-discover-and-kql">9.3.2 Discover and KQL</h3>
+<p><strong>Discover</strong> is the screen for browsing raw logs. The default query language is <strong>KQL (Kibana Query Language)</strong> — simpler than the Query DSL, and it compiles implicitly into DSL.</p>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>KQL</th>
+<th>DSL equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Match a value</td>
+<td><code>status: 401</code></td>
+<td><code>term</code></td>
+</tr>
+<tr>
+<td>AND</td>
+<td><code>status: 401 and method: post</code></td>
+<td><code>bool.must</code></td>
+</tr>
+<tr>
+<td>OR</td>
+<td><code>status: 401 or status: 403</code></td>
+<td><code>should</code></td>
+</tr>
+<tr>
+<td>NOT</td>
+<td><code>not clientip: "10.0.0.5"</code></td>
+<td><code>must_not</code></td>
+</tr>
+<tr>
+<td>Range</td>
+<td><code>bytes &gt; 1000</code></td>
+<td><code>range</code></td>
+</tr>
+<tr>
+<td>Wildcard</td>
+<td><code>request: *admin*</code></td>
+<td><code>wildcard</code></td>
+</tr>
+<tr>
+<td>Field exists</td>
+<td><code>geo.country_name: *</code></td>
+<td><code>exists</code></td>
+</tr>
+</tbody>
+</table>
+<p>Example of brute-force hunting in Discover:</p>
+<pre><code>event.module: &quot;nginx&quot; and status: 401 and request: &quot;/login&quot;
+</code></pre>
+<p>Combine with the "Last 1 hour" time picker → count the frequency by IP.</p>
+<h3 id="ch09-933-visualization-dashboard">9.3.3 Visualization, Dashboard</h3>
+<ul>
+<li><strong>Visualization</strong> (Lens): draws a single chart from an aggregation — e.g., "Bar chart: count by <code>clientip</code> (terms agg), filtered on status 401" to reveal brute-forcing IPs.</li>
+<li><strong>Dashboard</strong>: combines multiple visualizations + a shared filter + a shared time range. A typical SOC dashboard: a geo map of IPs, top failed-login IPs, a status-code-over-time chart, and a table of anomalous user-agents.</li>
+</ul>
+<p><strong>Kibana security notes</strong>:
+- Kibana has <strong>RBAC by space and index</strong>: create an analyst role that can only read dashboards and <code>logs-*</code> indices, without cluster administration.
+- Enable TLS between Kibana ↔ Elasticsearch and browser ↔ Kibana.
+- Be wary of features that allow scripting/embedding — restrict who can create visualizations that use scripts.</p>
+<hr />
+<h2 id="ch09-94-beats-collecting-data-at-the-source">9.4 Beats — Collecting Data at the Source</h2>
+<p><strong>Beats</strong> is a family of lightweight agents (written in Go, statically compiled) placed on source hosts. Each beat specializes in one type of data.</p>
+<table>
+<thead>
+<tr>
+<th>Beat</th>
+<th>Data</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Filebeat</td>
+<td>Log files, container logs</td>
+<td>A harvester reads the file, tracking offsets</td>
+</tr>
+<tr>
+<td>Metricbeat</td>
+<td>System/service metrics</td>
+<td>Modules poll periodically</td>
+</tr>
+<tr>
+<td>Winlogbeat</td>
+<td>Windows Event Log</td>
+<td>Reads via the Windows Event Log API</td>
+</tr>
+<tr>
+<td>Packetbeat</td>
+<td>Network protocols (on-the-wire decoding)</td>
+<td>Sniffs the network</td>
+</tr>
+<tr>
+<td>Auditbeat</td>
+<td>Linux audit framework (auditd)</td>
+<td>Reads audit events</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch09-941-filebeat-harvester-and-registry">9.4.1 Filebeat — Harvester and Registry</h3>
+<p>The core mechanism:</p>
+<pre><code>filebeat.inputs path: /var/log/nginx/*.log
+        │
+        ▼
+  One HARVESTER per open file
+   - reads from the last offset (stored in the registry)
+   - each line → one event
+        │
+        ▼
+  REGISTRY (/var/lib/filebeat/registry)
+   - stores {inode, offset, device} for each file
+   - why by inode? to identify a file even if it is renamed (logrotate)
+        │
+        ▼
+  SPOOLER/QUEUE → publishes to the output (Logstash/ES/Kafka)
+   - at-least-once delivery: only updates the offset after the output ACKs
+</code></pre>
+<p><strong>Why at-least-once?</strong> Filebeat advances the offset in the registry only after receiving an ACK from the destination. A crash mid-way → it resends from the old offset → may produce duplicates but <strong>does not lose</strong> logs. Duplicates are handled in ES via a deterministic <code>_id</code> (fingerprint).</p>
+<p><strong>Module</strong>: Filebeat ships with pre-packaged parsing configurations for common services (nginx, system, apache, auditd). A module consists of: default input paths + an ingest pipeline (parsing) + an index template + dashboards.</p>
+<pre><code class="language-bash">filebeat modules enable nginx system
+filebeat setup --pipelines --modules nginx     # install the ingest pipeline into ES
+filebeat setup --dashboards                     # load the Kibana dashboards
+</code></pre>
+<p><strong>Example of a complete filebeat.yml (shipping via Logstash, with TLS):</strong></p>
+<pre><code class="language-yaml">filebeat.inputs:
+  - type: filestream
+    id: nginx-access
+    enabled: true
+    paths:
+      - /var/log/nginx/access.log
+    fields:
+      event.module: nginx
+    fields_under_root: true
+    parsers:
+      - multiline:
+          type: pattern
+          pattern: '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+          negate: true
+          match: after
+
+filebeat.registry.path: /var/lib/filebeat/registry
+
+processors:
+  - add_host_metadata: ~
+  - drop_fields:
+      fields: [&quot;agent.ephemeral_id&quot;, &quot;ecs.version&quot;]
+
+output.logstash:
+  hosts: [&quot;logstash-01:5044&quot;]
+  ssl.enabled: true
+  ssl.certificate_authorities: [&quot;/etc/filebeat/certs/ca.crt&quot;]
+  ssl.certificate: &quot;/etc/filebeat/certs/filebeat.crt&quot;
+  ssl.key: &quot;/etc/filebeat/certs/filebeat.key&quot;
+
+logging.level: info
+</code></pre>
+<p>Explanation:
+- <code>type: filestream</code> (replacing the old <code>log</code>): tracks files more reliably with logrotate.
+- <code>multiline</code>: merges continuation lines (e.g., a stack trace) into a single event; the pattern is "a line starting with an IP is a new line", and other lines are appended to the previous one.
+- <code>add_host_metadata</code>: attaches hostname, OS, IP → identifies the source during investigation.</p>
+<h3 id="ch09-942-metricbeat">9.4.2 Metricbeat</h3>
+<p>Collects metrics via <strong>modules</strong> that poll on a <code>period</code>:</p>
+<pre><code class="language-yaml">metricbeat.modules:
+  - module: system
+    metricsets: [cpu, memory, network, filesystem, process]
+    period: 10s
+    processes: ['.*']
+  - module: nginx
+    metricsets: [stubstatus]
+    period: 10s
+    hosts: [&quot;http://127.0.0.1/nginx_status&quot;]
+
+output.elasticsearch:
+  hosts: [&quot;https://es-01:9200&quot;]
+  username: &quot;metricbeat_writer&quot;
+  password: &quot;${MB_PASS}&quot;
+  ssl.certificate_authorities: [&quot;/etc/metricbeat/certs/ca.crt&quot;]
+</code></pre>
+<p><code>system.cpu.utilization</code> (Metricbeat) is similar in concept to <code>system.cpu.util</code> on the Zabbix side — but this is a metric for analysis, without a trigger/threshold engine like Zabbix. Metricbeat's role is also equivalent to <strong>node_exporter</strong> in the Prometheus world (see 9.6) — the difference is the direction of data flow: Metricbeat <strong>pushes</strong> to Elasticsearch, while node_exporter merely <strong>exposes</strong> metrics for Prometheus to pull.</p>
+<h3 id="ch09-943-winlogbeat">9.4.3 Winlogbeat</h3>
+<p>Reads the Windows Event Log (Security, System, Sysmon) — a goldmine for the Blue Team:</p>
+<pre><code class="language-yaml">winlogbeat.event_logs:
+  - name: Security
+    event_id: 4624, 4625, 4672, 4688   # successful/failed logon, special privileges, process creation
+  - name: Microsoft-Windows-Sysmon/Operational
+
+output.logstash:
+  hosts: [&quot;logstash-01:5044&quot;]
+  ssl.enabled: true
+  ssl.certificate_authorities: [&quot;C:\\ProgramData\\winlogbeat\\ca.crt&quot;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Meaning</th>
+<th>Investigative value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4624</td>
+<td>Successful logon</td>
+<td>Track logon type (10=RDP), source IP</td>
+</tr>
+<tr>
+<td>4625</td>
+<td>Failed logon</td>
+<td>Hunt brute-force, password spraying</td>
+</tr>
+<tr>
+<td>4672</td>
+<td>Special privileges assigned</td>
+<td>Detect admin logons</td>
+</tr>
+<tr>
+<td>4688</td>
+<td>New process created</td>
+<td>Hunt malicious commands (requires command-line auditing enabled)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch09-944-the-overall-data-flow">9.4.4 The Overall Data Flow</h3>
+<pre><code>[Source host]                [Pipeline]            [Storage/Search]      [Display]
+ Filebeat ───┐
+ Metricbeat ─┼──TLS:5044──▶ Logstash ──TLS:9200──▶ Elasticsearch ◀──── Kibana
+ Winlogbeat ─┘             (grok/date/geoip)       (index, shard)      (Discover,
+                                                                        Dashboard, KQL)
+
+Variant: Beats ──▶ Elasticsearch directly (using an ingest pipeline instead of Logstash)
+         when complex transformation is not needed (lighter, fewer components).
+</code></pre>
+<p><strong>When to drop Logstash?</strong> If you only need simple parsing, use an <strong>ingest pipeline</strong> in Elasticsearch (running on an ingest node) → one fewer component. Keep Logstash when you need a large buffer (persistent queue), many non-Beats sources (syslog, kafka), or heavy transformation.</p>
+<hr />
+<h2 id="ch09-95-zabbix-infrastructure-and-performance-monitoring">9.5 Zabbix — Infrastructure and Performance Monitoring</h2>
+<h3 id="ch09-951-the-server-agent-proxy-architecture">9.5.1 The Server / Agent / Proxy Architecture</h3>
+<pre><code>   ┌──────────────────────────────────────────────────────────────┐
+   │                      ZABBIX SERVER                             │
+   │  - collects, evaluates triggers, generates events, runs actions│
+   │  - writes to the DB (MySQL/PostgreSQL/TimescaleDB)             │
+   └───────▲───────────────────▲────────────────────▲──────────────┘
+           │ TCP 10051         │                    │
+   ┌───────┴───────┐   ┌───────┴───────┐    ┌───────┴────────┐
+   │ Zabbix Proxy  │   │ Zabbix Agent  │    │  SNMP / IPMI   │
+   │ (one zone)    │   │ (on the host) │    │  agentless     │
+   └───────▲───────┘   └───────────────┘    └────────────────┘
+           │ TCP 10050
+   ┌───────┴───────┐
+   │ Zabbix Agent  │
+   └───────────────┘
+
+   Frontend (PHP) + Zabbix DB  → web interface, configuration, dashboards
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Default port</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zabbix Server</td>
+<td>listens on 10051</td>
+<td>Processing core, evaluates triggers, runs actions</td>
+</tr>
+<tr>
+<td>Zabbix Agent (passive)</td>
+<td>listens on 10050</td>
+<td>The server asks, the agent returns item values</td>
+</tr>
+<tr>
+<td>Zabbix Agent (active)</td>
+<td>connects to 10051</td>
+<td>The agent proactively pushes data to the server</td>
+</tr>
+<tr>
+<td>Zabbix Proxy</td>
+<td>listens on 10051</td>
+<td>Collects on behalf of the server for a zone/DMZ, buffers when disconnected</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>80/443</td>
+<td>Web UI (PHP)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Passive vs Active agent</strong> — the core difference:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Passive</th>
+<th>Active</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Who initiates the connection</td>
+<td>Server → Agent (10050)</td>
+<td>Agent → Server (10051)</td>
+</tr>
+<tr>
+<td>Best suited for</td>
+<td>Networks where the server can see the agent</td>
+<td>Agents behind NAT/firewall, many hosts</td>
+</tr>
+<tr>
+<td>Server load</td>
+<td>Higher (the server polls each item)</td>
+<td>Lower (the agent pushes in batches)</td>
+</tr>
+<tr>
+<td>Item configuration</td>
+<td>Asked each time</td>
+<td>The agent fetches the item list, then collects on its own</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why have a Proxy?</strong> In an environment with many sites/DMZs, the proxy collects locally and then sends the data aggregated to the server (only one connection through the firewall). The proxy also <strong>buffers data</strong> in its local DB when the connection to the server is lost → no metrics are lost.</p>
+<h3 id="ch09-952-the-zabbix-on-the-wire-protocol-format-zabbix-protocol">9.5.2 The Zabbix On-the-Wire Protocol Format (Zabbix protocol)</h3>
+<p>This is the "down to the byte" part. All agent/server communication uses a fixed binary header:</p>
+<pre><code>Offset  Size        Field           Value/meaning
+------  ----------  --------------  --------------------------------------------
+  0      4 bytes    Protocol magic  ASCII &quot;ZBXD&quot;  = 0x5A 0x42 0x58 0x44
+  4      1 byte     Flags           bit0=0x01 Zabbix communications protocol
+                                    bit1=0x02 compression (zlib)
+                                    bit2=0x04 large packet (uses 8-byte length)
+  5      4 bytes    Data length     uint32 little-endian = payload length (compressed if applicable)
+  9      4 bytes    Reserved        if compressed: uint32 LE = payload length after decompression
+                                    if not compressed: 0x00000000
+ 13      N bytes    Payload         JSON (UTF-8)
+</code></pre>
+<p>Note: when the large-packet flag (0x04) is set, both length fields use 8 bytes each (a longer header). Verify with an actual packet capture if you need absolute accuracy for a given version.</p>
+<p>An ASCII diagram of a real packet (uncompressed, not large packet):</p>
+<pre><code>+------+------+------+------+------+   +------+------+------+------+   +-------------+
+|  Z   |  B   |  X   |  D   | flag |   |  len (4B LE)            |   | reserved(4B)| JSON...
+| 5A   | 42   | 58   | 44   | 01   |   | xx   xx   xx   xx       |   | 00 00 00 00 |
++------+------+------+------+------+   +------+------+------+------+   +-------------+
+   0     1      2      3      4         5                    8         9        12   13...
+</code></pre>
+<p>An example JSON payload when an active agent sends data:</p>
+<pre><code class="language-json">{
+  &quot;request&quot;: &quot;agent data&quot;,
+  &quot;session&quot;: &quot;f3...&quot;,
+  &quot;data&quot;: [
+    { &quot;host&quot;: &quot;web01&quot;, &quot;key&quot;: &quot;system.cpu.util&quot;, &quot;value&quot;: &quot;12.50&quot;,
+      &quot;clock&quot;: 1750300530, &quot;ns&quot;: 123456789 }
+  ],
+  &quot;clock&quot;: 1750300530
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>JSON field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>request</code></td>
+<td>Request type</td>
+<td><code>agent data</code>, <code>active checks</code>, <code>sender data</code></td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>Host name in Zabbix</td>
+<td><code>web01</code></td>
+</tr>
+<tr>
+<td><code>key</code></td>
+<td>Item key</td>
+<td><code>system.cpu.util</code></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>The collected value</td>
+<td><code>12.50</code></td>
+</tr>
+<tr>
+<td><code>clock</code></td>
+<td>Epoch seconds of the measurement time</td>
+<td><code>1750300530</code></td>
+</tr>
+<tr>
+<td><code>ns</code></td>
+<td>Nanoseconds for additional precision</td>
+<td><code>123456789</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why have the "ZBXD" magic + an explicit length?</strong> TCP is a stream with no message boundaries. The magic helps identify the protocol, and the length field tells how many payload bytes to read → cleanly framing the message. The large-packet flag allows very large payloads by using an 8-byte length.</p>
+<p>Capture packets to verify:</p>
+<pre><code class="language-bash">tcpdump -i any -n -A 'tcp port 10051' -c 20
+# or test a single item with zabbix_get (see 9.5.4)
+</code></pre>
+<h3 id="ch09-953-item-the-unit-of-measurement">9.5.3 Item — The Unit of Measurement</h3>
+<p>An <strong>Item</strong> defines "what to measure and how." Each item is tied to a <strong>key</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Item component</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key</td>
+<td>The measurement identifier, may have parameters</td>
+<td><code>system.cpu.util[,user]</code></td>
+</tr>
+<tr>
+<td>Type</td>
+<td>How it is collected</td>
+<td>Zabbix agent / Zabbix agent (active) / SNMP / Calculated / Dependent / HTTP / Trapper</td>
+</tr>
+<tr>
+<td>Value type</td>
+<td>Value kind</td>
+<td>Numeric (unsigned/float), Character, Log, Text</td>
+</tr>
+<tr>
+<td>Update interval</td>
+<td>Collection frequency</td>
+<td><code>1m</code>, <code>30s</code></td>
+</tr>
+<tr>
+<td>History</td>
+<td>How long to keep raw values</td>
+<td><code>7d</code></td>
+</tr>
+<tr>
+<td>Trends</td>
+<td>Keep hourly statistics (min/avg/max)</td>
+<td><code>365d</code></td>
+</tr>
+<tr>
+<td>Preprocessing</td>
+<td>Transform before storing</td>
+<td>regex, JSONPath, change-per-second, throttling</td>
+</tr>
+</tbody>
+</table>
+<p>Commonly encountered item keys:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>system.cpu.util</code></td>
+<td>% CPU usage</td>
+</tr>
+<tr>
+<td><code>system.cpu.load[all,avg1]</code></td>
+<td>1-minute load average</td>
+</tr>
+<tr>
+<td><code>vm.memory.size[available]</code></td>
+<td>Available RAM (bytes)</td>
+</tr>
+<tr>
+<td><code>vfs.fs.size[/,pfree]</code></td>
+<td>% free space on <code>/</code></td>
+</tr>
+<tr>
+<td><code>net.if.in[eth0]</code></td>
+<td>Bytes received on eth0 (counter)</td>
+</tr>
+<tr>
+<td><code>net.tcp.service[ssh,,22]</code></td>
+<td>Check the SSH service (1=up, 0=down)</td>
+</tr>
+<tr>
+<td><code>proc.num[nginx]</code></td>
+<td>Number of nginx processes</td>
+</tr>
+<tr>
+<td><code>agent.ping</code></td>
+<td>Agent is alive (1)</td>
+</tr>
+<tr>
+<td><code>vfs.file.contents[/etc/passwd]</code></td>
+<td>(dangerous — see the note)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why separate History and Trends?</strong> History (the raw value from each measurement) grows very fast — it cannot be kept for long. Trends aggregate by the hour (min/avg/max), take up very little space, and can be kept for years to view long-term trends. This is the core strategy against DB bloat.</p>
+<p><strong>Preprocessing with counters</strong>: <code>net.if.in</code> is an increasing counter (cumulative bytes). Use the <strong>"Change per second"</strong> preprocessing to derive throughput in bytes/second — this is exactly the mechanism for computing rates from a counter (similar to SNMP).</p>
+<h3 id="ch09-954-a-practical-item-collection-example">9.5.4 A Practical Item-Collection Example</h3>
+<p><code>zabbix_agentd.conf</code> (passive + active):</p>
+<pre><code class="language-ini">Server=10.0.0.10                 # server allowed to poll (passive), CSV
+ServerActive=10.0.0.10:10051     # server for the agent to push active checks
+Hostname=web01                   # must match the host name in Zabbix
+ListenPort=10050
+TLSConnect=psk
+TLSAccept=psk
+TLSPSKIdentity=PSK web01
+TLSPSKFile=/etc/zabbix/zabbix_agentd.psk
+</code></pre>
+<p>A custom item (UserParameter) — e.g., counting the number of ESTABLISHED connections:</p>
+<pre><code class="language-ini">UserParameter=net.tcp.established,ss -ant state established | wc -l
+</code></pre>
+<p>Fetch a value from the server using <code>zabbix_get</code> (to verify a passive item):</p>
+<pre><code class="language-bash">zabbix_get -s 10.0.0.20 -p 10050 -k &quot;system.cpu.util&quot;
+# Sample output:
+12.5026
+zabbix_get -s 10.0.0.20 -k &quot;net.tcp.established&quot;
+47
+</code></pre>
+<p>Push a value manually using <code>zabbix_sender</code> (for the Trapper item type):</p>
+<pre><code class="language-bash">zabbix_sender -z 10.0.0.10 -s &quot;web01&quot; -k &quot;app.queue.depth&quot; -o 128
+# Output:
+# info from server: &quot;processed: 1; failed: 0; total: 1; seconds spent: 0.000123&quot;
+# sent: 1; skipped: 0; total: 1
+</code></pre>
+<h3 id="ch09-955-trigger-evaluating-conditions">9.5.5 Trigger — Evaluating Conditions</h3>
+<p>A <strong>Trigger</strong> is a boolean expression over item data; when it is true → the state changes to <strong>PROBLEM</strong>, and when it is false → <strong>OK</strong>. This is the part that replaces a "rule" — but it is based on metric thresholds rather than security patterns.</p>
+<p>Function syntax (Zabbix 5.4+): <code>function(/host/key, parameter)</code>.</p>
+<p>Example real trigger expressions:</p>
+<pre><code># 5-minute average CPU &gt; 90%
+avg(/web01/system.cpu.util,5m) &gt; 90
+
+# Free space on / drops below 10%
+last(/web01/vfs.fs.size[/,pfree]) &lt; 10
+
+# Agent unresponsive for 5 minutes (no data)
+nodata(/web01/agent.ping,5m) = 1
+
+# More than 20 failed SSH logins in 5 minutes (log item counting)
+sum(/web01/log.ssh.failed,5m) &gt; 20
+
+# A trigger with a separate recovery (hysteresis to avoid flapping):
+#   Problem:  min(/web01/system.cpu.util,5m) &gt; 90
+#   Recovery: max(/web01/system.cpu.util,5m) &lt; 80
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>last()</code></td>
+<td>The most recent value</td>
+</tr>
+<tr>
+<td><code>avg(,5m)</code></td>
+<td>Average over 5 minutes</td>
+</tr>
+<tr>
+<td><code>min()/max()</code></td>
+<td>Minimum/maximum over the interval</td>
+</tr>
+<tr>
+<td><code>count(,5m,"gt",90)</code></td>
+<td>Number of times the condition is satisfied</td>
+</tr>
+<tr>
+<td><code>nodata(,5m)</code></td>
+<td>=1 if there is no data in the last 5 minutes</td>
+</tr>
+<tr>
+<td><code>change()</code></td>
+<td>The difference from the previous value</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Severity</strong> of a trigger: Not classified, Information, Warning, Average, High, Disaster — it determines the alert level and color.</p>
+<p><strong>Why is hysteresis (a separate recovery expression) needed?</strong> If you only use <code>&gt;90</code> to enter and <code>&lt;=90</code> to leave, CPU fluctuating around 90% will generate a barrage of problem/ok events ("flapping"). Setting the entry threshold (90) higher than the exit threshold (80) → stable alerts.</p>
+<h3 id="ch09-956-template-host-host-group">9.5.6 Template, Host, Host Group</h3>
+<ul>
+<li><strong>Host</strong>: the monitored entity (server, switch, application). It has interfaces (Agent/SNMP/IPMI/JMX).</li>
+<li><strong>Host group</strong>: a group of hosts for applying permissions and bulk operations.</li>
+<li><strong>Template</strong>: a reusable collection of items + triggers + graphs + macros. Attaching a template to a host → the host inherits all items/triggers. For example, the <code>Linux by Zabbix agent</code> template provides dozens of CPU/RAM/disk/net items out of the box.</li>
+</ul>
+<p><strong>Macros</strong> enable parameterization: in a trigger, use <code>{$CPU.UTIL.CRIT}</code> instead of hardcoding 90; override the macro at the host level for exceptions. Why? One template is applied to 500 hosts, but a few DB hosts need a different threshold → you only override the macro on those hosts.</p>
+<h3 id="ch09-957-action-operation-media">9.5.7 Action, Operation, Media</h3>
+<p>When a trigger generates an <strong>event</strong>, an <strong>Action</strong> decides the response:</p>
+<pre><code>Event (trigger PROBLEM)
+   │
+   ▼ Action conditions  (e.g.: severity &gt;= High AND host group = Production)
+   │
+   ▼ Operations
+       - send a message via Media (Email/Telegram/Slack/Webhook)
+       - run a remote command (e.g., restart a service) — use caution
+   │
+   ▼ Recovery operations  (send an OK notification)
+   │
+   ▼ Escalation (repeat/escalate if no one has acted after X minutes)
+</code></pre>
+<ul>
+<li><strong>Media type</strong>: the delivery channel (Email SMTP, Telegram bot, Slack, custom webhook script).</li>
+<li><strong>User media</strong>: assigns a channel to a user along with their on-call schedule and the severities they care about.</li>
+</ul>
+<p>Example webhook media (JavaScript) sending an alert — a Zabbix webhook media type receives macros via parameters, e.g., <code>{ALERT.MESSAGE}</code>, <code>{EVENT.SEVERITY}</code>:</p>
+<pre><code class="language-javascript">var params = JSON.parse(value);
+var req = new HttpRequest();
+req.addHeader('Content-Type: application/json');
+var resp = req.post('https://hooks.example/alert',
+  JSON.stringify({ text: params.message, severity: params.severity }));
+return resp;
+</code></pre>
+<p><strong>Action security note</strong>: a <strong>Remote command</strong> allows Zabbix to run commands on the agent — if <code>EnableRemoteCommands</code>/<code>AllowKey=system.run[*]</code> is enabled carelessly, a compromised server = RCE across the entire fleet. It should be disabled by default; if enabled, restrict <code>AllowKey</code>/<code>DenyKey</code> and the specific commands.</p>
+<h3 id="ch09-958-dashboard-and-latest-data">9.5.8 Dashboard and Latest Data</h3>
+<ul>
+<li><strong>Latest data</strong>: a table of the most recent item values by host — used for a quick check.</li>
+<li><strong>Graph</strong>: plots a time series from history/trends.</li>
+<li><strong>Dashboard</strong>: widgets (graph, problem list, topology map, gauge) — e.g., a NOC view: a host map (green=OK, red=problem), top CPU, a list of open problems.</li>
+</ul>
+<h3 id="ch09-959-overall-zabbix-security-notes">9.5.9 Overall Zabbix Security Notes</h3>
+<ul>
+<li><strong>TLS/PSK</strong>: by default the agent↔server channel is <strong>unencrypted</strong>. Enable <code>TLSConnect</code>/<code>TLSAccept</code> with PSK or certificates. Not enabling it = anyone who can sniff will see the metrics and may spoof the trapper.</li>
+<li><strong>Dangerous items</strong>: <code>system.run[...]</code>, <code>vfs.file.contents[...]</code> can read sensitive files/run commands. Use <code>AllowKey</code>/<code>DenyKey</code> in the agent config to whitelist.
+  <code>ini
+  DenyKey=system.run[*]
+  AllowKey=vfs.file.contents[/var/log/app/*]</code></li>
+<li><strong>PHP frontend</strong>: it has had numerous SQLi/XSS CVEs. Place it behind a reverse proxy, use HTTPS, restrict IP access, and apply patches promptly.</li>
+<li><strong>DB credentials</strong> in <code>zabbix_server.conf</code> — set file permissions to 600, and grant the DB user minimal privileges.</li>
+</ul>
+<hr />
+<h2 id="ch09-96-prometheus-pull-model-metric-monitoring">9.6 Prometheus — Pull-Model Metric Monitoring</h2>
+<h3 id="ch09-961-what-prometheus-is-and-what-problem-it-solves">9.6.1 What Prometheus Is and What Problem It Solves</h3>
+<p><strong>Prometheus</strong> is an open-source metric-monitoring system, originally from SoundCloud and the second project to "graduate" from the CNCF (after Kubernetes). It solves the same problem as Zabbix — "is the system healthy, which metric breached its threshold" — but with a different philosophy:</p>
+<ul>
+<li><strong>Pull model</strong>: the Prometheus server <strong>actively pulls</strong> (scrapes) metrics from each target's HTTP <code>/metrics</code> endpoint, on a configured interval. The target pushes nothing — it merely <em>exposes</em> its current state as text.</li>
+<li><strong>Metrics are labeled time-series</strong>: each series is identified by a metric name + a set of key=value pairs (labels). Slicing data by label is a first-class operation; there is no need to pre-declare each "item" as in Zabbix.</li>
+<li><strong>Configuration as files</strong> (YAML + rule files): the entire scrape config and all alert rules live in text files → they go into Git and get reviewed like code (matching the GitOps spirit of chapter 7). Zabbix is the opposite: configuration lives in the DB and is manipulated through the GUI.</li>
+<li><strong>Local TSDB</strong>: Prometheus stores data on its own disk (2-hour blocks + WAL), needing no external DB. The default retention is 15 days (<code>--storage.tsdb.retention.time</code>) — long-term storage requires an add-on (Thanos, Mimir, VictoriaMetrics — verify the choices at the time of reading).</li>
+</ul>
+<p><strong>Why pull instead of push?</strong> Three pragmatic reasons: (1) the server controls the collection pace — adding 100 targets cannot flood the server with unplanned data; (2) dead targets are detected immediately — a failed scrape makes the metric <code>up == 0</code>, giving you a "host missing" alert for free without a separate heartbeat mechanism (equivalent to Zabbix's <code>nodata()</code> but more natural); (3) debugging is easy — open a browser at <code>http://target:9100/metrics</code> and you see exactly what the server sees. The downsides: the server must be able to <em>reach</em> the target (inbound NAT/firewall is a real problem); short-lived jobs (batch/cron) die before they can be scraped — solved with the <strong>Pushgateway</strong> (the job pushes its result there, and Prometheus scrapes the Pushgateway).</p>
+<h3 id="ch09-962-architecture-server-exporter-scrape">9.6.2 Architecture: Server, Exporter, Scrape</h3>
+<pre><code>   ┌─────────────────────────────────────────────────────────┐
+   │                  PROMETHEUS SERVER                       │
+   │  Retrieval (scrape) ──▶ TSDB (blocks + WAL on disk)      │
+   │        │                    │                            │
+   │        │              HTTP API /api/v1/query  ◀── Grafana│
+   │        ▼                    │                            │
+   │  Rule evaluation ───────────┼──▶ FIRING alerts           │
+   └────────┬────────────────────┼────────────┬───────────────┘
+            │ HTTP GET /metrics  │            │ HTTP POST
+            ▼ (every 15-60s)     │            ▼
+   ┌────────────────┐   ┌────────────────┐  ┌──────────────┐
+   │ node_exporter  │   │ app exposing   │  │ ALERTMANAGER │
+   │ :9100 (host)   │   │ /metrics (SDK) │  │ group/route/ │
+   └────────────────┘   └────────────────┘  │ notify       │
+                                            └──────────────┘
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Default port</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prometheus server</td>
+<td>9090</td>
+<td>Scrapes, stores the TSDB, runs PromQL, evaluates alerting rules</td>
+</tr>
+<tr>
+<td>node_exporter</td>
+<td>9100</td>
+<td>Exposes the host's Linux OS metrics</td>
+</tr>
+<tr>
+<td>Alertmanager</td>
+<td>9093</td>
+<td>Receives alerts from the server, groups, routes, sends notifications</td>
+</tr>
+<tr>
+<td>Pushgateway</td>
+<td>9091</td>
+<td>Intermediary for short-lived batch jobs</td>
+</tr>
+<tr>
+<td>Other exporters</td>
+<td>9xxx</td>
+<td>blackbox (HTTP/ICMP probing), mysqld, nginx, redis... one exporter per service</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>exporter</strong> is the architectural difference from the Zabbix agent: instead of one universal agent answering every item key, the Prometheus world uses many small exporters — each translating the state of one system (kernel, MySQL, nginx) into the <code>/metrics</code> text format. Applications you write yourself embed a client library (Go/Python/Java...) to expose business metrics directly.</p>
+<p>A minimal runnable <code>prometheus.yml</code>:</p>
+<pre><code class="language-yaml">global:
+  scrape_interval: 15s          # default pull interval
+  evaluation_interval: 15s      # rule evaluation interval
+
+rule_files:
+  - &quot;rules/*.yml&quot;
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [&quot;alertmanager:9093&quot;]
+
+scrape_configs:
+  - job_name: &quot;prometheus&quot;      # monitor itself
+    static_configs:
+      - targets: [&quot;localhost:9090&quot;]
+
+  - job_name: &quot;node&quot;
+    static_configs:
+      - targets:
+          - &quot;10.0.0.20:9100&quot;
+          - &quot;10.0.0.21:9100&quot;
+        labels:
+          env: &quot;prod&quot;
+</code></pre>
+<p>Every scraped target automatically gets two identifying labels: <code>job</code> (the job name) and <code>instance</code> (host:port). In dynamic environments (Kubernetes, cloud), replace <code>static_configs</code> with <strong>service discovery</strong> (<code>kubernetes_sd_configs</code>, <code>ec2_sd_configs</code>...) — targets that appear and disappear are discovered automatically, and nobody has to "register hosts" by hand.</p>
+<p>The text format an exporter exposes (run <code>curl http://10.0.0.20:9100/metrics</code> to see it):</p>
+<pre><code># HELP node_cpu_seconds_total Seconds the CPUs spent in each mode.
+# TYPE node_cpu_seconds_total counter
+node_cpu_seconds_total{cpu=&quot;0&quot;,mode=&quot;idle&quot;} 8.5230889e+06
+node_cpu_seconds_total{cpu=&quot;0&quot;,mode=&quot;iowait&quot;} 12043.02
+node_cpu_seconds_total{cpu=&quot;0&quot;,mode=&quot;steal&quot;} 3894.77
+node_cpu_seconds_total{cpu=&quot;0&quot;,mode=&quot;user&quot;} 118920.31
+node_memory_MemAvailable_bytes 6.442450944e+09
+</code></pre>
+<h3 id="ch09-963-the-data-model-metric-name-labels-and-the-4-metric-types">9.6.3 The Data Model — Metric Name, Labels, and the 4 Metric Types</h3>
+<p>A time-series = <strong>metric name + label set</strong>; each sample = (millisecond timestamp, float64 value). For example, <code>node_cpu_seconds_total{cpu="0",mode="idle",instance="10.0.0.20:9100",job="node"}</code> is <em>one</em> series; change any label and it is <em>another</em> series. The important consequence: <strong>label cardinality</strong> determines cost — a label with unbounded values (user ID, full URL, client IP) will spawn millions of series and kill the server (analogous to mapping explosion in Elasticsearch, see 9.1.2).</p>
+<p>The four metric types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Nature</th>
+<th>Example</th>
+<th>Correct usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Counter</strong></td>
+<td>Only increases (resets to 0 on process restart)</td>
+<td><code>node_cpu_seconds_total</code>, <code>http_requests_total</code></td>
+<td>Never read the raw value; always go through <code>rate()</code>/<code>increase()</code></td>
+</tr>
+<tr>
+<td><strong>Gauge</strong></td>
+<td>Goes up and down freely</td>
+<td><code>node_memory_MemAvailable_bytes</code>, <code>node_load1</code></td>
+<td>Read directly, <code>avg_over_time()</code></td>
+</tr>
+<tr>
+<td><strong>Histogram</strong></td>
+<td>Counts observations into <code>le</code> buckets (with <code>_sum</code>, <code>_count</code>)</td>
+<td><code>http_request_duration_seconds_bucket</code></td>
+<td><code>histogram_quantile(0.95, ...)</code> computes percentiles server-side</td>
+</tr>
+<tr>
+<td><strong>Summary</strong></td>
+<td>Percentiles precomputed client-side</td>
+<td><code>..._{quantile="0.99"}</code></td>
+<td>Read directly, but cannot be aggregated across instances</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why do counters only increase?</strong> To tolerate lost samples: between two scrapes, even if a few samples are lost, the difference between two counter values still tells exactly how much it grew in that window. <code>rate()</code> also handles counter resets automatically (a value dropping = process restart → it compensates). This is why the <code>_total</code> naming convention exists, along with the mantra "a raw counter is meaningless; the rate of a counter is meaningful" — equivalent to the "Change per second" preprocessing in Zabbix (9.5.3).</p>
+<p><strong>Histogram vs Summary</strong>: a histogram computes percentiles at <em>query</em> time, so it can be aggregated fleet-wide ("p95 of the whole cluster"); a summary is precomputed at the <em>client</em>, so it is more accurate for a single instance but cannot be merged. In practice most people choose histograms.</p>
+<h3 id="ch09-964-node_exporter-the-system-metrics-most-worth-watching">9.6.4 node_exporter — The System Metrics Most Worth Watching</h3>
+<p>node_exporter reads <code>/proc</code> and <code>/sys</code> and exposes a few thousand series. The groups I use daily:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Metric</th>
+<th>Type</th>
+<th>Operational meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td><code>node_cpu_seconds_total{mode=...}</code></td>
+<td>counter</td>
+<td>CPU seconds by mode: <code>user</code>, <code>system</code>, <code>iowait</code>, <code>steal</code>, <code>idle</code>... Reading by <em>mode</em> is what makes diagnosis possible: high <code>iowait</code> = a disk bottleneck, not a CPU shortage; high <code>steal</code> = the hypervisor throttling the VM (a noisy neighbor in the cloud)</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td><code>node_memory_MemAvailable_bytes</code>, <code>node_memory_MemTotal_bytes</code></td>
+<td>gauge</td>
+<td>Look at <strong>available</strong>, not "used" — Linux uses free RAM as page cache, so used is always high</td>
+</tr>
+<tr>
+<td>PSI</td>
+<td><code>node_pressure_memory_waiting_seconds_total</code>, <code>node_pressure_cpu_waiting_seconds_total</code>, <code>node_pressure_io_waiting_seconds_total</code></td>
+<td>counter</td>
+<td><strong>Pressure Stall Information</strong> (kernel ≥ 4.20): total time some process had to <em>stall waiting</em> for a resource. Its <code>rate()</code> = the fraction of time spent starved — a more honest "truly short of it" signal than any % used number</td>
+</tr>
+<tr>
+<td>Filesystem</td>
+<td><code>node_filesystem_avail_bytes</code>, <code>node_filesystem_files_free</code></td>
+<td>gauge</td>
+<td>Free space and free <strong>inodes</strong> (running out of inodes also means "disk full" even with GBs left)</td>
+</tr>
+<tr>
+<td>Disk I/O</td>
+<td><code>node_disk_io_time_seconds_total</code>, <code>node_disk_read_bytes_total</code>, <code>node_disk_written_bytes_total</code></td>
+<td>counter</td>
+<td><code>rate(io_time)</code> ≈ <code>iostat</code>'s %util; read/write throughput</td>
+</tr>
+<tr>
+<td>Network</td>
+<td><code>node_network_receive_bytes_total</code>, <code>node_network_receive_drop_total</code>, <code>node_network_receive_errs_total</code></td>
+<td>counter</td>
+<td>Network alerts should watch <strong>drops/errors</strong>, not % bandwidth</td>
+</tr>
+<tr>
+<td>Load/Procs</td>
+<td><code>node_load1</code>, <code>node_procs_blocked</code></td>
+<td>gauge</td>
+<td><code>procs_blocked</code> = processes in state D (stuck on I/O) — high load + high blocked = a disk bottleneck, not a CPU shortage</td>
+</tr>
+</tbody>
+</table>
+<p>How to read these same signals with <em>commands</em> on the machine itself (mpstat, PSI, iostat, ss...) is in chapter 2 (Linux) — the dashboard and the commands are two halves of the same runbook.</p>
+<h3 id="ch09-965-basic-promql-queries-used-for-real">9.6.5 Basic PromQL — Queries Used for Real</h3>
+<p>PromQL operates on two main value kinds: an <strong>instant vector</strong> (one value per series at one point in time — <code>node_load1</code>) and a <strong>range vector</strong> (a run of samples per series within a time window — <code>node_cpu_seconds_total[5m]</code>). Functions like <code>rate()</code> take a range vector and return an instant vector.</p>
+<pre><code class="language-promql"># 1. CPU usage % per machine (the classic trick: 100% minus the idle share)
+100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])))
+
+# 2. CPU split by mode — the &quot;CPU by mode&quot; panel is exactly this query
+sum by (mode) (rate(node_cpu_seconds_total{instance=&quot;10.0.0.20:9100&quot;}[5m]))
+
+# 3. % RAM available (watch available, not used)
+100 * node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+
+# 4. Real memory pressure (PSI) — fraction of time processes stalled waiting for RAM
+rate(node_pressure_memory_waiting_seconds_total[5m])
+
+# 5. % free disk on the / mount
+100 * node_filesystem_avail_bytes{mountpoint=&quot;/&quot;} / node_filesystem_size_bytes{mountpoint=&quot;/&quot;}
+
+# 6. Forecast: at the last 6 hours' pace, will / be full in 24 hours? (negative = it will)
+predict_linear(node_filesystem_avail_bytes{mountpoint=&quot;/&quot;}[6h], 24*3600) &lt; 0
+
+# 7. Packet drops on every interface (excluding loopback)
+rate(node_network_receive_drop_total{device!=&quot;lo&quot;}[5m])
+
+# 8. Which machines have gone missing (scrape failing)
+up == 0
+</code></pre>
+<p>Common stumbling points:</p>
+<ul>
+<li><code>rate()</code> needs a window ≥ 2× the <code>scrape_interval</code> (the usual convention is ≥ 4×, e.g., a 15s interval → a minimum 1m window) — too short a window produces a gappy graph.</li>
+<li><code>sum(node_cpu_seconds_total)</code> without <code>rate()</code> is meaningless (it adds up counters accumulated since boot).</li>
+<li><code>by (label)</code> keeps a label for grouping, <code>without (label)</code> drops it — <code>sum by (mode)</code> merges all CPUs/instances but keeps the mode.</li>
+<li><code>predict_linear</code> is a linear regression over a range vector — "the disk <em>will</em> be full within 24h" is worth far more than "the disk <em>is</em> above 90%": it alerts while there is still time to act, and it does not cry wolf about a machine sitting stable at 91%.</li>
+</ul>
+<h3 id="ch09-966-alerting-rules-and-alertmanager">9.6.6 Alerting Rules and Alertmanager</h3>
+<p>Prometheus splits alerting in two: the <strong>server</strong> evaluates rules and fires alerts; <strong>Alertmanager</strong> receives them and then groups, deduplicates, routes, and delivers. Why the split? So that multiple Prometheus servers can share one notification-management point, and so the logic of "who gets told, when, grouped how" does not mix with the logic of "what is abnormal".</p>
+<p>A rule file (<code>rules/node.yml</code>):</p>
+<pre><code class="language-yaml">groups:
+  - name: node-health
+    rules:
+      - alert: HostDiskWillFillIn24h
+        expr: predict_linear(node_filesystem_avail_bytes{mountpoint=&quot;/&quot;}[6h], 24*3600) &lt; 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: &quot;Disk / on {{ $labels.instance }} will fill in ~24h&quot;
+
+      - alert: HostHighCpu
+        expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m]))) &gt; 90
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: &quot;CPU on {{ $labels.instance }} &gt; 90% for 15 minutes&quot;
+
+      - alert: HostDown
+        expr: up{job=&quot;node&quot;} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: &quot;{{ $labels.instance }} unscrapeable for 3 minutes&quot;
+</code></pre>
+<p>The <strong><code>for</code></strong> field is the noise gate: the expression must hold <em>continuously</em> for that duration before the alert moves from <code>pending</code> to <code>firing</code> — the same role as Zabbix trigger hysteresis (9.5.5): a 30-second CPU spike is not worth waking anyone up.</p>
+<p><code>alertmanager.yml</code> — routes form a tree, receivers are delivery targets:</p>
+<pre><code class="language-yaml">route:
+  receiver: ops-default            # default branch
+  group_by: [alertname, instance]  # merge same-kind alerts into 1 notification
+  group_wait: 30s                  # wait to gather more alerts of the same group
+  repeat_interval: 4h              # re-notify if nobody has acted
+  routes:
+    - matchers: [ severity=&quot;critical&quot; ]
+      receiver: ops-oncall         # critical takes its own path
+
+receivers:
+  - name: ops-default
+    webhook_configs:
+      - url: &quot;https://hooks.example/ops-channel&quot;
+  - name: ops-oncall
+    webhook_configs:
+      - url: &quot;https://hooks.example/oncall&quot;
+</code></pre>
+<p>Beyond routing, Alertmanager has <strong>silences</strong> (mute by matcher during maintenance windows, created via UI/API) and <strong>inhibition</strong> (a big alert suppresses smaller ones: once a host is <code>HostDown</code>, do not also send 15 CPU/RAM alerts for that same host).</p>
+<p><strong>Prometheus security notes</strong>:</p>
+<ul>
+<li><code>/metrics</code> leaks plenty of reconnaissance material (kernel version, mount points, interface names, sometimes application paths). node_exporter has <strong>no authentication</strong> — bind it to internal networks only and firewall ports 9100/9090/9093 away from the Internet.</li>
+<li>Prometheus/Alertmanager themselves support TLS + basic auth for the web/API (since Prometheus 2.24 — needs verification); before that, and often still today, they are placed behind a reverse proxy for access control.</li>
+<li>The Prometheus UI allows arbitrary PromQL over all data — treat it as an admin tool, do not expose it publicly.</li>
+</ul>
+<h3 id="ch09-967-prometheus-vs-zabbix-when-to-choose-which">9.6.7 Prometheus vs Zabbix — When to Choose Which</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Zabbix</th>
+<th>Prometheus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Collection model</td>
+<td>Push (active) / per-item poll (passive), SNMP/IPMI</td>
+<td>Pull-scrapes HTTP endpoints</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td>GUI + templates, stored in the DB</td>
+<td>YAML + rule files → Git/reviewable</td>
+</tr>
+<tr>
+<td>Data model</td>
+<td>Flat item keys per host</td>
+<td>Multi-dimensional metric + labels, slice at will</td>
+</tr>
+<tr>
+<td>Query language</td>
+<td>Trigger functions over single items</td>
+<td>PromQL — computes over the whole fleet in one expression</td>
+</tr>
+<tr>
+<td>Dynamic targets (containers, autoscaling)</td>
+<td>Weaker (host registration, LLD)</td>
+<td>Very strong (service discovery)</td>
+</tr>
+<tr>
+<td>Network devices (SNMP), physical servers</td>
+<td>Very strong, templates included</td>
+<td>Via snmp_exporter, more painful</td>
+</tr>
+<tr>
+<td>Long-term storage</td>
+<td>History/Trends in the DB, kept for years</td>
+<td>Local TSDB ~weeks; long-term needs Thanos/Mimir/remote write</td>
+</tr>
+<tr>
+<td>Alerting</td>
+<td>Trigger + action + escalation in one system</td>
+<td>Rules (server) + Alertmanager (routing) split in two</td>
+</tr>
+</tbody>
+</table>
+<p>My rule of thumb: a <strong>static</strong> infrastructure with <strong>many SNMP network devices and a formal on-call escalation process</strong> → Zabbix is still excellent. A <strong>cloud/container</strong> infrastructure with targets constantly appearing and dying, and a team already used to IaC → Prometheus + Grafana is the ecosystem default (Kubernetes exposes metrics in the Prometheus format natively). On the systems I operate, I use Prometheus + node_exporter + Grafana for all server metrics; Zabbix is something I studied to understand the traditional monitoring model — and because many companies in Vietnam still run it.</p>
+<hr />
+<h2 id="ch09-97-grafana-a-single-pane-of-glass-for-many-data-sources">9.7 Grafana — A Single Pane of Glass for Many Data Sources</h2>
+<h3 id="ch09-971-what-grafana-is-and-what-problem-it-solves">9.7.1 What Grafana Is and What Problem It Solves</h3>
+<p><strong>Grafana</strong> is an open-source dashboard platform. It <strong>stores no metrics or logs at all</strong> — every time it draws something, it takes the query to a <strong>datasource</strong> (Prometheus, Elasticsearch/OpenSearch, Loki, MySQL, CloudWatch...) and renders the result. The problem it solves is very mundane: every tool has its own UI (Prometheus has a bare-bones UI, Kibana only sees Elasticsearch, Zabbix has its own frontend) — and in real operations nobody wants to open 4 tabs to answer "is the system OK". Grafana lets <strong>one dashboard mix panels from multiple sources</strong>: a CPU panel reading from Prometheus sits right next to an alert-count panel reading from the Wazuh index.</p>
+<p>For security people, this is the killer feature: <strong>the security dashboard and the performance dashboard live in the same place</strong>. The Wazuh indexer is OpenSearch under the hood (see 9.9), so pointing a Grafana datasource at it lets you query <code>wazuh-alerts-*</code> like any other data — I built my SOC dashboard in Grafana without touching the Wazuh dashboard at all.</p>
+<h3 id="ch09-972-datasources">9.7.2 Datasources</h3>
+<table>
+<thead>
+<tr>
+<th>Datasource</th>
+<th>Data kind</th>
+<th>Query language in the panel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prometheus</td>
+<td>Metric time-series</td>
+<td>PromQL</td>
+</tr>
+<tr>
+<td>Elasticsearch / OpenSearch</td>
+<td>Documents/logs</td>
+<td>Lucene query string + aggregations configured in the panel</td>
+</tr>
+<tr>
+<td>Loki</td>
+<td>Logs (Prometheus-style labels)</td>
+<td>LogQL</td>
+</tr>
+<tr>
+<td>MySQL/PostgreSQL</td>
+<td>Relational tables</td>
+<td>SQL</td>
+</tr>
+<tr>
+<td>CloudWatch, Azure Monitor...</td>
+<td>Cloud metrics</td>
+<td>Their own query builders</td>
+</tr>
+</tbody>
+</table>
+<p>Each datasource declares a URL + credentials (kept server-side in Grafana, encrypted in its DB). The least-privilege principle applies exactly as in 9.1.5: the user Grafana uses to read Elasticsearch/OpenSearch needs only <code>read</code> on exactly the indices being drawn (<code>wazuh-alerts-*</code>, <code>logs-*</code>) — never admin.</p>
+<h3 id="ch09-973-dashboard-panel-variable">9.7.3 Dashboard, Panel, Variable</h3>
+<ul>
+<li><strong>Panel</strong>: one display tile = one (or a few) queries + one visualization type (time series, gauge, stat, table, bar chart, heatmap). Color thresholds (green/yellow/red) are set right in the panel — "the panel went red" becomes the whole team's shared language.</li>
+<li><strong>Dashboard</strong>: a grid of panels sharing a time range and filters. An entire dashboard is <strong>one JSON file</strong> — exportable, importable, committable to Git (GitOps again).</li>
+<li><strong>Variable</strong>: a dropdown at the top of the dashboard, e.g., <code>instance</code> populated dynamically with <code>label_values(node_uname_info, instance)</code> — every panel uses <code>$instance</code> in its query. That is how <strong>one</strong> dashboard serves the whole fleet instead of one copy per machine.</li>
+<li><strong>Community dashboards</strong>: grafana.com hosts a library of dashboards with IDs for direct import (e.g., "Node Exporter Full" for node_exporter). My experience: import them to learn how people write the queries, then <strong>build a leaner one yourself</strong> — a 40-panel dashboard shows everything and says nothing; my own 7-8 panels of exactly what I need are what actually get used daily.</li>
+</ul>
+<h3 id="ch09-974-grafana-alerting-vs-alertmanager">9.7.4 Grafana Alerting vs Alertmanager</h3>
+<p>Grafana has its own alerting system (unified alerting, since Grafana 8): rules defined on any datasource, evaluated on a schedule, delivered via contact points (email/webhook/chat), optionally forwarded to an external Alertmanager. So does it overlap with Prometheus's Alertmanager? How I divide the roles:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Prometheus rules + Alertmanager</th>
+<th>Grafana alerting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where rules live</td>
+<td>YAML files next to the server, reviewed via Git</td>
+<td>Grafana's DB, created via the UI</td>
+</tr>
+<tr>
+<td>Proximity to data</td>
+<td>Right at the TSDB, no extra hop</td>
+<td>One more layer (Grafana queries the datasource)</td>
+</tr>
+<tr>
+<td>Multi-datasource</td>
+<td>Prometheus only</td>
+<td>Any datasource (including Elasticsearch)</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Standardized infrastructure alerts, large fleets</td>
+<td>Alerts that mix sources, or teams that prefer the UI</td>
+</tr>
+</tbody>
+</table>
+<p>The principle I follow: <strong>core infrastructure alerts belong at the lowest layer possible</strong> (Prometheus rules + Alertmanager) — they keep running even if Grafana dies; Grafana alerting is for the nice-to-have alerts on data Alertmanager cannot reach (e.g., count thresholds on a log index).</p>
+<h3 id="ch09-975-field-experience-the-two-dashboards-i-use-every-day">9.7.5 Field Experience: The Two Dashboards I Use Every Day</h3>
+<p><strong>The "SOC Analyst View" dashboard</strong> — self-built, with the <code>wazuh-alerts-*</code> index on the Wazuh indexer (OpenSearch) as its datasource:</p>
+<table>
+<thead>
+<tr>
+<th>Panel</th>
+<th>Query/aggregation</th>
+<th>Question it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alerts over time, split by severity</td>
+<td>date histogram + terms on <code>rule.level</code></td>
+<td>Is there an alert "storm" today, and when did it start</td>
+</tr>
+<tr>
+<td>Top triggered rules</td>
+<td>terms on <code>rule.id</code> / <code>rule.description</code></td>
+<td>Which event type is dominating</td>
+</tr>
+<tr>
+<td><strong>Top source IPs</strong></td>
+<td>terms on <code>data.srcip</code></td>
+<td>Which IP is paying us the most "attention"</td>
+</tr>
+<tr>
+<td>Top targeted agents</td>
+<td>terms on <code>agent.name</code></td>
+<td>Which machine is taking the most hits</td>
+</tr>
+<tr>
+<td>Latest high-level alerts table</td>
+<td>filter <code>rule.level &gt;= 10</code>, sorted by time</td>
+<td>What needs opening Wazuh for right now</td>
+</tr>
+</tbody>
+</table>
+<p>The Top source IPs panel has earned its keep the most: on one morning glance, I saw an unfamiliar IP shoot to the top of the list with hundreds of alerts packed into a few hours — pulling the thread revealed a foreign VPS running a methodical path-traversal scan against a dev machine. Without that panel, each individual medium-level alert would have drifted by as background noise; grouped by IP, the <em>campaign</em> took shape. The deep-dive investigation (aggregation queries directly on the index, reading <code>full_log</code>) is in chapter 8 (Wazuh); the nginx-side response (rate limiting, blocking sensitive filenames) is in chapter 11.</p>
+<p><strong>The node metrics dashboard</strong> — one row per resource group, with a <code>$instance</code> variable to pick the machine:</p>
+<ul>
+<li><strong>CPU by mode</strong> (query no. 2 in 9.6.5): the colors are the diagnosis — <code>iowait</code> swelling = disk, <code>steal</code> swelling = hypervisor, <code>user</code> swelling = the app.</li>
+<li><strong>Memory available + Memory PSI</strong>: two panels side by side, and PSI is the deciding one (see My notes at the end of the chapter).</li>
+<li><strong>Root FS</strong> + the <code>predict_linear</code> result: how much is left, and how long until full.</li>
+<li><strong>Disk I/O</strong> (<code>rate(node_disk_io_time_seconds_total)</code>) + <strong>I/O PSI</strong>.</li>
+<li><strong>Network</strong> (throughput + drops/errors).</li>
+<li><strong>Procs blocked</strong> (<code>node_procs_blocked</code>): an overlooked but extremely sensitive indicator of I/O congestion.</li>
+</ul>
+<p>The philosophy of use: <strong>the dashboard tells you where it is high; SSH + commands tell you which process caused it.</strong> A panel only answers "CPU is high" or "memory PSI has stayed positive" — finding <em>which process</em> means logging into the machine and running <code>htop</code>, <code>mpstat -P ALL</code>, <code>ps aux --sort=-%mem</code>, reading <code>/proc/pressure/*</code>... The per-panel command set lives in chapter 2 (Linux) as a "panel goes red → run this first" runbook. The two are a pair: a dashboard without a runbook is just something to stare at, and a runbook without a dashboard gives you nowhere to start.</p>
+<p><strong>Grafana security notes</strong>:</p>
+<ul>
+<li>Change the default <code>admin/admin</code> account immediately; enable HTTPS; put it behind a reverse proxy if exposed.</li>
+<li>Grafana has had serious CVEs exploited in the wild (notably the CVE-2021-43798 path traversal reading arbitrary files via a plugin URL) — patch it like the genuinely public web application it is.</li>
+<li>Use org/team/folder permissions: viewers see dashboards but cannot edit datasources. Remember that anyone who can edit a panel can <em>run arbitrary queries</em> with the server's datasource credentials — editor rights are a form of data-read rights.</li>
+<li>Never embed secrets in queries/annotations; dashboard JSON gets shared publicly all the time — scrub it before posting (internal hostnames, IPs, index names).</li>
+</ul>
+<hr />
+<h2 id="ch09-98-zabbixprometheus-vs-siem-a-fundamental-distinction">9.8 Zabbix/Prometheus vs SIEM — A Fundamental Distinction</h2>
+<p>This is a frequently confused point. <strong>Monitoring (Zabbix, Prometheus) watches "infrastructure state/performance"</strong>, while <strong>SIEM analyzes "security events"</strong>. They differ in their data model and detection engine.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Monitoring (Zabbix / Prometheus)</th>
+<th>SIEM (Wazuh / Elastic Security / Splunk ES)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data</td>
+<td>Numeric metrics over time (CPU, RAM, disk, up/down)</td>
+<td>Normalized logs/events from many sources</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Threshold triggers/alerting rules on metrics</td>
+<td>Decoder + rule + behavioral correlation</td>
+</tr>
+<tr>
+<td>Question</td>
+<td>"Is the system healthy?"</td>
+<td>"Is anyone attacking?"</td>
+</tr>
+<tr>
+<td>Multi-source correlation</td>
+<td>Limited (mostly by host/metric)</td>
+<td>Strong (correlation across logs, MITRE ATT&amp;CK)</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>RDBMS/TSDB, history+trends</td>
+<td>Full-text index (Elasticsearch/Lucene)</td>
+</tr>
+<tr>
+<td>Ideal for</td>
+<td>Ops/SRE, availability, capacity</td>
+<td>SOC, threat detection, IR, compliance</td>
+</tr>
+</tbody>
+</table>
+<p>A "disk full" incident is a Zabbix/Prometheus job. A chain of "1000 failed logins followed by 1 success from an unfamiliar IP" is the SIEM's job. The two domains <strong>complement</strong> rather than replace each other. That said, metrics still carry indirect security value: CPU spiking abnormally at 3 a.m. (a cryptominer), network egress surging (exfiltration) — the performance dashboard is sometimes the first messenger, but confirmation always goes back to the logs/SIEM.</p>
+<hr />
+<h2 id="ch09-99-when-to-use-elk-vs-wazuh-vs-zabbix-vs-prometheusgrafana">9.9 When to Use ELK vs Wazuh vs Zabbix vs Prometheus/Grafana</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Suitable tool</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Centralize and full-text search high-volume logs, build custom investigation dashboards</td>
+<td><strong>ELK</strong></td>
+<td>A powerful search engine, flexible mapping/query DSL</td>
+</tr>
+<tr>
+<td>Ready-to-use threat detection: HIDS, FIM, rootcheck, MITRE rules, compliance (PCI, CIS), cross-platform agents</td>
+<td><strong>Wazuh</strong></td>
+<td>An open-source SIEM/XDR with built-in decoders+rules, typically built on Elasticsearch/OpenSearch itself for storage/display</td>
+</tr>
+<tr>
+<td>Traditional infrastructure monitoring, SNMP/IPMI network devices, formal on-call escalation processes</td>
+<td><strong>Zabbix</strong></td>
+<td>A trigger engine + templates + distributed proxies, agentless SNMP/IPMI</td>
+</tr>
+<tr>
+<td>Metric monitoring for cloud/container infrastructure, dynamic targets, alerts as code</td>
+<td><strong>Prometheus</strong></td>
+<td>Pull model + service discovery + PromQL + Alertmanager; file-based configuration fits GitOps</td>
+</tr>
+<tr>
+<td>One shared dashboard for both metrics and logs/security, across multiple data sources</td>
+<td><strong>Grafana</strong></td>
+<td>Multi-system datasources (Prometheus, Elasticsearch/OpenSearch...), panels/variables/alerting unified in a single pane of glass</td>
+</tr>
+</tbody>
+</table>
+<p>The technical relationships to grasp:
+- <strong>Wazuh uses the Elastic Stack/OpenSearch as its storage/display foundation</strong> (the Wazuh indexer is based on OpenSearch ~ Elasticsearch; the Wazuh dashboard ~ Kibana). That is, ELK is the <strong>data infrastructure foundation</strong>, and Wazuh adds a <strong>security detection layer</strong> (decoders, rules, agents, FIM) on top.
+- <strong>Pure ELK</strong> can also serve as a SIEM if you use Elastic Security (detection rules, the ECS schema), but you must build/apply the rules yourself; Wazuh provides far more out of the box.
+- <strong>Zabbix and Prometheus</strong> both stand in the monitoring domain; they do not compete with ELK/Wazuh but run alongside them. Between the two, choose by the problem (see 9.6.7) — you rarely need both.
+- <strong>Grafana reads both domains</strong>: point a datasource at Prometheus and you have a performance dashboard; point one at the Wazuh indexer (OpenSearch) and you have a security dashboard — in the same place. Kibana/Wazuh dashboard remain stronger for <em>interactive investigation</em> (Discover, Dev Tools); Grafana wins for the <em>daily watch screen</em>.</p>
+<p>A reference architecture within an organization (the stack I operate):</p>
+<pre><code>   Infrastructure/performance ──▶ node_exporter ──▶ Prometheus ──▶ Alertmanager (ops alerts)
+                                                        │
+   Logs &amp; security events ──▶ agents ──▶ Wazuh ─────────┼──▶ Wazuh indexer (OpenSearch)
+                                                        │            │
+                                                        └────────────┴──▶ GRAFANA (one pane:
+                                                                          node metrics dashboard
+                                                                          + SOC dashboard)
+   Traditional variant: Zabbix instead of Prometheus; Beats/Logstash ──▶ Elasticsearch ──▶ Kibana
+</code></pre>
+<hr />
+<h2 id="ch09-910-summary-of-the-core-design-decisions">9.10 Summary of the Core Design Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inverted index + BM25</td>
+<td>Fast full-text search across billions of docs; saturated scoring resists keyword stuffing</td>
+</tr>
+<tr>
+<td>Separating doc values from the inverted index</td>
+<td>Sort/aggregate need columnar access by docId</td>
+</tr>
+<tr>
+<td>Fixed number of primary shards</td>
+<td>Routing uses <code>% n_shards</code>; changing it = a full reindex</td>
+</tr>
+<tr>
+<td>Translog</td>
+<td>Recover un-fsynced segments after a crash</td>
+</tr>
+<tr>
+<td><code>dynamic: strict</code> mapping</td>
+<td>Prevents mapping explosion (heap DoS)</td>
+</tr>
+<tr>
+<td>Filebeat at-least-once + registry inode</td>
+<td>No log loss across logrotate/crash</td>
+</tr>
+<tr>
+<td>Zabbix History vs Trends</td>
+<td>History bloats fast → keep short; Trends aggregate by hour → keep long</td>
+</tr>
+<tr>
+<td>Trigger hysteresis / <code>for</code> in alerting rules</td>
+<td>Prevents alert flapping; short spikes are not worth waking anyone up</td>
+</tr>
+<tr>
+<td>"ZBXD" magic + length header</td>
+<td>Frames messages over a TCP stream</td>
+</tr>
+<tr>
+<td>Prometheus pull model</td>
+<td>The server controls the pace; <code>up == 0</code> detects dead targets for free; debug with a browser</td>
+</tr>
+<tr>
+<td>Ever-increasing counters + <code>rate()</code></td>
+<td>Tolerates lost samples, handles resets; the raw value is meaningless, the rate of change is meaningful</td>
+</tr>
+<tr>
+<td>Metric name + labels instead of flat item keys</td>
+<td>Multi-dimensional slicing (<code>sum by (mode)</code>) — but cardinality must be controlled</td>
+</tr>
+<tr>
+<td>Alertmanager separated from the Prometheus server</td>
+<td>"What is abnormal" (rules) split from "who to tell and how to group" (routing)</td>
+</tr>
+<tr>
+<td>Grafana stores no data</td>
+<td>A multi-datasource pane of glass: metrics + logs/security in one dashboard</td>
+</tr>
+<tr>
+<td>Zabbix TLS/PSK, ES xpack.security, internal-only <code>/metrics</code></td>
+<td>Unencrypted/unauthenticated by default = data leak/spoofing</td>
+</tr>
+<tr>
+<td>Monitoring ≠ SIEM</td>
+<td>Metric/threshold vs event/correlation — they complement each other</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch09-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li><strong>Studied Zabbix, operate Prometheus</strong> — I studied Zabbix quite thoroughly (triggers, templates, the wire protocol), but the systems I actually operate run Prometheus + Grafana, and the two feel completely different. Zabbix feels like "administration software": everything through the GUI, configuration living in a DB, and afterwards I can't remember what I clicked. With Prometheus everything is a file — changing an alert rule is a commit, and reading the diff later tells you who changed what and why. Learning Zabbix wasn't wasted: it taught me what triggers/hysteresis/escalation are before I met <code>for</code>/routes/inhibition, and plenty of companies here still run Zabbix for real.</li>
+<li><strong>PSI is more trustworthy than %RAM used</strong> — a lesson I paid for with a few small heart attacks. The memory-used panel would glow red; I'd SSH in and the machine was perfectly fine: "used" RAM is high because Linux exploits free RAM as page cache and apps (especially anything with a big JVM/heap) reserve memory up front. Since adding the PSI panel (<code>rate(node_pressure_memory_waiting_seconds_total[5m])</code>), I barely look at % used anymore: if PSI is zero, whatever "used" says, I don't care; PSI staying positive is what real memory shortage looks like — and at that point <code>vmstat</code> will show si/so and <code>dmesg</code> will be circling around an OOM kill.</li>
+<li><strong>%steal — a metric I didn't know existed.</strong> One machine in a system I operate would show a high CPU panel while <code>htop</code> showed no process eating anything. It turned out to be <code>steal</code>: a cloud VM being throttled by the hypervisor (noisy neighbor). Since then my CPU panel always splits by mode instead of drawing one "CPU %" line — the same "CPU is high" can be <code>user</code>, <code>iowait</code>, or <code>steal</code>: three different diseases with three different treatments (and steal, in particular, is not your machine's fault).</li>
+<li><strong>The Top source IPs panel is the cheapest panel that has earned the most.</strong> It is just a terms aggregation by source IP over the Wazuh alert index, but it is what let me catch a path-traversal scanning campaign early: an unfamiliar IP sitting at the top of the list with hundreds of alerts packed into a few hours. Individually, each medium-level alert would have drowned in the noise; grouped by IP, the <em>deliberate</em> behavior surfaced immediately. The bigger lesson: a security dashboard doesn't need to be impressive, it needs to ask the few questions I genuinely want answered every morning.</li>
+<li><strong>The dashboard tells you where it's high; the commands tell you which process caused it.</strong> Early on I would sit staring at Grafana waiting for it to "name" the culprit — it can't, because node_exporter doesn't expose per-process metrics. So I wrote an actual runbook: for each panel that goes red, which commands to run first after SSH-ing in (it lives in chapter 2). Since pairing the dashboard with the runbook, the time from "saw red" to "know why" has dropped noticeably.</li>
+<li><strong>Still exploring</strong>: recording rules (precomputing heavy queries), long-term metric storage (Thanos/Mimir — only read about them, haven't deployed), and Loki as a lightweight log companion to Prometheus, to see whether it can replace part of the ELK use case for small systems.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch08.html"><span>← Previous</span><b>08 · SIEM &amp; Log Management</b></a><a class="pg next" href="ch10.html"><span>Next →</span><b>10 · SOC &amp; Incident Response</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

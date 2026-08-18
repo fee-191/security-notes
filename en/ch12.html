@@ -1,0 +1,1620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 12 — Penetration Testing &amp;amp; Vulnerability Assessment — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 12 — Penetration Testing &amp;amp; Vulnerability Assessment — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch11.html"><link rel="next" href="ch13.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="12"><a class="nav-ch-title" href="#top"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"><a class="nav-sub" href="#ch12-overview">Overview</a><a class="nav-sub" href="#ch12-121-distinguishing-vulnerability-scanning-from-penetration-testing">12.1. Distinguishing Vulnerability Scanning from Penetration Testing</a><a class="nav-sub" href="#ch12-122-the-owasp-web-testing-process">12.2. The OWASP Web Testing Process</a><a class="nav-sub" href="#ch12-123-burp-suite-detailed-analysis">12.3. Burp Suite — Detailed Analysis</a><a class="nav-sub" href="#ch12-124-acunetix-automated-dast">12.4. Acunetix — Automated DAST</a><a class="nav-sub" href="#ch12-125-nmap-analysis-down-to-the-packet-level">12.5. Nmap — Analysis Down to the Packet Level</a><a class="nav-sub" href="#ch12-126-legal-considerations-and-scope-scope-legal">12.6. Legal Considerations and Scope (Scope &amp;amp; Legal)</a><a class="nav-sub" href="#ch12-127-chapter-summary">12.7. Chapter Summary</a><a class="nav-sub" href="#ch12-my-notes">My notes</a></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-12" data-ch="12">
+<h1 id="ch12-chapter-12-penetration-testing-vulnerability-assessment">Chapter 12 — Penetration Testing &amp; Vulnerability Assessment</h1>
+<h2 id="ch12-overview">Overview</h2>
+<p>An overlooked vulnerability doesn't disappear on its own — it just sits there waiting for someone to find it first, and the only question that matters is who gets there first, your team or the attacker. That's why this chapter matters: it covers the two ways of proactively hunting for weaknesses in a system (web, server, network) before they turn into a data leak, since a single overlooked vulnerability is enough to expose all of a user's data.</p>
+<p>The chapter opens by drawing a clean line between <strong>vulnerability scanning</strong> — automatically matching a system's fingerprint against a database of known vulnerabilities, broad and shallow, detecting rather than exploiting — and <strong>penetration testing</strong>, where a human simulates a real attack and actually exploits what's found to demonstrate impact, narrower and deeper but far more dependent on human judgment. From there it follows the <strong>standard OWASP web testing process</strong> (WSTG): recon, mapping, testing, exploit, report — then digs into the mechanics of three flagship tools. <strong>Burp Suite</strong> is an intercepting proxy sitting between browser and server, letting you view and edit every request and response; <strong>Acunetix</strong> is a commercial DAST scanner that crawls, audits, and reports automatically, complementing rather than replacing Burp; <strong>Nmap</strong> maps a network down to host discovery, port scanning, and version/OS detection. The chapter closes on <strong>scope and legality</strong> — the boundary you're authorized to test has to be spelled out in writing, because running outside scope is unauthorized access no matter how good the intent.</p>
+<blockquote>
+<p>The throughline: understand the mechanics down to individual packets, and have a real runnable command for every tool, not just theory.</p>
+</blockquote>
+<hr />
+<h2 id="ch12-121-distinguishing-vulnerability-scanning-from-penetration-testing">12.1. Distinguishing Vulnerability Scanning from Penetration Testing</h2>
+<h3 id="ch12-1211-definition-and-nature">12.1.1. Definition and Nature</h3>
+<p><strong>Vulnerability Scanning</strong> is the process of automatically detecting known vulnerabilities on a system by matching signatures/fingerprints against a vulnerability database such as NVD (National Vulnerability Database), a CVE feed, or a vendor's own database. Its nature is <strong>breadth-first</strong> (broad and shallow): it scans many targets and checks many signatures, but does NOT exploit.</p>
+<p><strong>Penetration Testing</strong> is the process of simulating a deliberate attack, in which a person (or person + tools) attempts to <strong>actually exploit</strong> vulnerabilities to demonstrate impact, the kill chain, and the level of access achieved. Its nature is <strong>depth-first</strong> (deep and narrow): it focuses on a specific target, chains vulnerabilities, and leverages business logic.</p>
+<h3 id="ch12-1212-detailed-comparison-table">12.1.2. Detailed Comparison Table</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Vulnerability Scanning</th>
+<th>Penetration Testing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Goal</td>
+<td>Enumerate known vulnerabilities</td>
+<td>Prove exploitability + impact</td>
+</tr>
+<tr>
+<td>Level of automation</td>
+<td>High (almost fully automated)</td>
+<td>Manual + tool-assisted</td>
+</tr>
+<tr>
+<td>Detecting logic flaws (IDOR, business logic)</td>
+<td>Almost never</td>
+<td>Yes (a key strength)</td>
+</tr>
+<tr>
+<td>Real-world exploitation</td>
+<td>No (detection only)</td>
+<td>Yes (PoC, exploit)</td>
+</tr>
+<tr>
+<td>Proving false positives</td>
+<td>Difficult</td>
+<td>Yes (manual confirmation)</td>
+</tr>
+<tr>
+<td>Frequency</td>
+<td>Continuous/periodic (weekly, daily in CI)</td>
+<td>Periodic (quarterly/yearly) or event-driven</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Low (license + automation)</td>
+<td>High (experts + time)</td>
+</tr>
+<tr>
+<td>Output</td>
+<td>List of CVEs + severity</td>
+<td>Kill chain report + evidence</td>
+</tr>
+<tr>
+<td>Risk of harming the system</td>
+<td>Low (a safe mode exists)</td>
+<td>Higher (can cause downtime)</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>All assets</td>
+<td>Focused per agreement</td>
+</tr>
+<tr>
+<td>Reference standards</td>
+<td>CVSS, CVE, CWE</td>
+<td>OWASP, PTES, OSSTMM, NIST SP 800-115</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-1213-why-both-are-needed">12.1.3. Why Both Are Needed</h3>
+<p>Vulnerability scanning answers the question <em>"how many suspicious doors are there?"</em> while a pentest answers <em>"how far can an attacker really get in, and what can they do?"</em>. A scanner reports "port 443 runs OpenSSL with CVE-2014-0160 (Heartbleed)" — but only a pentest can prove that a private key can actually be pulled out of RAM. In the DevSecOps model, scanning is embedded into the pipeline (shift-left, continuous), while a pentest is a periodic, deeper validation. Scanning is a necessary condition (fast, cheap, broad) but not sufficient; a pentest provides the exploitation context and the real risk level needed to prioritize remediation.</p>
+<hr />
+<h2 id="ch12-122-the-owasp-web-testing-process">12.2. The OWASP Web Testing Process</h2>
+<p>OWASP WSTG (Web Security Testing Guide) divides the process into phases. Below is the real-world lifecycle as applied to a web pentest:</p>
+<pre><code>+-------------+    +-------------+    +-------------+    +--------------+    +-------------+
+|  1. Recon   | -&gt; | 2. Mapping  | -&gt; | 3. Testing  | -&gt; | 4. Exploit   | -&gt; | 5. Report   |
+| (gathering) |    | (mapping)   |    | (testing)   |    | (exploit)    |    | (reporting) |
++-------------+    +-------------+    +-------------+    +--------------+    +-------------+
+       ^                                                                          |
+       |__________________________ (repeat when a new surface is found) _________|
+</code></pre>
+<h3 id="ch12-1221-phase-1-reconnaissance-information-gathering">12.2.1. Phase 1 — Reconnaissance (information gathering)</h3>
+<p>Divided into <strong>passive</strong> (no contact with the target) and <strong>active</strong> (sending packets to the target).</p>
+<p><strong>Passive recon</strong> — generates no traffic to the target, using public sources:
+- DNS records, certificate transparency logs (crt.sh) to enumerate subdomains.
+- WHOIS, Shodan, Censys, Google dorking (<code>site:</code>, <code>inurl:</code>, <code>filetype:</code>).
+- Finding leaked secrets on GitHub, the Wayback Machine (archive.org).</p>
+<p>Example of enumerating subdomains via Certificate Transparency:</p>
+<pre><code class="language-bash"># Query crt.sh, filter for unique subdomains
+curl -s 'https://crt.sh/?q=%25.example.com&amp;output=json' \
+  | jq -r '.[].name_value' \
+  | sed 's/\*\.//g' | sort -u
+</code></pre>
+<p><strong>Active recon</strong> — port scanning (Nmap, section 12.5), banner grabbing, technology fingerprinting:</p>
+<pre><code class="language-bash"># Identify web technology (Server header, X-Powered-By, cookies)
+curl -sI https://example.com | grep -iE 'server|x-powered-by|set-cookie'
+whatweb https://example.com
+</code></pre>
+<h3 id="ch12-1222-phase-2-mapping-application-mapping">12.2.2. Phase 2 — Mapping (application mapping)</h3>
+<p>Goal: build a complete <strong>site map</strong> of endpoints, parameters, and technologies. This is when Burp Suite Proxy + the Target site map come into play (section 12.3.4). Techniques:
+- <strong>Spidering/Crawling</strong>: automatically following links.
+- <strong>Forced browsing / content discovery</strong>: guessing hidden paths (<code>/admin</code>, <code>/.git/</code>, <code>/backup.zip</code>) using <code>ffuf</code>, <code>gobuster</code>, <code>dirsearch</code>.
+- Analyzing <code>robots.txt</code>, <code>sitemap.xml</code>, and JS bundles to find API endpoints.</p>
+<pre><code class="language-bash"># Content discovery with ffuf
+ffuf -u https://example.com/FUZZ -w /usr/share/wordlists/dirb/common.txt \
+     -mc 200,204,301,302,307,401,403 -fs 0
+# -u : URL with the keyword FUZZ replaced by each line of the wordlist
+# -w : wordlist
+# -mc: match HTTP status code (only show responses with this code)
+# -fs: filter by response size (drop junk pages of the same size)
+</code></pre>
+<h3 id="ch12-1223-phase-3-testing-vulnerability-testing">12.2.3. Phase 3 — Testing (vulnerability testing)</h3>
+<p>Cross-referenced with the OWASP Top 10 and WSTG. Each group of tests has a checklist:
+- Injection (SQLi, NoSQLi, command injection, LDAPi).
+- Broken Access Control (IDOR, privilege escalation, path traversal).
+- Authentication &amp; Session (brute force, session fixation, weak token entropy).
+- XSS (reflected, stored, DOM-based).
+- SSRF, XXE, deserialization, business logic.</p>
+<h3 id="ch12-1224-phase-4-exploitation">12.2.4. Phase 4 — Exploitation</h3>
+<p>Demonstrate impact: data exfiltration, privilege escalation, RCE. Stay strictly within scope — see 12.6. Record requests/responses as evidence. Avoid destructive actions unless the RoE permits.</p>
+<h3 id="ch12-1225-phase-5-reporting">12.2.5. Phase 5 — Reporting</h3>
+<p>The report includes: an Executive Summary (for leadership) and detailed technical content (for engineers), with each finding containing: a description, severity (CVSS), evidence (PoC, screenshot, request/response), impact, and <strong>specific remediation recommendations</strong>.</p>
+<p><strong>CVSS v3.1 — Base Score vector</strong> (essential for scoring severity):</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Symbol</th>
+<th>Values</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attack Vector</td>
+<td>AV</td>
+<td>N/A/L/P</td>
+<td>Network/Adjacent/Local/Physical</td>
+</tr>
+<tr>
+<td>Attack Complexity</td>
+<td>AC</td>
+<td>L/H</td>
+<td>Low/High</td>
+</tr>
+<tr>
+<td>Privileges Required</td>
+<td>PR</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>User Interaction</td>
+<td>UI</td>
+<td>N/R</td>
+<td>None/Required</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>S</td>
+<td>U/C</td>
+<td>Unchanged/Changed</td>
+</tr>
+<tr>
+<td>Confidentiality</td>
+<td>C</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>I</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td>A</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+</tbody>
+</table>
+<p>Example vector string: <code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code> = 9.8 (Critical) — typical of unauthenticated RCE over the network.</p>
+<blockquote>
+<p><strong>CVSS 4.0 (worth knowing):</strong> FIRST has released CVSS v4.0 (strings start with <code>CVSS:4.0/...</code>), which drops the <code>Scope</code> metric, splits Base into Exploitability + Vulnerable/Subsequent System Impact, and adds Safety (human harm) plus Supplemental/Threat/Environmental groups. Many sources still use v3.1 in parallel, so always state the version when quoting a score. <em>(exact version/adoption to be verified over time)</em></p>
+<p><strong>Don't patch by Base score alone.</strong> The Base score only says how bad a flaw is "in theory" — not whether it's actually being exploited or even reachable in your system. In practice, prioritize patching by the combination of: (a) <strong>reachability</strong> — is the vulnerable component actually on the execution path / exposed externally (a lib present in the image but never called is low risk); (b) <strong>EPSS</strong> (Exploit Prediction Scoring System by FIRST) — probability of exploitation in the next 30 days; (c) <strong>CISA KEV</strong> (Known Exploited Vulnerabilities) — the catalog of CVEs actively exploited in the wild, which almost always jump the queue. A CVE 9.8 that isn't on a code path and isn't in KEV usually ranks below a CVE 7.5 already in KEV with a high EPSS.</p>
+</blockquote>
+<hr />
+<h2 id="ch12-123-burp-suite-detailed-analysis">12.3. Burp Suite — Detailed Analysis</h2>
+<p>Burp Suite (PortSwigger) is the flagship tool for manual web testing. There are three editions: Community (free, limited, Intruder is throttled, no Scanner), Professional (full Scanner, full Intruder), and Enterprise (CI/CD, large-scale automated scanning). Burp is written in Java and runs on the JVM.</p>
+<h3 id="ch12-1231-the-mitm-proxy-architecture">12.3.1. The MITM Proxy Architecture</h3>
+<p>Burp acts as an <strong>intercepting proxy</strong> (man-in-the-middle) placed between the browser and the server. Data flow:</p>
+<pre><code>+---------+        +------------------+        +-----------+
+| Browser | &lt;----&gt; |  Burp Proxy      | &lt;----&gt; |  Server   |
+| (client)| HTTP/S |  127.0.0.1:8080  | HTTP/S |  (target) |
++---------+        +------------------+        +-----------+
+                   |  - Intercept     |
+                   |  - Re-issue cert |
+                   |  - Log site map  |
+                   +------------------+
+</code></pre>
+<p>By default Burp listens on <code>127.0.0.1:8080</code>. The browser is configured to point its proxy here. Burp receives the request, can pause it (intercept), edit it, and then forward it to the server. When the server responds, Burp can again edit the response before delivering it to the browser.</p>
+<h4 id="ch12-why-a-ca-certificate-must-be-installed">Why a CA certificate must be installed</h4>
+<p>With plaintext HTTP, MITM is easy — Burp reads it directly. But with HTTPS, TLS encrypts everything. To be able to read/edit, Burp must <strong>terminate TLS</strong> on its side: it performs two separate TLS sessions — one with the browser, one with the server.</p>
+<p>When the browser sends <code>CONNECT example.com:443</code>, Burp:
+1. Generates, on-the-fly, a certificate for <code>example.com</code>, signed by <strong>Burp's root CA</strong> (named <code>PortSwigger CA</code> by default).
+2. Presents this fake certificate to the browser.
+3. The browser checks the chain of trust. If Burp's root CA has been installed into the OS/browser <strong>trust store</strong> → valid → no warning. If not installed → the warning <code>NET::ERR_CERT_AUTHORITY_INVALID</code> appears.</p>
+<p>This is precisely why Burp's CA cert must be installed: so the browser trusts the certs Burp generates, allowing HTTPS MITM without warnings, while keeping the TLS session with the server genuinely valid.</p>
+<p><strong>Obtaining and installing the CA cert:</strong></p>
+<pre><code class="language-text">1. Configure the browser proxy to 127.0.0.1:8080
+2. Visit http://burp  (or http://burpsuite)
+3. Click &quot;CA Certificate&quot; -&gt; download the cacert.der file
+4. Install into the trust store:
+   - Linux: convert DER-&gt;PEM then place it in /usr/local/share/ca-certificates/
+   - Firefox: Settings -&gt; Privacy &amp; Security -&gt; Certificates -&gt; Import
+     (check &quot;Trust to identify websites&quot;)
+</code></pre>
+<pre><code class="language-bash"># Convert DER to PEM and view the cert contents
+openssl x509 -inform der -in cacert.der -out burp-ca.pem
+openssl x509 -in burp-ca.pem -noout -text | grep -A2 'Subject:'
+# Linux system-wide:
+sudo cp burp-ca.pem /usr/local/share/ca-certificates/burp.crt
+sudo update-ca-certificates
+</code></pre>
+<p><strong>Security note:</strong> Burp's CA private key is stored in the user's configuration. If this key leaks, an attacker can MITM any machine that has installed that CA. Each Burp installation generates its own CA — do NOT share it. Remove the CA from the trust store after testing on a non-dedicated machine.</p>
+<h3 id="ch12-1232-the-http-request-structure-that-burp-manipulates">12.3.2. The HTTP Request Structure that Burp Manipulates</h3>
+<p>Burp displays raw HTTP requests in exact RFC 7230 format. Understanding each part is a prerequisite for editing accurately.</p>
+<pre><code>POST /api/v1/login HTTP/1.1\r\n          &lt;- Request line: METHOD SP URI SP VERSION CRLF
+Host: example.com\r\n                    &lt;- Header
+User-Agent: Mozilla/5.0\r\n
+Content-Type: application/json\r\n
+Content-Length: 41\r\n
+Cookie: session=abc123\r\n
+\r\n                                      &lt;- Empty line (CRLF) separating header and body
+{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;secret&quot;} &lt;- Message body (Content-Length bytes long)
+</code></pre>
+<p><strong>Table of each part of an HTTP/1.1 request:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Method</td>
+<td>variable (token)</td>
+<td>HTTP verb</td>
+<td><code>POST</code>, <code>GET</code></td>
+</tr>
+<tr>
+<td>SP</td>
+<td>1 byte (0x20)</td>
+<td>Separating space</td>
+<td><code></code></td>
+</tr>
+<tr>
+<td>Request-URI</td>
+<td>variable</td>
+<td>Path + query</td>
+<td><code>/api/v1/login</code></td>
+</tr>
+<tr>
+<td>HTTP-Version</td>
+<td>8 bytes</td>
+<td>Protocol version</td>
+<td><code>HTTP/1.1</code></td>
+</tr>
+<tr>
+<td>CRLF</td>
+<td>2 bytes (0x0D 0x0A)</td>
+<td>End of line</td>
+<td><code>\r\n</code></td>
+</tr>
+<tr>
+<td>Header name</td>
+<td>token</td>
+<td>Field name</td>
+<td><code>Content-Type</code></td>
+</tr>
+<tr>
+<td><code>:</code></td>
+<td>2 bytes</td>
+<td>name/value separator</td>
+<td><code>:</code></td>
+</tr>
+<tr>
+<td>Header value</td>
+<td>variable</td>
+<td>Value</td>
+<td><code>application/json</code></td>
+</tr>
+<tr>
+<td>Empty line</td>
+<td>2 bytes (CRLF)</td>
+<td>header/body boundary</td>
+<td><code>\r\n</code></td>
+</tr>
+<tr>
+<td>Body</td>
+<td>= <code>Content-Length</code></td>
+<td>Payload</td>
+<td><code>{...}</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why:</strong> <code>Content-Length</code> MUST match the actual number of body bytes. When editing the body in Repeater, if you do not update <code>Content-Length</code>, the server may hang (waiting for more bytes) or truncate the body. Burp Repeater has an "Update Content-Length" option to do this automatically. The <strong>HTTP Request Smuggling</strong> vulnerability exploits exactly this inconsistency between <code>Content-Length</code> and <code>Transfer-Encoding: chunked</code> that the front-end and back-end interpret differently.</p>
+<h3 id="ch12-1233-the-proxy-module">12.3.3. The Proxy Module</h3>
+<p><strong>Functions:</strong> Intercept, HTTP history, Match &amp; Replace, WebSockets history.</p>
+<p><strong>Intercept on/off:</strong> When enabled, each request is paused at Burp and displayed for you to edit. Click "Forward" to send it on, "Drop" to discard it.</p>
+<p><strong>Match &amp; Replace</strong> — rules that automatically replace content on every request/response. The structure of a rule:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>Scope of application</td>
+<td>Request header / Request body / Response header...</td>
+</tr>
+<tr>
+<td>Match</td>
+<td>Regex or literal to find</td>
+<td><code>^User-Agent:.*$</code></td>
+</tr>
+<tr>
+<td>Replace</td>
+<td>Replacement string</td>
+<td><code>User-Agent: CustomAgent/1.0</code></td>
+</tr>
+</tbody>
+</table>
+<p>A real-world example: add <code>X-Forwarded-For: 127.0.0.1</code> to every request to test bypassing an IP allowlist:</p>
+<pre><code class="language-text">Type:    Request header
+Match:   (leave empty - add a new header)
+Replace: X-Forwarded-For: 127.0.0.1
+</code></pre>
+<p><strong>Scope filtering:</strong> History can grow very large. It is best to limit it by scope (next section) so that only legitimate targets are logged, avoiding logging personal traffic and avoiding touching out-of-scope hosts.</p>
+<h3 id="ch12-1234-target-site-map-and-scope">12.3.4. Target — Site Map and Scope</h3>
+<p>The <strong>Site Map</strong> is a hierarchical tree of host → directory → endpoint, accumulated from every request that passes through Burp (proxy, repeater, scanner). Each node stores the requests/responses seen.</p>
+<p><strong>Scope</strong> defines the "legitimate targets". It is configured under Target → Scope. There are two modes:
+- <strong>Include in scope</strong>: a list of allowed hosts/URLs.
+- <strong>Exclude from scope</strong>: exclusions (e.g., a logout page, a page that signs you out of SSO).</p>
+<p>Scope affects: whether the Proxy logs, whether the Scanner scans, and whether Intruder/Repeater warn. An advanced scope definition:</p>
+<pre><code class="language-text">Include:
+  Protocol: HTTPS
+  Host:     ^.*\.example\.com$
+  Port:     ^443$
+  File:     ^/api/.*$
+</code></pre>
+<p><strong>Why (legal):</strong> Scope is a legal boundary. Scanning/exploiting outside scope = unauthorized access = breaking the law (see 12.6). The "Drop all out-of-scope traffic" option in the Proxy options prevents accidentally sending requests to out-of-scope hosts.</p>
+<h3 id="ch12-1235-repeater-resending-and-editing-requests">12.3.5. Repeater — Resending and Editing Requests</h3>
+<p>Repeater lets you send a single request multiple times with manual edits, viewing the response immediately. This is the primary tool for verifying and refining vulnerabilities. Send a request to Repeater from anywhere by right-clicking → "Send to Repeater" (Ctrl+R).</p>
+<h4 id="ch12-example-testing-idor-insecure-direct-object-reference">Example: testing IDOR (Insecure Direct Object Reference)</h4>
+<p>IDOR: the application allows access to another user's object simply by changing the ID, due to a missing server-side authorization check.</p>
+<p><strong>Original request (user A, id=1001):</strong></p>
+<pre><code class="language-http">GET /api/v1/orders/1001 HTTP/1.1
+Host: shop.example.com
+Cookie: session=eyJ1c2VyIjoiYWxpY2UifQ
+Accept: application/json
+</code></pre>
+<p>Response: Alice's order (200 OK).</p>
+<p><strong>Test step:</strong> change <code>1001</code> → <code>1002</code> (someone else's order) and resend in Repeater:</p>
+<pre><code class="language-http">GET /api/v1/orders/1002 HTTP/1.1
+Host: shop.example.com
+Cookie: session=eyJ1c2VyIjoiYWxpY2UifQ
+Accept: application/json
+</code></pre>
+<ul>
+<li>If the response returns another user's order (200 + data) → <strong>IDOR confirmed</strong>. Alice can view someone else's order even though the session is still Alice's.</li>
+<li>If it returns <code>403 Forbidden</code> / <code>404</code> → access control is working correctly.</li>
+</ul>
+<p><strong>Defense:</strong> enforce server-side authorization (object-level access control), checking <code>resource.owner_id == session.user_id</code>; hard-to-guess UUIDs help but do NOT replace authorization.</p>
+<h4 id="ch12-example-testing-sql-injection">Example: testing SQL Injection</h4>
+<p><strong>Original request:</strong></p>
+<pre><code class="language-http">POST /api/v1/search HTTP/1.1
+Host: shop.example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+q=keyboard
+</code></pre>
+<p><strong>Test 1 — detecting a syntax error (error-based):</strong> insert a single quote:</p>
+<pre><code class="language-http">q=keyboard'
+</code></pre>
+<p>If the response returns <code>500</code> with the message <code>SQL syntax error near '''</code> → the backend concatenates SQL strings without parameterization → likely SQLi.</p>
+<p><strong>Test 2 — boolean-based:</strong> compare two conditions:</p>
+<pre><code class="language-http">q=keyboard' AND '1'='1   -&gt; returns normal results (TRUE)
+q=keyboard' AND '1'='2   -&gt; returns empty (FALSE)
+</code></pre>
+<p>Different behavior between TRUE/FALSE confirms injection.</p>
+<p><strong>Test 3 — UNION-based data extraction</strong> (after determining the column count):</p>
+<pre><code class="language-http">q=keyboard' UNION SELECT username,password,NULL FROM users-- -
+</code></pre>
+<p>The <code>-- -</code> comments out the rest of the SQL. If the result returns usernames/passwords → data extraction succeeded.</p>
+<p><strong>Note:</strong> always update <code>Content-Length</code> when editing the body. URL-encode special characters when needed (<code>'</code> → <code>%27</code>, space → <code>+</code> or <code>%20</code>) depending on the <code>Content-Type</code>.</p>
+<p><strong>Defense:</strong> prepared statements / parameterized queries, a safe ORM, least privilege for the DB account, and a WAF as an additional defensive layer (not a replacement for the root fix).</p>
+<h3 id="ch12-1236-intruder-automating-parameterized-attacks">12.3.6. Intruder — Automating Parameterized Attacks</h3>
+<p>Intruder sends many requests, substituting payloads into marked positions (denoted by <code>§</code>). There are 4 attack types:</p>
+<table>
+<thead>
+<tr>
+<th>Attack type</th>
+<th>Payload sets</th>
+<th>Distribution</th>
+<th>Number of requests</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sniper</strong></td>
+<td>1</td>
+<td>One position at a time, other positions unchanged</td>
+<td>(positions) × (payloads)</td>
+<td>Fuzz one parameter at a time</td>
+</tr>
+<tr>
+<td><strong>Battering ram</strong></td>
+<td>1</td>
+<td>The same payload into ALL positions at once</td>
+<td>(payloads)</td>
+<td>When the same value is needed in several places</td>
+</tr>
+<tr>
+<td><strong>Pitchfork</strong></td>
+<td>multiple (1/position)</td>
+<td>Taken in parallel by index: payload[i] at each position</td>
+<td>min(set lengths)</td>
+<td>Matching username+password pairs (credential stuffing)</td>
+</tr>
+<tr>
+<td><strong>Cluster bomb</strong></td>
+<td>multiple (1/position)</td>
+<td>Cartesian product: every combination</td>
+<td>product of lengths</td>
+<td>Brute force all combinations of user × pass</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ch12-how-to-mark-payload-positions">How to mark payload positions</h4>
+<p>Burp places a pair of <code>§</code> characters around the value to fuzz:</p>
+<pre><code class="language-http">POST /login HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 29
+
+username=§admin§&amp;password=§x§
+</code></pre>
+<p>Here there are 2 positions. With Cluster bomb + set1 (usernames) of 10 elements and set2 (passwords) of 100 elements → 1000 requests.</p>
+<h4 id="ch12-example-brute-forcing-login-cluster-bomb">Example: brute-forcing login (Cluster bomb)</h4>
+<pre><code class="language-text">Attack type: Cluster bomb
+Position 1 (username): payload = Simple list [admin, root, user, test]
+Position 2 (password): payload = Runtime file / wordlist (trimmed rockyou)
+</code></pre>
+<p>Analyzing results: sort by the <strong>Status</strong> and <strong>Length</strong> columns. A failed login usually returns <code>200</code> + a body "Invalid credentials" of fixed length; a successful login may return <code>302</code> (redirect) or a body of a different length. Use the <strong>Length</strong> column to filter anomalies. Add a Grep-Match rule (e.g., look for the string "Welcome") to flag successful requests.</p>
+<h4 id="ch12-example-parameter-fuzzing-sniper-to-find-sqlixss">Example: parameter fuzzing (Sniper) to find SQLi/XSS</h4>
+<pre><code class="language-text">Attack type: Sniper
+Position: §value§ in q=§test§
+Payload set: SQLi fuzz list  (', '', &quot;, `, ;, ' OR '1'='1, &lt;script&gt;...)
+Payload processing: URL-encode all characters
+Grep - Match: &quot;SQL syntax&quot;, &quot;ORA-&quot;, &quot;ODBC&quot;
+</code></pre>
+<p><strong>Payload types in Intruder:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Payload type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simple list</td>
+<td>A static list</td>
+<td>wordlist</td>
+</tr>
+<tr>
+<td>Runtime file</td>
+<td>Read from a large file (not loaded entirely into RAM)</td>
+<td>rockyou.txt</td>
+</tr>
+<tr>
+<td>Numbers</td>
+<td>Generate a range of numbers</td>
+<td>1–10000, step 1</td>
+</tr>
+<tr>
+<td>Brute forcer</td>
+<td>Generate character combinations</td>
+<td>charset abc, len 4</td>
+</tr>
+<tr>
+<td>Username generator</td>
+<td>Generate usernames from names</td>
+<td>john.doe, jdoe</td>
+</tr>
+<tr>
+<td>Bit flipper</td>
+<td>Flip each bit (test padding oracle, CSRF token)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Security &amp; operational notes:</strong> Intruder in Community Edition is <strong>throttled</strong> (slowed down). Brute forcing generates large amounts of traffic — it can cause account lockouts, WAF blocking, or accidental DoS. Always stay in scope. Use "Resource pool" to limit concurrent requests and set a delay to avoid locking accounts.</p>
+<h3 id="ch12-1237-decoder">12.3.7. Decoder</h3>
+<p>Transforms and decodes data. It supports: URL, HTML entity, Base64, ASCII hex, Octal, Binary, Gzip, and Hash (MD5, SHA...). The "Smart decode" mode automatically guesses the encoding.</p>
+<p>Example of decoding a JWT (3 parts <code>header.payload.signature</code> separated by <code>.</code>):</p>
+<pre><code class="language-text">Input:  eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.&lt;sig&gt;
+Decode as Base64 (part 1): {&quot;alg&quot;:&quot;HS256&quot;}
+Decode as Base64 (part 2): {&quot;user&quot;:&quot;admin&quot;}
+</code></pre>
+<p>JWT uses <strong>Base64URL</strong> (replacing <code>+</code>→<code>-</code>, <code>/</code>→<code>_</code>, dropping <code>=</code> padding). Burp's Base64 decoder can handle it; note that you may need to add <code>=</code> padding.</p>
+<h3 id="ch12-1238-comparer">12.3.8. Comparer</h3>
+<p>Compares two pieces of data by <strong>word</strong> or by <strong>byte</strong>, highlighting the differences in color. Used to: compare an admin account's response vs a normal user's (finding access-control discrepancies), compare TRUE vs FALSE responses in blind SQLi, and compare two tokens to analyze their structure.</p>
+<h3 id="ch12-1239-sequencer-analyzing-token-entropy">12.3.9. Sequencer — Analyzing Token Entropy</h3>
+<p>Sequencer checks the <strong>randomness</strong> of session tokens / CSRF tokens / reset tokens. A guessable token = a serious vulnerability (session hijacking).</p>
+<p><strong>Mechanism:</strong> collect a large number of tokens (ideally several thousand samples), then run standard FIPS 140-2 statistical tests and Burp's own tests:</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIPS Monobit</td>
+<td>The ratio of 0 and 1 bits is balanced</td>
+</tr>
+<tr>
+<td>FIPS Poker</td>
+<td>The distribution of 4-bit groups</td>
+</tr>
+<tr>
+<td>FIPS Runs</td>
+<td>The length of consecutive bit runs</td>
+</tr>
+<tr>
+<td>FIPS Long runs</td>
+<td>Whether there is an excessively long run</td>
+</tr>
+<tr>
+<td>Character/Bit transitions</td>
+<td>Correlation between positions</td>
+</tr>
+</tbody>
+</table>
+<p>The result is measured in <strong>bits of effective entropy</strong> at a significance level (1% by default). A "good" token needs high entropy. A token generated from time (a timestamp) or an incrementing counter → low entropy → guessable.</p>
+<p><strong>Note:</strong> high entropy does not guarantee safety if the generation algorithm (PRNG) is not a CSPRNG. Sequencer only detects statistical patterns; it does not inspect the source algorithm.</p>
+<h3 id="ch12-12310-scanner-professional-only">12.3.10. Scanner (Professional only)</h3>
+<p>Burp's Scanner includes a <strong>passive</strong> part (analyzing already-seen traffic without sending additional requests — detecting cookies missing Secure/HttpOnly, sensitive information) and an <strong>active</strong> part (sending probing payloads — detecting SQLi, XSS, SSRF...). It is configured via "Scan configuration": choosing audit checks, crawl strategy, and depth.</p>
+<p><strong>Warning:</strong> An active scan sends real attack payloads (which can create junk data, trigger emails, modify state). Do NOT run an active scan on sensitive production systems without explicit authorization.</p>
+<h3 id="ch12-12311-complete-workflow-for-testing-a-vulnerability-with-burp">12.3.11. Complete Workflow for Testing a Vulnerability with Burp</h3>
+<p>Example: testing and confirming a <strong>Reflected XSS</strong> from start to finish.</p>
+<pre><code class="language-text">Step 1 (Recon/Mapping): Enable the Proxy and browse the application normally.
+        The site map accumulates the endpoint /search?q=...
+Step 2 (Identifying the entry point): In the Proxy History, observe that the value of `q`
+        is reflected into the HTML response.
+Step 3 (Send to Repeater): Ctrl+R the request /search?q=test
+Step 4 (Probing): Send q=&lt;b&gt;test&lt;/b&gt;.
+        - Inspect the response: if it returns `&lt;b&gt;test&lt;/b&gt;` unescaped -&gt; HTML reflect.
+Step 5 (Proving JS execution):
+        q=&lt;script&gt;alert(document.domain)&lt;/script&gt;
+        URL-encoded: q=%3Cscript%3Ealert(document.domain)%3C%2Fscript%3E
+        - If the response contains &lt;script&gt;...&lt;/script&gt; intact (not HTML-encoded)
+          -&gt; the payload will execute in the browser.
+Step 6 (Verifying context): Use Comparer to compare the benign vs payload response
+        to pinpoint exactly where it reflects and which filter is applied.
+Step 7 (Bypass the filter if any): if &lt; is filtered, try variants:
+        - events: q=&quot;&gt;&lt;img src=x onerror=alert(1)&gt;
+        - escape the attribute context
+Step 8 (Evidence): capture the request/response, build a complete PoC URL.
+Step 9 (Report): description, CVSS, PoC, recommendations (context-aware output encoding,
+        CSP, set HttpOnly cookies).
+</code></pre>
+<p><strong>XSS defense:</strong> context-aware output encoding (HTML, attribute, JS, URL), Content-Security-Policy, framework auto-escaping (React, Angular), and <code>HttpOnly</code> cookies so JS cannot read the session.</p>
+<hr />
+<h2 id="ch12-124-acunetix-automated-dast">12.4. Acunetix — Automated DAST</h2>
+<h3 id="ch12-1241-what-dast-is-and-where-acunetix-fits">12.4.1. What DAST Is and Where Acunetix Fits</h3>
+<p><strong>DAST (Dynamic Application Security Testing)</strong> tests a running application from the outside (black-box) without needing source code — in contrast to <strong>SAST</strong> (Static, analyzing source code) and <strong>IAST</strong> (Interactive, with an agent inside the application). Acunetix is a commercial DAST scanner with a high degree of automation: it crawls, audits, and generates reports automatically.</p>
+<p><strong>Core differences between Acunetix and Burp:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Acunetix (automated DAST)</th>
+<th>Burp Suite (manual + Scanner)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>Comprehensive automation</td>
+<td>Mainly manual, with a Scanner (Pro)</td>
+</tr>
+<tr>
+<td>Users</td>
+<td>Run periodically, little intervention</td>
+<td>Experts working deeply</td>
+</tr>
+<tr>
+<td>Business logic / IDOR</td>
+<td>Weak (machines struggle with logic)</td>
+<td>Strong (humans reason)</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>Scan many sites, on a schedule</td>
+<td>Focused on one target</td>
+</tr>
+<tr>
+<td>CI/CD integration</td>
+<td>Yes (API, scheduler)</td>
+<td>Enterprise edition</td>
+</tr>
+<tr>
+<td>Payload tuning</td>
+<td>Limited</td>
+<td>Maximum flexibility</td>
+</tr>
+</tbody>
+</table>
+<p>The two tools <strong>complement</strong> each other: Acunetix scans broadly to find low-hanging fruit, while Burp digs deep to verify and exploit logic.</p>
+<h3 id="ch12-1242-configuring-a-scan">12.4.2. Configuring a Scan</h3>
+<p>Acunetix calls a target a <strong>Target</strong>. The process for creating a scan:</p>
+<pre><code class="language-text">1. Add Target: enter the root URL (https://app.example.com)
+   - Description, Business Criticality (importance level for prioritization)
+2. Target Settings:
+   - Scan Speed: Slow/Moderate/Fast/Sequential (trade-off of speed vs server load)
+   - Site Login:
+       * Automatic (provide username/password, Acunetix logs in itself)
+       * Recorded login sequence (record a complex login sequence)
+   - Authentication: HTTP Basic/NTLM/custom header
+   - Custom headers / cookies (e.g., Authorization: Bearer ...)
+   - Excluded paths (e.g., /logout, /admin/delete-all)
+   - Allowed hosts (limit scope to subdomains)
+3. Scan Profile (Scan Type):
+   - Full Scan / High Risk / Cross-site Scripting / SQL Injection /
+     Weak Passwords / Crawl Only
+4. Schedule: run now or on a periodic schedule (cron-like)
+5. Launch Scan
+</code></pre>
+<p>A <strong>Recorded login sequence</strong> is important because many endpoints lie behind authentication. Acunetix uses <strong>AcuSensor</strong> (an optional IAST agent installed on PHP/.NET/Java servers) to improve accuracy and enable deeper detection (gray-box), reducing false positives.</p>
+<h3 id="ch12-1243-the-crawl-audit-mechanism">12.4.3. The Crawl + Audit Mechanism</h3>
+<p>Acunetix runs in 2 stages:</p>
+<p><strong>Stage 1 — Crawl (DeepScan):</strong> uses an engine that browses like a real browser, executing JavaScript (supporting SPAs, AJAX), discovering every link, form, API endpoint, and parameter. The result: a list of "locations" and "inputs".</p>
+<p><strong>Stage 2 — Audit:</strong> for each discovered input, Acunetix sends probing payloads and analyzes the response:
+- <strong>SQLi:</strong> inject a payload and observe DB errors, delays (time-based: <code>SLEEP(5)</code>), or boolean differences.
+- <strong>XSS:</strong> inject a marker script and check for unescaped reflection.
+- <strong>SSRF, XXE, LFI/RFI, command injection:</strong> corresponding payloads.
+- <strong>Misconfiguration:</strong> missing security headers, directory listing, backup files.</p>
+<p><strong>Time-based blind SQLi payload illustration:</strong></p>
+<pre><code class="language-sql">'; IF(1=1) WAITFOR DELAY '0:0:5'--      (MSSQL)
+' OR SLEEP(5)-- -                        (MySQL)
+' || pg_sleep(5)--                       (PostgreSQL)
+</code></pre>
+<p>Acunetix measures the response time: if the response is slow by ~5s when injecting <code>SLEEP(5)</code> but fast with <code>SLEEP(0)</code> → injection confirmed (blind, time-based).</p>
+<h3 id="ch12-1244-reading-an-acunetix-report">12.4.4. Reading an Acunetix Report</h3>
+<p>The report classifies findings by severity: <strong>High / Medium / Low / Informational</strong>. Each finding includes:</p>
+<table>
+<thead>
+<tr>
+<th>Report field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vulnerability name</td>
+<td>The vulnerability's name (e.g., "Blind SQL Injection")</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>Level (High/Medium/Low/Info)</td>
+</tr>
+<tr>
+<td>Affected URL/parameter</td>
+<td>The affected endpoint + parameter</td>
+</tr>
+<tr>
+<td>Request</td>
+<td>The HTTP request that Acunetix sent (PoC)</td>
+</tr>
+<tr>
+<td>Response / Evidence</td>
+<td>Evidence (DB error, delay, reflection)</td>
+</tr>
+<tr>
+<td>CVSS</td>
+<td>The score</td>
+</tr>
+<tr>
+<td>CWE</td>
+<td>Weakness classification (e.g., CWE-89 SQLi)</td>
+</tr>
+<tr>
+<td>Recommendation</td>
+<td>Remediation guidance</td>
+</tr>
+<tr>
+<td>Classification</td>
+<td>OWASP, PCI DSS, ...</td>
+</tr>
+</tbody>
+</table>
+<p>The standard report templates: Developer, Executive Summary, Compliance (PCI DSS, ISO 27001, HIPAA, OWASP Top 10).</p>
+<h3 id="ch12-1245-false-positives-and-verification">12.4.5. False Positives and Verification</h3>
+<p>Automated DAST is prone to <strong>false positives</strong> (reported but not actually exploitable) and <strong>false negatives</strong> (missed). The verification process:
+1. Take the PoC request from the report.
+2. Reproduce it manually using Burp Repeater or <code>curl</code>.
+3. Observe whether the exploitation signs are correct (e.g., whether the time-based delay is consistent, or just due to the network).
+4. Mark it as a false positive in Acunetix so it is skipped in the next scan.</p>
+<p>Example of validating a time-based SQLi with curl:</p>
+<pre><code class="language-bash"># Measure the response time between SLEEP(0) and SLEEP(5)
+time curl -s &quot;https://app.example.com/item?id=1' OR SLEEP(0)-- -&quot; &gt;/dev/null
+time curl -s &quot;https://app.example.com/item?id=1' OR SLEEP(5)-- -&quot; &gt;/dev/null
+# If the 2nd run is consistently ~5s slower -&gt; a real SQLi, not a false positive
+</code></pre>
+<p><strong>Note:</strong> an "Informational" finding (e.g., the server version leaking in a header) can be a puzzle piece for recon — do not ignore it entirely. Conversely, not every "High" is exploitable in a real context; verification is needed.</p>
+<hr />
+<h2 id="ch12-125-nmap-analysis-down-to-the-packet-level">12.5. Nmap — Analysis Down to the Packet Level</h2>
+<p>Nmap (Network Mapper) is a tool for host discovery, port scanning, version/OS detection, and running scripts (NSE). Understanding Nmap requires understanding the <strong>TCP 3-way handshake</strong> and the TCP flags, because most scans operate directly on these flags.</p>
+<h3 id="ch12-1251-foundation-the-tcp-header-and-flags">12.5.1. Foundation — the TCP Header and Flags</h3>
+<p>The TCP segment header (RFC 793/9293). Byte-by-byte diagram:</p>
+<pre><code> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Source Port          |       Destination Port        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sequence Number                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Data | Res |N|C|E|U|A|P|R|S|F|                               |
+| Offset|     |S|W|C|R|C|S|S|Y|I|            Window             |
+|       |     | |R|E|G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options (if Data Offset &gt; 5)               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</code></pre>
+<p><strong>Table of TCP header fields:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Size</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>16 bits (2 bytes)</td>
+<td>Source port</td>
+<td>49152</td>
+</tr>
+<tr>
+<td>Destination Port</td>
+<td>16 bits</td>
+<td>Destination port</td>
+<td>443</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>32 bits (4 bytes)</td>
+<td>Byte sequence number</td>
+<td>0x1A2B3C4D</td>
+</tr>
+<tr>
+<td>Acknowledgment Number</td>
+<td>32 bits</td>
+<td>ACK of the next expected seq number</td>
+<td>0x1A2B3C4E</td>
+</tr>
+<tr>
+<td>Data Offset</td>
+<td>4 bits</td>
+<td>Header length (in 32-bit words)</td>
+<td>5 = 20 bytes</td>
+</tr>
+<tr>
+<td>Reserved</td>
+<td>3 bits</td>
+<td>Reserved (0)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>9 bits</td>
+<td>NS,CWR,ECE,URG,ACK,PSH,RST,SYN,FIN</td>
+<td>see below</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>16 bits</td>
+<td>Receive window size</td>
+<td>64240</td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>16 bits</td>
+<td>Error check of header+data+pseudo-header</td>
+<td>0x...</td>
+</tr>
+<tr>
+<td>Urgent Pointer</td>
+<td>16 bits</td>
+<td>Offset of urgent data (if URG)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Options</td>
+<td>0–40 bytes</td>
+<td>MSS, SACK, Timestamp, Window scale</td>
+<td>MSS=1460</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Control flags — each flag is 1 bit:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning when =1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN</td>
+<td>Request to establish a connection (synchronize seq)</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>The Acknowledgment field is valid</td>
+</tr>
+<tr>
+<td>FIN</td>
+<td>Finished sending data (graceful close)</td>
+</tr>
+<tr>
+<td>RST</td>
+<td>Reset/reject the connection immediately</td>
+</tr>
+<tr>
+<td>PSH</td>
+<td>Push data to the application immediately</td>
+</tr>
+<tr>
+<td>URG</td>
+<td>There is urgent data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>TCP 3-way handshake (connection establishment):</strong></p>
+<pre><code>Client                         Server
+  | --- SYN (seq=x) ----------&gt; |     state: SYN_SENT -&gt; server SYN_RECV
+  | &lt;-- SYN,ACK (seq=y,ack=x+1) |
+  | --- ACK (ack=y+1) --------&gt; |     state: ESTABLISHED on both sides
+</code></pre>
+<p>Nmap exploits this behavior: a server with an <strong>open</strong> port replies with SYN/ACK, a server with a <strong>closed</strong> port replies with RST.</p>
+<h3 id="ch12-1252--ss-syn-scan-half-open-stealth">12.5.2. -sS — SYN scan (half-open / stealth)</h3>
+<p><strong>Mechanism:</strong> Nmap sends a SYN but does NOT complete the handshake.</p>
+<pre><code>Port OPEN:
+  Nmap --- SYN ------------&gt; Target
+  Nmap &lt;-- SYN/ACK -------- Target
+  Nmap --- RST -----------&gt; Target   (Nmap actively tears down, does not send ACK)
+  =&gt; conclusion: open
+
+Port CLOSED:
+  Nmap --- SYN ------------&gt; Target
+  Nmap &lt;-- RST ------------ Target
+  =&gt; conclusion: closed
+
+Port FILTERED (firewall drop):
+  Nmap --- SYN ------------&gt; Target
+  (no response, retries a few times, still silent)
+  =&gt; conclusion: filtered
+</code></pre>
+<p><strong>Why "stealth":</strong> because the handshake is not completed (it does not reach ESTABLISHED), many older applications/logs do not record the connection (they only log after accept()). However, modern IDS/IPS detect it easily. A SYN scan requires <strong>raw socket</strong> privileges (root/CAP_NET_RAW) because Nmap crafts its own TCP packets, bypassing the OS connect().</p>
+<pre><code class="language-bash">sudo nmap -sS -p 1-1000 192.168.1.10
+</code></pre>
+<p>Sample output:</p>
+<pre><code>PORT     STATE    SERVICE
+22/tcp   open     ssh
+80/tcp   open     http
+443/tcp  open     https
+3306/tcp filtered mysql
+</code></pre>
+<h3 id="ch12-1253--st-tcp-connect-scan">12.5.3. -sT — TCP Connect scan</h3>
+<p><strong>Mechanism:</strong> Nmap calls the OS <code>connect()</code> syscall, completes the full 3-way handshake, then closes (sends FIN or RST).</p>
+<pre><code>Nmap --- SYN -------&gt; Target
+Nmap &lt;-- SYN/ACK ---- Target
+Nmap --- ACK -------&gt; Target    (fully ESTABLISHED)
+Nmap --- RST/FIN ---&gt; Target    (close)
+</code></pre>
+<p><strong>When to use:</strong> when you do not have root privileges (no raw socket). Trade-off: it creates a full connection → the application logs it → less stealthy and slower.</p>
+<pre><code class="language-bash">nmap -sT -p 22,80,443 192.168.1.10   # no sudo needed
+</code></pre>
+<h3 id="ch12-1254--su-udp-scan">12.5.4. -sU — UDP scan</h3>
+<p>UDP has no handshake (connectionless). The inference mechanism:</p>
+<pre><code>Port CLOSED:
+  Nmap --- UDP packet ----&gt; Target
+  Nmap &lt;-- ICMP Port Unreachable (type 3, code 3) -- Target
+  =&gt; closed
+
+Port OPEN:
+  Nmap --- UDP packet ----&gt; Target
+  - If the UDP service returns data =&gt; open
+  - If there is NO response at all =&gt; open|filtered (ambiguous)
+
+Port FILTERED:
+  Nmap --- UDP ----&gt; Target
+  Nmap &lt;-- ICMP type 3 code 1,2,9,10,13 (admin prohibited...) =&gt; filtered
+</code></pre>
+<p><strong>Why UDP scans are slow:</strong> because there is no RST to definitively indicate "closed", Nmap relies on ICMP Port Unreachable; but RFC 1812 rate-limits ICMP emission, so Nmap must wait and retry → very slow. For better accuracy on common ports, Nmap sends service-specific payloads (a DNS query to 53, SNMP to 161).</p>
+<pre><code class="language-bash">sudo nmap -sU --top-ports 20 192.168.1.10   # scan the 20 most common UDP ports
+</code></pre>
+<h3 id="ch12-1255--sn--sf--sx-null-fin-xmas-scan">12.5.5. -sN / -sF / -sX — Null, FIN, Xmas scan</h3>
+<p>These three scans exploit the RFC 793 rule: if a TCP packet arrives at a <strong>closed</strong> port WITHOUT the SYN/RST/ACK flags → the server must reply with <strong>RST</strong>; if the port is <strong>open</strong> → the server <strong>ignores</strong> it (no response).</p>
+<table>
+<thead>
+<tr>
+<th>Scan</th>
+<th>Flags set</th>
+<th>Packet description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sN</code> Null</td>
+<td>(no flags)</td>
+<td>All flags = 0</td>
+</tr>
+<tr>
+<td><code>-sF</code> FIN</td>
+<td>FIN</td>
+<td>Only FIN = 1</td>
+</tr>
+<tr>
+<td><code>-sX</code> Xmas</td>
+<td>FIN+PSH+URG</td>
+<td>"Lit up like a Christmas tree"</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Port OPEN or FILTERED:
+  Nmap --- (FIN/Null/Xmas) ---&gt; Target
+  (no response)  =&gt; open|filtered
+
+Port CLOSED:
+  Nmap --- (FIN/Null/Xmas) ---&gt; Target
+  Nmap &lt;-- RST ---------------- Target  =&gt; closed
+</code></pre>
+<p><strong>Why use it:</strong> it can get past stateless firewalls that only filter SYN packets. <strong>An important limitation:</strong> Windows (and many devices) do NOT comply with this standard RFC behavior — they always reply with RST regardless of whether the port is open/closed → every port shows "closed" → the scan is useless on Windows. It is only effective against RFC-compliant systems (many Unix-like systems).</p>
+<pre><code class="language-bash">sudo nmap -sX -p 1-100 192.168.1.10
+</code></pre>
+<h3 id="ch12-1256--sn-host-discovery-ping-scan-no-port-scanning">12.5.6. -sn — Host Discovery (ping scan, no port scanning)</h3>
+<p><code>-sn</code> (formerly <code>-sP</code>) only determines which hosts are "alive" without scanning ports. The default mechanism (when run with root privileges) sends a combination of probes:</p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Packet sent</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ICMP Echo Request</td>
+<td>ICMP type 8</td>
+<td>Classic ping</td>
+</tr>
+<tr>
+<td>ICMP Timestamp</td>
+<td>ICMP type 13</td>
+<td>Fallback when Echo is blocked</td>
+</tr>
+<tr>
+<td>TCP SYN to 443</td>
+<td>SYN</td>
+<td>Infer a live host from the response</td>
+</tr>
+<tr>
+<td>TCP ACK to 80</td>
+<td>ACK</td>
+<td>Get past firewalls that filter SYN</td>
+</tr>
+<tr>
+<td>ARP request (LAN)</td>
+<td>ARP who-has</td>
+<td>On the same subnet — the most reliable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>On a LAN, Nmap uses ARP</strong> (layer 2) because a host is required to reply with an ARP reply if it exists — bypassing layer-3 firewalls.</p>
+<pre><code class="language-bash">sudo nmap -sn 192.168.1.0/24      # list live hosts in a /24 subnet
+</code></pre>
+<p>Output:</p>
+<pre><code>Nmap scan report for 192.168.1.1
+Host is up (0.0012s latency).
+MAC Address: AA:BB:CC:DD:EE:FF (Vendor)
+Nmap scan report for 192.168.1.10
+Host is up (0.0023s latency).
+Nmap done: 256 IP addresses (2 hosts up) scanned in 2.34 seconds
+</code></pre>
+<p><code>-Pn</code> (no ping) skips host discovery and treats every host as alive — use this when the target blocks ICMP.</p>
+<h3 id="ch12-1257--sv-version-detection">12.5.7. -sV — Version detection</h3>
+<p>After identifying open ports, <code>-sV</code> determines the <strong>service and version</strong> running on them. Mechanism:
+1. Connect to the open port.
+2. If the service sends a banner itself (e.g., SSH, SMTP) → read it and match it against <code>nmap-service-probes</code>.
+3. If it is silent → Nmap sends a series of <strong>probes</strong> (protocol-specific byte sequences) and matches the response against the thousands of regex signatures in <code>nmap-service-probes</code>.</p>
+<p><code>--version-intensity 0-9</code> adjusts the number of probes sent (0 = few/fast, 9 = full).</p>
+<pre><code class="language-bash">sudo nmap -sV -p 22,80,443 192.168.1.10
+</code></pre>
+<p>Output:</p>
+<pre><code>PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+80/tcp  open  http     nginx 1.18.0 (Ubuntu)
+443/tcp open  ssl/http nginx 1.18.0
+</code></pre>
+<p>An accurate version → look up the corresponding CVEs (the foundation for vulnerability scanning).</p>
+<h3 id="ch12-1258--o-os-detection">12.5.8. -O — OS detection</h3>
+<p><code>-O</code> guesses the operating system via <strong>TCP/IP stack fingerprinting</strong>: it sends many specially-designed probes and analyzes the response characteristics that each OS implements differently:</p>
+<table>
+<thead>
+<tr>
+<th>Characteristic analyzed</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial TTL</td>
+<td>The starting TTL (Linux 64, Windows 128, some 255)</td>
+</tr>
+<tr>
+<td>TCP Window Size</td>
+<td>The default window size</td>
+</tr>
+<tr>
+<td>TCP Options &amp; order</td>
+<td>MSS, NOP, SACK, Timestamp, Window scale and their order</td>
+</tr>
+<tr>
+<td>Don't Fragment bit</td>
+<td>Whether DF is set</td>
+</tr>
+<tr>
+<td>ISN sampling</td>
+<td>How the Initial Sequence Number is generated</td>
+</tr>
+<tr>
+<td>ICMP responses</td>
+<td>Responses to anomalous probes</td>
+</tr>
+</tbody>
+</table>
+<p>Nmap matches the fingerprint against <code>nmap-os-db</code>. It needs ≥1 open port AND ≥1 closed port for accuracy.</p>
+<pre><code class="language-bash">sudo nmap -O 192.168.1.10
+</code></pre>
+<p>Output:</p>
+<pre><code>Running: Linux 5.X
+OS CPE: cpe:/o:linux:linux_kernel:5
+OS details: Linux 5.0 - 5.14
+Network Distance: 2 hops
+</code></pre>
+<h3 id="ch12-1259--p-specifying-ports-and--f">12.5.9. -p — Specifying ports, and -F</h3>
+<table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p 80</code></td>
+<td>A single port</td>
+</tr>
+<tr>
+<td><code>-p 22,80,443</code></td>
+<td>A list</td>
+</tr>
+<tr>
+<td><code>-p 1-1000</code></td>
+<td>A range</td>
+</tr>
+<tr>
+<td><code>-p-</code></td>
+<td>All of 1–65535</td>
+</tr>
+<tr>
+<td><code>-p U:53,T:80</code></td>
+<td>Separate UDP/TCP</td>
+</tr>
+<tr>
+<td><code>-F</code></td>
+<td>Fast — the 100 most common ports</td>
+</tr>
+<tr>
+<td><code>--top-ports 20</code></td>
+<td>The 20 most common ports (per nmap-services)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-12510--t-timing-templates">12.5.10. -T — Timing templates</h3>
+<p><code>-T0</code> through <code>-T5</code> adjust speed via several parameters (delay between probes, parallelism, timeout):</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Name</th>
+<th>Characteristics</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-T0</code></td>
+<td>Paranoid</td>
+<td>Extremely slow, sequential, delays up to 5 minutes</td>
+<td>Maximum IDS evasion</td>
+</tr>
+<tr>
+<td><code>-T1</code></td>
+<td>Sneaky</td>
+<td>Slow, 15s delay</td>
+<td>IDS evasion</td>
+</tr>
+<tr>
+<td><code>-T2</code></td>
+<td>Polite</td>
+<td>Reduced load, little parallelism</td>
+<td>Sensitive networks</td>
+</tr>
+<tr>
+<td><code>-T3</code></td>
+<td>Normal</td>
+<td>Default</td>
+<td>Balanced</td>
+</tr>
+<tr>
+<td><code>-T4</code></td>
+<td>Aggressive</td>
+<td>Fast, for stable networks</td>
+<td>Typical pentest</td>
+</tr>
+<tr>
+<td><code>-T5</code></td>
+<td>Insane</td>
+<td>Extremely fast, may drop packets</td>
+<td>Fast LAN, accepting inaccuracy</td>
+</tr>
+</tbody>
+</table>
+<p><code>-T4</code> is a common choice on a good network. It can be fine-tuned in detail: <code>--min-rate</code>, <code>--max-rate</code> (packets/s), <code>--max-retries</code>, <code>--host-timeout</code>.</p>
+<h3 id="ch12-12511-nse-nmap-scripting-engine">12.5.11. NSE — Nmap Scripting Engine</h3>
+<p>NSE runs Lua scripts to extend Nmap: vulnerability detection, brute forcing, information gathering. Scripts live in <code>/usr/share/nmap/scripts/</code>, organized by <strong>category</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Purpose</th>
+<th>Intrusiveness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>safe</code></td>
+<td>Harmless, does not exploit</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>default</code> (<code>-sC</code>)</td>
+<td>Run by default, useful &amp; safe</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>discovery</code></td>
+<td>Gather more information</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Supports -sV</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td>Authentication-related</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>brute</code></td>
+<td>Brute force credentials</td>
+<td>High (generates traffic)</td>
+</tr>
+<tr>
+<td><code>vuln</code></td>
+<td>Check for known vulnerabilities</td>
+<td>Medium-High</td>
+</tr>
+<tr>
+<td><code>exploit</code></td>
+<td>Actually exploit</td>
+<td>High (dangerous)</td>
+</tr>
+<tr>
+<td><code>dos</code></td>
+<td>Test for DoS</td>
+<td>Very high (may crash the service)</td>
+</tr>
+<tr>
+<td><code>intrusive</code></td>
+<td>May cause load/harm</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># Run the default scripts + version
+sudo nmap -sC -sV 192.168.1.10
+
+# Scan for known vulnerabilities
+sudo nmap --script vuln -p 80,443 192.168.1.10
+
+# A specific script
+sudo nmap --script http-title,http-headers -p 80 192.168.1.10
+sudo nmap --script smb-vuln-ms17-010 -p 445 192.168.1.10   # detect EternalBlue
+sudo nmap --script ssl-enum-ciphers -p 443 192.168.1.10    # enumerate TLS ciphers
+</code></pre>
+<p>Sample output of <code>--script vuln</code>:</p>
+<pre><code>PORT   STATE SERVICE
+80/tcp open  http
+| http-slowloris-check:
+|   VULNERABLE:
+|   Slowloris DoS attack
+|     State: LIKELY VULNERABLE
+|     IDs:  CVE:CVE-2007-6750
+</code></pre>
+<p>Passing script arguments (<code>--script-args</code>):</p>
+<pre><code class="language-bash">sudo nmap --script http-brute --script-args \
+  http-brute.path=/login,userdb=users.txt,passdb=pass.txt -p 80 target
+</code></pre>
+<h3 id="ch12-12512-a-comprehensive-scan-command-and-its-output">12.5.12. A Comprehensive Scan Command and Its Output</h3>
+<pre><code class="language-bash">sudo nmap -sS -sV -O -p- -T4 --script default,vuln -oA fullscan 192.168.1.10
+# -sS  : SYN scan
+# -sV  : version detection
+# -O   : OS detection
+# -p-  : all 65535 ports
+# -T4  : aggressive timing
+# --script default,vuln : NSE
+# -oA fullscan : output in 3 formats (.nmap, .gnmap, .xml) named fullscan
+</code></pre>
+<p><strong>Output formats:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Format</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-oN file</code></td>
+<td>Normal (like the screen)</td>
+<td>Human reading</td>
+</tr>
+<tr>
+<td><code>-oG file</code></td>
+<td>Greppable</td>
+<td>Quick <code>grep</code>/<code>awk</code> processing</td>
+</tr>
+<tr>
+<td><code>-oX file</code></td>
+<td>XML</td>
+<td>Parsing by script, importing into other tools</td>
+</tr>
+<tr>
+<td><code>-oA base</code></td>
+<td>All 3 above</td>
+<td>Complete archival</td>
+</tr>
+</tbody>
+</table>
+<p>Quick greppable analysis:</p>
+<pre><code class="language-bash">grep &quot;open&quot; fullscan.gnmap | awk '{print $2}'   # list IPs with open ports
+</code></pre>
+<h3 id="ch12-12513-reading-port-states">12.5.13. Reading Port States</h3>
+<p>Nmap distinguishes 6 states:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>open</code></td>
+<td>A service is listening and accepting</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td>The host responds but there is no service (returns RST)</td>
+</tr>
+<tr>
+<td><code>filtered</code></td>
+<td>Cannot be determined — a firewall blocks the probe</td>
+</tr>
+<tr>
+<td><code>unfiltered</code></td>
+<td>Reachable but open/closed is unclear (ACK scan)</td>
+</tr>
+<tr>
+<td><code>open\|filtered</code></td>
+<td>Cannot be distinguished (UDP, silent FIN/Null/Xmas)</td>
+</tr>
+<tr>
+<td><code>closed\|filtered</code></td>
+<td>Rare (Idle scan)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch12-126-legal-considerations-and-scope-scope-legal">12.6. Legal Considerations and Scope (Scope &amp; Legal)</h2>
+<p>This is a section NOT to be taken lightly — testing outside the authorized scope is unauthorized access to a computer system and may be subject to criminal prosecution.</p>
+<h3 id="ch12-1261-legal-basis">12.6.1. Legal Basis</h3>
+<ul>
+<li><strong>Vietnam:</strong> the Penal Code 2015 (amended and supplemented in 2017), Article 289 (unauthorized access to computer/telecommunications networks), Article 287 (obstructing/disrupting network operations); the Cybersecurity Law 2018; the Law on Network Information Security 2015. <em>(Readers should verify the current article numbers at the time of application — the regulations may have been amended.)</em></li>
+<li><strong>International references:</strong> the Computer Fraud and Abuse Act (CFAA — USA), the Computer Misuse Act (UK).</li>
+</ul>
+<p>Port scanning or sending payloads to a system WITHOUT authorization = a violation, regardless of whether actual harm is caused.</p>
+<h3 id="ch12-1262-mandatory-documents-before-testing">12.6.2. Mandatory Documents Before Testing</h3>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scope of Work (SoW)</strong></td>
+<td>Clearly defines the assets, IPs/domains, and types of testing permitted</td>
+</tr>
+<tr>
+<td><strong>Rules of Engagement (RoE)</strong></td>
+<td>Time window, prohibited techniques (e.g., DoS), emergency contact</td>
+</tr>
+<tr>
+<td><strong>Authorization Letter ("get-out-of-jail")</strong></td>
+<td>A signed authorization document from an authorized person</td>
+</tr>
+<tr>
+<td><strong>NDA</strong></td>
+<td>Confidentiality of the data discovered</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-1263-principles-for-safe-operation">12.6.3. Principles for Safe Operation</h3>
+<ul>
+<li>Do NOT scan/exploit outside the list of IPs/domains in scope. In Burp: enable "Drop all out-of-scope traffic".</li>
+<li>Avoid destructive techniques (<code>--script dos</code>, brute force causing lockouts) unless explicitly authorized and within a maintenance window.</li>
+<li>Be careful with <strong>cloud assets</strong>: AWS/GCP/Azure require compliance with their own pen-test policies; some managed services are forbidden from being tested.</li>
+<li>Log every action (with timestamps) as evidence of scope and to support investigation in case of an incident.</li>
+<li>Sensitive data extracted during testing must be stored encrypted and securely deleted after completion, in accordance with the NDA.</li>
+</ul>
+<hr />
+<h2 id="ch12-127-chapter-summary">12.7. Chapter Summary</h2>
+<p>This chapter went from distinguishing the concepts (scanning vs pentest), through the 5-phase OWASP process, to the three pillar tools with detail down to the packet/field/step level and runnable examples:</p>
+<ul>
+<li><strong>Burp Suite</strong> — deep manual control: the MITM architecture with a CA cert, Proxy, Target/Scope, Repeater (IDOR, SQLi), Intruder (4 attack types), Decoder, Comparer, Sequencer, Scanner; the end-to-end XSS workflow.</li>
+<li><strong>Acunetix</strong> — automated DAST: crawl + audit, scan configuration, reading reports, verifying false positives; complements rather than replaces Burp.</li>
+<li><strong>Nmap</strong> — network mapping down to the TCP flag level: -sS/-sT/-sU/-sN/-sF/-sX, -sn host discovery, -sV/-O fingerprinting, -p/-T tuning, NSE (--script vuln), reading states and exporting results.</li>
+</ul>
+<p>The overarching principle: understand the mechanics down to the root, always manually verify automated results, and absolutely respect the legal scope.</p>
+<hr />
+<h2 id="ch12-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch11.html"><span>← Previous</span><b>11 · Network Defense (IDS/WAF/VPN)</b></a><a class="pg next" href="ch13.html"><span>Next →</span><b>13 · Cloud Security</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1620 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 12 — Kiểm thử xâm nhập &amp;amp; Đánh giá lỗ hổng — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 12 — Kiểm thử xâm nhập &amp;amp; Đánh giá lỗ hổng — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch11.html"><link rel="next" href="ch13.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="12"><a class="nav-ch-title" href="#top"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"><a class="nav-sub" href="#ch12-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch12-121-phan-biet-vulnerability-scanning-va-penetration-testing">12.1. Phân biệt Vulnerability Scanning và Penetration Testing</a><a class="nav-sub" href="#ch12-122-quy-trinh-kiem-thu-web-theo-owasp">12.2. Quy trình kiểm thử web theo OWASP</a><a class="nav-sub" href="#ch12-123-burp-suite-phan-tich-chi-tiet">12.3. Burp Suite — phân tích chi tiết</a><a class="nav-sub" href="#ch12-124-acunetix-dast-tu-đong">12.4. Acunetix — DAST tự động</a><a class="nav-sub" href="#ch12-125-nmap-phan-tich-toi-muc-goi-tin">12.5. Nmap — phân tích tới mức gói tin</a><a class="nav-sub" href="#ch12-126-luu-y-phap-ly-va-pham-vi-scope-legal">12.6. Lưu ý pháp lý và phạm vi (Scope &amp;amp; Legal)</a><a class="nav-sub" href="#ch12-127-tong-ket-chuong">12.7. Tổng kết chương</a><a class="nav-sub" href="#ch12-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-12" data-ch="12">
+<h1 id="ch12-chuong-12-kiem-thu-xam-nhap-đanh-gia-lo-hong">Chương 12 — Kiểm thử xâm nhập &amp; Đánh giá lỗ hổng</h1>
+<h2 id="ch12-tong-quan">Tổng quan</h2>
+<p>Lỗ hổng bị bỏ sót không tự biến mất — nó nằm im chờ ai đó tìm ra trước, và câu hỏi luôn là ai tìm ra trước: đội mình hay kẻ tấn công. Đó là lý do mình học chương này: nắm cho được hai cách chủ động đi tìm điểm yếu của hệ thống (web, máy chủ, mạng) trước khi nó gây rò rỉ dữ liệu — vì một lỗ hổng bỏ sót là đủ để lộ toàn bộ dữ liệu người dùng.</p>
+<p>Chương mở đầu bằng việc tách bạch <strong>quét lỗ hổng</strong> (vulnerability scanning) — tự động so khớp dấu hiệu hệ thống với cơ sở dữ liệu lỗ hổng đã biết, rộng và nông, chỉ phát hiện chứ không khai thác — với <strong>kiểm thử xâm nhập</strong> (pentest), nơi con người mô phỏng tấn công thật, khai thác thật để chứng minh tác động, sâu và hẹp hơn nhưng dựa nhiều vào suy luận. Từ phân biệt đó, chương đi theo <strong>quy trình kiểm thử web chuẩn OWASP</strong> (WSTG): recon, mapping, testing, exploit, report — rồi vào chi tiết cơ chế ba công cụ chủ lực. <strong>Burp Suite</strong> là intercepting proxy đứng giữa trình duyệt và server để xem, sửa từng request/response; <strong>Acunetix</strong> là DAST scanner thương mại tự crawl-audit-report, bổ sung chứ không thay Burp; <strong>Nmap</strong> lập bản đồ mạng ở mức host discovery, port scanning, version/OS detection. Chương khép lại bằng phần <strong>scope và pháp lý</strong> — ranh giới được phép kiểm thử phải ghi rõ trong văn bản uỷ quyền, vì chạy ngoài scope là truy cập trái phép dù mục đích tốt tới đâu.</p>
+<blockquote>
+<p>Mục tiêu xuyên suốt: hiểu cơ chế tới từng gói tin, có lệnh chạy được thật cho mỗi công cụ, chứ không dừng ở lý thuyết.</p>
+</blockquote>
+<hr />
+<h2 id="ch12-121-phan-biet-vulnerability-scanning-va-penetration-testing">12.1. Phân biệt Vulnerability Scanning và Penetration Testing</h2>
+<h3 id="ch12-1211-đinh-nghia-va-ban-chat">12.1.1. Định nghĩa và bản chất</h3>
+<p><strong>Vulnerability Scanning (quét lỗ hổng)</strong> là quá trình tự động phát hiện các điểm yếu đã biết (known vulnerabilities) trên hệ thống bằng cách so khớp dấu hiệu (signature/fingerprint) với một cơ sở dữ liệu lỗ hổng (vulnerability database) như NVD (National Vulnerability Database), CVE feed, hoặc database riêng của nhà cung cấp. Bản chất là <strong>breadth-first</strong> (rộng, nông): quét nhiều mục tiêu, kiểm tra nhiều dấu hiệu, nhưng KHÔNG khai thác.</p>
+<p><strong>Penetration Testing (kiểm thử xâm nhập)</strong> là quá trình mô phỏng tấn công có chủ đích, trong đó người (hoặc người + công cụ) cố gắng <strong>khai thác thật</strong> lỗ hổng để chứng minh tác động (impact), chuỗi tấn công (kill chain), và mức độ truy cập đạt được. Bản chất là <strong>depth-first</strong> (sâu, hẹp): tập trung vào mục tiêu cụ thể, kết hợp lỗ hổng, vận dụng logic nghiệp vụ.</p>
+<h3 id="ch12-1212-bang-so-sanh-chi-tiet">12.1.2. Bảng so sánh chi tiết</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Vulnerability Scanning</th>
+<th>Penetration Testing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mục tiêu</td>
+<td>Liệt kê lỗ hổng đã biết</td>
+<td>Chứng minh khai thác được + tác động</td>
+</tr>
+<tr>
+<td>Mức tự động hóa</td>
+<td>Cao (gần như hoàn toàn)</td>
+<td>Thủ công + công cụ hỗ trợ</td>
+</tr>
+<tr>
+<td>Phát hiện logic flaw (IDOR, business logic)</td>
+<td>Hầu như không</td>
+<td>Có (thế mạnh)</td>
+</tr>
+<tr>
+<td>Khai thác thực tế</td>
+<td>Không (chỉ phát hiện)</td>
+<td>Có (PoC, exploit)</td>
+</tr>
+<tr>
+<td>Chứng minh false positive</td>
+<td>Khó</td>
+<td>Có (xác nhận thủ công)</td>
+</tr>
+<tr>
+<td>Tần suất</td>
+<td>Liên tục/định kỳ (hàng tuần, hàng ngày trong CI)</td>
+<td>Định kỳ (quý/năm) hoặc theo sự kiện</td>
+</tr>
+<tr>
+<td>Chi phí</td>
+<td>Thấp (license + tự động)</td>
+<td>Cao (chuyên gia + thời gian)</td>
+</tr>
+<tr>
+<td>Đầu ra</td>
+<td>Danh sách CVE + severity</td>
+<td>Báo cáo kill chain + bằng chứng</td>
+</tr>
+<tr>
+<td>Rủi ro gây hại hệ thống</td>
+<td>Thấp (có chế độ safe)</td>
+<td>Cao hơn (có thể gây downtime)</td>
+</tr>
+<tr>
+<td>Phạm vi (scope)</td>
+<td>Toàn bộ tài sản</td>
+<td>Tập trung theo thỏa thuận</td>
+</tr>
+<tr>
+<td>Tiêu chuẩn tham chiếu</td>
+<td>CVSS, CVE, CWE</td>
+<td>OWASP, PTES, OSSTMM, NIST SP 800-115</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-1213-vi-sao-can-ca-hai">12.1.3. Vì sao cần cả hai</h3>
+<p>Vulnerability scanning trả lời câu hỏi <em>"có bao nhiêu cánh cửa khả nghi?"</em> trong khi pentest trả lời <em>"kẻ tấn công thật sự vào được tới đâu và làm được gì?"</em>. Một scanner báo "port 443 chạy OpenSSL có CVE-2014-0160 (Heartbleed)" — nhưng chỉ pentest mới chứng minh được rằng kéo được private key ra khỏi RAM. Trong mô hình DevSecOps, scanning được nhúng vào pipeline (shift-left, liên tục), còn pentest là kiểm chứng định kỳ ở mức sâu hơn. Scanning là điều kiện cần (nhanh, rẻ, rộng) nhưng không đủ; pentest cung cấp ngữ cảnh khai thác và mức độ rủi ro thực để ưu tiên khắc phục.</p>
+<hr />
+<h2 id="ch12-122-quy-trinh-kiem-thu-web-theo-owasp">12.2. Quy trình kiểm thử web theo OWASP</h2>
+<p>OWASP WSTG (Web Security Testing Guide) chia quá trình thành các pha. Dưới đây là vòng đời thực tế áp dụng cho pentest web:</p>
+<pre><code>+-------------+    +-------------+    +-------------+    +--------------+    +-------------+
+|  1. Recon   | -&gt; | 2. Mapping  | -&gt; | 3. Testing  | -&gt; | 4. Exploit   | -&gt; | 5. Report   |
+| (thu thập)  |    | (lập bản đồ)|    | (kiểm thử)  |    | (khai thác)  |    | (báo cáo)   |
++-------------+    +-------------+    +-------------+    +--------------+    +-------------+
+       ^                                                                          |
+       |__________________________ (lặp lại khi tìm thấy bề mặt mới) _____________|
+</code></pre>
+<h3 id="ch12-1221-pha-1-reconnaissance-thu-thap-thong-tin">12.2.1. Pha 1 — Reconnaissance (thu thập thông tin)</h3>
+<p>Chia làm <strong>passive</strong> (không chạm mục tiêu) và <strong>active</strong> (gửi gói tin tới mục tiêu).</p>
+<p><strong>Passive recon</strong> — không tạo lưu lượng tới mục tiêu, dùng nguồn công khai:
+- DNS records, certificate transparency logs (crt.sh) để liệt kê subdomain.
+- WHOIS, Shodan, Censys, Google dorking (<code>site:</code>, <code>inurl:</code>, <code>filetype:</code>).
+- Tìm secret rò rỉ trên GitHub, Wayback Machine (archive.org).</p>
+<p>Ví dụ liệt kê subdomain qua Certificate Transparency:</p>
+<pre><code class="language-bash"># Truy vấn crt.sh, lọc subdomain duy nhất
+curl -s 'https://crt.sh/?q=%25.example.com&amp;output=json' \
+  | jq -r '.[].name_value' \
+  | sed 's/\*\.//g' | sort -u
+</code></pre>
+<p><strong>Active recon</strong> — port scan (Nmap, mục 12.5), banner grabbing, fingerprint công nghệ:</p>
+<pre><code class="language-bash"># Nhận diện công nghệ web (header Server, X-Powered-By, cookie)
+curl -sI https://example.com | grep -iE 'server|x-powered-by|set-cookie'
+whatweb https://example.com
+</code></pre>
+<h3 id="ch12-1222-pha-2-mapping-lap-ban-đo-ung-dung">12.2.2. Pha 2 — Mapping (lập bản đồ ứng dụng)</h3>
+<p>Mục tiêu: dựng <strong>site map</strong> đầy đủ các endpoint, tham số, công nghệ. Đây là lúc Burp Suite Proxy + Target site map vào cuộc (mục 12.3.4). Các kỹ thuật:
+- <strong>Spidering/Crawling</strong>: tự động đi theo link.
+- <strong>Forced browsing / content discovery</strong>: đoán đường dẫn ẩn (<code>/admin</code>, <code>/.git/</code>, <code>/backup.zip</code>) bằng <code>ffuf</code>, <code>gobuster</code>, <code>dirsearch</code>.
+- Phân tích <code>robots.txt</code>, <code>sitemap.xml</code>, JS bundle để tìm API endpoint.</p>
+<pre><code class="language-bash"># Content discovery với ffuf
+ffuf -u https://example.com/FUZZ -w /usr/share/wordlists/dirb/common.txt \
+     -mc 200,204,301,302,307,401,403 -fs 0
+# -u : URL với từ khóa FUZZ được thay thế bằng từng dòng wordlist
+# -w : wordlist
+# -mc: match HTTP status code (chỉ hiện response có code này)
+# -fs: filter theo kích thước response (loại trang rác cùng kích thước)
+</code></pre>
+<h3 id="ch12-1223-pha-3-testing-kiem-thu-lo-hong">12.2.3. Pha 3 — Testing (kiểm thử lỗ hổng)</h3>
+<p>Đối chiếu với OWASP Top 10 và WSTG. Mỗi nhóm test có checklist:
+- Injection (SQLi, NoSQLi, command injection, LDAPi).
+- Broken Access Control (IDOR, privilege escalation, path traversal).
+- Authentication &amp; Session (brute force, session fixation, token entropy yếu).
+- XSS (reflected, stored, DOM-based).
+- SSRF, XXE, deserialization, business logic.</p>
+<h3 id="ch12-1224-pha-4-exploitation-khai-thac">12.2.4. Pha 4 — Exploitation (khai thác)</h3>
+<p>Chứng minh tác động: trích xuất dữ liệu, leo quyền, RCE. Chỉ chạy trong scope — xem 12.6. Ghi lại request/response làm bằng chứng. Tránh hành vi phá hủy trừ khi RoE cho phép.</p>
+<h3 id="ch12-1225-pha-5-reporting-bao-cao">12.2.5. Pha 5 — Reporting (báo cáo)</h3>
+<p>Báo cáo gồm: Executive Summary (cho lãnh đạo), kỹ thuật chi tiết (cho engineer), mỗi finding có: mô tả, mức độ (CVSS), bằng chứng (PoC, screenshot, request/response), tác động, và <strong>khuyến nghị khắc phục cụ thể</strong>.</p>
+<p><strong>CVSS v3.1 — Base Score vector</strong> (cần nắm để chấm điểm severity):</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Ký hiệu</th>
+<th>Giá trị</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attack Vector</td>
+<td>AV</td>
+<td>N/A/L/P</td>
+<td>Network/Adjacent/Local/Physical</td>
+</tr>
+<tr>
+<td>Attack Complexity</td>
+<td>AC</td>
+<td>L/H</td>
+<td>Low/High</td>
+</tr>
+<tr>
+<td>Privileges Required</td>
+<td>PR</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>User Interaction</td>
+<td>UI</td>
+<td>N/R</td>
+<td>None/Required</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>S</td>
+<td>U/C</td>
+<td>Unchanged/Changed</td>
+</tr>
+<tr>
+<td>Confidentiality</td>
+<td>C</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>Integrity</td>
+<td>I</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td>A</td>
+<td>N/L/H</td>
+<td>None/Low/High</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ vector chuỗi: <code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code> = 9.8 (Critical) — điển hình cho RCE unauthenticated qua mạng.</p>
+<blockquote>
+<p><strong>CVSS 4.0 (cần biết):</strong> FIRST đã phát hành CVSS v4.0 (chuỗi bắt đầu <code>CVSS:4.0/...</code>), bỏ metric <code>Scope</code>, tách nhóm Base thành Exploitability + Vulnerable/Subsequent System Impact, và bổ sung metric bảo mật con người (Safety) cùng nhóm Supplemental/Threat/Environmental. Nhiều nguồn hiện còn dùng song song v3.1, nên khi trích điểm phải ghi rõ phiên bản. <em>(số phiên bản/độ phổ biến cần kiểm chứng theo thời điểm)</em></p>
+<p><strong>Đừng vá theo mỗi CVSS Base.</strong> Base score chỉ nói lỗ hổng "nặng tới đâu về lý thuyết", không nói nó có bị khai thác thật hay có với tới được trong hệ thống của mình không. Thực tế nên ưu tiên vá theo tổ hợp: (a) <strong>reachability</strong> — thành phần dính CVE có thực sự nằm trên đường thực thi / có phơi ra ngoài không (lib nằm trong image nhưng không bao giờ gọi tới thì rủi ro thấp); (b) <strong>EPSS</strong> (Exploit Prediction Scoring System của FIRST) — xác suất bị khai thác trong 30 ngày tới; (c) <strong>CISA KEV</strong> (Known Exploited Vulnerabilities) — danh mục CVE đang bị khai thác ngoài thực địa, gần như luôn phải vá trước. Một CVE 9.8 không nằm trên code path và không có trong KEV thường xếp sau một CVE 7.5 đã có trong KEV + EPSS cao.</p>
+</blockquote>
+<hr />
+<h2 id="ch12-123-burp-suite-phan-tich-chi-tiet">12.3. Burp Suite — phân tích chi tiết</h2>
+<p>Burp Suite (PortSwigger) là công cụ chủ lực để test web thủ công. Có ba phiên bản: Community (miễn phí, giới hạn, Intruder bị throttle, không có Scanner), Professional (có Scanner, Intruder đầy đủ), Enterprise (CI/CD, quét tự động quy mô lớn). Burp viết bằng Java, chạy trên JVM.</p>
+<h3 id="ch12-1231-kien-truc-proxy-mitm">12.3.1. Kiến trúc Proxy MITM</h3>
+<p>Burp hoạt động như một <strong>intercepting proxy</strong> (man-in-the-middle) đặt giữa browser và server. Luồng dữ liệu:</p>
+<pre><code>+---------+        +------------------+        +-----------+
+| Browser | &lt;----&gt; |  Burp Proxy      | &lt;----&gt; |  Server   |
+| (client)| HTTP/S |  127.0.0.1:8080  | HTTP/S |  (target) |
++---------+        +------------------+        +-----------+
+                   |  - Intercept     |
+                   |  - Re-issue cert |
+                   |  - Log site map  |
+                   +------------------+
+</code></pre>
+<p>Mặc định Burp lắng nghe tại <code>127.0.0.1:8080</code>. Browser cấu hình proxy trỏ tới đây. Burp nhận request, có thể tạm dừng (intercept), sửa, rồi chuyển tiếp tới server. Khi server trả về, Burp lại có thể sửa response trước khi giao cho browser.</p>
+<h4 id="ch12-vi-sao-can-cai-ca-certificate">Vì sao cần cài CA certificate</h4>
+<p>Với HTTP plaintext, MITM dễ — Burp đọc thẳng. Nhưng với HTTPS, TLS mã hóa toàn bộ. Để đọc/sửa được, Burp phải <strong>terminate TLS</strong> ở phía mình: nó thực hiện hai phiên TLS riêng biệt — một với browser, một với server.</p>
+<p>Khi browser gửi <code>CONNECT example.com:443</code>, Burp:
+1. Sinh động (on-the-fly) một certificate cho <code>example.com</code>, ký bằng <strong>CA root của Burp</strong> (mặc định tên <code>PortSwigger CA</code>).
+2. Trình certificate giả này cho browser.
+3. Browser kiểm tra chuỗi tin cậy. Nếu CA root của Burp đã được cài vào <strong>trust store</strong> của hệ điều hành/trình duyệt → hợp lệ → không cảnh báo. Nếu chưa cài → cảnh báo <code>NET::ERR_CERT_AUTHORITY_INVALID</code>.</p>
+<p>Đây chính là lý do phải cài CA cert của Burp: để browser tin tưởng cert do Burp sinh ra, cho phép MITM HTTPS mà không cảnh báo, đồng thời giữ phiên TLS với server vẫn hợp lệ thật.</p>
+<p><strong>Lấy và cài CA cert:</strong></p>
+<pre><code class="language-text">1. Cấu hình browser proxy 127.0.0.1:8080
+2. Truy cập http://burp  (hoặc http://burpsuite)
+3. Bấm &quot;CA Certificate&quot; -&gt; tải file cacert.der
+4. Cài vào trust store:
+   - Linux: chuyển DER-&gt;PEM rồi đưa vào /usr/local/share/ca-certificates/
+   - Firefox: Settings -&gt; Privacy &amp; Security -&gt; Certificates -&gt; Import
+     (đánh dấu &quot;Trust to identify websites&quot;)
+</code></pre>
+<pre><code class="language-bash"># Chuyển DER sang PEM và xem nội dung cert
+openssl x509 -inform der -in cacert.der -out burp-ca.pem
+openssl x509 -in burp-ca.pem -noout -text | grep -A2 'Subject:'
+# Linux system-wide:
+sudo cp burp-ca.pem /usr/local/share/ca-certificates/burp.crt
+sudo update-ca-certificates
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> Burp CA private key được lưu trong cấu hình người dùng. Nếu key này rò rỉ, kẻ tấn công có thể MITM bất kỳ máy nào đã cài CA đó. Mỗi lần cài Burp sinh CA riêng — KHÔNG dùng chung. Gỡ CA khỏi trust store sau khi test xong trên máy không chuyên dụng.</p>
+<h3 id="ch12-1232-cau-truc-http-request-ma-burp-thao-tac">12.3.2. Cấu trúc HTTP Request mà Burp thao tác</h3>
+<p>Burp hiển thị raw HTTP request theo đúng định dạng RFC 7230. Hiểu từng phần là điều kiện để sửa chính xác.</p>
+<pre><code>POST /api/v1/login HTTP/1.1\r\n          &lt;- Request line: METHOD SP URI SP VERSION CRLF
+Host: example.com\r\n                    &lt;- Header
+User-Agent: Mozilla/5.0\r\n
+Content-Type: application/json\r\n
+Content-Length: 41\r\n
+Cookie: session=abc123\r\n
+\r\n                                      &lt;- Dòng trống (CRLF) phân tách header và body
+{&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;secret&quot;} &lt;- Message body (dài Content-Length byte)
+</code></pre>
+<p><strong>Bảng cấu trúc từng phần của HTTP/1.1 request:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Method</td>
+<td>biến đổi (token)</td>
+<td>Động từ HTTP</td>
+<td><code>POST</code>, <code>GET</code></td>
+</tr>
+<tr>
+<td>SP</td>
+<td>1 byte (0x20)</td>
+<td>Dấu cách phân tách</td>
+<td><code></code></td>
+</tr>
+<tr>
+<td>Request-URI</td>
+<td>biến đổi</td>
+<td>Đường dẫn + query</td>
+<td><code>/api/v1/login</code></td>
+</tr>
+<tr>
+<td>HTTP-Version</td>
+<td>8 byte</td>
+<td>Phiên bản giao thức</td>
+<td><code>HTTP/1.1</code></td>
+</tr>
+<tr>
+<td>CRLF</td>
+<td>2 byte (0x0D 0x0A)</td>
+<td>Kết thúc dòng</td>
+<td><code>\r\n</code></td>
+</tr>
+<tr>
+<td>Header name</td>
+<td>token</td>
+<td>Tên trường</td>
+<td><code>Content-Type</code></td>
+</tr>
+<tr>
+<td><code>:</code></td>
+<td>2 byte</td>
+<td>Phân tách name/value</td>
+<td><code>:</code></td>
+</tr>
+<tr>
+<td>Header value</td>
+<td>biến đổi</td>
+<td>Giá trị</td>
+<td><code>application/json</code></td>
+</tr>
+<tr>
+<td>Empty line</td>
+<td>2 byte (CRLF)</td>
+<td>Ranh giới header/body</td>
+<td><code>\r\n</code></td>
+</tr>
+<tr>
+<td>Body</td>
+<td>= <code>Content-Length</code></td>
+<td>Payload</td>
+<td><code>{...}</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao:</strong> <code>Content-Length</code> PHẢI khớp số byte body thực tế. Khi sửa body trong Repeater, nếu không cập nhật <code>Content-Length</code>, server có thể chặn đứng (chờ thêm byte) hoặc cắt body. Burp Repeater có tùy chọn "Update Content-Length" tự động. Lỗ hổng <strong>HTTP Request Smuggling</strong> khai thác chính sự bất nhất giữa <code>Content-Length</code> và <code>Transfer-Encoding: chunked</code> mà front-end và back-end diễn giải khác nhau.</p>
+<h3 id="ch12-1233-module-proxy">12.3.3. Module Proxy</h3>
+<p><strong>Chức năng:</strong> Intercept (chặn), HTTP history (lịch sử), Match &amp; Replace, WebSockets history.</p>
+<p><strong>Intercept on/off:</strong> Khi bật, mỗi request bị tạm dừng tại Burp, hiển thị để bạn sửa. Bấm "Forward" để gửi tiếp, "Drop" để hủy.</p>
+<p><strong>Match &amp; Replace</strong> — luật tự động thay thế trên mọi request/response. Cấu trúc một rule:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>Phạm vi áp dụng</td>
+<td>Request header / Request body / Response header...</td>
+</tr>
+<tr>
+<td>Match</td>
+<td>Regex hoặc literal cần tìm</td>
+<td><code>^User-Agent:.*$</code></td>
+</tr>
+<tr>
+<td>Replace</td>
+<td>Chuỗi thay thế</td>
+<td><code>User-Agent: CustomAgent/1.0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ thực tế: thêm <code>X-Forwarded-For: 127.0.0.1</code> vào mọi request để test bypass IP allowlist:</p>
+<pre><code class="language-text">Type:    Request header
+Match:   (để trống - thêm header mới)
+Replace: X-Forwarded-For: 127.0.0.1
+</code></pre>
+<p><strong>Scope filtering:</strong> History có thể rất lớn. Nên giới hạn theo scope (mục sau) để chỉ log mục tiêu hợp pháp, tránh log lưu lượng cá nhân và tránh chạm host ngoài phạm vi.</p>
+<h3 id="ch12-1234-target-site-map-va-scope">12.3.4. Target — Site Map và Scope</h3>
+<p><strong>Site Map</strong> là cây phân cấp host → thư mục → endpoint, tích lũy từ mọi request đi qua Burp (proxy, repeater, scanner). Mỗi node lưu request/response đã thấy.</p>
+<p><strong>Scope</strong> định nghĩa "mục tiêu hợp pháp". Cấu hình tại Target → Scope. Có hai chế độ:
+- <strong>Include in scope</strong>: danh sách host/URL được phép.
+- <strong>Exclude from scope</strong>: loại trừ (ví dụ trang logout, trang đăng xuất khỏi SSO).</p>
+<p>Scope ảnh hưởng đến: Proxy có log không, Scanner có quét không, Intruder/Repeater có cảnh báo không. Định nghĩa scope nâng cao:</p>
+<pre><code class="language-text">Include:
+  Protocol: HTTPS
+  Host:     ^.*\.example\.com$
+  Port:     ^443$
+  File:     ^/api/.*$
+</code></pre>
+<p><strong>Vì sao (pháp lý):</strong> Scope là ranh giới pháp lý. Quét/khai thác ngoài scope = truy cập trái phép = vi phạm pháp luật (xem 12.6). Tùy chọn "Drop all out-of-scope traffic" trong Proxy options ngăn vô tình gửi request tới host ngoài phạm vi.</p>
+<h3 id="ch12-1235-repeater-gui-lai-va-sua-request">12.3.5. Repeater — gửi lại và sửa request</h3>
+<p>Repeater cho phép gửi một request nhiều lần với chỉnh sửa thủ công, xem response tức thì. Đây là công cụ chính để xác minh và tinh chỉnh lỗ hổng. Gửi request từ bất kỳ đâu vào Repeater bằng chuột phải → "Send to Repeater" (Ctrl+R).</p>
+<h4 id="ch12-vi-du-test-idor-insecure-direct-object-reference">Ví dụ test IDOR (Insecure Direct Object Reference)</h4>
+<p>IDOR: ứng dụng cho phép truy cập đối tượng của người khác chỉ bằng cách đổi ID, do thiếu kiểm tra authorization phía server.</p>
+<p><strong>Request gốc (của user A, id=1001):</strong></p>
+<pre><code class="language-http">GET /api/v1/orders/1001 HTTP/1.1
+Host: shop.example.com
+Cookie: session=eyJ1c2VyIjoiYWxpY2UifQ
+Accept: application/json
+</code></pre>
+<p>Response: đơn hàng của Alice (200 OK).</p>
+<p><strong>Bước test:</strong> đổi <code>1001</code> → <code>1002</code> (đơn của người khác), gửi lại trong Repeater:</p>
+<pre><code class="language-http">GET /api/v1/orders/1002 HTTP/1.1
+Host: shop.example.com
+Cookie: session=eyJ1c2VyIjoiYWxpY2UifQ
+Accept: application/json
+</code></pre>
+<ul>
+<li>Nếu response trả về đơn hàng của user khác (200 + dữ liệu) → <strong>IDOR xác nhận</strong>. Alice xem được đơn của người khác dù session vẫn là của Alice.</li>
+<li>Nếu trả <code>403 Forbidden</code> / <code>404</code> → kiểm soát truy cập hoạt động đúng.</li>
+</ul>
+<p><strong>Phòng thủ:</strong> kiểm tra authorization phía server (object-level access control), so khớp <code>resource.owner_id == session.user_id</code>; UUID khó đoán giúp nhưng KHÔNG thay thế authorization.</p>
+<h4 id="ch12-vi-du-test-sql-injection">Ví dụ test SQL Injection</h4>
+<p><strong>Request gốc:</strong></p>
+<pre><code class="language-http">POST /api/v1/search HTTP/1.1
+Host: shop.example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+q=keyboard
+</code></pre>
+<p><strong>Test 1 — phát hiện lỗi cú pháp (error-based):</strong> chèn một dấu nháy đơn:</p>
+<pre><code class="language-http">q=keyboard'
+</code></pre>
+<p>Nếu response trả <code>500</code> kèm thông báo <code>SQL syntax error near '''</code> → backend ghép chuỗi SQL không tham số hóa → khả năng SQLi.</p>
+<p><strong>Test 2 — boolean-based:</strong> so sánh hai điều kiện:</p>
+<pre><code class="language-http">q=keyboard' AND '1'='1   -&gt; trả kết quả bình thường (TRUE)
+q=keyboard' AND '1'='2   -&gt; trả rỗng (FALSE)
+</code></pre>
+<p>Hành vi khác nhau giữa TRUE/FALSE xác nhận injection.</p>
+<p><strong>Test 3 — UNION-based trích dữ liệu</strong> (sau khi xác định số cột):</p>
+<pre><code class="language-http">q=keyboard' UNION SELECT username,password,NULL FROM users-- -
+</code></pre>
+<p>Dấu <code>-- -</code> comment phần SQL còn lại. Nếu kết quả trả về username/password → trích xuất dữ liệu thành công.</p>
+<p><strong>Lưu ý:</strong> luôn cập nhật <code>Content-Length</code> khi sửa body. URL-encode ký tự đặc biệt khi cần (<code>'</code> → <code>%27</code>, dấu cách → <code>+</code> hoặc <code>%20</code>) tùy <code>Content-Type</code>.</p>
+<p><strong>Phòng thủ:</strong> prepared statements / parameterized queries, ORM an toàn, least privilege cho DB account, WAF như lớp phòng thủ bổ sung (không thay thế fix gốc).</p>
+<h3 id="ch12-1236-intruder-tu-đong-hoa-tan-cong-co-tham-so">12.3.6. Intruder — tự động hóa tấn công có tham số</h3>
+<p>Intruder gửi nhiều request, thay payload vào các vị trí đánh dấu (ký hiệu <code>§</code>). Có 4 kiểu tấn công (attack types):</p>
+<table>
+<thead>
+<tr>
+<th>Attack type</th>
+<th>Số tập payload</th>
+<th>Cách phân phối</th>
+<th>Số request</th>
+<th>Trường hợp dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sniper</strong></td>
+<td>1</td>
+<td>Lần lượt từng vị trí, các vị trí khác giữ nguyên</td>
+<td>(số vị trí) × (số payload)</td>
+<td>Fuzz một tham số tại một thời điểm</td>
+</tr>
+<tr>
+<td><strong>Battering ram</strong></td>
+<td>1</td>
+<td>Cùng một payload vào TẤT CẢ vị trí cùng lúc</td>
+<td>(số payload)</td>
+<td>Khi cần cùng giá trị ở nhiều chỗ</td>
+</tr>
+<tr>
+<td><strong>Pitchfork</strong></td>
+<td>nhiều (1/vị trí)</td>
+<td>Lấy song song theo chỉ số: payload[i] ở mỗi vị trí</td>
+<td>min(độ dài các set)</td>
+<td>Cặp username+password tương ứng (credential stuffing)</td>
+</tr>
+<tr>
+<td><strong>Cluster bomb</strong></td>
+<td>nhiều (1/vị trí)</td>
+<td>Tích Descartes: mọi tổ hợp</td>
+<td>tích các độ dài</td>
+<td>Brute force toàn bộ tổ hợp user × pass</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ch12-cach-đanh-dau-vi-tri-payload">Cách đánh dấu vị trí payload</h4>
+<p>Burp đặt cặp ký tự <code>§</code> quanh giá trị cần fuzz:</p>
+<pre><code class="language-http">POST /login HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 29
+
+username=§admin§&amp;password=§x§
+</code></pre>
+<p>Ở đây có 2 vị trí. Với Cluster bomb + set1 (usernames) 10 phần tử, set2 (passwords) 100 phần tử → 1000 request.</p>
+<h4 id="ch12-vi-du-brute-force-đang-nhap-cluster-bomb">Ví dụ brute force đăng nhập (Cluster bomb)</h4>
+<pre><code class="language-text">Attack type: Cluster bomb
+Position 1 (username): payload = Simple list [admin, root, user, test]
+Position 2 (password): payload = Runtime file / wordlist (rockyou rút gọn)
+</code></pre>
+<p>Phân tích kết quả: sắp xếp theo cột <strong>Status</strong> và <strong>Length</strong>. Đăng nhập sai thường trả <code>200</code> + body "Invalid credentials" có độ dài cố định; đăng nhập đúng có thể trả <code>302</code> (redirect) hoặc body khác độ dài. Dùng cột <strong>Length</strong> để lọc anomaly. Thêm Grep-Match rule (ví dụ tìm chuỗi "Welcome") để đánh dấu request thành công.</p>
+<h4 id="ch12-vi-du-fuzzing-tham-so-sniper-tim-sqlixss">Ví dụ fuzzing tham số (Sniper) tìm SQLi/XSS</h4>
+<pre><code class="language-text">Attack type: Sniper
+Position: §value§ trong q=§test§
+Payload set: SQLi fuzz list  (', '', &quot;, `, ;, ' OR '1'='1, &lt;script&gt;...)
+Payload processing: URL-encode all characters
+Grep - Match: &quot;SQL syntax&quot;, &quot;ORA-&quot;, &quot;ODBC&quot;
+</code></pre>
+<p><strong>Payload types trong Intruder:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Payload type</th>
+<th>Mô tả</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simple list</td>
+<td>Danh sách tĩnh</td>
+<td>wordlist</td>
+</tr>
+<tr>
+<td>Runtime file</td>
+<td>Đọc từ file lớn (không nạp hết vào RAM)</td>
+<td>rockyou.txt</td>
+</tr>
+<tr>
+<td>Numbers</td>
+<td>Sinh dải số</td>
+<td>1–10000, step 1</td>
+</tr>
+<tr>
+<td>Brute forcer</td>
+<td>Sinh tổ hợp ký tự</td>
+<td>charset abc, len 4</td>
+</tr>
+<tr>
+<td>Username generator</td>
+<td>Sinh username từ tên</td>
+<td>john.doe, jdoe</td>
+</tr>
+<tr>
+<td>Bit flipper</td>
+<td>Lật từng bit (test padding oracle, CSRF token)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý bảo mật &amp; vận hành:</strong> Intruder Community Edition bị <strong>throttle</strong> (làm chậm). Brute force tạo lưu lượng lớn — có thể bị account lockout, WAF chặn, hoặc DoS vô tình. Luôn trong scope. Dùng "Resource pool" để giới hạn concurrent request, đặt delay tránh khóa tài khoản.</p>
+<h3 id="ch12-1237-decoder">12.3.7. Decoder</h3>
+<p>Chuyển đổi và giải mã dữ liệu. Hỗ trợ: URL, HTML entity, Base64, ASCII hex, Octal, Binary, Gzip, và Hash (MD5, SHA...). Chế độ "Smart decode" tự đoán encoding.</p>
+<p>Ví dụ giải JWT (3 phần <code>header.payload.signature</code> ngăn bởi dấu <code>.</code>):</p>
+<pre><code class="language-text">Input:  eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.&lt;sig&gt;
+Decode as Base64 (phần 1): {&quot;alg&quot;:&quot;HS256&quot;}
+Decode as Base64 (phần 2): {&quot;user&quot;:&quot;admin&quot;}
+</code></pre>
+<p>JWT dùng <strong>Base64URL</strong> (thay <code>+</code>→<code>-</code>, <code>/</code>→<code>_</code>, bỏ padding <code>=</code>). Burp Base64 decoder xử lý được; lưu ý thêm padding <code>=</code> nếu cần.</p>
+<h3 id="ch12-1238-comparer">12.3.8. Comparer</h3>
+<p>So sánh hai mẩu dữ liệu theo <strong>word</strong> hoặc <strong>byte</strong>, tô màu khác biệt. Dùng để: so sánh response của tài khoản admin vs user thường (tìm chênh lệch trong access control), so sánh response TRUE vs FALSE trong blind SQLi, so sánh hai token để phân tích cấu trúc.</p>
+<h3 id="ch12-1239-sequencer-phan-tich-entropy-cua-token">12.3.9. Sequencer — phân tích entropy của token</h3>
+<p>Sequencer kiểm tra <strong>tính ngẫu nhiên (randomness)</strong> của session token / CSRF token / reset token. Token đoán được = lỗ hổng nghiêm trọng (session hijacking).</p>
+<p><strong>Cơ chế:</strong> thu thập một lượng lớn token (lý tưởng nhiều nghìn mẫu), rồi chạy các bài kiểm định thống kê chuẩn FIPS 140-2 và các test riêng của Burp:</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Đo gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIPS Monobit</td>
+<td>Tỉ lệ bit 0 và 1 cân bằng</td>
+</tr>
+<tr>
+<td>FIPS Poker</td>
+<td>Phân bố các nhóm 4-bit</td>
+</tr>
+<tr>
+<td>FIPS Runs</td>
+<td>Độ dài chuỗi bit liên tiếp</td>
+</tr>
+<tr>
+<td>FIPS Long runs</td>
+<td>Có chuỗi quá dài không</td>
+</tr>
+<tr>
+<td>Character/Bit transitions</td>
+<td>Tương quan giữa các vị trí</td>
+</tr>
+</tbody>
+</table>
+<p>Kết quả tính bằng <strong>bits of effective entropy</strong> ở mức significance (mặc định 1%). Token "tốt" cần entropy cao. Token sinh từ thời gian (timestamp) hoặc counter tăng dần → entropy thấp → đoán được.</p>
+<p><strong>Lưu ý:</strong> entropy cao không đảm bảo an toàn nếu thuật toán sinh (PRNG) không phải CSPRNG. Sequencer chỉ phát hiện pattern thống kê, không kiểm tra thuật toán nguồn.</p>
+<h3 id="ch12-12310-scanner-chi-professional">12.3.10. Scanner (chỉ Professional)</h3>
+<p>Scanner của Burp gồm <strong>passive</strong> (phân tích lưu lượng đã thấy, không gửi thêm request — phát hiện cookie thiếu Secure/HttpOnly, thông tin nhạy cảm) và <strong>active</strong> (gửi payload thăm dò — phát hiện SQLi, XSS, SSRF...). Cấu hình qua "Scan configuration": chọn audit checks, crawl strategy, độ sâu.</p>
+<p><strong>Cảnh báo:</strong> Active scan gửi payload tấn công thật (có thể tạo dữ liệu rác, kích hoạt email, sửa state). KHÔNG active scan trên production nhạy cảm khi chưa được phép rõ ràng.</p>
+<h3 id="ch12-12311-workflow-hoan-chinh-test-mot-lo-hong-bang-burp">12.3.11. Workflow hoàn chỉnh test một lỗ hổng bằng Burp</h3>
+<p>Ví dụ: test và xác nhận một <strong>Reflected XSS</strong> từ đầu đến cuối.</p>
+<pre><code class="language-text">Bước 1 (Recon/Mapping): Bật Proxy, duyệt ứng dụng bình thường.
+        Site map tích lũy endpoint /search?q=...
+Bước 2 (Phát hiện điểm vào): Trong Proxy History, thấy giá trị `q`
+        được phản chiếu vào HTML response.
+Bước 3 (Send to Repeater): Ctrl+R request /search?q=test
+Bước 4 (Thăm dò): Gửi q=&lt;b&gt;test&lt;/b&gt;.
+        - Xem response: nếu trả về `&lt;b&gt;test&lt;/b&gt;` chưa escape -&gt; reflect HTML.
+Bước 5 (Chứng minh thực thi JS):
+        q=&lt;script&gt;alert(document.domain)&lt;/script&gt;
+        URL-encode: q=%3Cscript%3Ealert(document.domain)%3C%2Fscript%3E
+        - Nếu response chứa &lt;script&gt;...&lt;/script&gt; nguyên vẹn (không bị HTML-encode)
+          -&gt; payload sẽ thực thi trong browser.
+Bước 6 (Xác minh ngữ cảnh): Dùng Comparer so sánh response benign vs payload
+        để xác định chính xác điểm reflect và bộ lọc (filter) nào áp dụng.
+Bước 7 (Bypass filter nếu có): nếu &lt; bị lọc, thử biến thể:
+        - sự kiện: q=&quot;&gt;&lt;img src=x onerror=alert(1)&gt;
+        - thoát context attribute
+Bước 8 (Bằng chứng): chụp request/response, build PoC URL hoàn chỉnh.
+Bước 9 (Report): mô tả, CVSS, PoC, khuyến nghị (output encoding theo ngữ cảnh,
+        CSP, đặt HttpOnly cookie).
+</code></pre>
+<p><strong>Phòng thủ XSS:</strong> output encoding theo ngữ cảnh (HTML, attribute, JS, URL), Content-Security-Policy, framework auto-escaping (React, Angular), <code>HttpOnly</code> cookie để JS không đọc được session.</p>
+<hr />
+<h2 id="ch12-124-acunetix-dast-tu-đong">12.4. Acunetix — DAST tự động</h2>
+<h3 id="ch12-1241-dast-la-gi-va-vi-tri-cua-acunetix">12.4.1. DAST là gì và vị trí của Acunetix</h3>
+<p><strong>DAST (Dynamic Application Security Testing)</strong> kiểm thử ứng dụng đang chạy từ bên ngoài (black-box), không cần mã nguồn — đối lập với <strong>SAST</strong> (Static, phân tích mã nguồn) và <strong>IAST</strong> (Interactive, có agent bên trong ứng dụng). Acunetix là một DAST scanner thương mại, tự động hóa cao: tự crawl, tự audit, tự sinh báo cáo.</p>
+<p><strong>Khác biệt cốt lõi Acunetix vs Burp:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Acunetix (DAST tự động)</th>
+<th>Burp Suite (thủ công + Scanner)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mô hình</td>
+<td>Tự động hóa toàn diện</td>
+<td>Thủ công là chính, có Scanner (Pro)</td>
+</tr>
+<tr>
+<td>Người dùng</td>
+<td>Vận hành định kỳ, ít can thiệp</td>
+<td>Chuyên gia thao tác sâu</td>
+</tr>
+<tr>
+<td>Business logic / IDOR</td>
+<td>Yếu (máy khó hiểu logic)</td>
+<td>Mạnh (con người suy luận)</td>
+</tr>
+<tr>
+<td>Quy mô</td>
+<td>Quét nhiều site, lịch trình</td>
+<td>Tập trung một mục tiêu</td>
+</tr>
+<tr>
+<td>Tích hợp CI/CD</td>
+<td>Có (API, scheduler)</td>
+<td>Enterprise edition</td>
+</tr>
+<tr>
+<td>Tinh chỉnh payload</td>
+<td>Hạn chế</td>
+<td>Linh hoạt tối đa</td>
+</tr>
+</tbody>
+</table>
+<p>Hai công cụ <strong>bổ sung</strong> nhau: Acunetix quét rộng tìm low-hanging fruit, Burp đào sâu xác minh và khai thác logic.</p>
+<h3 id="ch12-1242-cau-hinh-mot-scan">12.4.2. Cấu hình một scan</h3>
+<p>Acunetix gọi mục tiêu là <strong>Target</strong>. Quy trình tạo scan:</p>
+<pre><code class="language-text">1. Add Target: nhập URL gốc (https://app.example.com)
+   - Description, Business Criticality (mức quan trọng để ưu tiên)
+2. Target Settings:
+   - Scan Speed: Slow/Moderate/Fast/Sequential (đánh đổi tốc độ vs tải server)
+   - Site Login:
+       * Automatic (cung cấp username/password, Acunetix tự login)
+       * Recorded login sequence (ghi lại chuỗi thao tác login phức tạp)
+   - Authentication: HTTP Basic/NTLM/header tùy chỉnh
+   - Custom headers / cookies (ví dụ Authorization: Bearer ...)
+   - Excluded paths (ví dụ /logout, /admin/delete-all)
+   - Allowed hosts (giới hạn scope sang subdomain)
+3. Scan Profile (Scan Type):
+   - Full Scan / High Risk / Cross-site Scripting / SQL Injection /
+     Weak Passwords / Crawl Only
+4. Schedule: chạy ngay hoặc lịch định kỳ (cron-like)
+5. Launch Scan
+</code></pre>
+<p><strong>Recorded login sequence</strong> quan trọng vì nhiều endpoint nằm sau authentication. Acunetix dùng <strong>AcuSensor</strong> (agent IAST tùy chọn cài trên server PHP/.NET/Java) để tăng độ chính xác và phát hiện sâu hơn (gray-box), giảm false positive.</p>
+<h3 id="ch12-1243-co-che-crawl-audit">12.4.3. Cơ chế Crawl + Audit</h3>
+<p>Acunetix chạy 2 giai đoạn:</p>
+<p><strong>Giai đoạn 1 — Crawl (DeepScan):</strong> dùng engine duyệt như trình duyệt thật, thực thi JavaScript (hỗ trợ SPA, AJAX), khám phá mọi link, form, API endpoint, và tham số. Kết quả: danh sách "locations" và "inputs".</p>
+<p><strong>Giai đoạn 2 — Audit:</strong> với mỗi input phát hiện được, Acunetix gửi payload thăm dò và phân tích response:
+- <strong>SQLi:</strong> chèn payload, quan sát lỗi DB, độ trễ (time-based: <code>SLEEP(5)</code>), hoặc khác biệt boolean.
+- <strong>XSS:</strong> chèn marker script, kiểm tra reflect chưa escape.
+- <strong>SSRF, XXE, LFI/RFI, command injection:</strong> payload tương ứng.
+- <strong>Misconfiguration:</strong> header bảo mật thiếu, directory listing, file backup.</p>
+<p><strong>Time-based blind SQLi minh họa payload:</strong></p>
+<pre><code class="language-sql">'; IF(1=1) WAITFOR DELAY '0:0:5'--      (MSSQL)
+' OR SLEEP(5)-- -                        (MySQL)
+' || pg_sleep(5)--                       (PostgreSQL)
+</code></pre>
+<p>Acunetix đo thời gian response: nếu response chậm đúng ~5s khi inject <code>SLEEP(5)</code> nhưng nhanh khi <code>SLEEP(0)</code> → xác nhận injection (blind, time-based).</p>
+<h3 id="ch12-1244-đoc-bao-cao-acunetix">12.4.4. Đọc báo cáo Acunetix</h3>
+<p>Báo cáo phân loại theo severity: <strong>High / Medium / Low / Informational</strong>. Mỗi finding gồm:</p>
+<table>
+<thead>
+<tr>
+<th>Trường báo cáo</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vulnerability name</td>
+<td>Tên lỗ hổng (vd "Blind SQL Injection")</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>Mức độ (High/Medium/Low/Info)</td>
+</tr>
+<tr>
+<td>Affected URL/parameter</td>
+<td>Endpoint + tham số bị ảnh hưởng</td>
+</tr>
+<tr>
+<td>Request</td>
+<td>HTTP request mà Acunetix gửi (PoC)</td>
+</tr>
+<tr>
+<td>Response / Evidence</td>
+<td>Bằng chứng (lỗi DB, độ trễ, reflect)</td>
+</tr>
+<tr>
+<td>CVSS</td>
+<td>Điểm số</td>
+</tr>
+<tr>
+<td>CWE</td>
+<td>Phân loại điểm yếu (vd CWE-89 SQLi)</td>
+</tr>
+<tr>
+<td>Recommendation</td>
+<td>Hướng khắc phục</td>
+</tr>
+<tr>
+<td>Classification</td>
+<td>OWASP, PCI DSS, ...</td>
+</tr>
+</tbody>
+</table>
+<p>Các mẫu báo cáo chuẩn: Developer, Executive Summary, Compliance (PCI DSS, ISO 27001, HIPAA, OWASP Top 10).</p>
+<h3 id="ch12-1245-false-positive-va-xac-minh">12.4.5. False positive và xác minh</h3>
+<p>DAST tự động dễ báo <strong>false positive</strong> (báo có nhưng thực ra không khai thác được) và <strong>false negative</strong> (bỏ sót). Quy trình xác minh:
+1. Lấy request PoC từ báo cáo.
+2. Tái hiện thủ công bằng Burp Repeater hoặc <code>curl</code>.
+3. Quan sát có đúng dấu hiệu khai thác không (ví dụ độ trễ time-based có ổn định không, hay chỉ do mạng).
+4. Đánh dấu false positive trong Acunetix để lần scan sau bỏ qua.</p>
+<p>Ví dụ kiểm chứng time-based SQLi bằng curl:</p>
+<pre><code class="language-bash"># Đo thời gian response giữa SLEEP(0) và SLEEP(5)
+time curl -s &quot;https://app.example.com/item?id=1' OR SLEEP(0)-- -&quot; &gt;/dev/null
+time curl -s &quot;https://app.example.com/item?id=1' OR SLEEP(5)-- -&quot; &gt;/dev/null
+# Nếu lần 2 chậm hơn ~5s một cách ổn định -&gt; SQLi thật, không phải false positive
+</code></pre>
+<p><strong>Lưu ý:</strong> một báo cáo "Informational" (vd phiên bản server lộ trong header) có thể là mảnh ghép cho recon — đừng bỏ qua hoàn toàn. Ngược lại, không phải mọi "High" đều khai thác được trong ngữ cảnh thực; cần xác minh.</p>
+<hr />
+<h2 id="ch12-125-nmap-phan-tich-toi-muc-goi-tin">12.5. Nmap — phân tích tới mức gói tin</h2>
+<p>Nmap (Network Mapper) là công cụ host discovery, port scanning, version/OS detection, và chạy script (NSE). Hiểu Nmap đòi hỏi hiểu <strong>TCP 3-way handshake</strong> và cờ TCP, vì hầu hết scan thao tác trực tiếp các cờ này.</p>
+<h3 id="ch12-1251-nen-tang-tcp-header-va-cac-co-flags">12.5.1. Nền tảng — TCP header và các cờ (flags)</h3>
+<p>TCP segment header (RFC 793/9293). Sơ đồ byte-by-byte:</p>
+<pre><code> 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Source Port          |       Destination Port        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sequence Number                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Data | Res |N|C|E|U|A|P|R|S|F|                               |
+| Offset|     |S|W|C|R|C|S|S|Y|I|            Window             |
+|       |     | |R|E|G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options (nếu Data Offset &gt; 5)              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</code></pre>
+<p><strong>Bảng trường TCP header:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source Port</td>
+<td>16 bit (2 byte)</td>
+<td>Cổng nguồn</td>
+<td>49152</td>
+</tr>
+<tr>
+<td>Destination Port</td>
+<td>16 bit</td>
+<td>Cổng đích</td>
+<td>443</td>
+</tr>
+<tr>
+<td>Sequence Number</td>
+<td>32 bit (4 byte)</td>
+<td>Số thứ tự byte</td>
+<td>0x1A2B3C4D</td>
+</tr>
+<tr>
+<td>Acknowledgment Number</td>
+<td>32 bit</td>
+<td>ACK số seq kỳ vọng tiếp</td>
+<td>0x1A2B3C4E</td>
+</tr>
+<tr>
+<td>Data Offset</td>
+<td>4 bit</td>
+<td>Độ dài header (đơn vị 32-bit word)</td>
+<td>5 = 20 byte</td>
+</tr>
+<tr>
+<td>Reserved</td>
+<td>3 bit</td>
+<td>Dự trữ (0)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Flags</td>
+<td>9 bit</td>
+<td>NS,CWR,ECE,URG,ACK,PSH,RST,SYN,FIN</td>
+<td>xem dưới</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>16 bit</td>
+<td>Kích thước cửa sổ nhận</td>
+<td>64240</td>
+</tr>
+<tr>
+<td>Checksum</td>
+<td>16 bit</td>
+<td>Kiểm tra lỗi header+data+pseudo-header</td>
+<td>0x...</td>
+</tr>
+<tr>
+<td>Urgent Pointer</td>
+<td>16 bit</td>
+<td>Offset dữ liệu khẩn (nếu URG)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Options</td>
+<td>0–40 byte</td>
+<td>MSS, SACK, Timestamp, Window scale</td>
+<td>MSS=1460</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Các cờ điều khiển (control flags) — mỗi cờ 1 bit:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cờ</th>
+<th>Ý nghĩa khi =1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN</td>
+<td>Yêu cầu thiết lập kết nối (đồng bộ seq)</td>
+</tr>
+<tr>
+<td>ACK</td>
+<td>Trường Acknowledgment hợp lệ</td>
+</tr>
+<tr>
+<td>FIN</td>
+<td>Kết thúc gửi dữ liệu (đóng nhẹ nhàng)</td>
+</tr>
+<tr>
+<td>RST</td>
+<td>Reset/từ chối kết nối ngay lập tức</td>
+</tr>
+<tr>
+<td>PSH</td>
+<td>Đẩy dữ liệu lên ứng dụng ngay</td>
+</tr>
+<tr>
+<td>URG</td>
+<td>Có dữ liệu khẩn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>TCP 3-way handshake (thiết lập kết nối):</strong></p>
+<pre><code>Client                         Server
+  | --- SYN (seq=x) ----------&gt; |     state: SYN_SENT -&gt; server SYN_RECV
+  | &lt;-- SYN,ACK (seq=y,ack=x+1) |
+  | --- ACK (ack=y+1) --------&gt; |     state: ESTABLISHED cả hai phía
+</code></pre>
+<p>Nmap khai thác hành vi này: server <strong>mở</strong> port trả SYN/ACK, server <strong>đóng</strong> port trả RST.</p>
+<h3 id="ch12-1252--ss-syn-scan-half-open-stealth">12.5.2. -sS — SYN scan (half-open / stealth)</h3>
+<p><strong>Cơ chế:</strong> Nmap gửi SYN, KHÔNG hoàn tất handshake.</p>
+<pre><code>Port MỞ:
+  Nmap --- SYN ------------&gt; Target
+  Nmap &lt;-- SYN/ACK -------- Target
+  Nmap --- RST -----------&gt; Target   (Nmap chủ động cắt, không gửi ACK)
+  =&gt; kết luận: open
+
+Port ĐÓNG:
+  Nmap --- SYN ------------&gt; Target
+  Nmap &lt;-- RST ------------ Target
+  =&gt; kết luận: closed
+
+Port LỌC (firewall drop):
+  Nmap --- SYN ------------&gt; Target
+  (không hồi đáp, gửi lại vài lần vẫn im)
+  =&gt; kết luận: filtered
+</code></pre>
+<p><strong>Vì sao "stealth":</strong> vì không hoàn tất handshake (không tới ESTABLISHED), nhiều ứng dụng/log cũ không ghi lại kết nối (chúng chỉ log sau khi accept()). Tuy nhiên IDS/IPS hiện đại phát hiện dễ dàng. SYN scan cần quyền <strong>raw socket</strong> (root/CAP_NET_RAW) vì Nmap tự tạo gói TCP, không qua connect() của OS.</p>
+<pre><code class="language-bash">sudo nmap -sS -p 1-1000 192.168.1.10
+</code></pre>
+<p>Output mẫu:</p>
+<pre><code>PORT     STATE    SERVICE
+22/tcp   open     ssh
+80/tcp   open     http
+443/tcp  open     https
+3306/tcp filtered mysql
+</code></pre>
+<h3 id="ch12-1253--st-tcp-connect-scan">12.5.3. -sT — TCP Connect scan</h3>
+<p><strong>Cơ chế:</strong> Nmap gọi syscall <code>connect()</code> của OS, hoàn tất đủ 3-way handshake, rồi đóng (gửi FIN hoặc RST).</p>
+<pre><code>Nmap --- SYN -------&gt; Target
+Nmap &lt;-- SYN/ACK ---- Target
+Nmap --- ACK -------&gt; Target    (ESTABLISHED đầy đủ)
+Nmap --- RST/FIN ---&gt; Target    (đóng)
+</code></pre>
+<p><strong>Khi nào dùng:</strong> khi không có quyền root (không raw socket). Đánh đổi: tạo kết nối đầy đủ → ứng dụng log lại → ít stealth hơn, chậm hơn.</p>
+<pre><code class="language-bash">nmap -sT -p 22,80,443 192.168.1.10   # không cần sudo
+</code></pre>
+<h3 id="ch12-1254--su-udp-scan">12.5.4. -sU — UDP scan</h3>
+<p>UDP không có handshake (connectionless). Cơ chế suy luận:</p>
+<pre><code>Port ĐÓNG:
+  Nmap --- UDP packet ----&gt; Target
+  Nmap &lt;-- ICMP Port Unreachable (type 3, code 3) -- Target
+  =&gt; closed
+
+Port MỞ:
+  Nmap --- UDP packet ----&gt; Target
+  - Nếu dịch vụ UDP trả về dữ liệu =&gt; open
+  - Nếu KHÔNG hồi đáp gì =&gt; open|filtered (mơ hồ)
+
+Port LỌC:
+  Nmap --- UDP ----&gt; Target
+  Nmap &lt;-- ICMP type 3 code 1,2,9,10,13 (admin prohibited...) =&gt; filtered
+</code></pre>
+<p><strong>Vì sao UDP scan chậm:</strong> vì không có RST khẳng định "closed", Nmap dựa vào ICMP Port Unreachable; nhưng RFC 1812 giới hạn tốc độ phát ICMP (rate limiting), nên Nmap phải đợi và gửi lại → rất chậm. Để chính xác hơn cho port phổ biến, Nmap gửi payload đặc thù dịch vụ (DNS query tới 53, SNMP tới 161).</p>
+<pre><code class="language-bash">sudo nmap -sU --top-ports 20 192.168.1.10   # quét 20 cổng UDP phổ biến
+</code></pre>
+<h3 id="ch12-1255--sn--sf--sx-null-fin-xmas-scan">12.5.5. -sN / -sF / -sX — Null, FIN, Xmas scan</h3>
+<p>Ba scan này lợi dụng quy định RFC 793: nếu một gói TCP đến port <strong>đóng</strong> mà KHÔNG có cờ SYN/RST/ACK → server phải trả <strong>RST</strong>; nếu port <strong>mở</strong> → server <strong>bỏ qua</strong> (không hồi đáp).</p>
+<table>
+<thead>
+<tr>
+<th>Scan</th>
+<th>Cờ bật</th>
+<th>Mô tả gói</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sN</code> Null</td>
+<td>(không cờ nào)</td>
+<td>Tất cả cờ = 0</td>
+</tr>
+<tr>
+<td><code>-sF</code> FIN</td>
+<td>FIN</td>
+<td>Chỉ FIN = 1</td>
+</tr>
+<tr>
+<td><code>-sX</code> Xmas</td>
+<td>FIN+PSH+URG</td>
+<td>"Sáng đèn như cây thông Noel"</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Port MỞ hoặc LỌC:
+  Nmap --- (FIN/Null/Xmas) ---&gt; Target
+  (không hồi đáp)  =&gt; open|filtered
+
+Port ĐÓNG:
+  Nmap --- (FIN/Null/Xmas) ---&gt; Target
+  Nmap &lt;-- RST ---------------- Target  =&gt; closed
+</code></pre>
+<p><strong>Vì sao dùng:</strong> có thể vượt qua firewall stateless chỉ lọc gói SYN. <strong>Hạn chế quan trọng:</strong> Windows (và nhiều thiết bị) KHÔNG tuân thủ RFC chuẩn này — luôn trả RST bất kể port mở/đóng → mọi port hiện "closed" → scan vô dụng trên Windows. Chỉ hiệu quả với hệ tuân thủ RFC (nhiều Unix-like).</p>
+<pre><code class="language-bash">sudo nmap -sX -p 1-100 192.168.1.10
+</code></pre>
+<h3 id="ch12-1256--sn-host-discovery-ping-scan-khong-quet-port">12.5.6. -sn — Host Discovery (ping scan, không quét port)</h3>
+<p><code>-sn</code> (trước đây <code>-sP</code>) chỉ xác định host nào "sống" mà không scan port. Cơ chế mặc định (khi chạy với quyền root) gửi tổ hợp thăm dò:</p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Gói gửi</th>
+<th>Mục đích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ICMP Echo Request</td>
+<td>ICMP type 8</td>
+<td>Ping cổ điển</td>
+</tr>
+<tr>
+<td>ICMP Timestamp</td>
+<td>ICMP type 13</td>
+<td>Dự phòng khi Echo bị chặn</td>
+</tr>
+<tr>
+<td>TCP SYN to 443</td>
+<td>SYN</td>
+<td>Suy luận host sống qua phản hồi</td>
+</tr>
+<tr>
+<td>TCP ACK to 80</td>
+<td>ACK</td>
+<td>Vượt firewall lọc SYN</td>
+</tr>
+<tr>
+<td>ARP request (LAN)</td>
+<td>ARP who-has</td>
+<td>Trên cùng subnet — đáng tin nhất</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trên LAN, Nmap dùng ARP</strong> (lớp 2) vì host buộc phải trả ARP reply nếu tồn tại — bỏ qua firewall lớp 3.</p>
+<pre><code class="language-bash">sudo nmap -sn 192.168.1.0/24      # liệt kê host sống trong subnet /24
+</code></pre>
+<p>Output:</p>
+<pre><code>Nmap scan report for 192.168.1.1
+Host is up (0.0012s latency).
+MAC Address: AA:BB:CC:DD:EE:FF (Vendor)
+Nmap scan report for 192.168.1.10
+Host is up (0.0023s latency).
+Nmap done: 256 IP addresses (2 hosts up) scanned in 2.34 seconds
+</code></pre>
+<p><code>-Pn</code> (no ping) bỏ qua host discovery, coi mọi host là sống — dùng khi mục tiêu chặn ICMP.</p>
+<h3 id="ch12-1257--sv-version-detection">12.5.7. -sV — Version detection</h3>
+<p>Sau khi xác định port mở, <code>-sV</code> xác định <strong>dịch vụ và phiên bản</strong> chạy trên đó. Cơ chế:
+1. Kết nối tới port mở.
+2. Nếu dịch vụ tự gửi banner (vd SSH, SMTP) → đọc và so khớp với <code>nmap-service-probes</code>.
+3. Nếu im lặng → Nmap gửi một loạt <strong>probe</strong> (chuỗi byte đặc thù giao thức) và so khớp response với hàng nghìn signature regex trong <code>nmap-service-probes</code>.</p>
+<p><code>--version-intensity 0-9</code> điều chỉnh số probe gửi (0 = ít/nhanh, 9 = đầy đủ).</p>
+<pre><code class="language-bash">sudo nmap -sV -p 22,80,443 192.168.1.10
+</code></pre>
+<p>Output:</p>
+<pre><code>PORT    STATE SERVICE  VERSION
+22/tcp  open  ssh      OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+80/tcp  open  http     nginx 1.18.0 (Ubuntu)
+443/tcp open  ssl/http nginx 1.18.0
+</code></pre>
+<p>Version chính xác → tra cứu CVE tương ứng (nền tảng cho vulnerability scanning).</p>
+<h3 id="ch12-1258--o-os-detection">12.5.8. -O — OS detection</h3>
+<p><code>-O</code> đoán hệ điều hành qua <strong>TCP/IP stack fingerprinting</strong>: gửi nhiều probe được thiết kế đặc biệt và phân tích các đặc trưng phản hồi mà mỗi OS thực thi khác nhau:</p>
+<table>
+<thead>
+<tr>
+<th>Đặc trưng phân tích</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial TTL</td>
+<td>TTL khởi đầu (Linux 64, Windows 128, một số 255)</td>
+</tr>
+<tr>
+<td>TCP Window Size</td>
+<td>Kích thước cửa sổ mặc định</td>
+</tr>
+<tr>
+<td>TCP Options &amp; thứ tự</td>
+<td>MSS, NOP, SACK, Timestamp, Window scale và trình tự</td>
+</tr>
+<tr>
+<td>Don't Fragment bit</td>
+<td>Có đặt DF không</td>
+</tr>
+<tr>
+<td>ISN sampling</td>
+<td>Cách sinh Initial Sequence Number</td>
+</tr>
+<tr>
+<td>ICMP responses</td>
+<td>Phản hồi với probe dị thường</td>
+</tr>
+</tbody>
+</table>
+<p>Nmap so khớp fingerprint với <code>nmap-os-db</code>. Cần ≥1 port mở VÀ ≥1 port đóng để chính xác.</p>
+<pre><code class="language-bash">sudo nmap -O 192.168.1.10
+</code></pre>
+<p>Output:</p>
+<pre><code>Running: Linux 5.X
+OS CPE: cpe:/o:linux:linux_kernel:5
+OS details: Linux 5.0 - 5.14
+Network Distance: 2 hops
+</code></pre>
+<h3 id="ch12-1259--p-chi-đinh-port-va--f">12.5.9. -p — chỉ định port và -F</h3>
+<table>
+<thead>
+<tr>
+<th>Cú pháp</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p 80</code></td>
+<td>Một port</td>
+</tr>
+<tr>
+<td><code>-p 22,80,443</code></td>
+<td>Danh sách</td>
+</tr>
+<tr>
+<td><code>-p 1-1000</code></td>
+<td>Dải</td>
+</tr>
+<tr>
+<td><code>-p-</code></td>
+<td>Toàn bộ 1–65535</td>
+</tr>
+<tr>
+<td><code>-p U:53,T:80</code></td>
+<td>Tách UDP/TCP</td>
+</tr>
+<tr>
+<td><code>-F</code></td>
+<td>Fast — 100 port phổ biến nhất</td>
+</tr>
+<tr>
+<td><code>--top-ports 20</code></td>
+<td>20 port phổ biến nhất (theo nmap-services)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-12510--t-timing-templates">12.5.10. -T — Timing templates</h3>
+<p><code>-T0</code> đến <code>-T5</code> điều chỉnh tốc độ qua nhiều tham số (delay giữa probe, parallelism, timeout):</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Tên</th>
+<th>Đặc điểm</th>
+<th>Trường hợp dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-T0</code></td>
+<td>Paranoid</td>
+<td>Cực chậm, tuần tự, delay tới 5 phút</td>
+<td>Né IDS tối đa</td>
+</tr>
+<tr>
+<td><code>-T1</code></td>
+<td>Sneaky</td>
+<td>Chậm, delay 15s</td>
+<td>Né IDS</td>
+</tr>
+<tr>
+<td><code>-T2</code></td>
+<td>Polite</td>
+<td>Giảm tải, ít song song</td>
+<td>Mạng nhạy cảm</td>
+</tr>
+<tr>
+<td><code>-T3</code></td>
+<td>Normal</td>
+<td>Mặc định</td>
+<td>Cân bằng</td>
+</tr>
+<tr>
+<td><code>-T4</code></td>
+<td>Aggressive</td>
+<td>Nhanh, mạng ổn định</td>
+<td>Pentest thông thường</td>
+</tr>
+<tr>
+<td><code>-T5</code></td>
+<td>Insane</td>
+<td>Cực nhanh, có thể mất gói</td>
+<td>LAN nhanh, chấp nhận sai số</td>
+</tr>
+</tbody>
+</table>
+<p><code>-T4</code> là lựa chọn phổ biến trên mạng tốt. Có thể tinh chỉnh chi tiết: <code>--min-rate</code>, <code>--max-rate</code> (packet/s), <code>--max-retries</code>, <code>--host-timeout</code>.</p>
+<h3 id="ch12-12511-nse-nmap-scripting-engine">12.5.11. NSE — Nmap Scripting Engine</h3>
+<p>NSE chạy script Lua để mở rộng Nmap: phát hiện lỗ hổng, brute force, thu thập thông tin. Script ở <code>/usr/share/nmap/scripts/</code>, phân theo <strong>category</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Mục đích</th>
+<th>Mức độ xâm phạm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>safe</code></td>
+<td>Không gây hại, không khai thác</td>
+<td>Thấp</td>
+</tr>
+<tr>
+<td><code>default</code> (<code>-sC</code>)</td>
+<td>Chạy mặc định, hữu ích &amp; an toàn</td>
+<td>Thấp</td>
+</tr>
+<tr>
+<td><code>discovery</code></td>
+<td>Thu thập thêm thông tin</td>
+<td>Thấp</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Hỗ trợ -sV</td>
+<td>Thấp</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td>Liên quan xác thực</td>
+<td>Trung bình</td>
+</tr>
+<tr>
+<td><code>brute</code></td>
+<td>Brute force credential</td>
+<td>Cao (tạo lưu lượng)</td>
+</tr>
+<tr>
+<td><code>vuln</code></td>
+<td>Kiểm tra lỗ hổng đã biết</td>
+<td>TB-Cao</td>
+</tr>
+<tr>
+<td><code>exploit</code></td>
+<td>Khai thác thật</td>
+<td>Cao (nguy hiểm)</td>
+</tr>
+<tr>
+<td><code>dos</code></td>
+<td>Kiểm tra DoS</td>
+<td>Rất cao (có thể sập dịch vụ)</td>
+</tr>
+<tr>
+<td><code>intrusive</code></td>
+<td>Có thể gây tải/hại</td>
+<td>Cao</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># Chạy script mặc định + version
+sudo nmap -sC -sV 192.168.1.10
+
+# Quét lỗ hổng đã biết
+sudo nmap --script vuln -p 80,443 192.168.1.10
+
+# Một script cụ thể
+sudo nmap --script http-title,http-headers -p 80 192.168.1.10
+sudo nmap --script smb-vuln-ms17-010 -p 445 192.168.1.10   # phát hiện EternalBlue
+sudo nmap --script ssl-enum-ciphers -p 443 192.168.1.10    # liệt kê cipher TLS
+</code></pre>
+<p>Output mẫu <code>--script vuln</code>:</p>
+<pre><code>PORT   STATE SERVICE
+80/tcp open  http
+| http-slowloris-check:
+|   VULNERABLE:
+|   Slowloris DoS attack
+|     State: LIKELY VULNERABLE
+|     IDs:  CVE:CVE-2007-6750
+</code></pre>
+<p>Truyền tham số script (<code>--script-args</code>):</p>
+<pre><code class="language-bash">sudo nmap --script http-brute --script-args \
+  http-brute.path=/login,userdb=users.txt,passdb=pass.txt -p 80 target
+</code></pre>
+<h3 id="ch12-12512-tong-hop-lenh-quet-toan-dien-va-output">12.5.12. Tổng hợp lệnh quét toàn diện và output</h3>
+<pre><code class="language-bash">sudo nmap -sS -sV -O -p- -T4 --script default,vuln -oA fullscan 192.168.1.10
+# -sS  : SYN scan
+# -sV  : version detection
+# -O   : OS detection
+# -p-  : toàn bộ 65535 port
+# -T4  : timing aggressive
+# --script default,vuln : NSE
+# -oA fullscan : xuất 3 định dạng (.nmap, .gnmap, .xml) tên fullscan
+</code></pre>
+<p><strong>Các định dạng output:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cờ</th>
+<th>Định dạng</th>
+<th>Dùng để</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-oN file</code></td>
+<td>Normal (giống màn hình)</td>
+<td>Đọc người</td>
+</tr>
+<tr>
+<td><code>-oG file</code></td>
+<td>Greppable</td>
+<td><code>grep</code>/<code>awk</code> xử lý nhanh</td>
+</tr>
+<tr>
+<td><code>-oX file</code></td>
+<td>XML</td>
+<td>Parse bằng script, import công cụ khác</td>
+</tr>
+<tr>
+<td><code>-oA base</code></td>
+<td>Cả 3 trên</td>
+<td>Lưu trữ đầy đủ</td>
+</tr>
+</tbody>
+</table>
+<p>Phân tích nhanh greppable:</p>
+<pre><code class="language-bash">grep &quot;open&quot; fullscan.gnmap | awk '{print $2}'   # liệt kê IP có port mở
+</code></pre>
+<h3 id="ch12-12513-đoc-trang-thai-port">12.5.13. Đọc trạng thái port</h3>
+<p>Nmap phân biệt 6 trạng thái:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>open</code></td>
+<td>Dịch vụ đang lắng nghe và chấp nhận</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td>Host trả lời nhưng không có dịch vụ (trả RST)</td>
+</tr>
+<tr>
+<td><code>filtered</code></td>
+<td>Không xác định được — firewall chặn probe</td>
+</tr>
+<tr>
+<td><code>unfiltered</code></td>
+<td>Truy cập được nhưng chưa rõ open/closed (ACK scan)</td>
+</tr>
+<tr>
+<td><code>open\|filtered</code></td>
+<td>Không phân biệt được (UDP, FIN/Null/Xmas im lặng)</td>
+</tr>
+<tr>
+<td><code>closed\|filtered</code></td>
+<td>Hiếm (Idle scan)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ch12-126-luu-y-phap-ly-va-pham-vi-scope-legal">12.6. Lưu ý pháp lý và phạm vi (Scope &amp; Legal)</h2>
+<p>Đây là phần KHÔNG được xem nhẹ — kiểm thử ngoài phạm vi cho phép là hành vi truy cập trái phép hệ thống máy tính, có thể bị xử lý hình sự.</p>
+<h3 id="ch12-1261-co-so-phap-ly">12.6.1. Cơ sở pháp lý</h3>
+<ul>
+<li><strong>Việt Nam:</strong> Bộ luật Hình sự 2015 (sửa đổi, bổ sung 2017), Điều 289 (truy cập trái phép mạng máy tính, mạng viễn thông), Điều 287 (cản trở/gây rối loạn hoạt động mạng); Luật An ninh mạng 2018; Luật An toàn thông tin mạng 2015. <em>(Người đọc nên kiểm chứng số điều luật cập nhật tại thời điểm áp dụng — quy định có thể được sửa đổi.)</em></li>
+<li><strong>Quốc tế tham khảo:</strong> Computer Fraud and Abuse Act (CFAA — Hoa Kỳ), Computer Misuse Act (Anh).</li>
+</ul>
+<p>Quét port hay gửi payload tới hệ thống KHÔNG có sự cho phép = vi phạm, bất kể có gây hại thật hay không.</p>
+<h3 id="ch12-1262-van-ban-bat-buoc-truoc-khi-test">12.6.2. Văn bản bắt buộc trước khi test</h3>
+<table>
+<thead>
+<tr>
+<th>Văn bản</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scope of Work (SoW)</strong></td>
+<td>Định nghĩa rõ tài sản, IP/domain, loại test được phép</td>
+</tr>
+<tr>
+<td><strong>Rules of Engagement (RoE)</strong></td>
+<td>Khung thời gian, kỹ thuật cấm (vd DoS), người liên hệ khẩn</td>
+</tr>
+<tr>
+<td><strong>Authorization Letter ("get-out-of-jail")</strong></td>
+<td>Văn bản ủy quyền có chữ ký người có thẩm quyền</td>
+</tr>
+<tr>
+<td><strong>NDA</strong></td>
+<td>Bảo mật dữ liệu phát hiện được</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch12-1263-nguyen-tac-van-hanh-an-toan">12.6.3. Nguyên tắc vận hành an toàn</h3>
+<ul>
+<li>KHÔNG quét/khai thác ngoài danh sách IP/domain trong scope. Trong Burp: bật "Drop all out-of-scope traffic".</li>
+<li>Tránh kỹ thuật phá hủy (<code>--script dos</code>, brute gây lockout) trừ khi được cho phép rõ ràng và có cửa sổ bảo trì.</li>
+<li>Cẩn trọng với <strong>cloud assets</strong>: AWS/GCP/Azure yêu cầu tuân thủ chính sách pen-test riêng; một số dịch vụ quản lý (managed) bị cấm test.</li>
+<li>Lưu log mọi hành động (timestamp) làm bằng chứng phạm vi và phục vụ điều tra nếu có sự cố.</li>
+<li>Dữ liệu nhạy cảm trích xuất trong quá trình test phải được lưu trữ mã hóa và xóa an toàn sau khi kết thúc theo NDA.</li>
+</ul>
+<hr />
+<h2 id="ch12-127-tong-ket-chuong">12.7. Tổng kết chương</h2>
+<p>Chương này đã đi từ phân biệt khái niệm (scanning vs pentest), qua quy trình OWASP 5 pha, tới ba công cụ trụ cột với chi tiết tới mức gói tin/trường/bước và ví dụ chạy được:</p>
+<ul>
+<li><strong>Burp Suite</strong> — kiểm soát thủ công sâu: kiến trúc MITM với CA cert, Proxy, Target/Scope, Repeater (IDOR, SQLi), Intruder (4 attack type), Decoder, Comparer, Sequencer, Scanner; workflow XSS đầu-cuối.</li>
+<li><strong>Acunetix</strong> — DAST tự động: crawl + audit, cấu hình scan, đọc báo cáo, xác minh false positive; bổ sung chứ không thay thế Burp.</li>
+<li><strong>Nmap</strong> — bản đồ mạng tới mức cờ TCP: -sS/-sT/-sU/-sN/-sF/-sX, -sn host discovery, -sV/-O fingerprinting, -p/-T tuning, NSE (--script vuln), đọc trạng thái và xuất kết quả.</li>
+</ul>
+<p>Nguyên tắc xuyên suốt: hiểu cơ chế tới gốc, luôn xác minh thủ công kết quả tự động, và tuyệt đối tôn trọng phạm vi pháp lý.</p>
+<hr />
+<h2 id="ch12-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch11.html"><span>← Chương trước</span><b>11 · Phòng thủ mạng (IDS/WAF/VPN)</b></a><a class="pg next" href="ch13.html"><span>Chương sau →</span><b>13 · Bảo mật Đám mây</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

@@ -2,34 +2,15 @@
 
 ## Overview
 
-This chapter covers **the automation chain that takes source code from a developer's commit all the way to running in production serving real users**, and the measures that keep that chain from becoming an attack path. This is a critical area for security engineers: the pipeline typically holds secrets (passwords, tokens, infrastructure access) and runs with high privilege, so compromising the pipeline is equivalent to compromising the entire system. This section defines the core concepts and the problem each one solves; later sections dig into the technical mechanisms.
+Few people think of the pipeline as a production system, yet it holds the secrets to the entire infrastructure and runs with high privilege — compromising it is close to compromising everything it can reach. This chapter follows the automation chain that carries code from a developer's commit to running for real, and how to keep that chain from becoming the attack path.
 
-**CI/CD (Continuous Integration / Continuous Delivery or Deployment).** A model for automating the software pipeline: source code passes through a series of stages (build, test, security scanning, packaging, deployment). **CI** automatically integrates and tests every commit to detect regressions at the commit level. **CD** automatically promotes vetted artifacts to the target environment — *Continuous Delivery* requires a manual approval gate before production, while *Continuous Deployment* has no such gate.
-- Problem it solves: it replaces manual build/deploy processes (slow, error-prone, inconsistent) with an automated, repeatable process that catches errors early and leaves an audit trail for every change.
+It opens with the groundwork: **CI** merges and tests every commit to catch regressions early, **CD** ships tested artifacts to their target environment (*Delivery* keeps a manual approval gate before production, *Deployment* does not), and **Pipeline as Code** puts the whole pipeline definition in the repository as a file — so sensitive configuration gets reviewed and traced like any other change, instead of being a hidden setting somebody clicked into a UI.
 
-**Pipeline as Code.** Defining the entire pipeline as source files (usually YAML/Groovy) stored in the repository itself, instead of configuring it manually through a UI (click-ops).
-- Problem it solves: the pipeline is versioned, reviewed through merge requests, and reproducible per commit. Sensitive configuration becomes subject to change control rather than being a hidden, untraceable setting.
+Three engines are dissected along with their characteristic weak spots: **GitLab CI** (`.gitlab-ci.yml`, runners and executors — the risk lives in masked/protected variables and executor choice), **GitHub Actions** (workflow/job/step, OIDC support — but third-party actions are a supply chain surface, and confusing `pull_request` with `pull_request_target` is the most common way secrets leak), and **Jenkins** (controller/agent, `Jenkinsfile` — flexible and runnable on-prem, at the cost of thousands of plugins as attack surface). Then comes **GitOps** with **Argo CD**, where the model flips: instead of CI holding credentials and pushing into the cluster, an agent inside the cluster pulls the desired state from Git — credentials never leave, and self-heal reverts even unauthorised manual changes. **Git submodules** appear as the way to share CI/CD templates across projects with a pinned commit SHA.
 
-**GitLab CI.** The CI/CD system built into GitLab. The `.gitlab-ci.yml` file in the repository defines **jobs**; GitLab dispatches jobs to **runners** for execution.
-- Problem it solves: it provides all-in-one CI/CD for teams using GitLab without needing external tools. The critical security points are the secret storage mechanism (masked/protected variables) and the runner/executor choice — a misconfiguration lets a malicious merge request read secrets or execute commands on the host.
+The closing section (7.8) returns to where the chapter began: protecting the pipeline itself. Secrets in a vault and never printed to logs, artifacts signed and verified, pipeline edit rights locked down — plus the two things automation does not replace: a PR security checklist and a Definition of Done that includes security, because business-logic flaws are only caught by a human reviewer.
 
-**GitHub Actions.** GitHub's CI/CD system. A workflow file in `.github/workflows/` defines **workflows** consisting of multiple **jobs**, each job consisting of multiple **steps**; a step can reuse a shared **action**.
-- Problem it solves: rapid automation thanks to a ready-made action ecosystem and OIDC support. Key risk: third-party actions can be backdoored, and confusing the two triggers `pull_request` and `pull_request_target` is the most common secret-leakage vulnerability.
-
-**Jenkins.** A self-hosted automation server, independent of the SCM platform. Its architecture consists of a **controller** that orchestrates and **agents** that execute builds; pipelines are defined in a `Jenkinsfile` (Groovy DSL).
-- Problem it solves: high flexibility and the ability to run on-prem (no Internet required), suitable for large enterprise environments. The trade-off: an ecosystem of thousands of **plugins** is a large attack surface that demands strict updates and configuration.
-
-**GitOps and Argo CD.** GitOps treats **Git as the single source of truth** for the system's desired state. **Argo CD** is an agent running *inside* the Kubernetes cluster that continuously compares the state declared in Git with the actual state and reconciles them to match.
-- Problem it solves: it replaces the CI-push model (where the cluster credential must be carried outside) with a pull model — the credential never leaves the cluster, and every change is a commit, making tracing and rollback easy. Self-heal detects and reverts unauthorized changes made directly on the cluster, adding another layer of defense.
-
-**Git Submodule.** A mechanism for embedding one (child) Git repository inside another (parent) repository, **pinned to a specific commit SHA** via a gitlink, without copying the child repo's contents.
-- Problem it solves: many projects share a common set of templates (CI/CD configuration, security scripts) in one child repo; each project pins exactly the reviewed version, so it won't have its build broken by sudden template changes. The trade-off: complex operations (easy to forget to update or clone correctly) and supply-chain risk if the child repo is compromised.
-
-**Tool comparison and selection.** The final section contrasts the three CI engines (GitLab CI, GitHub Actions, Jenkins) and compares the push deployment model (CI pushes to infrastructure itself) with the pull model (GitOps/Argo CD).
-- Problem it solves: no tool is optimal for every situation. Understand each one's strengths, weaknesses, and security risks to choose correctly. The modern model usually combines them: CI handles build and test, Argo CD handles deployment, each component keeping minimal privilege.
-
-> A technical reference for security engineers (Blue Team / AppSec / DevSecOps). Each section follows the structure: **what it is → how it works internally → real-world example → security notes**. Specific version numbers and tool behaviors change across versions; anything that needs verification is explicitly flagged.
-
+> Each section runs: what it is → how it works internally → a real example → security notes. Version numbers and tool behaviour drift over time; anything needing re-verification is flagged inline.
 ---
 
 ## 7.1. CI/CD concepts, pipeline as code, and the foundational data model
@@ -449,7 +430,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20, 22]
+        node: [20, 22, 24]   # Node 18 has reached EOL — pin to still-supported versions (needs verification)
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
       - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a  # v4.2.0
@@ -590,7 +571,7 @@ pipeline {
 
         stage('SAST') {
             steps {
-                sh 'docker run --rm -v "$PWD:/src" returntocorp/semgrep semgrep --config=auto --error /src'
+                sh 'docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep --config=auto --error /src'   // the official image (org renamed from returntocorp)
             }
         }
 
@@ -899,9 +880,51 @@ Separation of duties: CI handles build & verify (with no cluster privilege), Arg
 - Drift detection & self-heal (Argo) as a layer of defense against unauthorized cluster changes.
 - Run SAST/SCA/secret-scan in the pipeline; block merges when there are critical findings.
 
+---
+
+## 7.8. Protecting the pipeline as a production system & security standards for PRs
+
+### 7.8.1. The pipeline is an asset to protect, not just a tool
+
+The OWASP Top 10 2025 places "CI/CD pipeline code injection" under **A08 — Software & Data Integrity Failures**: unsigned updates, tampered builds, deserializing untrusted data. For a company building software for customers, the consequence is far more concrete than theory: **a compromised pipeline means the attacker injects code into the very build delivered to the customer** — you become a link in their supply chain, and your vulnerability becomes theirs. The pipeline therefore has to be treated like a production system, with a minimum checklist:
+
+- **CI secrets live in a vault / secret manager and are never printed to logs.** Inject secrets at job runtime (OIDC/workload identity where possible — see 7.3.4 and [Chapter 6](#sec-06), section 6.11), never hardcode them into the pipeline file or plaintext variables. Remember that masking only hides the verbatim value in the log (7.2.5) — one `echo $TOKEN | base64` line and it is exposed; the root rule remains *never send a secret to stdout in any form*.
+- **Sign + verify artifacts.** Builds/images must be signed (cosign — [Chapter 6](#sec-06), section 6.10.4) and verified before deploy; verify checksums and the provenance of dependencies pulled in at build time. Without signatures, "an artifact passing a stage gets promoted in trust" (7.1.2) is nothing but blind faith.
+- **Lock down pipeline permissions.** Whoever can edit the pipeline file can execute code with the pipeline's privileges (7.1.3) — so repos holding pipeline-as-code need branch protection + required review; job tokens follow least privilege (7.7.3); the right to change CI/CD configuration (variables, runners) is restricted to a handful of people with an audit log.
+
+### 7.8.2. PR security checklist & a security-inclusive Definition of Done
+
+Automated gates (SAST/SCA/secret scan — [Chapter 6](#sec-06)) catch generic defects, but business-logic flaws (missing authorization checks, non-idempotent money flows) can only be caught by humans. The tool here is the **PR security checklist** — the list a reviewer walks through before approving. The version I use on the system I operate (a Node/TypeScript backend handling payments and personal data):
+
+- [ ] Every resource query is bound to the owner taken from the token — never trust an id sent by the client (anti-IDOR).
+- [ ] No string-concatenated SQL; parameterized queries / ORM.
+- [ ] Input is validated (allowlist); output is encoded for its context.
+- [ ] No hardcoded secrets; use the secret manager; `.env` never enters the repo.
+- [ ] New endpoints have auth + authorization checks on the server.
+- [ ] Money-related operations: atomic + idempotent, with balance/condition checks.
+- [ ] No logging of sensitive data (tokens, passwords, card numbers, personal identifiers).
+- [ ] Errors fail secure (deny by default); no stack traces exposed to users.
+- [ ] If calling an LLM: separate system/user roles; no unconstrained calls to sensitive APIs; state-changing operations require confirmation.
+- [ ] New dependencies have been scanned, with no serious CVEs.
+
+The checklist design principle: **it must be short enough that developers actually read it** — a 30-item checklist is a checklist nobody reads. Every item must be verifiable by eye on the diff, not a "please be secure" item.
+
+Complementing the checklist is a **security-inclusive Definition of Done** — a feature is only "done" when:
+
+1. At least one abuse case ("how would a bad actor abuse this feature?") has been written and handled.
+2. It passes SAST + secret scan in CI with no remaining Critical/High findings.
+3. Sensitive flows (auth / payment / personal data) have had human review — never relying entirely on a scanner or AI review.
+4. The necessary security events are logged, and the logs expose no sensitive data.
+
+The difference from a regular DoD: "it works" is not enough — it must be "it works and opens no new holes." Putting security criteria into the DoD means security is part of the definition of completion from the start, which is far cheaper and more natural than checking after the fact.
 
 ---
 
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- As the only security person at a small company, I have learned that the pipeline is my "stand-in gatekeeper": gates and scans run automatically without me being online, and that is the condition for the system to stay "secure by default" when the only person is on leave. If every security process needs me to press a button, I am the single point of failure — the automation in this chapter (gates, protected branches, OIDC instead of static secrets) is how that bottleneck gets removed.
+- Something I got wrong: thinking a masked variable was "already safe." In reality masking only hides the verbatim value in the log — a job printing the secret through any transformation exposes it, and a malicious MR on an unprotected branch can still read the variable if you forget to set protected on both sides (the variable AND the branch). Since then I treat the protected-variable + protected-branch pair as something to verify together, never separately.
+- A lesson about gates at the PR tier: an overly strict gate gets bypassed — not because developers are irresponsible, but because deadlines are real. The fix is not loosening the gate but having an **official exception path** (approval + ticket + audit trail, see [Chapter 6](#sec-06), section 6.9.4); once there is a proper way through in a crunch, people stop drilling through the wall. And I deliberately keep the PR checklist short — better 10 items genuinely read than 30 items approved on autopilot.
+- Still exploring: my GitOps/Argo CD knowledge is at the concept-and-lab level, not yet operated for real (the current system deploys in the traditional CI-push style onto VMs); what I want to try first is separating deploy privileges out of CI in the spirit of 7.7.2, even before there is any Kubernetes.

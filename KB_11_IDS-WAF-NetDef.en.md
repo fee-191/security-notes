@@ -2,62 +2,13 @@
 
 ## Overview
 
-This chapter covers the technical controls used to **protect a computer network**: detecting reconnaissance/attack activity, blocking malicious traffic, and establishing secure transport channels across public infrastructure. The problem being addressed: every service (website, internal system, trading exchange) exposes an attack surface once it is connected to the network, and no single control covers everything. Each tool below operates on a different data layer and a different class of threat; combining them yields defense in depth.
+What got me interested in this area was something entirely mundane: scanners out on the Internet don't care who you are — leave a port open and they knock on it all day. Protecting a network is therefore not about building one very thick wall, but about stacking layers of control that each *see* a different slice of the data — that is **defense in depth**: some devices only see addresses and ports at L3/L4, others read HTTP content at L7, and none of them covers what the others miss.
 
-### Defense in depth
+The chapter follows those layers in order. Outermost is the **firewall**, here **pfSense** (built on FreeBSD's `pf`, stateful so it remembers open connections, doubling as VLAN segmentation and VPN endpoint) — the cheapest blocking layer, dropping the obviously invalid before it gets any deeper. Further in are **IDS/IPS**: the same engine, deployed differently — IDS sits out-of-band and only alerts, IPS sits inline and actually blocks, at the cost of false positives becoming outages (which is why you run IDS first to tune it, and only then dare to switch to blocking). Two complementary vantage points: **NIDS** sees traffic between hosts, so it catches lateral movement and scanning; **HIDS** sees syscalls and files on one host, so it catches persistence and privilege escalation. The engine deep-dive covers **Snort** and **Suricata** — signature matching, strong against known attacks, blind to anything without a signature.
 
-- **Definition.** A model that stacks multiple independent layers of control (packet filtering, access control, encryption, monitoring) instead of relying on a single layer. If one layer is bypassed, the next layer is still in effect.
-- **Problem solved.** No single layer is perfect. Each device "reads" a different scope of data (some devices only see L3/L4 addresses, others can read L7 content), so multiple devices must be combined to cover all the layers.
+Up at the application layer sits the **WAF** — something an L3/L4 firewall cannot do, since it has to parse method, URI, headers and body before it can tell a legitimate request from one carrying a payload — with **ModSecurity** and the ready-made **OWASP CRS** rule set. Running alongside is the **VPN** section (IPsec, OpenVPN, WireGuard — same goal, differing in key exchange and complexity) for joining two ends across the Internet as if they shared a network. The chapter closes with the two things I use most in practice: **hardening nginx as a reverse proxy** (11.6 — rate limiting, blocking sensitive filenames, `default_server`, and nginx's own limits), and **Zeek**, which matches no signatures at all but records network behaviour as structured logs for later analysis.
 
-### IDS and IPS
-
-- **IDS (Intrusion Detection System).** Monitors traffic out-of-band, generating alerts when it detects suspicious indicators, but it does not act on the packets themselves.
-- **IPS (Intrusion Prevention System).** Sits inline on the data path, both detecting and blocking (dropping/resetting) malicious traffic; the accompanying risk is false positives that wrongly block traffic and disrupt service.
-- **Problem solved.** The two models make different trade-offs between availability and enforcement. In practice, you deploy an IDS (alert mode) first to tune down false positives, then switch to IPS (inline-block).
-
-### NIDS and HIDS
-
-- **NIDS (Network IDS).** Analyzes traffic on the wire at the network edge/core; sees all traffic between hosts but is blind to encrypted traffic without the keys.
-- **HIDS (Host IDS).** Runs on each host, observing syscalls, file integrity, logs, and processes; sees the internal behavior of one host in detail but cannot see other hosts.
-- **Problem solved.** The two viewpoints complement each other: NIDS catches lateral movement/scanning, HIDS catches persistence/privilege escalation. Combining both is what gives the full picture.
-
-### Snort and Suricata
-
-- **Definition.** Two **signature**-based IDS/IPS engines: they match traffic against data patterns characteristic of known attack types.
-- **Problem solved.** Many attacks have recurring indicators that the community has already recorded; a signature set allows fast and accurate detection of familiar attacks. Limitation: a new attack that has no signature yet will slip through — this needs to be supplemented with behavior-based monitoring tools.
-
-### WAF, ModSecurity and OWASP CRS
-
-- **WAF (Web Application Firewall).** A firewall operating at the application layer (L7): it parses and inspects HTTP content (method, URI, headers, body, parameters) to block attacks aimed at the application (for example, SQL injection).
-- **ModSecurity.** A popular open-source WAF engine that runs embedded in Apache/NGINX or on a reverse proxy.
-- **OWASP CRS (Core Rule Set).** A standard, prebuilt rule set loaded into ModSecurity, which avoids having to build a rule set from scratch.
-- **Problem solved.** An L3/L4 firewall does not understand application content, so it cannot distinguish a legitimate request from one carrying an attack payload. The WAF fills that gap at the L7 layer.
-
-### Firewall and pfSense
-
-- **Firewall.** A device/software that decides whether to allow or block a packet based on L3/L4 rules (source/destination IP, protocol, port).
-- **pfSense.** An open-source firewall/router platform based on FreeBSD and `pf`, which turns an ordinary machine into a gateway device for an entire network. **Stateful** means it remembers the state of ongoing connections to match reply packets without needing a reverse rule.
-- **Problem solved.** This is the cheapest and fastest blocking layer, placed at the outermost edge to discard clearly invalid traffic before it reaches the deeper layers. pfSense also handles network segmentation (VLANs) and serves as a VPN connection point.
-
-### VPN — IPsec, OpenVPN, WireGuard
-
-- **VPN (Virtual Private Network).** An encrypted tunnel running over public infrastructure: the original packet is wrapped and protected for confidentiality + integrity before transmission, so even a third party that intercepts it cannot read or modify it.
-- **IPsec / OpenVPN / WireGuard.** Three technologies that implement tunnels with the same goal but differing in how they exchange keys and in their complexity: IPsec is the long-standing standard with many options; OpenVPN is flexible and easy to traverse firewalls; WireGuard is lightweight, high-performance, and easy to audit.
-- **Problem solved.** A remote employee or two branch offices need to connect securely over the Internet as if they were on the same private network.
-
-### Proxy and reverse proxy
-
-- **Forward proxy.** Acts on behalf of the client when reaching out: the destination server only sees the proxy, not the client. Used for anonymity, content filtering, and egress access control.
-- **Reverse proxy.** Acts on behalf of the server: it receives all connections from outside and then forwards them to the appropriate backend; the client never sees the real server.
-- **Problem solved.** A reverse proxy is the ideal place to attach a WAF (it has terminated TLS and can read plaintext), while also load balancing and hiding the backend to reduce the attack surface.
-
-### Zeek
-
-- **Definition.** A network security monitor (NSM) that produces context-rich logs for every connection and protocol event (who connected to whom, when, with what protocol, for how long), in contrast to the signature-matching model of Snort/Suricata.
-- **Problem solved.** Incident investigation needs detailed logs for tracing, even for attacks that have no signature yet. Snort/Suricata alert quickly; Zeek provides the full context for threat hunting and post-incident analysis.
-
-> This chapter is a technical reference for Blue Team / AppSec / DevSecOps engineers. The goal: dig down to the field/byte/step level, with practical, runnable examples for each tool. The protocol-structure numbers follow the corresponding RFCs (IPv4 RFC 791, TCP RFC 9293, IPsec/ESP RFC 4303, IKEv2 RFC 7296, the WireGuard whitepaper, the OpenVPN protocol). Where a number depends on a specific version/implementation, the chapter notes "verify against your version."
-
+> Sections marked [DEMO] are trimmed configs illustrating syntax — don't lift them into production; the version meant for real use is always right next to them.
 ---
 
 ## 11.1. The network defense model and where IDS/IPS/WAF fit
@@ -340,6 +291,8 @@ A WAF (Web Application Firewall) operates at L7: it parses the HTTP request (met
 
 ModSecurity is a rule engine that runs as an embedded module (Apache `mod_security2`, the NGINX `ModSecurity-nginx` connector) or as a reverse proxy. The OWASP CRS (Core Rule Set) is the standard rule set that runs on that engine. (For the classes of web vulnerability a WAF aims to block — SQLi, XSS, the OWASP Top 10 — see [Chapter 5](#sec-05).)
 
+A note on the project's lifecycle: Trustwave ended commercial support for ModSecurity and handed the project over to OWASP in 2024; ModSecurity (v2/v3) is now maintained by the OWASP community (needs verification). The CRS itself was renamed from "OWASP ModSecurity Core Rule Set" to simply **OWASP CRS** as of the 4.x line — because the rule set is no longer tied to the ModSecurity engine: the same SecLang syntax runs on compatible engines such as **Coraza** (written in Go, commonly paired with Caddy/Envoy, with full CRS support). For a new project, Coraza is worth considering too (needs verification at time of reading).
+
 ### 11.3.2. The five processing phases of ModSecurity
 
 ModSecurity attaches rules to 5 phases along the lifecycle of an HTTP transaction:
@@ -494,6 +447,7 @@ Apache-Error: ModSecurity: Access denied with code 403
 - WAF bypass is feasible (unusual encodings, HTTP parameter pollution, request smuggling).
 - Always use anomaly scoring and tune for your specific application.
 - Enable response-body inspection to defend against data leaks, but weigh the RAM/latency cost.
+- The WAF should not be the FIRST blocking layer: cheap patterns (sensitive filenames, per-IP rate limits, unknown Hosts) should be rejected at the reverse proxy in front (see 11.6) — save the WAF's resources for the hard part: every encoding variant, injection in the body/parameters.
 
 ---
 
@@ -853,7 +807,9 @@ A comparison of the three VPNs:
 
 ---
 
-## 11.6. Proxy and reverse proxy
+## 11.6. Proxy, reverse proxy, and hardening NGINX as a reverse proxy
+
+### 11.6.1. Forward proxy vs reverse proxy
 
 | | Forward proxy | Reverse proxy |
 |---|---|---|
@@ -890,6 +846,148 @@ server {
 - The backend should only trust XFF when it comes from a trusted proxy; otherwise a client can set a fake XFF and bypass an IP allowlist/rate-limit.
 - A reverse proxy also helps hide the backend version (reducing the attack surface).
 - It is also the place to defend against HTTP request smuggling, by strictly normalizing the `Content-Length`/`Transfer-Encoding` headers.
+
+### 11.6.2. The problem with the default config: `location /` proxies everything
+
+A reverse proxy is not just for "forwarding so things work" — it is the ideal home for the **early-rejection layer** in defense-in-depth. Yet the most common template for standing up nginx as a reverse proxy leaves that role completely empty:
+
+```nginx
+# [ANTI-PATTERN] a server block that "works" but has not a single defensive layer
+server {
+    listen 443 ssl;
+    server_name api-dev.example.com;
+    client_max_body_size 4G;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+This is almost verbatim a server block I found while auditing a dev machine running a web API on a system I operate (anonymized). It serves normal users just fine, but faced with an automated scan:
+
+| Missing | Consequence |
+|---|---|
+| No `limit_req`/`limit_conn` | No brakes — however much the scanner sends, nginx accepts |
+| `location /` proxies EVERY path to the app | Scan requests (`/.ssh/id_rsa`, `/.env`...) get pushed down to the app before the app rejects them |
+| `client_max_body_size 4G` | Any IP is allowed to push a 4GB body → risk of RAM/disk-exhaustion DoS (11.6.6) |
+| No dedicated `default_server` | Requests by bare IP / unknown Host are still served by the "real" server block (11.6.5) |
+
+The issue is that **"returning an error still costs resources."** Every junk request still walks the full chain: TLS handshake (the most expensive part — asymmetric crypto), nginx parsing the request, opening a socket/connection to the backend, the app receiving the request, running the router, producing a 404/500. The app "rejecting" does not mean it was free — and more dangerously, it means the entire defense rests on the app protecting itself, with no layer in front. 536 scan requests over two-plus hours (the real case in 11.6.8) is 536 TLS handshakes + parses + a portion touching the app. The principle: whatever is clearly junk must be dropped as early as possible — right at the proxy, before it touches the app. Sections 11.6.3–11.6.7 are those early layers, ordered from "behavioral" to "root-cause."
+
+### 11.6.3. Rate limiting — `limit_req` (leaky bucket) and `limit_conn`
+
+**Built to solve:** a real human does not send one request every few seconds steadily for two hours; a scanner does. Rate-limiting by source IP blocks that *behavior* without needing to know in advance which IPs are bad — which matters when the scanning source rotates IPs constantly (11.6.8).
+
+```nginx
+# In http {} — declare the shared-memory zone holding counters
+limit_req_zone  $binary_remote_addr zone=perip:10m  rate=10r/s;
+limit_conn_zone $binary_remote_addr zone=connperip:10m;
+
+# In server {} or location {}
+limit_req        zone=perip burst=20 nodelay;
+limit_req_status 429;      # default is 503; 429 Too Many Requests is semantically correct
+limit_conn       connperip 20;
+```
+
+Parameter by parameter:
+- `$binary_remote_addr`: the client IP in binary form (IPv4 = 4 bytes) instead of a text string — each zone entry is smaller, so the zone holds more IPs.
+- `zone=perip:10m`: 10MB of shared memory storing per-IP counters; roughly 160,000 states (~64 bytes per state — needs verification per version). When full, nginx evicts the oldest entries.
+- `rate=10r/s`: the **leaky bucket** mechanism — each IP gets a "leaking bucket" that drains at a fixed 10 requests/second (nginx tracks it at millisecond granularity: 1 request/100ms). Requests arriving when the bucket is full are rejected.
+- `burst=20`: lets the bucket hold up to 20 requests above the rate. Real traffic "bursts" in clusters (opening one page fires dozens of near-simultaneous resource requests) — without burst you would false-positive immediately.
+- `nodelay`: process requests within the burst allowance immediately instead of queueing and releasing them at the `rate` cadence; only requests exceeding even the burst get the error. Without `nodelay`, legitimate clients get artificial added latency.
+- `limit_conn connperip 20`: at most 20 simultaneous open connections per IP — blocks the attack style of opening many connections and holding them (slow attacks), which `limit_req` (counting requests) cannot see.
+
+**How to pick the threshold:** do not guess — measure real load. Count requests/second per IP from peak-hour access logs (`awk` over the IP + timestamp columns, or an existing panel on your monitoring stack), take the peak of your *busiest* legitimate client, and multiply by a 2–3x safety factor. The right threshold is one that real clients never touch and scanners hit immediately.
+
+**Trade-off:** many clients behind one NAT (an office, mobile CGNAT) share a single source IP — too low a threshold blocks the whole building; heavy legitimate API clients need a separate zone (keyed by API key/token instead of IP) or the `geo` module mapping trusted ranges to a variable that exempts them from the limit.
+
+### 11.6.4. Blocking sensitive filenames/paths — and nginx's limits
+
+**Built to solve:** scanners probe for secret files from a familiar list — `.env`, `.git/config`, `.ssh/id_rsa`, `.sql` dumps, `.bak` backups, `.mysql_history`. There is no reason for those paths to ever reach the app; block them right at nginx with one regex location:
+
+```nginx
+location ~* (?:\.env|\.git|/\.ssh/|id_rsa|id_ed25519|\.mysql_history|\.sql|\.bak)(?:$|/) {
+    return 403;
+}
+```
+
+A (Note: `location` matches the URI path only — the query string is not part of it, so there is no point trying to match `?` here.)
+
+`return 403` at nginx is nearly free: no proxying, no touching the app, no 500 errors generated on the backend.
+
+**The important technical point — why block by FILENAME rather than the `../` pattern:** before matching `location`, nginx **normalizes the URI**: it decodes percent-encoding (`%2e` → `.`), merges redundant slashes (`merge_slashes`), and resolves `./` and `../` components. The consequence is that blocking traversal syntax at the location layer is **unreliable**: a `../` pattern written in your regex — the URI has already had it resolved away by nginx before the match; a `%2e%2e` pattern — it has already been decoded to `..`; and the double-encoded variant `%252e%252e` gets decoded only once, to `%2e%2e` — matching neither spelling. But no matter how the scanner encodes the journey, **the final target is always a specific filename** (`id_rsa`, `.env`, `.mysql_history`) — and after normalization that filename always appears in plain form in the URI. Blocking by filename catches the majority of scans at near-zero cost. *Thoroughly* blocking traversal (every encoding variant, including in POST bodies/parameters) is the WAF's job — ModSecurity + OWASP CRS with the `t:urlDecodeUni` transform chain and the dedicated traversal/LFI rules (see 11.3.3 on transforms, 11.3.5 on the CRS).
+
+### 11.6.5. `default_server` — cutting off unknown Hosts / bare IPs with `return 444`
+
+**Built to solve:** most scanners sweep IP ranges, sending requests by bare IP or with a random Host header — they do not know your domain. If you do not declare a `default_server` explicitly, nginx takes the **first** server block on each address:port pair as the default — meaning your "real" vhost ends up greeting all of that junk traffic.
+
+```nginx
+server {
+    listen 80  default_server;
+    listen 443 ssl default_server;
+    server_name _;                                   # catches every Host matching no other block
+    ssl_certificate     /etc/nginx/ssl/dummy.crt;    # throwaway self-signed cert
+    ssl_certificate_key /etc/nginx/ssl/dummy.key;
+    return 444;                                      # close the connection, send not one byte
+}
+```
+
+**Why `444`:** it is an nginx-specific code (not a standard HTTP status) — nginx **closes the connection immediately without sending a response**. Compared to `403`: a 403 response is still a complete HTTP exchange (status line, headers, body) that confirms "there is a live web server here" for the scanner to record; `444` means the scanning side only sees the connection drop — as little information as possible.
+
+**Why the 443 block needs a dummy cert:** with HTTPS, the TLS handshake happens *before* nginx can read the request. A client connecting by bare IP sends no SNI → nginx picks the `default_server`'s cert; a `listen 443 ssl` block with no cert is an invalid configuration. A self-signed cert is enough — we do not need the scanner to trust it, only for the handshake not to fall through to the real vhost.
+
+### 11.6.6. `client_max_body_size` — never leave it at 4G globally
+
+The familiar scenario: an upload fails with `413 Request Entity Too Large` (the nginx default allows only 1m) → someone sets `client_max_body_size 4G;` at the server level to "fix the error." The consequence: **any IP** is now allowed to push a 4GB body at **every endpoint**. Large bodies get buffered by nginx into RAM (`client_body_buffer_size`) and then spill into temp files on disk — a few parallel connections are enough to exhaust disk/RAM. This is a cheap DoS requiring no vulnerability in the app at all.
+
+The right way: a small default, overridden exactly where needed:
+```nginx
+# http {} or server {}
+client_max_body_size 20m;
+
+# only the location that genuinely accepts large uploads
+location /api/upload {
+    client_max_body_size 200m;
+    proxy_pass http://localhost:5000;
+}
+```
+**Trade-off:** you have to survey which endpoints genuinely need large uploads to override them — doing it backwards (loosening globally, forgetting to tighten) is the anti-pattern from 11.6.2.
+
+### 11.6.7. Dev/staging environments: allow/deny by IP — killing the root cause
+
+Everything above is *mitigation*; for dev/staging environments there is also a *root-cause* fix: those domains have no reason to be exposed to the entire Internet. A bot can only scan what it can reach — restrict access to the office/VPN IP ranges and the whole external scanning campaign stops at this layer:
+
+```nginx
+# in the server {} of the dev/staging environment
+allow 203.0.113.0/24;   # office IP range (placeholder — substitute the real range)
+allow 10.8.0.0/24;      # internal VPN subnet
+deny  all;              # everyone else: 403
+```
+
+If you need coarse country-level filtering (a service serving a single market), the `geoip2` module maps IP → country code as a conditional variable. **Trade-off:** you have to maintain the list of valid IPs; remote dev/QA must go through the VPN — but that is the right price for an environment not meant for the public.
+
+### 11.6.8. Lessons from a real scanning campaign
+
+The chain of measures in 11.6.2–11.6.7 is not theory — it came out of an investigation on a system I operate (July 2026), retold here anonymized.
+
+On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `45.148.10.80` (a VPS in Amsterdam) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. A typical raw access-log line:
+
+```
+45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
+```
+
+What the logs revealed: the `....//` variant and double-encoded `%252e%252e` to evade ordinary `../` filters (exactly the trap from 11.6.4); targeting `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` in turn for every common user (root/admin/ubuntu/deploy/www-data...); a fake Bing referer plus a constantly rotating user-agent to evade detection; a steady cadence of ~1 request every 5 seconds for two hours — unmistakably a machine, not a person. The outcome: all 301/400/404, not a single request returning 200 — **not breached**, but all 536 requests were accepted and a portion touched the app (the config was exactly the anti-pattern from 11.6.2).
+
+Widening the query to the whole fleet changed the picture entirely: **dozens of IPs across multiple subnets** (`185.177.72.x`, `45.148.10.x`, `195.178.110.x`...) scanning every web-facing machine, with IPs rotating constantly. The lessons:
+
+1. **Blocking individual IPs is whack-a-mole**: block `.80` and `.62`, `.42`, and other subnets arrive right behind it. Blocking IPs/subnets is only a stopgap while under sustained pressure.
+2. **Prioritize behavioral measures, applied fleet-wide**: rate limiting (11.6.3), filename blocking (11.6.4), the 444 `default_server` (11.6.5), tightened body size (11.6.6) — none depend on the source IP, so you stop chasing the scanner. For dev/staging, allow/deny by IP (11.6.7) kills the root cause outright.
+3. **The automation direction (still researching)**: wiring up fail2ban or the SIEM's active-response mechanism to auto-block IPs that exceed an alert threshold (the SIEM counts alerts per `srcip` → pushes a block down to the firewall). Thresholds and ban durations need care so you do not auto-block a partner sharing a NAT'ed IP.
 
 ---
 
@@ -949,14 +1047,14 @@ Internet
 [ pfSense / NGFW ]  ── L3/L4 stateful filter, NAT, anti-DDoS, VPN termination (IPsec/WG/OVPN)
   │  (SPAN/TAP) ───────────────► [ Suricata IDS ]  +  [ Zeek ]  ──► SIEM
   │
-[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination
+[ Reverse proxy + ModSecurity/CRS ]  ── L7 WAF, TLS termination, rate-limit + early rejection (11.6)
   │
 [ App servers ]  ── HIDS (Wazuh/auditd), prepared statements (the root is still secure code)
 ```
 
 The core operational principles:
 1. Tune first, enforce later: IDS alert-only and WAF DetectionOnly during the baseline phase; measure false positives before going inline/On.
-2. The right layer for the job: block L3/L4 at the firewall (cheap), L7 at the WAF; do not use a WAF to fight floods or a firewall to fight SQLi.
+2. The right layer for the job: block L3/L4 at the firewall (cheap), L7 at the WAF; do not use a WAF to fight floods or a firewall to fight SQLi. Junk requests identifiable by cheap patterns (sensitive filenames, request rate, unknown Hosts) should be cut off right at the reverse proxy (11.6) before they reach the WAF/app.
 3. Defense in depth: WAF/IDS are compensating controls; they do not replace secure code, patching, and least-privilege.
 4. The availability of the defensive device: an inline IPS/WAF is a potential point of failure / chokepoint — design fail-open/fail-close deliberately, HA, and limit regex/ReDoS.
 5. Encryption blinds the NIDS: consider TLS inspection at the reverse proxy (where the keys already are) instead of decrypting mid-path.
@@ -969,3 +1067,10 @@ The core operational principles:
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- I rewrote section 11.6 after auditing the nginx configs across the whole fleet of web machines on a system I operate. A quick audit trick I found valuable: run `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` on each machine — a single number tells you how many defensive config lines that machine has. My result: 5 out of 6 machines returned **0**. That zero is more persuasive than any presentation about defense-in-depth.
+- The one machine that already had a partial good config became my **standardization template** for the rest — no writing from scratch, and "machine X has been running stably with this config" is an argument DevOps accepts far more readily than a brand-new config I invented myself.
+- Something I used to get wrong: seeing the scanner eat nothing but 301/400/404, I felt reassured that "the app is blocking it." Wrong on two counts — returning an error still costs the full TLS + parse + a portion touching the app; and more importantly, it means the whole system is leaning on exactly one layer, the app protecting itself, with nothing in front.
+- I also used to believe a `../` regex block in nginx would stop traversal — wrong again, because nginx normalizes the URI before matching locations (11.6.4). Fortunately I figured that out before declaring "traversal is blocked" anywhere.
+- Deployment experience: propose measures in priority order (root-cause allow/deny for dev first, then rate limiting, filename blocking, default_server, body size), and **trial on ONE dev machine first** — watch for a few days whether `limit_req` false-positives on legitimate clients (count 429/503 in the logs) before rolling out to the fleet.
+- Still exploring: auto-blocking IPs by threshold via fail2ban or the SIEM's active response, and putting a WAF (ModSecurity/CRS or Coraza) on the reverse proxy — my machines currently stop at the cheap plain-nginx blocking layer.

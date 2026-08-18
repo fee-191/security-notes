@@ -2,39 +2,11 @@
 
 ## Tổng quan
 
-Chương này trình bày cách kỹ sư bảo mật **mô tả, phát hiện, đo lường và phản ứng** với hành vi của kẻ tấn công thông qua một hệ "ngôn ngữ chung" gồm các framework và công cụ chuẩn hóa. Khi mỗi đội mô tả tấn công theo cách riêng, tổ chức mất khả năng trao đổi tình báo, đo độ phủ phòng thủ và ưu tiên đầu tư. Các framework dưới đây giải quyết chính xác bài toán đó: chúng là bộ định danh và mô hình tham chiếu thống nhất để biến cảnh báo rời rạc thành tri thức hành động được.
+Đọc log mà không có framework thì mỗi cảnh báo là một mảnh rời — thấy IP lạ gọi ra ngoài, nhưng không biết nó khớp giai đoạn nào trong một cuộc tấn công thật, và không nói chuyện được với đội threat intel bằng cùng một thuật ngữ. Chương này gom lại bộ "ngôn ngữ chung" mà dân SOC và threat intel dùng để mô tả, đo và phản ứng với hành vi kẻ tấn công.
 
-**Threat Intelligence (CTI).** Là dữ liệu về mối đe dọa đã qua xử lý và bổ sung bối cảnh để hỗ trợ ra quyết định, phân biệt với dữ liệu thô. Một địa chỉ IP trong log là *dữ liệu*; xác định IP đó là máy chủ C2 của một nhóm đang nhắm vào ngành tài chính kèm khuyến nghị chặn là *intelligence*. CTI giải quyết bài toán quá tải cảnh báo: lọc ra điều đáng lo, lý do, và hành động kế tiếp.
+Chương đi theo đúng trình tự một cuộc điều tra thật. Trước hết là khung tư duy: Cyber Kill Chain chia tấn công có chủ đích thành 7 giai đoạn tuyến tính — phá vỡ một mắt xích là gãy cả chuỗi; Diamond Model nhìn mỗi vụ xâm nhập qua 4 đỉnh (kẻ tấn công, năng lực, hạ tầng, nạn nhân) và cho phép pivot từ một manh mối nhỏ ra cả một nhóm APT. Kế đó là cách phân loại bằng chứng: IOC (dấu vết tĩnh, dễ đổi) so với IOA (chuỗi hành vi, khó né hơn), và Pyramid of Pain giải thích vì sao chặn một IP thì đối thủ đổi trong 5 phút, còn chặn một TTP thì chúng phải xây lại cả lối đánh.
 
-**Cyber Kill Chain.** Mô hình chia tấn công có chủ đích thành **7 giai đoạn tuyến tính**, từ trinh sát tới hành động trên mục tiêu. Giá trị cốt lõi: phá vỡ bất kỳ một mắt xích nào cũng làm gãy toàn chuỗi, đồng thời cung cấp khung tường thuật ở mức chiến lược cho lãnh đạo.
-
-**Diamond Model.** Mô hình hóa mỗi sự kiện xâm nhập qua **4 đỉnh**: adversary (kẻ tấn công), capability (năng lực, công cụ/malware), infrastructure (hạ tầng C2, tên miền, IP) và victim (nạn nhân). Sức mạnh nằm ở **pivoting**: nắm một đỉnh cho phép lần ra các đỉnh còn lại — từ một tên miền độc hại suy ra IP dùng chung, rồi các tên miền khác của cùng nhóm.
-
-**IOC và IOA.** **IOC (Indicator of Compromise)** là bằng chứng tĩnh cho biết sự cố đã xảy ra: hash file độc, IP xấu, registry key. **IOA (Indicator of Attack)** là chuỗi hành vi đáng ngờ đang diễn ra: ví dụ Word sinh PowerShell rồi tải file từ Internet. IOC dễ bị thay đổi (đổi một byte là có hash mới) nên kém bền; IOA dựa trên logic tấn công nên khó né hơn và bắt được cả biến thể chưa từng thấy.
-
-**Pyramid of Pain.** Xếp hạng các loại indicator theo **mức chi phí kẻ tấn công phải bỏ ra để né tránh** khi bị chặn. Đáy tháp (hash, IP) thay đổi trong vài phút; đỉnh tháp (TTP — cách hành động) buộc đối thủ thay đổi cả lối đánh. Mô hình định hướng đầu tư phát hiện: ưu tiên các tầng cao để đạt hiệu quả bền vững.
-
-**MITRE ATT&CK.** Knowledge base liệt kê các hành vi đối thủ **quan sát được trong thực tế**, tổ chức theo ma trận và cây phân cấp: *Tactic* (mục tiêu — "vì sao"), *Technique* (phương pháp — "làm gì"), *Sub-technique* (biến thể — "làm như thế nào"), *Procedure* (hiện thực cụ thể). Mỗi mục có định danh duy nhất (ví dụ `T1059.001`), cho phép đo độ phủ phát hiện và viết rule theo từng hành vi.
-
-**ATT&CK Navigator.** Ứng dụng web tô màu ma trận ATT&CK để trực quan hóa độ phủ phát hiện, hoạt động của một nhóm APT và phân tích khoảng trống. Dữ liệu lưu dưới dạng layer file (JSON), giúp lãnh đạo và đội phòng thủ thấy ngay điểm yếu thay vì đọc danh sách dài.
-
-**Detection Engineering: Sigma, YARA, Suricata.** Ba định dạng rule tương ứng ba lớp dấu vết:
-- **Sigma**: rule phát hiện trên **log** theo định dạng SIEM-agnostic, biên dịch sang Splunk, Elastic, Sentinel...
-- **YARA**: rule khớp **chuỗi/byte/regex trong file hoặc bộ nhớ** để phân loại malware.
-- **Suricata**: IDS/IPS soi **lưu lượng mạng** để phát hiện kênh C2 và exfil.
-
-Cả ba đều gắn được định danh ATT&CK để đo độ phủ theo từng technique.
-
-**Chia sẻ tình báo: STIX, TAXII, MISP.**
-- **STIX**: định dạng JSON chuẩn để biểu diễn thông tin mối đe dọa cho máy đọc hiểu.
-- **TAXII**: giao thức REST/HTTPS để trao đổi STIX tự động giữa các bên.
-- **MISP**: nền tảng lưu trữ và chia sẻ IOC, tích hợp nhãn TLP và ATT&CK Galaxy.
-
-Cơ sở của việc chia sẻ: kẻ tấn công tái sử dụng thủ đoạn cho nhiều nạn nhân, nên cảnh báo kịp thời bảo vệ các tổ chức tiếp theo.
-
-**Phân loại và phân tích Malware.** Phần cuối chương phân biệt các loại malware (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) theo cơ chế lây lan và khả năng tự nhân bản, rồi trình bày hai hướng mổ xẻ mẫu: **phân tích tĩnh** (static analysis — khảo sát file không thực thi) và **phân tích động** (dynamic analysis — chạy trong môi trường cô lập để quan sát hành vi). Gọi đúng tên loại malware và hiểu cơ chế là cơ sở để chọn biện pháp phòng chống và phản ứng phù hợp.
-
-> Mục tiêu chương: trang bị cho kỹ sư bảo mật (Blue Team / AppSec / DevSecOps) một mô hình tư duy thống nhất để **mô tả**, **phát hiện**, **đo lường** và **phản ứng** với hành vi của kẻ tấn công. Chương đi từ lý thuyết tình báo (CTI) xuống tới cấu trúc dữ liệu cụ thể (STIX object, MISP attribute, định dạng IOC, header PE), tới lệnh và file cấu hình chạy được (Sigma, YARA, Suricata, ATT&CK Navigator JSON, MISP REST API).
+MITRE ATT&CK là phần chi tiết nhất — knowledge base hành vi thật với định danh riêng cho từng technique (kiểu `T1059.001`), còn ATT&CK Navigator tô màu ma trận đó để nhìn ra khoảng trống phát hiện. Từ lý thuyết, chương xuống tới việc viết rule thật: Sigma cho log, YARA cho file/memory, Suricata cho traffic mạng — và cách chia sẻ tình báo đó ra ngoài qua STIX/TAXII/MISP. Phần cuối tách bạch các loại malware (virus, worm, trojan, ransomware, rootkit, RAT, botnet, fileless) và hai hướng mổ xẻ mẫu — tĩnh và động — hai khái niệm mình từng gộp chung trước khi phân biệt rõ ràng.
 
 > Cần tra nhanh? Bảng **15.15** nối từng giai đoạn tấn công với technique tiêu biểu, nguồn telemetry và rule phát hiện — dùng nó như mục lục thực hành của cả chương.
 
@@ -419,6 +391,8 @@ crackmapexec smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' \
     --continue-on-success
 ```
 
+> Lưu ý công cụ: `crackmapexec` (CME) đã ngừng bảo trì từ ~2023; bản kế thừa được cộng đồng phát triển tiếp là **NetExec** (`nxc`), cú pháp gần như tương đương (`nxc smb 10.0.0.0/24 -u users.txt -p 'Summer2024!' --continue-on-success`). Với môi trường mới nên dùng `nxc`.
+
 **Dấu hiệu Blue Team (Windows Security log):**
 
 | Trường | Giá trị cần để ý |
@@ -592,7 +566,7 @@ ATT&CK có nhiều "domain" với tactic/technique riêng phù hợp môi trư�
 ```json
 {
   "name": "SOC Detection Coverage Q2",
-  "versions": { "attack": "15", "navigator": "5.0.0", "layer": "4.5" },
+  "versions": { "attack": "17", "navigator": "5.0.0", "layer": "4.5" },
   "domain": "enterprise-attack",
   "description": "Độ phủ rule SIEM hiện tại",
   "techniques": [
@@ -659,7 +633,7 @@ for f in glob.glob("rules/**/*.yml", recursive=True):
 
 layer = {
   "name": "Sigma coverage", "domain": "enterprise-attack",
-  "versions": {"attack": "15", "navigator": "5.0.0", "layer": "4.5"},
+  "versions": {"attack": "17", "navigator": "5.0.0", "layer": "4.5"},
   "techniques": [
      {"techniqueID": t, "score": min(100, c*25),
       "comment": f"{c} rule(s)"} for t, c in techs.items()

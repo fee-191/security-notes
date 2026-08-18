@@ -1,0 +1,2417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 2 — The Linux Operating System — Security Handbook</title>
+<meta name="description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:title" content="Chapter 2 — The Linux Operating System — Security Handbook">
+<meta property="og:description" content="A security knowledge handbook — notes collected while learning and working in security.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch01.html"><link rel="next" href="ch03.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("../assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Security Handbook</a></h1>
+      <p class="tag">Notes from learning &amp; working in security</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="02"><a class="nav-ch-title" href="#top"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"><a class="nav-sub" href="#ch02-overview">Overview</a><a class="nav-sub" href="#ch02-21-overall-architecture-and-the-user-space-kernel-space-boundary">2.1. Overall architecture and the user space / kernel space boundary</a><a class="nav-sub" href="#ch02-22-filesystem-hierarchy-standard-fhs">2.2. Filesystem Hierarchy Standard (FHS)</a><a class="nav-sub" href="#ch02-23-the-permission-model-12-bits-reading-ls--l-character-by-character-octal-umask">2.3. The permission model: 12 bits, reading ls -l character by character, octal, umask</a><a class="nav-sub" href="#ch02-24-etcpasswd-etcshadow-password-hashes">2.4. /etc/passwd, /etc/shadow, password hashes</a><a class="nav-sub" href="#ch02-25-processes">2.5. Processes</a><a class="nav-sub" href="#ch02-26-systemd-init-units-services-timers">2.6. systemd — init, units, services, timers</a><a class="nav-sub" href="#ch02-27-logging-rsyslog-journald-authlog-logrotate">2.7. Logging: rsyslog, journald, auth.log, logrotate</a><a class="nav-sub" href="#ch02-28-package-management-apt-and-dnf">2.8. Package management: apt and dnf</a><a class="nav-sub" href="#ch02-29-cron-5-time-fields">2.9. cron — 5 time fields</a><a class="nav-sub" href="#ch02-210-bash-file-descriptors-redirection-pipes">2.10. Bash: file descriptors, redirection, pipes</a><a class="nav-sub" href="#ch02-211-text-processing-tools-grep-awk-sed-cut-sort-uniq-practical-log-analysis">2.11. Text-processing tools: grep, awk, sed, cut, sort, uniq — practical log analysis</a><a class="nav-sub" href="#ch02-212-hardening-sshd-fail2ban-netfilter-selinuxapparmor">2.12. Hardening: sshd, fail2ban, netfilter, SELinux/AppArmor</a><a class="nav-sub" href="#ch02-213-performance-resource-diagnostics-the-dashboard-says-where-its-high-the-commands-say-which-process-is-causing-it">2.13. Performance &amp;amp; resource diagnostics — the dashboard says &quot;where it&#x27;s high&quot;, the commands say &quot;which process is causing it&quot;</a><a class="nav-sub" href="#ch02-214-summary-of-the-defensive-mindset-on-linux">2.14. Summary of the defensive mindset on Linux</a><a class="nav-sub" href="#ch02-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
+      <button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-02" data-ch="02">
+<h1 id="ch02-chapter-2-the-linux-operating-system">Chapter 2 — The Linux Operating System</h1>
+<h2 id="ch02-overview">Overview</h2>
+<p>Nearly every server I've had to patch or dig through logs on — web server, database, container — runs Linux, so whatever traces an attack leaves behind live in the mechanisms of that same operating system. This chapter looks at Linux through that lens: not to administer it, but to know who just did what, under which privileges, and why they were allowed to.</p>
+<p>The starting point is the boundary every Unix system is built on: the <strong>kernel</strong> runs at ring 0 with exclusive access to hardware, while application processes are confined to <strong>user space</strong> and must go through a <strong>syscall</strong> for every resource they need — a barrier that isolates faults and malware from both the hardware and other processes. On top of that, Linux organizes files under the <strong>FHS</strong> standard (configuration in <code>/etc</code>, logs in <code>/var/log</code>) so tools and monitoring rules work the same regardless of distribution, then controls who can do what through the <strong>rwx permission model</strong> plus the special SUID/SGID/sticky bits — a misconfigured SUID-root binary is still a textbook privilege-escalation path. User identity lives in <code>/etc/passwd</code>, while passwords exist only as hashes in <code>/etc/shadow</code>, readable by root alone; the actual gate for running commands with elevated rights is <strong>sudo</strong> and <strong>PAM</strong>, which together give both least privilege and an audit trail.</p>
+<p>The next layer is the process lifecycle: a <strong>process</strong> is born through <code>fork()</code> and then loads a new program image via <code>execve()</code>, carrying its own security identity — and during an investigation, a web server that suddenly spawns a shell is a textbook indicator of compromise. <code>/proc</code> exposes kernel state per process, making it a goldmine for forensics, while <strong>namespaces</strong> and <strong>cgroups</strong> are the two mechanisms — isolation and resource limiting — that every Docker container is built on. The full lifecycle of services on a machine, from startup through monitoring and automatic recovery, is handled by <strong>systemd</strong> via units, which is also what lets you harden individual services through declarative directives.</p>
+<p>The rest of the chapter covers the day-to-day operations-and-investigation layer, which I've grouped into a short list since each piece stands fairly independently:</p>
+<ul>
+<li><strong>Logging</strong> through <code>rsyslog</code>/<code>journald</code> captures every sensitive event, while <code>logrotate</code> keeps the disk from filling up — but logs only earn their forensic value once they're shipped off the box before an attacker can wipe the local copy.</li>
+<li>Package managers (<code>apt</code>, <code>dnf</code>) don't just install software — they verify <strong>digital signatures</strong> in transit, which is the whole basis for trusting where anything running on the machine came from.</li>
+<li><strong>cron</strong> is as convenient for automation as it is attractive to attackers: a stray crontab entry is a quiet place to hide a backdoor that fires on schedule, which is why it's always on the list during an investigation.</li>
+<li>Under the hood of every command line is bash's file descriptors, redirection, and pipes chained into pipelines, plus text tools like <code>grep</code>/<code>awk</code>/<code>sed</code>/<code>sort</code>/<code>uniq</code> — the toolkit for querying millions of log lines in a single command.</li>
+<li>Last comes <strong>hardening</strong>: locking down SSH, <code>fail2ban</code> auto-blocking IPs that guess passwords, a firewall opening only the ports you need, and SELinux/AppArmor constraining a service's behavior even after it's already been compromised.</li>
+</ul>
+<blockquote>
+<p>Commands and sample output throughout the chapter were actually run on Debian/Ubuntu or RHEL/Rocky; anything that depends on kernel or distro version is called out separately.</p>
+</blockquote>
+<hr />
+<h2 id="ch02-21-overall-architecture-and-the-user-space-kernel-space-boundary">2.1. Overall architecture and the user space / kernel space boundary</h2>
+<p>Before diving into each mechanism, it is essential to understand the layered model, because nearly every security decision on Linux revolves around the boundary between <strong>user space</strong> and <strong>kernel space</strong>.</p>
+<pre><code>+---------------------------------------------------------------+
+|  USER SPACE (ring 3 on x86-64)                               |
+|   bash, sshd, nginx, python ...                               |
+|   libraries: glibc (libc.so.6), libssl ...                   |
+|        |  system call (syscall instruction)                   |
++--------|------------------------------------------------------+
+         v
++---------------------------------------------------------------+
+|  KERNEL SPACE (ring 0)                                       |
+|   - syscall dispatcher (sys_call_table)                      |
+|   - scheduler (CFS/EEVDF depending on version)               |
+|   - VFS -&gt; ext4/xfs/btrfs                                     |
+|   - net stack (socket -&gt; TCP/IP -&gt; netfilter)                |
+|   - LSM hooks (SELinux/AppArmor)                             |
+|   - process, memory (page table), namespaces, cgroups mgmt   |
++---------------------------------------------------------------+
+</code></pre>
+<p><strong>Why the ring 3 / ring 0 split?</strong> The x86-64 CPU has four privilege levels (rings 0–3); Linux uses only ring 0 (kernel) and ring 3 (user). They are separated so that user-space code cannot directly access the hardware, another process's page tables, or kernel structures — every request must go through a <strong>syscall</strong>, where the kernel checks permissions. This is the root security barrier of the whole system.</p>
+<p><strong>Syscalls at the instruction level (x86-64, Linux):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Register</th>
+<th>Role during a syscall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rax</code></td>
+<td>Syscall number (e.g., <code>read</code>=0, <code>write</code>=1, <code>open</code>=2, <code>execve</code>=59)</td>
+</tr>
+<tr>
+<td><code>rdi</code></td>
+<td>Argument 1</td>
+</tr>
+<tr>
+<td><code>rsi</code></td>
+<td>Argument 2</td>
+</tr>
+<tr>
+<td><code>rdx</code></td>
+<td>Argument 3</td>
+</tr>
+<tr>
+<td><code>r10</code></td>
+<td>Argument 4 (note: NOT <code>rcx</code> as in the ordinary function-call ABI)</td>
+</tr>
+<tr>
+<td><code>r8</code></td>
+<td>Argument 5</td>
+</tr>
+<tr>
+<td><code>r9</code></td>
+<td>Argument 6</td>
+</tr>
+<tr>
+<td><code>rax</code> (after the instruction)</td>
+<td>Return value (negative = <code>-errno</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>syscall</code> instruction switches the CPU to ring 0 and jumps to the address in the <code>LSTAR</code> MSR. Observing a process's syscall sequence is a critical investigative technique:</p>
+<pre><code class="language-bash">strace -f -e trace=openat,connect,execve -s 200 curl -s https://example.com -o /dev/null
+</code></pre>
+<p><code>-f</code> follows child processes too, <code>-e trace=</code> filters a group of syscalls, <code>-s 200</code> prints up to 200 characters of strings. Sample output:</p>
+<pre><code>execve(&quot;/usr/bin/curl&quot;, [&quot;curl&quot;,&quot;-s&quot;,&quot;https://example.com&quot;,...], 0x7ffd...) = 0
+openat(AT_FDCWD, &quot;/etc/ssl/certs/ca-certificates.crt&quot;, O_RDONLY) = 5
+connect(6, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr(&quot;192.0.2.10&quot;)}, 16) = -1 EINPROGRESS (Operation now in progress)
+</code></pre>
+<p><strong>Security note:</strong> seccomp-bpf (used by container runtimes and by systemd's <code>SystemCallFilter=</code>) filters precisely these <code>rax</code> numbers. Understanding the syscall table helps in writing/reading seccomp profiles and detecting anomalous behavior (e.g., a web server suddenly calling <code>execve</code>).</p>
+<hr />
+<h2 id="ch02-22-filesystem-hierarchy-standard-fhs">2.2. Filesystem Hierarchy Standard (FHS)</h2>
+<p>The FHS (current standard, 3.0) defines the meaning of each top-level directory. <strong>Why have a standard?</strong> So that tools, scripts, and admins can be certain where files reside without depending on the distribution — essential when writing monitoring rules (e.g., tracking writes to <code>/etc</code>, <code>/bin</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+<th>Writable at runtime?</th>
+<th>Security concern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>Root</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/bin</code>, <code>/sbin</code></td>
+<td>Essential binaries (often symlinked into <code>/usr/bin</code>)</td>
+<td>Should not be</td>
+<td>Writing here = replacing a system binary</td>
+</tr>
+<tr>
+<td><code>/usr</code></td>
+<td>Most programs and libraries (<code>/usr/bin</code>, <code>/usr/lib</code>, <code>/usr/local</code>)</td>
+<td>Read-only recommended</td>
+<td>Watch for changes</td>
+</tr>
+<tr>
+<td><code>/etc</code></td>
+<td>System configuration files (text)</td>
+<td>Yes</td>
+<td><code>/etc/passwd</code>, <code>/etc/shadow</code>, <code>/etc/cron*</code> — top targets</td>
+</tr>
+<tr>
+<td><code>/var</code></td>
+<td>Variable data: <code>/var/log</code>, <code>/var/spool</code>, <code>/var/lib</code></td>
+<td>Yes</td>
+<td>Logs live here; integrity must be protected</td>
+</tr>
+<tr>
+<td><code>/tmp</code></td>
+<td>Temporary, cleared on reboot, usually <code>sticky bit</code></td>
+<td>Yes (anyone)</td>
+<td>Target of race-condition / symlink attacks</td>
+</tr>
+<tr>
+<td><code>/var/tmp</code></td>
+<td>Temporary but preserved across reboots</td>
+<td>Yes</td>
+<td>Persistent payloads</td>
+</tr>
+<tr>
+<td><code>/home</code></td>
+<td>User directories</td>
+<td>Yes (the owner)</td>
+<td><code>.ssh/</code>, <code>.bash_history</code></td>
+</tr>
+<tr>
+<td><code>/root</code></td>
+<td>root's home</td>
+<td>root</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/proc</code></td>
+<td>Pseudo-FS: kernel/process state</td>
+<td>Partly</td>
+<td><code>/proc/&lt;pid&gt;/maps</code>, <code>/environ</code> leak secrets</td>
+</tr>
+<tr>
+<td><code>/sys</code></td>
+<td>Pseudo-FS: device/kernel objects (sysfs)</td>
+<td>Partly</td>
+<td>cgroups, modules</td>
+</tr>
+<tr>
+<td><code>/dev</code></td>
+<td>Device nodes (devtmpfs)</td>
+<td>—</td>
+<td><code>/dev/mem</code>, <code>/dev/kmem</code> are highly sensitive</td>
+</tr>
+<tr>
+<td><code>/boot</code></td>
+<td>Kernel, initramfs, bootloader</td>
+<td>Rarely</td>
+<td>Tampering = rootkit</td>
+</tr>
+<tr>
+<td><code>/run</code></td>
+<td>Runtime state (tmpfs, lost on reboot)</td>
+<td>Yes</td>
+<td>PID files, sockets</td>
+</tr>
+<tr>
+<td><code>/opt</code></td>
+<td>Third-party software</td>
+<td>Yes</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/mnt</code>, <code>/media</code></td>
+<td>Mount points</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">stat -f /            # show the filesystem containing /
+findmnt -t ext4,xfs  # list mounts with options (ro, nosuid, nodev)
+</code></pre>
+<p><strong>Security note:</strong> mounting <code>/tmp</code>, <code>/var/tmp</code>, and <code>/home</code> with the <code>nosuid,nodev,noexec</code> flags is a basic hardening measure — it disables SUID, device nodes, and binary execution from user-writable areas.</p>
+<hr />
+<h2 id="ch02-23-the-permission-model-12-bits-reading-ls--l-character-by-character-octal-umask">2.3. The permission model: 12 bits, reading <code>ls -l</code> character by character, octal, umask</h2>
+<h3 id="ch02-231-the-12-bit-permission-structure">2.3.1. The 12-bit permission structure</h3>
+<p>Every inode stores a 16-bit <code>st_mode</code> field; the <strong>low 12 bits</strong> are the access permissions (the remaining 4 high bits encode the file type). The 12 bits are divided into four 3-bit groups:</p>
+<pre><code> bit:  11 10  9 | 8 7 6 | 5 4 3 | 2 1 0
+       SUID SGID STK| r w x | r w x | r w x
+       &lt;--special--&gt;|&lt;owner&gt;|&lt;group&gt;|&lt;other&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Bit</th>
+<th>Name</th>
+<th>Octal value</th>
+<th>Meaning on a FILE</th>
+<th>Meaning on a DIRECTORY</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Special</td>
+<td>11</td>
+<td>SUID</td>
+<td>4000</td>
+<td>Run with the file owner's UID</td>
+<td>(meaningless)</td>
+</tr>
+<tr>
+<td>Special</td>
+<td>10</td>
+<td>SGID</td>
+<td>2000</td>
+<td>Run with the owning group's GID</td>
+<td>New files inherit the directory's GID</td>
+</tr>
+<tr>
+<td>Special</td>
+<td>9</td>
+<td>Sticky</td>
+<td>1000</td>
+<td>(historically: keep text in swap; now obsolete)</td>
+<td>Only the file owner may delete a file in the dir</td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>8/7/6</td>
+<td>r/w/x</td>
+<td>0400/0200/0100</td>
+<td>read / write / execute</td>
+<td>list / create-delete / cd into</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>5/4/3</td>
+<td>r/w/x</td>
+<td>0040/0020/0010</td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>2/1/0</td>
+<td>r/w/x</td>
+<td>0004/0002/0001</td>
+<td>same</td>
+<td>same</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why is <code>x</code> on a directory different from <code>r</code>?</strong> <code>r</code> allows reading the list of file names; <code>x</code> allows "traversing" (passing through) to access a file already known by name inside it. You can have <code>x</code> without <code>r</code>: you can reach <code>/dir/file</code> if you know its name, but you cannot <code>ls</code> the directory.</p>
+<h3 id="ch02-232-reading-ls--l-character-by-character">2.3.2. Reading <code>ls -l</code> character by character</h3>
+<pre><code>-rwxr-xr--   1 root  staff   8192 Jun 19 10:00 tool
+drwxr-x---   2 alice alice   4096 Jun 19 10:00 secret
+crw-rw----   1 root  tty     5, 0 Jun 19 10:00 /dev/tty
+-rwsr-xr-x   1 root  root   55672 Jun 19 10:00 /usr/bin/passwd
+</code></pre>
+<p>The first 10-character string, for example <code>-rwsr-xr-x</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Position</th>
+<th>Character</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>-</code></td>
+<td>File type: <code>-</code>=regular file, <code>d</code>=dir, <code>l</code>=symlink, <code>c</code>=char dev, <code>b</code>=block dev, <code>s</code>=socket, <code>p</code>=named pipe (FIFO)</td>
+</tr>
+<tr>
+<td>2–4</td>
+<td><code>rws</code></td>
+<td>Owner: r, w, and <code>s</code> = SUID set + x set (if SUID is set but x is off, it shows a capital <code>S</code>)</td>
+</tr>
+<tr>
+<td>5–7</td>
+<td><code>r-x</code></td>
+<td>Group</td>
+</tr>
+<tr>
+<td>8–10</td>
+<td><code>r-x</code></td>
+<td>Other</td>
+</tr>
+</tbody>
+</table>
+<p>Special-character rules:
+- Owner execute column: <code>x</code>+SUID → <code>s</code>; SUID without x → <code>S</code>.
+- Group execute column: <code>x</code>+SGID → <code>s</code>; SGID without x → <code>S</code>.
+- Other execute column: <code>x</code>+sticky → <code>t</code>; sticky without x → <code>T</code>.</p>
+<p>Example, <code>/tmp</code>:</p>
+<pre><code>drwxrwxrwt 18 root root 4096 Jun 19 11:00 /tmp
+                       ^ the letter 't' = sticky bit
+</code></pre>
+<p>The sticky bit on <code>/tmp</code> prevents user A from deleting user B's files even though <code>/tmp</code> has <code>w</code> for everyone.</p>
+<p>With a device node <code>crw-rw----</code>, the "size" column shows the <strong>major, minor</strong> numbers (e.g., <code>5, 0</code>) instead of a byte size — because <code>c</code>/<code>b</code> are devices.</p>
+<h3 id="ch02-233-octal-and-chmod">2.3.3. Octal and <code>chmod</code></h3>
+<pre><code class="language-bash">chmod 4755 /usr/local/bin/myprog   # SUID + rwxr-xr-x
+chmod u+s,g-w file                 # symbolic notation
+chmod 1777 /tmp                    # sticky + rwx for everyone
+stat -c '%a %A %U:%G' /usr/bin/passwd
+# 4755 -rwsr-xr-x root:root
+</code></pre>
+<p><code>%a</code> prints octal, <code>%A</code> prints the rwx string — handy for bulk audits.</p>
+<p><strong>Hunting SUID/SGID — a mandatory investigative technique:</strong></p>
+<pre><code class="language-bash">find / -xdev \( -perm -4000 -o -perm -2000 \) -type f -printf '%M %u %p\n' 2&gt;/dev/null
+</code></pre>
+<ul>
+<li><code>-xdev</code>: do not cross into other filesystems (avoids scanning NFS, /proc).</li>
+<li><code>-perm -4000</code>: matches when <em>at least</em> the SUID bit is set (the <code>-</code> sign means "contains these bits").</li>
+<li><code>-printf '%M %u %p\n'</code>: prints the mode, owner, path.</li>
+</ul>
+<p>Sample output:</p>
+<pre><code>-rwsr-xr-x root /usr/bin/sudo
+-rwsr-xr-x root /usr/bin/passwd
+-rwsr-xr-x root /usr/bin/su
+</code></pre>
+<p><strong>Security note:</strong> every SUID-root binary is a privilege-escalation surface. A SUID binary that spawns a shell, reads arbitrary files, or writes arbitrary files can be abused (see the GTFOBins project). Establish a baseline list of SUID binaries and alert when a new entry appears.</p>
+<h3 id="ch02-234-umask">2.3.4. <code>umask</code></h3>
+<p><code>umask</code> is a <strong>removal mask</strong> of permissions for newly created files/directories. The final permission = the default requested permission AND NOT(umask).</p>
+<ul>
+<li>Default for a file: <code>0666</code> (a new file never gets the x bit automatically).</li>
+<li>Default for a directory: <code>0777</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>umask</th>
+<th>New file</th>
+<th>New dir</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>022</code></td>
+<td><code>644</code></td>
+<td><code>755</code></td>
+<td>other/group cannot write</td>
+</tr>
+<tr>
+<td><code>027</code></td>
+<td><code>640</code></td>
+<td><code>750</code></td>
+<td>other has no access at all</td>
+</tr>
+<tr>
+<td><code>077</code></td>
+<td><code>600</code></td>
+<td><code>700</code></td>
+<td>owner only</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">umask              # print the current value, e.g. 0022
+umask 027
+touch a; mkdir b; stat -c '%a %n' a b
+# 640 a
+# 750 b
+</code></pre>
+<p><strong>Note:</strong> umask is inherited from the shell/PAM (<code>/etc/login.defs</code> <code>UMASK</code>, <code>pam_umask</code>). A service running with a loose umask may create world-readable log/secret files. Server hardening typically sets <code>027</code> or <code>077</code>.</p>
+<h3 id="ch02-235-acls-posix-access-control-lists">2.3.5. ACLs — POSIX Access Control Lists</h3>
+<p>The 3-class rwx model is insufficient when you need "user X has separate permissions beyond owner/group". ACLs add fine-grained entries, stored in the extended attribute <code>system.posix_acl_access</code>.</p>
+<pre><code class="language-bash">setfacl -m u:bob:rwx,g:devs:r-x file.txt   # grant bob rwx, the devs group r-x
+setfacl -d -m u:bob:rwx /shared            # default ACL: new files in the dir inherit it
+getfacl file.txt
+</code></pre>
+<p><code>getfacl</code> output:</p>
+<pre><code># file: file.txt
+# owner: alice
+# group: alice
+user::rw-
+user:bob:rwx          &lt;- explicit ACL entry
+group::r--
+mask::rwx             &lt;- mask: the ceiling of permissions for named users/groups
+other::r--
+</code></pre>
+<p><strong>The <code>mask</code> is important:</strong> the effective permissions of <code>user:bob</code> = the ACL entry AND the mask. If <code>setfacl -m m::r--</code>, bob is limited to <code>r--</code> even though the entry says <code>rwx</code>. When an ACL is present, <code>ls -l</code> shows a <code>+</code> sign:</p>
+<pre><code>-rw-rwxr--+ 1 alice alice 0 Jun 19 file.txt
+</code></pre>
+<p>The "group" column in <code>ls -l</code> now shows the <strong>mask</strong>, not the actual group permissions — a common source of confusion during audits.</p>
+<p><strong>Security note:</strong> ACLs do not appear in a basic <code>ls -l</code> (only the <code>+</code> sign). Scanning permissions with <code>find -perm</code> alone will miss grants made through ACLs. Use <code>getfacl -R</code> when investigating sensitive permissions.</p>
+<hr />
+<h2 id="ch02-24-etcpasswd-etcshadow-password-hashes">2.4. <code>/etc/passwd</code>, <code>/etc/shadow</code>, password hashes</h2>
+<h3 id="ch02-241-etcpasswd-7-fields-separated-by">2.4.1. <code>/etc/passwd</code> — 7 fields, separated by <code>:</code></h3>
+<pre><code>root:x:0:0:root:/root:/bin/bash
+sshd:x:106:65534::/run/sshd:/usr/sbin/nologin
+alice:x:1000:1000:Alice Nguyen,,,:/home/alice:/bin/bash
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Field</th>
+<th>Example</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>username</td>
+<td><code>alice</code></td>
+<td>Login name</td>
+</tr>
+<tr>
+<td>2</td>
+<td>password</td>
+<td><code>x</code></td>
+<td><code>x</code> = hash is in <code>/etc/shadow</code>; <code>*</code>/<code>!</code> = locked; empty field = no password required (DANGEROUS)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>UID</td>
+<td><code>1000</code></td>
+<td>User ID. 0 = root; 1–999 system; ≥1000 ordinary users (depends on <code>login.defs</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GID</td>
+<td><code>1000</code></td>
+<td>Primary group ID</td>
+</tr>
+<tr>
+<td>5</td>
+<td>GECOS</td>
+<td><code>Alice Nguyen,,,</code></td>
+<td>Full name/comment (sub-fields separated by commas)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>home</td>
+<td><code>/home/alice</code></td>
+<td>Home directory</td>
+</tr>
+<tr>
+<td>7</td>
+<td>shell</td>
+<td><code>/bin/bash</code></td>
+<td>Login shell; <code>/usr/sbin/nologin</code> or <code>/bin/false</code> to block login</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why split out shadow?</strong> <code>/etc/passwd</code> must be world-readable (<code>644</code>) so any process can map UID↔name; if hashes were here, anyone could read them for offline cracking. Hashes are moved to <code>/etc/shadow</code>, which only <code>root</code> can read.</p>
+<pre><code class="language-bash">getent passwd alice     # query through NSS (includes LDAP/SSSD), not just the file
+awk -F: '$3==0 {print $1}' /etc/passwd   # find every UID-0 account (only root should exist)
+</code></pre>
+<p><strong>Security note:</strong> multiple UID-0 accounts = multiple "hidden roots". An empty password field (field 2 blank) allows passwordless login. Both are classic indicators of compromise.</p>
+<h3 id="ch02-242-etcshadow-9-fields">2.4.2. <code>/etc/shadow</code> — 9 fields</h3>
+<p>Typical permissions <code>640 root:shadow</code> (or <code>600</code>).</p>
+<pre><code>alice:$6$xQk2...salt...$hashpart...:19800:0:99999:7:14:20000:
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Field</th>
+<th>Example</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>username</td>
+<td><code>alice</code></td>
+<td>Matches passwd</td>
+</tr>
+<tr>
+<td>2</td>
+<td>password hash</td>
+<td><code>$6$salt$hash</code></td>
+<td>Hash or a special state (see below)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>last change</td>
+<td><code>19800</code></td>
+<td>Date the password was last changed, in <strong>days since 1970-01-01</strong> (epoch days)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>min</td>
+<td><code>0</code></td>
+<td>Minimum number of days before it may be changed again</td>
+</tr>
+<tr>
+<td>5</td>
+<td>max</td>
+<td><code>99999</code></td>
+<td>Maximum number of days the password remains valid</td>
+</tr>
+<tr>
+<td>6</td>
+<td>warn</td>
+<td><code>7</code></td>
+<td>Warning before expiry (days)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>inactive</td>
+<td><code>14</code></td>
+<td>Number of days after expiry during which login is still allowed</td>
+</tr>
+<tr>
+<td>8</td>
+<td>expire</td>
+<td><code>20000</code></td>
+<td>Date the account is fully disabled (epoch days)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>reserved</td>
+<td>(empty)</td>
+<td>Reserved</td>
+</tr>
+</tbody>
+</table>
+<p>Special states of field 2:
+- <code>*</code> or <code>!</code> → the account cannot log in with a password.
+- <code>!$6$...</code> → the password is <strong>locked</strong> (<code>passwd -l</code> prepends <code>!</code> to the hash); removing the <code>!</code> unlocks it.
+- Empty → login requires no password.</p>
+<h3 id="ch02-243-the-idsalthash-hash-format">2.4.3. The <code>$id$salt$hash</code> hash format</h3>
+<p>The hash field uses the <strong>Modular Crypt Format (MCF)</strong> syntax: <code>$id$[params]$salt$hash</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>id</code></th>
+<th>Algorithm</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code></td>
+<td>MD5-crypt</td>
+<td>Weak, obsolete</td>
+</tr>
+<tr>
+<td><code>2a</code>/<code>2b</code>/<code>2y</code></td>
+<td>bcrypt</td>
+<td>Strong; common in apps, rare in shadow</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>SHA-256 crypt</td>
+<td>Optional <code>rounds=</code></td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>SHA-512 crypt</td>
+<td>Default on many Linux distributions</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>yescrypt</td>
+<td>Default on Debian 11+/recent Ubuntu; memory-hard, the strongest of the group</td>
+</tr>
+</tbody>
+</table>
+<p>Example of dissecting a SHA-512 record:</p>
+<pre><code>$6$rounds=656000$YxZ.Hk1aB2c3D4e$M9...very.long...hashbase64...
+ |  |              |                |
+ |  |              |                +-- hash (crypt's special base64 encoding)
+ |  |              +------------------- salt (up to 16 characters)
+ |  +--------------------------------- optional parameter (rounds)
+ +------------------------------------ algorithm id = 6 (SHA-512)
+</code></pre>
+<p><strong>Why a salt?</strong> A random salt makes two users with the same password have different hashes, defeating rainbow tables. <strong>Why <code>rounds</code>?</strong> Increasing the computational cost makes offline brute-force/guessing slower.</p>
+<pre><code class="language-bash"># Generate a test hash (yescrypt if the system supports it)
+openssl passwd -6 'MatKhau!'      # SHA-512
+mkpasswd -m yescrypt 'MatKhau!'   # mkpasswd is provided by the whois package
+chage -l alice                    # view the password-aging policy (reads shadow)
+</code></pre>
+<p><strong>Security note:</strong> MD5 hashes (<code>$1$</code>) must be upgraded. If <code>/etc/shadow</code> is leaked, an attacker runs <code>hashcat</code>/<code>john</code> offline; hashcat modes: <code>1800</code> for <code>$6$</code>, <code>1700</code> for raw SHA-512, and yescrypt requires a recent hashcat version. Defense: a strong password policy + detection of unauthorized reads of <code>/etc/shadow</code> via auditd.</p>
+<h3 id="ch02-244-sudo-etcsudoers">2.4.4. <code>sudo</code>, <code>/etc/sudoers</code></h3>
+<p><code>sudo</code> lets you run a command with another user's privileges (root by default) <strong>without sharing the root password</strong>, while logging every command — that is its reason for existing compared with <code>su</code>.</p>
+<p>The line syntax in <code>/etc/sudoers</code> (always edit with <code>visudo</code> to check syntax before saving):</p>
+<pre><code>user    host = (runas_user:runas_group)   [TAG:] command
+</code></pre>
+<p>Examples:</p>
+<pre><code># who    where     (as-whom)        what
+root     ALL=(ALL:ALL) ALL
+%admin   ALL=(ALL)     ALL
+alice    web01=(www-data) /usr/bin/systemctl restart nginx
+bob      ALL=(root)    NOPASSWD: /usr/bin/journalctl
+%dev     ALL=(ALL)     /usr/bin/apt update, /usr/bin/apt upgrade
+</code></pre>
+<p>Breaking down <code>alice web01=(www-data) /usr/bin/systemctl restart nginx</code>:
+- <code>alice</code>: the subject.
+- <code>web01</code>: applies only on the host named <code>web01</code>.
+- <code>(www-data)</code>: runs as the user <code>www-data</code>.
+- the permitted command: exactly <code>systemctl restart nginx</code>.</p>
+<p>Common TAGs: <code>NOPASSWD:</code> (do not prompt for a password), <code>NOEXEC:</code> (prevent the binary from spawning child commands).</p>
+<pre><code class="language-bash">sudo -l            # list the current user's sudo permissions
+sudo -ll           # more detail
+</code></pre>
+<p><strong>Security note:</strong> overly broad rules are easily abused. <code>(ALL) NOPASSWD: /usr/bin/vim</code> allows <code>:!sh</code> to become root. Avoid wildcards and editors/interpreters in sudoers. Place drop-in files in <code>/etc/sudoers.d/</code> (must be <code>440</code>, with no whitespace in the name).</p>
+<h3 id="ch02-245-pam-pluggable-authentication-modules">2.4.5. PAM — Pluggable Authentication Modules</h3>
+<p>PAM separates authentication logic from the application: <code>sshd</code>, <code>login</code>, and <code>sudo</code> do not code their own password checks but call PAM, configured in <code>/etc/pam.d/&lt;service&gt;</code>. Each line:</p>
+<pre><code>&lt;type&gt;   &lt;control&gt;   &lt;module&gt;   [arguments]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>type</code></th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth</code></td>
+<td>Verify identity (password, token)</td>
+</tr>
+<tr>
+<td><code>account</code></td>
+<td>Check the account is valid (expiry, login hours)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>Change a credential (update the password)</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>Set up/tear down a session (mount home, logging, ulimit)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><code>control</code></th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requisite</code></td>
+<td>Fail → stop immediately and return failure</td>
+</tr>
+<tr>
+<td><code>required</code></td>
+<td>Fail → record the failure but still run the rest of the stack (does not reveal which module failed)</td>
+</tr>
+<tr>
+<td><code>sufficient</code></td>
+<td>Success → return success immediately (if no prior <code>required</code> has failed)</td>
+</tr>
+<tr>
+<td><code>optional</code></td>
+<td>The result is usually ignored</td>
+</tr>
+<tr>
+<td><code>[success=1 default=ignore]</code></td>
+<td>Advanced step-skipping control syntax</td>
+</tr>
+</tbody>
+</table>
+<p>Example <code>/etc/pam.d/sshd</code> (abbreviated) with lockout hardening:</p>
+<pre><code>auth     required   pam_faillock.so preauth silent deny=5 unlock_time=900
+auth     [success=1 default=bad]  pam_unix.so
+auth     [default=die]  pam_faillock.so authfail deny=5 unlock_time=900
+account  required   pam_faillock.so
+session  required   pam_limits.so
+</code></pre>
+<p><code>pam_faillock</code> locks the account after 5 failures within the window and reopens it after 900 seconds. <code>pam_limits</code> applies <code>/etc/security/limits.conf</code> (limits on processes, file descriptors — protects against fork bombs).</p>
+<p><strong>Security note:</strong> an incorrect <code>sufficient</code>/<code>required</code> order can create an authentication bypass. Add <code>pam_pwquality</code> to enforce password complexity. An unfamiliar module in <code>/etc/pam.d/</code> (e.g., a PAM backdoor that writes passwords to a file) is a persistence technique worth scrutinizing.</p>
+<hr />
+<h2 id="ch02-25-processes">2.5. Processes</h2>
+<h3 id="ch02-251-identity-and-attributes">2.5.1. Identity and attributes</h3>
+<p>Each process has a <code>task_struct</code> in the kernel. The core attributes:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PID</td>
+<td>Process ID (1 = <code>init</code>/systemd)</td>
+</tr>
+<tr>
+<td>PPID</td>
+<td>Parent PID</td>
+</tr>
+<tr>
+<td>RUID/EUID</td>
+<td>Real / Effective UID — EUID determines permissions; SUID makes EUID differ from RUID</td>
+</tr>
+<tr>
+<td>RGID/EGID</td>
+<td>Real / Effective GID</td>
+</tr>
+<tr>
+<td>SUID/SGID (saved)</td>
+<td>UID/GID saved so privileges can be temporarily dropped and regained</td>
+</tr>
+<tr>
+<td>Supplementary groups</td>
+<td>List of secondary groups</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">ps -eo pid,ppid,ruid,euid,stat,comm
+id alice
+cat /proc/self/status | grep -E '^(Uid|Gid|Groups):'
+</code></pre>
+<h3 id="ch02-252-process-state-the-stat-column">2.5.2. Process state (the STAT column)</h3>
+<table>
+<thead>
+<tr>
+<th>Character</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>R</code></td>
+<td>Running/Runnable</td>
+<td>Running on the CPU or ready to run</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Interruptible sleep</td>
+<td>Sleeping while awaiting an event; can be woken by a signal</td>
+</tr>
+<tr>
+<td><code>D</code></td>
+<td>Uninterruptible sleep</td>
+<td>Sleeping inside kernel I/O; does NOT receive signals (even <code>kill -9</code>)</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Stopped</td>
+<td>Stopped by <code>SIGSTOP</code>/<code>SIGTSTP</code> or under debugging</td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>Traced</td>
+<td>Stopped by a debugger</td>
+</tr>
+<tr>
+<td><code>Z</code></td>
+<td>Zombie</td>
+<td>Dead, waiting for the parent to call <code>wait()</code> to reap the exit code</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>Dead</td>
+<td>(rarely seen)</td>
+</tr>
+</tbody>
+</table>
+<p>Suffixes in <code>ps</code> (the STAT column): <code>s</code>=session leader, <code>+</code>=foreground group, <code>l</code>=multi-threaded, <code>&lt;</code>=high priority, <code>N</code>=low priority (nice).</p>
+<p><strong>Why can't <code>D</code> be killed?</strong> The process is in the kernel's I/O path; waking it with a signal could corrupt the device/filesystem state. A prolonged <code>D</code> often signals a hung NFS or a failing disk.</p>
+<p><strong>Zombies:</strong> consume no resources beyond one entry in the process table; many <code>Z</code> entries mean the parent process is not calling <code>wait()</code>. To kill a zombie, kill/fix the parent process.</p>
+<h3 id="ch02-253-the-signal-table">2.5.3. The signal table</h3>
+<p>A signal is an asynchronous notification mechanism. Common numbers (common x86/ARM architectures — a few differ on alpha/mips, verify with <code>kill -l</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Number</th>
+<th>Name</th>
+<th>Default</th>
+<th>Catchable/blockable?</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>SIGHUP</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Terminal lost; by convention "reload config" for daemons</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SIGINT</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Ctrl-C</td>
+</tr>
+<tr>
+<td>3</td>
+<td>SIGQUIT</td>
+<td>Core dump</td>
+<td>Yes</td>
+<td>Ctrl-\</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SIGKILL</td>
+<td>Terminate</td>
+<td><strong>NO</strong></td>
+<td>Forced kill; cannot be caught/blocked/ignored</td>
+</tr>
+<tr>
+<td>11</td>
+<td>SIGSEGV</td>
+<td>Core dump</td>
+<td>Yes</td>
+<td>Invalid memory access</td>
+</tr>
+<tr>
+<td>13</td>
+<td>SIGPIPE</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Write to a pipe with no reader</td>
+</tr>
+<tr>
+<td>15</td>
+<td>SIGTERM</td>
+<td>Terminate</td>
+<td>Yes</td>
+<td>Polite termination request (the default of <code>kill</code>)</td>
+</tr>
+<tr>
+<td>17</td>
+<td>SIGCHLD</td>
+<td>Ignore</td>
+<td>Yes</td>
+<td>A child changed state</td>
+</tr>
+<tr>
+<td>18</td>
+<td>SIGCONT</td>
+<td>Continue</td>
+<td>—</td>
+<td>Resume a stopped process</td>
+</tr>
+<tr>
+<td>19</td>
+<td>SIGSTOP</td>
+<td>Stop</td>
+<td><strong>NO</strong></td>
+<td>Stop the process; cannot be caught</td>
+</tr>
+<tr>
+<td>20</td>
+<td>SIGTSTP</td>
+<td>Stop</td>
+<td>Yes</td>
+<td>Ctrl-Z</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">kill -l               # list all signal names/numbers
+kill -TERM 1234       # send SIGTERM
+kill -HUP $(pidof nginx)   # reload nginx with no downtime
+kill -9 1234          # SIGKILL (only when necessary)
+</code></pre>
+<p><strong>Why can't <code>SIGKILL</code>/<code>SIGSTOP</code> be caught?</strong> So the admin/kernel always has a way to stop an unruly process; if they could be caught, malware could protect itself indefinitely.</p>
+<h3 id="ch02-254-fork-execve-how-a-process-is-born">2.5.4. <code>fork()</code> + <code>execve()</code> — how a process is born</h3>
+<pre><code>parent
+  | fork()           -&gt; create a copy-on-write copy of the page table; returns the child PID to the parent, 0 to the child
+  +--&gt; child (the copy)
+         | execve(&quot;/bin/ls&quot;, argv, envp)
+         |   -&gt; replace the entire memory image with /bin/ls, KEEPING the PID &amp; open fds
+         v
+       /bin/ls running
+</code></pre>
+<ul>
+<li><code>fork()</code> duplicates the process; thanks to <strong>copy-on-write</strong>, memory is only truly copied when one side writes → fork is cheap.</li>
+<li><code>execve()</code> loads a new program over the current address space; <strong>open file descriptors are still inherited</strong> unless the <code>O_CLOEXEC</code> flag is set. This is the basis of shell redirection (section 2.10).</li>
+<li>After the child exits, the parent calls <code>wait()</code>/<code>waitpid()</code> to retrieve the exit code; until it does, the child becomes a zombie.</li>
+</ul>
+<p><strong>Security note:</strong> a <code>fork</code>+<code>execve("/bin/sh")</code> chain from a non-shell process (e.g., a web server, a daemon) is a classic RCE indicator — write EDR/auditd rules for an <code>execve</code> of a shell whose parent is a network service.</p>
+<h3 id="ch02-255-proc-a-window-into-the-kernel-and-processes">2.5.5. <code>/proc</code> — a window into the kernel and processes</h3>
+<p><code>/proc/&lt;pid&gt;/</code> is a pseudo-filesystem generated dynamically by the kernel.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+<th>Investigative value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/proc/&lt;pid&gt;/cmdline</code></td>
+<td>Full command line (arguments separated by NUL <code>\0</code>)</td>
+<td>The real command even if <code>ps</code> argv is spoofed</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/exe</code></td>
+<td>Symlink to the executable binary</td>
+<td>Detects deleted binaries (<code>(deleted)</code>) — fileless malware</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/cwd</code></td>
+<td>Symlink to the working directory</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/environ</code></td>
+<td>Environment variables (NUL-separated)</td>
+<td>Leaks secrets/tokens</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/maps</code></td>
+<td>Mapped memory regions (address, permissions, backing file)</td>
+<td>Detects code injection</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/fd/</code></td>
+<td>Symlinks to every open file descriptor</td>
+<td>Find sockets, the log file being written</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/status</code></td>
+<td>UID/GID, capabilities, seccomp, namespace</td>
+<td>Privilege audit</td>
+</tr>
+<tr>
+<td><code>/proc/&lt;pid&gt;/root</code></td>
+<td>Symlink to the process's root filesystem (differs under chroot/container)</td>
+<td>Detects chroot</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">tr '\0' ' ' &lt; /proc/$$/cmdline; echo      # read cmdline, turn NUL into spaces
+ls -l /proc/$(pidof nginx | cut -d' ' -f1)/exe
+grep -E 'Cap(Eff|Prm)|Seccomp' /proc/self/status
+</code></pre>
+<p>Detect a deleted-but-still-running binary (a malware hiding technique):</p>
+<pre><code class="language-bash">ls -l /proc/*/exe 2&gt;/dev/null | grep deleted
+</code></pre>
+<h3 id="ch02-256-namespaces-the-foundation-of-containers">2.5.6. Namespaces — the foundation of containers</h3>
+<p>A namespace virtualizes one type of kernel resource so that processes inside the namespace believe they own it privately.</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Isolates</th>
+<th><code>clone()</code>/<code>unshare</code> parameter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PID</td>
+<td>The PID tree (processes in the NS see their own PID 1)</td>
+<td><code>CLONE_NEWPID</code></td>
+</tr>
+<tr>
+<td>NET</td>
+<td>Network interfaces, routing table, iptables, ports</td>
+<td><code>CLONE_NEWNET</code></td>
+</tr>
+<tr>
+<td>MNT</td>
+<td>The mount table</td>
+<td><code>CLONE_NEWNS</code></td>
+</tr>
+<tr>
+<td>UTS</td>
+<td>hostname, domainname</td>
+<td><code>CLONE_NEWUTS</code></td>
+</tr>
+<tr>
+<td>IPC</td>
+<td>SysV IPC, POSIX message queues</td>
+<td><code>CLONE_NEWIPC</code></td>
+</tr>
+<tr>
+<td>USER</td>
+<td>UID/GID mapping (root in the NS = unprivileged outside)</td>
+<td><code>CLONE_NEWUSER</code></td>
+</tr>
+<tr>
+<td>CGROUP</td>
+<td>The root of the visible cgroup tree</td>
+<td><code>CLONE_NEWCGROUP</code></td>
+</tr>
+<tr>
+<td>TIME</td>
+<td>The boottime/monotonic clock</td>
+<td><code>CLONE_NEWTIME</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">lsns                              # list every namespace and its owning process
+unshare --net --pid --fork --mount-proc bash   # create a shell in new net+pid namespaces
+readlink /proc/self/ns/net        # print the namespace inode, e.g. net:[4026531992]
+nsenter -t &lt;pid&gt; -n ss -tlnp      # enter a container's net namespace to view its sockets
+</code></pre>
+<p><strong>Why does this matter for security?</strong> A container = namespaces + cgroups + capabilities + seccomp/LSM. <code>CLONE_NEWUSER</code> enables "rootless containers" but has historically been the source of many privilege-escalation CVEs. When investigating a container, use <code>nsenter</code> to inspect it from the host without needing a shell inside the container.</p>
+<h3 id="ch02-257-cgroups-limiting-and-measuring-resources">2.5.7. cgroups — limiting and measuring resources</h3>
+<p>cgroups (v2 is the default on modern systems) group processes into a tree and apply CPU/RAM/IO limits. cgroup v2 mounts at <code>/sys/fs/cgroup</code> as a single unified tree.</p>
+<pre><code class="language-bash">systemd-cgls                      # the cgroup tree by systemd unit
+cat /sys/fs/cgroup/system.slice/nginx.service/memory.max
+cat /sys/fs/cgroup/.../cpu.max    # e.g. &quot;200000 100000&quot; = 2 CPUs (quota/period in microseconds)
+</code></pre>
+<p><code>memory.max</code> sets a RAM ceiling; exceeding it → an OOM kill within that cgroup. <code>pids.max</code> blocks fork bombs. systemd exposes these limits through <code>MemoryMax=</code>, <code>CPUQuota=</code>, and <code>TasksMax=</code> in the unit.</p>
+<p><strong>Security note:</strong> cgroups are a <strong>resource-exhaustion-prevention</strong> mechanism (availability), not security isolation like namespaces. Set <code>TasksMax=</code>/<code>MemoryMax=</code> for public-facing services so an abused service cannot bring down the whole host.</p>
+<hr />
+<h2 id="ch02-26-systemd-init-units-services-timers">2.6. systemd — init, units, services, timers</h2>
+<p>systemd is PID 1 on most modern distributions, managing the service lifecycle through <strong>units</strong>. <strong>Why replace sysvinit?</strong> Parallel startup according to dependencies (faster), process supervision (auto-restart), socket/timer activation, monitoring via cgroups, and structured logging (journald).</p>
+<h3 id="ch02-261-the-structure-of-a-service-unit">2.6.1. The structure of a service unit</h3>
+<p>File <code>/etc/systemd/system/myapp.service</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=My App API
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=notify
+User=myapp
+Group=myapp
+ExecStart=/usr/local/bin/myapp --port 8080
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+# Hardening:
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/myapp
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+MemoryMax=512M
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Directive</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[Unit]</code></td>
+<td><code>After=</code></td>
+<td>Startup order (does not create a hard dependency)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Requires=</code></td>
+<td>Hard dependency: if the dependency fails, this unit fails too</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Wants=</code></td>
+<td>Soft dependency (recommended, not required)</td>
+</tr>
+<tr>
+<td><code>[Service]</code></td>
+<td><code>Type=</code></td>
+<td>Startup model (see the table below)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>ExecStart=</code></td>
+<td>The main command to run</td>
+</tr>
+<tr>
+<td></td>
+<td><code>Restart=</code></td>
+<td><code>no</code>/<code>on-failure</code>/<code>always</code>/<code>on-abnormal</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>User=</code>/<code>Group=</code></td>
+<td>Drop privileges — do NOT run as root if not needed</td>
+</tr>
+<tr>
+<td><code>[Install]</code></td>
+<td><code>WantedBy=</code></td>
+<td>The target that "pulls in" the unit when <code>enable</code>d</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Type=</code> values:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>When systemd considers it "fully started"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simple</code></td>
+<td>Right after <code>ExecStart</code> is forked (the default if no <code>Type</code>)</td>
+</tr>
+<tr>
+<td><code>exec</code></td>
+<td>After the binary actually <code>execve</code>s successfully</td>
+</tr>
+<tr>
+<td><code>forking</code></td>
+<td>When the parent process exits (old-style daemons that self-background) — needs <code>PIDFile=</code></td>
+</tr>
+<tr>
+<td><code>oneshot</code></td>
+<td>The process runs to completion and exits (a setup job); usually paired with <code>RemainAfterExit=yes</code></td>
+</tr>
+<tr>
+<td><code>notify</code></td>
+<td>When the process sends <code>sd_notify(READY=1)</code> over a socket — the most accurate</td>
+</tr>
+<tr>
+<td><code>dbus</code></td>
+<td>When the service acquires a name on D-Bus</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">systemctl daemon-reload                 # reload after editing a unit
+systemctl enable --now myapp.service     # enable at boot + start now
+systemctl status myapp.service
+systemctl cat myapp.service              # print the effective unit (including drop-ins)
+systemd-analyze security myapp.service   # score the hardening (exposure score)
+</code></pre>
+<p><strong>Security note:</strong> <code>systemd-analyze security</code> gives an exposure score from 0–10; directives such as <code>ProtectSystem=strict</code>, <code>PrivateTmp=</code>, <code>NoNewPrivileges=</code>, <code>SystemCallFilter=</code>, and <code>CapabilityBoundingSet=</code> lower the score. This is a highly effective way to harden a service without needing a container.</p>
+<h3 id="ch02-262-timer-units-replacing-cron">2.6.2. Timer units (replacing cron)</h3>
+<p><code>backup.timer</code>:</p>
+<pre><code class="language-ini">[Unit]
+Description=Nightly backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>Paired with <code>backup.service</code> (<code>Type=oneshot</code>). <code>OnCalendar</code> uses the syntax <code>DOW YYYY-MM-DD HH:MM:SS</code>. <code>Persistent=true</code> runs a missed job if the machine was off when it was due. <code>RandomizedDelaySec</code> spreads out the load.</p>
+<pre><code class="language-bash">systemctl list-timers --all       # see the next and most recent runs
+</code></pre>
+<p><strong>Security advantages over cron:</strong> runs in a cgroup, logs to journald, and inherits all of the <code>[Service]</code> hardening — which cron does not have.</p>
+<hr />
+<h2 id="ch02-27-logging-rsyslog-journald-authlog-logrotate">2.7. Logging: rsyslog, journald, auth.log, logrotate</h2>
+<h3 id="ch02-271-the-syslog-model-facility-severity">2.7.1. The syslog model: facility + severity</h3>
+<p>Every syslog message carries a <strong>PRI</strong> = facility×8 + severity. On the wire (RFC 5424) the PRI sits inside <code>&lt; &gt;</code> at the start of the packet.</p>
+<p>Facility (selected):</p>
+<table>
+<thead>
+<tr>
+<th>Number</th>
+<th>Facility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>kern</td>
+</tr>
+<tr>
+<td>1</td>
+<td>user</td>
+</tr>
+<tr>
+<td>2</td>
+<td>mail</td>
+</tr>
+<tr>
+<td>3</td>
+<td>daemon</td>
+</tr>
+<tr>
+<td>4</td>
+<td>auth (security/authorization)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>syslog</td>
+</tr>
+<tr>
+<td>10</td>
+<td>authpriv (sensitive auth)</td>
+</tr>
+<tr>
+<td>16–23</td>
+<td>local0–local7 (application-defined)</td>
+</tr>
+</tbody>
+</table>
+<p>Severity (lower = more severe):</p>
+<table>
+<thead>
+<tr>
+<th>Number</th>
+<th>Name</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>emerg</td>
+<td>System is unusable</td>
+</tr>
+<tr>
+<td>1</td>
+<td>alert</td>
+<td>Action needed immediately</td>
+</tr>
+<tr>
+<td>2</td>
+<td>crit</td>
+<td>Critical</td>
+</tr>
+<tr>
+<td>3</td>
+<td>err</td>
+<td>Error</td>
+</tr>
+<tr>
+<td>4</td>
+<td>warning</td>
+<td>Warning</td>
+</tr>
+<tr>
+<td>5</td>
+<td>notice</td>
+<td>Normal but noteworthy</td>
+</tr>
+<tr>
+<td>6</td>
+<td>info</td>
+<td>Informational</td>
+</tr>
+<tr>
+<td>7</td>
+<td>debug</td>
+<td>Debugging</td>
+</tr>
+</tbody>
+</table>
+<p>Example PRI calculation: facility <code>authpriv</code>(10) + severity <code>info</code>(6) = 10×8+6 = <strong>86</strong> → the packet begins with <code>&lt;86&gt;</code>.</p>
+<p>RFC 5424 format:</p>
+<pre><code>&lt;PRI&gt;VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID [STRUCTURED-DATA] MSG
+&lt;86&gt;1 2026-06-19T02:30:01.003Z web01 sshd 1234 - - Accepted publickey for alice
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Example</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRI</td>
+<td><code>&lt;86&gt;</code></td>
+<td>facility×8+severity</td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td><code>1</code></td>
+<td>Protocol version</td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td><code>2026-06-19T02:30:01.003Z</code></td>
+<td>ISO 8601, with milliseconds + offset/Z</td>
+</tr>
+<tr>
+<td>HOSTNAME</td>
+<td><code>web01</code></td>
+<td>The emitting machine</td>
+</tr>
+<tr>
+<td>APP-NAME</td>
+<td><code>sshd</code></td>
+<td>The application</td>
+</tr>
+<tr>
+<td>PROCID</td>
+<td><code>1234</code></td>
+<td>Usually the PID</td>
+</tr>
+<tr>
+<td>MSGID</td>
+<td><code>-</code></td>
+<td>Message type (<code>-</code> = none)</td>
+</tr>
+<tr>
+<td>STRUCTURED-DATA</td>
+<td><code>-</code></td>
+<td>Standard key=value pairs</td>
+</tr>
+<tr>
+<td>MSG</td>
+<td><code>Accepted publickey...</code></td>
+<td>The content</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch02-272-rsyslog-filtering-forwarding-configuration">2.7.2. rsyslog — filtering &amp; forwarding configuration</h3>
+<p><code>/etc/rsyslog.d/50-default.conf</code> (traditional syntax <code>facility.severity   destination</code>):</p>
+<pre><code>auth,authpriv.*                 /var/log/auth.log
+*.info;mail.none;authpriv.none  /var/log/syslog
+*.emerg                         :omusrmsg:*
+# Forward to a SIEM over TCP (RELP/TLS recommended for production)
+*.* @@siem.internal:6514
+</code></pre>
+<ul>
+<li><code>auth,authpriv.*</code> → all severities of these two facilities.</li>
+<li><code>mail.none</code> → exclude the mail facility.</li>
+<li><code>@@host:port</code> = TCP (a single <code>@</code> = UDP, which loses packets under high load).</li>
+</ul>
+<pre><code class="language-bash">logger -p authpriv.warning &quot;Test message from logger&quot;   # inject one message
+systemctl restart rsyslog
+</code></pre>
+<p><strong>Security note:</strong> forward logs to a centralized SIEM as early as possible — an attacker deleting local logs cannot delete a copy that has left the machine. Prefer TCP/TLS (RELP) so no events are lost and so the transport is secured.</p>
+<h3 id="ch02-273-journald">2.7.3. journald</h3>
+<p>systemd-journald stores logs in a <strong>binary, structured, indexed</strong> form. Each entry is a set of fields (including trusted fields supplied by the kernel such as <code>_UID</code>, <code>_PID</code>, <code>_SYSTEMD_UNIT</code> — which applications cannot spoof).</p>
+<pre><code class="language-bash">journalctl -u sshd.service           # logs of one unit
+journalctl -p err -b                 # severity &gt;= err, since this boot
+journalctl --since &quot;2026-06-19 02:00&quot; --until &quot;02:30&quot;
+journalctl _UID=1000 -o json-pretty  # filter by a trusted field, output JSON
+journalctl -k                        # kernel logs (dmesg)
+journalctl -f                        # follow in real time
+</code></pre>
+<p><strong>Persistent journal:</strong> by default some distributions store it in <code>/run/log/journal</code> (volatile, lost on reboot). Set <code>Storage=persistent</code> in <code>/etc/systemd/journald.conf</code> and create <code>/var/log/journal</code> to retain it across reboots — mandatory for incident investigation.</p>
+<p><strong>Security note:</strong> enable <strong>Forward Secure Sealing (FSS)</strong> to detect log tampering:</p>
+<pre><code class="language-bash">journalctl --setup-keys     # create a sealing key; an attacker editing the journal is detected at verify time
+journalctl --verify
+</code></pre>
+<h3 id="ch02-274-varlogauthlog-reading-and-correlating">2.7.4. <code>/var/log/auth.log</code> — reading and correlating</h3>
+<p>Representative lines (Debian/Ubuntu; on RHEL it is <code>/var/log/secure</code>):</p>
+<pre><code>Jun 19 02:30:01 web01 sshd[1234]: Accepted publickey for alice from 203.0.113.5 port 51514 ssh2: ED25519 SHA256:abc...
+Jun 19 02:31:10 web01 sshd[1240]: Failed password for invalid user admin from 198.51.100.9 port 40222 ssh2
+Jun 19 02:32:00 web01 sudo:   alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/apt update
+Jun 19 02:33:00 web01 sshd[1255]: Disconnected from authenticating user root 198.51.100.9 port 40250 [preauth]
+</code></pre>
+<ul>
+<li><code>Accepted publickey ... ED25519 SHA256:...</code> → the fingerprint of the login key (cross-check against an allowlist).</li>
+<li><code>Failed password for invalid user admin</code> → a non-existent name = brute-force scanning.</li>
+<li><code>sudo: alice : ... COMMAND=</code> → audit of a privileged command.</li>
+</ul>
+<pre><code class="language-bash"># Top IPs causing failed logins
+grep &quot;Failed password&quot; /var/log/auth.log \
+ | grep -oE 'from [0-9.]+' | awk '{print $2}' | sort | uniq -c | sort -rn | head
+</code></pre>
+<h3 id="ch02-275-logrotate">2.7.5. logrotate</h3>
+<p>Prevents logs from filling the disk and archives them with a lifecycle. <code>/etc/logrotate.d/nginx</code>:</p>
+<pre><code>/var/log/nginx/*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 www-data adm
+    sharedscripts
+    postrotate
+        [ -f /run/nginx.pid ] &amp;&amp; kill -USR1 $(cat /run/nginx.pid)
+    endscript
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>daily</code></td>
+<td>Rotate every day (<code>weekly</code>/<code>monthly</code>/<code>size 100M</code>)</td>
+</tr>
+<tr>
+<td><code>rotate 14</code></td>
+<td>Keep 14 old copies, then delete</td>
+</tr>
+<tr>
+<td><code>compress</code>/<code>delaycompress</code></td>
+<td>Compress old copies; defer compressing the most recent one (so a still-open fd can keep writing)</td>
+</tr>
+<tr>
+<td><code>create 0640 www-data adm</code></td>
+<td>Create the new log with the specified permissions/owner</td>
+</tr>
+<tr>
+<td><code>postrotate ... kill -USR1</code></td>
+<td>Tell nginx to reopen the log file (since nginx still holds the old fd pointing to the renamed file)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why is <code>postrotate</code>/USR1 needed?</strong> A process holds the <strong>inode</strong> through a file descriptor; renaming the file does not change the inode it is writing to → new logs would fall into the old, renamed file. The <code>USR1</code> signal (nginx's convention) forces it to reopen the log. <strong>Security note:</strong> too small a <code>rotate</code> value, or deleting too quickly, can destroy evidence — calibrate to the retention policy and push to a SIEM before deleting.</p>
+<hr />
+<h2 id="ch02-28-package-management-apt-and-dnf">2.8. Package management: apt and dnf</h2>
+<h3 id="ch02-281-apt-debianubuntu-deb">2.8.1. apt (Debian/Ubuntu, <code>.deb</code>)</h3>
+<pre><code class="language-bash">apt update                       # refresh the package list from the repo (download Release/Packages)
+apt full-upgrade                 # upgrade, allowing package removal if needed to resolve dependencies
+apt install --no-install-recommends nginx=1.24.0-1
+apt-mark hold nginx              # pin the version
+apt list --installed
+dpkg -l | grep nginx             # query the low-level package DB
+dpkg -V                          # verify the checksums of installed files (detect tampering)
+apt-get -s upgrade               # simulate, do not execute
+</code></pre>
+<p>The trust mechanism: the repo has a <code>Release</code> file signed with GPG (<code>Release.gpg</code>/<code>InRelease</code>); the public key lives in <code>/etc/apt/trusted.gpg.d/</code> or is referenced via <code>signed-by=</code> in the <code>.sources</code> file. apt checks signatures and hashes before installing → protecting against forged packages over the network.</p>
+<h3 id="ch02-282-dnf-rhelfedorarocky-rpm">2.8.2. dnf (RHEL/Fedora/Rocky, <code>.rpm</code>)</h3>
+<pre><code class="language-bash">dnf check-update
+dnf install nginx
+dnf history                      # view the transaction history
+dnf history undo &lt;id&gt;            # roll back a transaction
+dnf needs-restarting -r          # services needing a restart after the update (dnf-utils package)
+rpm -qa | grep nginx
+rpm -V nginx                     # verify: columns S(size) M(mode) 5(md5) ... differing from the baseline
+rpm -qf /usr/sbin/nginx          # which package this file belongs to
+</code></pre>
+<p>RPM signs each package with GPG; <code>gpgcheck=1</code> in the <code>.repo</code> enforces the check.</p>
+<p><strong>Security note for both:</strong> use only signed HTTPS repos; pin versions (<code>hold</code>/version lock) for critical systems; <code>dpkg -V</code> / <code>rpm -V</code> are quick integrity-checking tools to detect replaced binaries. Set up <code>unattended-upgrades</code> (Debian) / <code>dnf-automatic</code> for automatic security patches.</p>
+<hr />
+<h2 id="ch02-29-cron-5-time-fields">2.9. cron — 5 time fields</h2>
+<p>A user's <code>crontab -e</code>, or the system files <code>/etc/crontab</code> and <code>/etc/cron.d/*</code> (which have an additional 6th USER field).</p>
+<pre><code>┌──────── minute       (0–59)
+│ ┌────── hour         (0–23)
+│ │ ┌──── day of month (1–31)
+│ │ │ ┌── month        (1–12)
+│ │ │ │ ┌ day of week  (0–7; both 0 and 7 = Sunday)
+│ │ │ │ │
+* * * * *  command
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Range</th>
+<th>Special characters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>minute</td>
+<td>0–59</td>
+<td><code>*</code> any value; <code>*/5</code> every 5; <code>1,15</code> a list; <code>0-30</code> a range</td>
+</tr>
+<tr>
+<td>hour</td>
+<td>0–23</td>
+<td>as above</td>
+</tr>
+<tr>
+<td>day</td>
+<td>1–31</td>
+<td>as above</td>
+</tr>
+<tr>
+<td>month</td>
+<td>1–12</td>
+<td>or the names <code>jan</code>–<code>dec</code></td>
+</tr>
+<tr>
+<td>DOW</td>
+<td>0–7</td>
+<td>or <code>sun</code>–<code>sat</code></td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<pre><code class="language-cron">*/5 * * * *  /usr/local/bin/health-check.sh           # every 5 minutes
+0 2 * * 1-5  /usr/local/bin/backup.sh                 # 02:00 Mon–Fri
+30 3 1 * *   root /usr/local/bin/monthly.sh           # (in /etc/cron.d) the 6th field = user
+@reboot      /usr/local/bin/startup.sh                 # at boot (macro)
+</code></pre>
+<p>Macros: <code>@reboot @daily @hourly @weekly @monthly @yearly</code>.</p>
+<p><strong>Security note:</strong> cron is a favored persistence point. Inspect: every user's <code>crontab -l</code> (<code>/var/spool/cron/crontabs/*</code> on Debian, <code>/var/spool/cron/*</code> on RHEL), <code>/etc/crontab</code>, and <code>/etc/cron.{d,hourly,daily,weekly,monthly}</code>. Entries with <code>@reboot</code>, unfamiliar download/encode commands, or that point to <code>/tmp</code> are highly suspicious. <code>cron</code> logs to syslog (the <code>cron</code> facility) — correlate run times with suspicious activity.</p>
+<hr />
+<h2 id="ch02-210-bash-file-descriptors-redirection-pipes">2.10. Bash: file descriptors, redirection, pipes</h2>
+<h3 id="ch02-2101-the-three-standard-file-descriptors">2.10.1. The three standard file descriptors</h3>
+<p>Every process opens three fds; they are just integers pointing into the kernel's fd table:</p>
+<table>
+<thead>
+<tr>
+<th>fd</th>
+<th>Name</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>stdin</td>
+<td>Keyboard / terminal</td>
+</tr>
+<tr>
+<td>1</td>
+<td>stdout</td>
+<td>Terminal</td>
+</tr>
+<tr>
+<td>2</td>
+<td>stderr</td>
+<td>Terminal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why separate stdout and stderr?</strong> So that "clean" results (1) can go one way and errors (2) another — without mixing data with error messages during automated processing.</p>
+<h3 id="ch02-2102-redirection-the-full-table">2.10.2. Redirection — the full table</h3>
+<table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&gt; file</code></td>
+<td>stdout overwrites the file (shorthand for <code>1&gt;</code>)</td>
+</tr>
+<tr>
+<td><code>&gt;&gt; file</code></td>
+<td>stdout appends</td>
+</tr>
+<tr>
+<td><code>2&gt; file</code></td>
+<td>stderr overwrites</td>
+</tr>
+<tr>
+<td><code>2&gt;&gt; file</code></td>
+<td>stderr appends</td>
+</tr>
+<tr>
+<td><code>&amp;&gt; file</code> / <code>&gt;&amp; file</code></td>
+<td>both stdout+stderr (a bashism)</td>
+</tr>
+<tr>
+<td><code>&gt; file 2&gt;&amp;1</code></td>
+<td>stdout into the file, THEN stderr points to "wherever 1 currently points"</td>
+</tr>
+<tr>
+<td><code>2&gt;&amp;1 &gt; file</code></td>
+<td>(WRONG ORDER) stderr points to the terminal, then stdout is redirected to the file</td>
+</tr>
+<tr>
+<td><code>&lt; file</code></td>
+<td>stdin reads from the file</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;EOF ... EOF</code></td>
+<td>here-document</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;&lt;"string"</code></td>
+<td>here-string</td>
+</tr>
+<tr>
+<td><code>2&gt;/dev/null</code></td>
+<td>discard errors</td>
+</tr>
+<tr>
+<td><code>n&gt;&amp;-</code></td>
+<td>close fd n</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why does the order of <code>2&gt;&amp;1</code> matter?</strong> Redirection is processed left→right. <code>2&gt;&amp;1</code> means "fd 2 = a copy of fd 1's current destination". If fd 1 has not been changed (still the terminal), stderr also goes to the terminal. You must put <code>&gt; file</code> FIRST so fd 1 points to the file, then <code>2&gt;&amp;1</code> copies the correct destination.</p>
+<pre><code class="language-bash">make 2&gt;build-errors.log              # split build errors into a separate file
+./script.sh &gt; out.log 2&gt;&amp;1           # the correct merge: both go to out.log
+./script.sh &amp;&gt;out.log                # equivalent (bash)
+diff &lt;(sort a.txt) &lt;(sort b.txt)     # process substitution: each &lt;() is an fd /dev/fd/N
+exec 3&gt;/var/log/app.audit            # open a custom fd 3
+echo &quot;event&quot; &gt;&amp;3                     # write through fd 3
+</code></pre>
+<h3 id="ch02-2103-pipe">2.10.3. Pipe</h3>
+<p><code>cmd1 | cmd2</code>: the kernel creates a pipe (a kernel buffer ~64KB); <code>cmd1</code>'s stdout (fd 1) connects to <code>cmd2</code>'s stdin (fd 0). The two processes run <strong>concurrently</strong>; <code>cmd1</code> blocks when the buffer is full and <code>cmd2</code> blocks when it is empty — this is the backpressure mechanism.</p>
+<pre><code class="language-bash">set -o pipefail     # the pipeline's exit code = the first command that fails (not just the last)
+cmd1 | cmd2 ; echo ${PIPESTATUS[@]}   # an array of each pipe segment's exit code
+</code></pre>
+<p><strong>Note:</strong> by default the pipeline's exit code is only that of the last command — <code>grep x file | wc -l</code> returns 0 even if <code>grep</code> found nothing. <code>pipefail</code> is very important in security scripts so errors are not "swallowed".</p>
+<hr />
+<h2 id="ch02-211-text-processing-tools-grep-awk-sed-cut-sort-uniq-practical-log-analysis">2.11. Text-processing tools: grep, awk, sed, cut, sort, uniq — practical log analysis</h2>
+<p>This is the daily log-investigation toolkit. Below is a complete pipeline analyzing <code>auth.log</code>, with each segment explained.</p>
+<h3 id="ch02-2111-grep-filter-lines">2.11.1. grep — filter lines</h3>
+<pre><code class="language-bash">grep -E &quot;Failed password|Invalid user&quot; /var/log/auth.log
+grep -c &quot;Accepted&quot; /var/log/auth.log          # count matching lines
+grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' file   # print ONLY the matching part (IPv4)
+grep -v &quot;cron&quot; file                            # invert: drop matching lines
+grep -i -A3 -B1 error log                      # case-insensitive, print 3 lines after, 1 before
+</code></pre>
+<p><code>-E</code> enables extended regex, <code>-o</code> prints only the matching string (not the whole line), <code>-v</code> inverts, <code>-c</code> counts, <code>-A/-B/-C</code> give context.</p>
+<h3 id="ch02-2112-awk-process-by-field">2.11.2. awk — process by field</h3>
+<p>awk splits each line into fields <code>$1..$NF</code> by <code>FS</code> (whitespace by default). Structure: <code>awk 'PATTERN { ACTION }'</code>.</p>
+<pre><code class="language-bash"># Count successful SSH logins per user
+awk '/Accepted/ {for(i=1;i&lt;=NF;i++) if($i==&quot;for&quot;) print $(i+1)}' /var/log/auth.log \
+  | sort | uniq -c | sort -rn
+</code></pre>
+<ul>
+<li><code>/Accepted/</code>: a pattern, processes only lines containing "Accepted".</li>
+<li>the <code>for</code> loop finds the word <code>for</code> and prints the word right after it (which is the username) — robust even if the columns shift.</li>
+<li><code>NF</code> = the number of fields, <code>$(i+1)</code> = the next field.</li>
+</ul>
+<pre><code class="language-bash"># Total bytes transferred per IP from an nginx access log (field 1 = IP, field 10 = bytes)
+awk '{sum[$1]+=$10} END {for(ip in sum) printf &quot;%-16s %d\n&quot;, ip, sum[ip]}' access.log \
+  | sort -k2 -rn | head
+</code></pre>
+<p><code>sum[$1]+=$10</code> uses an associative array; the <code>END</code> block runs after the whole file is read.</p>
+<h3 id="ch02-2113-sed-stream-editor">2.11.3. sed — stream editor</h3>
+<pre><code class="language-bash">sed -n '100,150p' big.log               # print only lines 100–150
+sed 's/[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}/[IP]/g' log   # anonymize IPs
+sed -i.bak 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sed '/^#/d;/^$/d' config                 # delete comment lines and blank lines
+</code></pre>
+<p><code>-n</code> disables automatic printing, <code>p</code> prints; <code>s/old/new/g</code> substitutes globally; <code>-i.bak</code> edits in place and saves a <code>.bak</code> backup; <code>d</code> deletes a line.</p>
+<h3 id="ch02-2114-cut-cut-by-columncharacter">2.11.4. cut — cut by column/character</h3>
+<pre><code class="language-bash">cut -d: -f1,7 /etc/passwd          # fields 1 and 7, separated by ':'
+cut -d' ' -f1-3 access.log         # the first 3 fields
+cut -c1-15 /var/log/syslog         # the first 15 characters (the timestamp column)
+</code></pre>
+<p><code>-d</code> sets the delimiter, <code>-f</code> selects fields, <code>-c</code> selects by character.</p>
+<h3 id="ch02-2115-sort-uniq-sorting-and-counting-duplicates">2.11.5. sort &amp; uniq — sorting and counting duplicates</h3>
+<pre><code class="language-bash">sort -t: -k3 -n /etc/passwd        # sort by UID (field 3), numerically
+sort -k2 -rn data                  # field 2, numeric, descending
+uniq -c                            # count consecutive identical lines (MUST sort first)
+uniq -d                            # print only lines that have duplicates
+</code></pre>
+<p><strong>Why <code>sort</code> before <code>uniq</code>?</strong> <code>uniq</code> only collapses <strong>adjacent</strong> identical lines; you must <code>sort</code> to bring them together first.</p>
+<h3 id="ch02-2116-a-practical-pipeline-top-10-ssh-brute-force-ips">2.11.6. A practical pipeline — "Top 10 SSH brute-force IPs"</h3>
+<pre><code class="language-bash">grep &quot;Failed password&quot; /var/log/auth.log \
+  | grep -oE 'from ([0-9]{1,3}\.){3}[0-9]{1,3}' \
+  | awk '{print $2}' \
+  | sort \
+  | uniq -c \
+  | sort -rn \
+  | head -n 10
+</code></pre>
+<p>Explanation of each stage:
+1. <code>grep "Failed password"</code> → keep failed-login lines.
+2. <code>grep -oE 'from &lt;IPv4&gt;'</code> → extract exactly the <code>from 198.51.100.9</code> portion.
+3. <code>awk '{print $2}'</code> → drop the word <code>from</code>, leaving the IP.
+4. <code>sort</code> → bring identical IPs adjacent (preparing for uniq).
+5. <code>uniq -c</code> → count how many times each IP occurs (prepends the count to the line).
+6. <code>sort -rn</code> → sort descending by the count.
+7. <code>head -n 10</code> → the 10 most active attacking IPs.</p>
+<p>Sample output:</p>
+<pre><code>    412 198.51.100.9
+    207 203.0.113.77
+     95 192.0.2.44
+</code></pre>
+<p>This result feeds directly into an allowlist/blocklist or an alert (see fail2ban, 2.12.2).</p>
+<hr />
+<h2 id="ch02-212-hardening-sshd-fail2ban-netfilter-selinuxapparmor">2.12. Hardening: sshd, fail2ban, netfilter, SELinux/AppArmor</h2>
+<h3 id="ch02-2121-sshd_config-directive-by-directive">2.12.1. <code>sshd_config</code> — directive by directive</h3>
+<p>File <code>/etc/ssh/sshd_config</code>; apply with <code>systemctl reload sshd</code>. A sample hardened configuration:</p>
+<pre><code class="language-ini">Port 22
+AddressFamily inet
+
+# Authentication
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+MaxAuthTries 3
+MaxSessions 4
+LoginGraceTime 30
+AuthenticationMethods publickey
+
+# User restrictions
+AllowGroups ssh-users
+AllowUsers alice@203.0.113.0/24
+
+# Cryptography (strong algorithms only)
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+
+# Reduce the surface
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+PermitTunnel no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LogLevel VERBOSE
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Security effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PermitRootLogin no</code></td>
+<td>Forces login as an ordinary user then <code>sudo</code> → an audit trail; blocks direct brute-forcing of root</td>
+</tr>
+<tr>
+<td><code>PasswordAuthentication no</code></td>
+<td>Public keys only → eliminates password brute-forcing</td>
+</tr>
+<tr>
+<td><code>MaxAuthTries 3</code></td>
+<td>Disconnect after 3 failures</td>
+</tr>
+<tr>
+<td><code>LoginGraceTime 30</code></td>
+<td>Close an unauthenticated connection after 30s (prevents holding a slot)</td>
+</tr>
+<tr>
+<td><code>AuthenticationMethods publickey</code></td>
+<td>Can enforce multi-factor: <code>publickey,keyboard-interactive</code></td>
+</tr>
+<tr>
+<td><code>AllowGroups</code>/<code>AllowUsers</code></td>
+<td>Allowlist who may SSH (implicitly deny the rest)</td>
+</tr>
+<tr>
+<td><code>KexAlgorithms</code>/<code>Ciphers</code>/<code>MACs</code></td>
+<td>Remove weak algorithms; <code>-etm</code> (encrypt-then-MAC) is safer</td>
+</tr>
+<tr>
+<td><code>LogLevel VERBOSE</code></td>
+<td>Logs even the fingerprint of the key used to log in (very useful for investigation)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">sshd -t                  # check the syntax before reloading (AVOID locking yourself out)
+sshd -T | grep -i permitroot   # print the actual effective configuration
+</code></pre>
+<p><strong>Security note:</strong> always <code>sshd -t</code> and keep an open session while reloading, in case a misconfiguration locks out access. Consider not sending a version banner and using <code>Match</code> blocks for group/address-specific configuration.</p>
+<h3 id="ch02-2122-fail2ban-dynamic-brute-force-blocking">2.12.2. fail2ban — dynamic brute-force blocking</h3>
+<p>fail2ban reads logs, uses a regex (<code>failregex</code>) to detect failures, then invokes an action (typically inserting a firewall rule) to ban the IP for a period.</p>
+<p><code>/etc/fail2ban/jail.local</code>:</p>
+<pre><code class="language-ini">[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+banaction = nftables-multiport
+ignoreip = 127.0.0.1/8 203.0.113.0/24
+
+[sshd]
+enabled  = true
+port     = ssh
+backend  = systemd
+maxretry = 3
+bantime  = 24h
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>findtime</code></td>
+<td>The time window for counting failures (10 minutes)</td>
+</tr>
+<tr>
+<td><code>maxretry</code></td>
+<td>The number of failures within <code>findtime</code> to be banned (3)</td>
+</tr>
+<tr>
+<td><code>bantime</code></td>
+<td>The ban duration (<code>-1</code> = permanent); incremental banning can be enabled</td>
+</tr>
+<tr>
+<td><code>backend = systemd</code></td>
+<td>Read from journald instead of a log file</td>
+</tr>
+<tr>
+<td><code>ignoreip</code></td>
+<td>Allowlist that is never banned</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">fail2ban-client status sshd       # see currently banned IPs and statistics
+fail2ban-client set sshd unbanip 198.51.100.9
+fail2ban-regex /var/log/auth.log /etc/fail2ban/filter.d/sshd.conf   # test failregex
+</code></pre>
+<p>An example <code>failregex</code> (in <code>filter.d/sshd.conf</code>) matching a failure line:</p>
+<pre><code>^.*Failed (?:password|publickey) for .* from &lt;HOST&gt;
+</code></pre>
+<p><code>&lt;HOST&gt;</code> is a fail2ban macro that it replaces with an IP regex and uses to extract the address to ban.</p>
+<p><strong>Security note:</strong> set <code>ignoreip</code> for the admin range so you do not lock yourself out. fail2ban defends against brute-force but does NOT replace disabling password auth — combine both.</p>
+<h3 id="ch02-2123-netfilter-iptables-and-nftables">2.12.3. Netfilter: iptables and nftables</h3>
+<p>Both configure the kernel's <code>netfilter</code> framework. Packets traverse a set of <strong>hooks</strong> along this path:</p>
+<pre><code>            PREROUTING            FORWARD            POSTROUTING
+packet in -&gt; [raw-&gt;mangle-&gt;nat] --&gt; routing? --yes--&gt; [mangle-&gt;filter] --&gt; [mangle-&gt;nat] --&gt; out
+                                      |
+                                      | (destined for this machine)
+                                      v
+                                   INPUT [mangle-&gt;filter] --&gt; local process
+                                                                  |
+                                                               OUTPUT [...] --&gt; POSTROUTING
+</code></pre>
+<p><strong>The four iptables tables — each has one job, don't mix them:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>What it exists for</th>
+<th>Chains present</th>
+<th>When you touch it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filter</code></td>
+<td>Allow/block packets — the firewall proper</td>
+<td>INPUT, FORWARD, OUTPUT</td>
+<td>90% of the time; the default table when <code>-t</code> is omitted</td>
+</tr>
+<tr>
+<td><code>nat</code></td>
+<td>Rewrite addresses/ports (SNAT/DNAT/MASQUERADE)</td>
+<td>PREROUTING, OUTPUT, POSTROUTING</td>
+<td>The machine acts as a gateway/port-forwarder; only <code>NEW</code> packets traverse it</td>
+</tr>
+<tr>
+<td><code>mangle</code></td>
+<td>Modify packet headers (TTL, TOS/DSCP, marks)</td>
+<td>All 5 chains</td>
+<td>Marking packets for QoS/policy routing — rarely needed</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td>Processing BEFORE conntrack (<code>NOTRACK</code>)</td>
+<td>PREROUTING, OUTPUT</td>
+<td>Excluding high-volume traffic from the conntrack table</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What is a chain?</strong> A list of rules attached to a hook; the first rule a packet matches decides its verdict (<code>ACCEPT</code>/<code>DROP</code>/<code>REJECT</code>/jump to a sub-chain) — if nothing matches, the chain's <strong>policy</strong> applies. Besides the 5 built-in chains you can create your own (<code>iptables -N ssh-guard</code>) and <code>-j ssh-guard</code> into it to group rules by topic — easier to read and to count (each rule has its own counter, visible with <code>iptables -L -v -n</code>).</p>
+<p><strong>The anatomy of a rule, worth internalizing:</strong> <code>iptables -t &lt;table&gt; -A &lt;chain&gt; &lt;matches...&gt; -j &lt;verdict&gt;</code> — the matches are AND-ed conditions (<code>-p tcp --dport 22</code>, <code>-s 203.0.113.0/24</code>, <code>-i eth0</code>, <code>-m conntrack --ctstate NEW</code>...), and the verdict is the action when all of them match.</p>
+<p><strong>iptables</strong> (traditional syntax) — a deny-by-default policy for INPUT:</p>
+<pre><code class="language-bash">iptables -P INPUT DROP                 # default policy: block
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+iptables -A INPUT -i lo -j ACCEPT      # allow loopback
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT  # allow established connections
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -m limit --limit 5/min -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -j LOG --log-prefix &quot;DROP_IN: &quot; --log-level 4
+</code></pre>
+<p>Breaking down the SSH rule:
+- <code>-A INPUT</code>: append to the INPUT chain.
+- <code>-p tcp --dport 22</code>: TCP destined for port 22.
+- <code>-m conntrack --ctstate NEW</code>: only packets initiating a new connection.
+- <code>-m limit --limit 5/min</code>: at most 5 new connections/minute (anti brute-force/flood).
+- <code>-j ACCEPT</code>: allow it through.</p>
+<p><strong>Why is the <code>ESTABLISHED,RELATED</code> rule needed?</strong> Stateful: once a valid inbound/outbound connection is established, the reply packets in the <code>ESTABLISHED</code> state are allowed through without opening a separate port — the foundation of a stateful firewall.</p>
+<p><strong>A few practical rules you end up needing:</strong></p>
+<pre><code class="language-bash"># Block one IP / one IP range (insert at the TOP of the chain with -I so it matches before any ACCEPT)
+iptables -I INPUT -s 198.51.100.9 -j DROP
+iptables -I INPUT -s 185.177.72.0/24 -j DROP
+
+# Sliding-window SSH rate limit using the recent module:
+# more than 4 NEW connections to port 22 within 60s from the same source -&gt; drop
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --set
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW \
+  -m recent --name ssh --update --seconds 60 --hitcount 4 -j DROP
+
+# View rules with counters (packets/bytes matched) — the quickest way to tell whether a rule is &quot;firing&quot;
+iptables -L INPUT -v -n --line-numbers
+# Delete a rule by line number
+iptables -D INPUT 3
+</code></pre>
+<p>For long IP lists (hundreds/thousands of entries), do not stack sequential rules — every packet has to walk the whole list. Use <code>ipset</code> (with iptables) or an nftables <code>set</code> (example below): O(1) hash lookup, a single rule referencing the whole collection.</p>
+<p><strong>The iptables ↔ nftables relationship (read carefully or you'll think you're using one while actually using the other):</strong> on modern distributions (Debian 10+, Ubuntu 20.04+, RHEL 8+), the <code>iptables</code> command is usually just a shim that translates the old syntax onto the nftables backend — known as <strong>iptables-nft</strong>. Check with <code>iptables -V</code>: <code>(nf_tables)</code> means the nft shim, <code>(legacy)</code> means the old backend. The practical consequence: rules created via <code>iptables</code> and rules created via <code>nft</code> live in the same kernel but do <strong>not</strong> fully show up in each other's tooling — a firewall audit must use <code>nft list ruleset</code> (which sees both), so never run just <code>iptables -L</code> and conclude "this machine has no rules". Docker/Kubernetes and fail2ban still commonly insert rules through the iptables layer — one more reason to audit with <code>nft list ruleset</code>.</p>
+<p><strong>nftables</strong> (the modern replacement, a single <code>nft</code> tool for IPv4/IPv6) — <code>/etc/nftables.conf</code>:</p>
+<pre><code class="language-nft">#!/usr/sbin/nft -f
+flush ruleset
+table inet filter {
+    set blocklist {
+        type ipv4_addr
+        flags interval
+        elements = { 198.51.100.9, 185.177.72.0/24 }
+    }
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iif &quot;lo&quot; accept
+        ip saddr @blocklist drop
+        ct state established,related accept
+        ct state invalid drop
+        tcp dport 22 ct state new limit rate 5/minute accept
+        tcp dport 443 accept
+        ip protocol icmp icmp type echo-request limit rate 1/second accept
+        log prefix &quot;nft-drop: &quot; counter
+    }
+    chain forward { type filter hook forward priority 0; policy drop; }
+    chain output  { type filter hook output  priority 0; policy accept; }
+}
+</code></pre>
+<pre><code class="language-bash">nft -f /etc/nftables.conf      # load (atomic: all or nothing)
+nft list ruleset               # view all rules (with counters)
+nft list table inet filter
+nft add element inet filter blocklist { 203.0.113.99 }   # add an IP to the set at runtime
+</code></pre>
+<p><strong>Why does nftables replace iptables?</strong> A single framework for v4/v6/arp/bridge (an <code>inet</code> table covers IPv4+IPv6 at once — iptables needs a parallel <code>ip6tables</code>), concise set/map syntax (a blocklist of thousands of IPs in one hash-lookup <code>set</code> instead of a sequential walk), atomic reloads (no moment of "half old ruleset, half new"), and easier scripting.</p>
+<p><strong>Making rules survive a reboot</strong> — iptables/nft rules live only in kernel memory; a reboot wipes them clean:</p>
+<pre><code class="language-bash"># The nftables way (recommended): rules are a config FILE, loaded by a service at boot
+nft list ruleset &gt; /etc/nftables.conf   # or write the file by hand and validate with nft -f
+systemctl enable --now nftables
+
+# The traditional iptables way (Debian/Ubuntu)
+apt install iptables-persistent         # stores at /etc/iptables/rules.v4 and rules.v6
+netfilter-persistent save
+# RHEL-family: dnf install iptables-services; service iptables save
+</code></pre>
+<p>The nice part of the nftables way: <code>/etc/nftables.conf</code> is a plain text file — put it in git, review diffs like code, run <code>nft -c -f</code> (check) before applying.</p>
+<p><strong>Security note:</strong> default to <code>policy drop</code> for INPUT/FORWARD; open only the necessary ports; rate-limit the admin port; log dropped packets for investigation. When editing a firewall remotely, protect yourself: work inside <code>tmux</code>/keep a spare SSH session open, or schedule a rollback job like <code>echo 'nft -f /etc/nftables.conf.known-good' | at now + 5 minutes</code> and cancel it once you've confirmed you can still get in — locking yourself out of a server with one DROP rule is a classic mistake.</p>
+<h3 id="ch02-2124-selinux-and-apparmor-mandatory-access-control-mac">2.12.4. SELinux and AppArmor — Mandatory Access Control (MAC)</h3>
+<p>Traditional rwx permissions are <strong>DAC</strong> (Discretionary): the owner decides, and root bypasses everything. <strong>MAC</strong> applies a system policy that even root is bound by — if a service is compromised, MAC limits the damage. Both install hooks through <strong>LSM</strong> in the kernel.</p>
+<p><strong>SELinux (RHEL/Fedora)</strong> — every process and file has a <strong>security context</strong> of the form <code>user:role:type:level</code>:</p>
+<pre><code>system_u:system_r:httpd_t:s0          &lt;- the httpd process
+unconfined_u:object_r:httpd_sys_content_t:s0   &lt;- a web file nginx serves
+</code></pre>
+<p>Decisions are based on <strong>type enforcement</strong>: the <code>httpd_t</code> domain may only do what the policy permits on the related types.</p>
+<pre><code class="language-bash">getenforce                 # Enforcing / Permissive / Disabled
+setenforce 0               # temporarily switch to Permissive (logs only, does not block)
+ps -eZ | grep nginx        # view a process's context (the -Z flag)
+ls -Z /var/www/html        # view a file's context
+ausearch -m AVC -ts recent # find events blocked by SELinux (AVC denials)
+# Fix the context for a custom web directory:
+semanage fcontext -a -t httpd_sys_content_t &quot;/srv/www(/.*)?&quot;
+restorecon -Rv /srv/www
+setsebool -P httpd_can_network_connect on   # turn on a boolean (allow httpd to connect out)
+</code></pre>
+<p>An AVC denial in the log:</p>
+<pre><code>type=AVC msg=audit(...): avc:  denied  { read } for  pid=1234 comm=&quot;nginx&quot;
+ name=&quot;secret.txt&quot; scontext=system_u:system_r:httpd_t:s0
+ tcontext=unconfined_u:object_r:user_home_t:s0 tclass=file
+</code></pre>
+<p>Read it: the <code>httpd_t</code> domain was denied <code>read</code> on a file of type <code>user_home_t</code> — exactly in the spirit of "a web server must not read home files". Do NOT disable SELinux just "to make it run"; instead fix the context or the boolean.</p>
+<p><strong>AppArmor (Ubuntu/SUSE)</strong> — profiles by <strong>path</strong> (easier to read than SELinux). <code>/etc/apparmor.d/usr.sbin.myapp</code>:</p>
+<pre><code>#include &lt;tunables/global&gt;
+/usr/sbin/myapp {
+  #include &lt;abstractions/base&gt;
+  capability net_bind_service,
+  network inet stream,
+  /etc/myapp/** r,
+  /var/lib/myapp/** rw,
+  /var/log/myapp.log w,
+  /usr/sbin/myapp mr,
+  deny /home/** rwx,
+}
+</code></pre>
+<p>Each line = a path rule + permissions (<code>r w m</code>=mmap exec <code>ix/px</code>...). <code>deny /home/** rwx</code> absolutely blocks access to home.</p>
+<pre><code class="language-bash">aa-status                       # which profiles are enforcing/complaining
+aa-complain /usr/sbin/myapp     # log-only mode (learn behavior)
+aa-enforce  /usr/sbin/myapp     # turn on blocking
+journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
+</code></pre>
+<p><strong>Why path-based vs type-based?</strong> AppArmor is easy to write/read (by path) but weak when files are renamed/hardlinked; SELinux attaches labels to the inode, making it stricter but with a steeper learning curve. Both are key defensive layers: when an RCE occurs in a confined service, the payload is blocked at any operations outside the profile/policy.</p>
+<hr />
+<h2 id="ch02-213-performance-resource-diagnostics-the-dashboard-says-where-its-high-the-commands-say-which-process-is-causing-it">2.13. Performance &amp; resource diagnostics — the dashboard says "where it's high", the commands say "which process is causing it"</h2>
+<p>Why is this section in a security notebook? First, <strong>availability</strong> is one pillar of the CIA triad — a machine that dies from resource exhaustion is an information-security incident too. Second, a lot of intrusion indicators first show up as resource anomalies: a cryptominer = abnormally high CPU, a DoS = load/network spiking, and <strong>a full disk means logging stops</strong> — the attacker gets a free blind spot. The skill of "spot the abnormal number → find the process behind it" serves operations and investigation alike.</p>
+<p>The methodology I use: <strong>two layers, each answering a different question.</strong>
+- The metric/dashboard layer (Prometheus + node_exporter, graphed in Grafana — or any equivalent stack): answers "<strong>where is it high, since when, and what's the trend</strong>". Metrics are aggregates — they don't know which process is responsible.
+- The on-box command layer (SSH in): answers "<strong>which process, which file, which connection is causing it</strong>". Commands see individual processes but have no history.</p>
+<p>The two layers complement each other: a dashboard alone knows the disease but not the culprit; commands alone capture the current state but not "high since when, is it periodic". The workflow on an alert: the dashboard narrows it to an axis (CPU/RAM/disk/I-O/network/load) → SSH in → run exactly that axis's command group.</p>
+<blockquote>
+<p>The commands below need the <code>sysstat</code> package (provides <code>mpstat</code>/<code>iostat</code>/<code>pidstat</code>/<code>sar</code>), plus <code>htop</code>, <code>iotop</code>, <code>ncdu</code>: <code>apt install sysstat htop iotop ncdu</code>.</p>
+</blockquote>
+<h3 id="ch02-2131-the-30-second-overview-run-before-you-think">2.13.1. The 30-second overview — run before you think</h3>
+<p>Six commands, in order, for the big picture before digging in:</p>
+<pre><code class="language-bash">uptime                    # load average over 1/5/15 minutes — compare to core count
+free -h                   # RAM: look at the available column, not used
+df -h                     # which mount is filling up
+top                       # (or htop) overall CPU/RAM + the loudest processes
+dmesg -T | tail -30       # what the kernel just complained about: OOM kills, I/O errors, segfaults
+systemctl --failed        # which services are down
+</code></pre>
+<p>These 30 seconds usually already isolate the problem axis; the rest is a deep dive per axis below.</p>
+<h3 id="ch02-2132-the-cpu-axis-read-by-mode-not-just-by">2.13.2. The CPU axis — read by <em>mode</em>, not just by %</h3>
+<p>"CPU at 90%" by itself says nothing; the right question is <strong>which mode that 90% belongs to</strong>. <code>mpstat</code> (sysstat package) breaks CPU down by mode, per core:</p>
+<pre><code class="language-bash">mpstat -P ALL 1 3        # one sample per second, 3 times, all cores
+</code></pre>
+<pre><code>CPU    %usr  %nice   %sys %iowait  %irq  %soft %steal  %idle
+all   72.31   0.00   5.12    0.75  0.00   0.51   9.87  11.44
+  0   88.00   0.00   4.00    0.00  0.00   1.00  17.00   7.00
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>CPU time spent on</th>
+<th>Sustained high means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%usr</code></td>
+<td>Application code (user space)</td>
+<td>An app is genuinely burning CPU → find it with <code>htop</code>/<code>pidstat</code>; if you don't recognize the process, suspect a cryptominer</td>
+</tr>
+<tr>
+<td><code>%sys</code></td>
+<td>Kernel (syscalls, drivers)</td>
+<td>The app is hammering syscalls (tiny I/O, constant forking) — inspect with <code>strace</code>/<code>perf</code></td>
+</tr>
+<tr>
+<td><code>%iowait</code></td>
+<td><em>Sitting idle</em> waiting for disk I/O</td>
+<td>The bottleneck is the DISK, not the CPU — jump to the Disk I/O axis (2.13.5); more CPU won't help</td>
+</tr>
+<tr>
+<td><code>%steal</code></td>
+<td>Taken by the hypervisor to serve other VMs</td>
+<td>On a cloud VM: noisy neighbor / the provider throttling CPU (burstable credits exhausted). Not fixable from inside the VM — change shape/host or accept it</td>
+</tr>
+<tr>
+<td><code>%irq</code>/<code>%soft</code></td>
+<td>Hard/soft interrupts (usually network)</td>
+<td>Abnormally high <code>%soft</code> plus heavy traffic → suspect a flood</td>
+</tr>
+<tr>
+<td><code>%idle</code></td>
+<td>Idle</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><code>%iowait</code> and <code>%steal</code> are the two classic traps: both make "CPU look high" on a dashboard while the culprit isn't the CPU at all. Finding the process by CPU:</p>
+<pre><code class="language-bash">ps aux --sort=-%cpu | head -12    # snapshot of right now
+pidstat 1 5                       # over time — catches processes that &quot;pulse&quot;
+</code></pre>
+<p><code>pidstat</code> beats <code>ps</code> by sampling continuously: a process that only spikes in bursts shows up instead of slipping between two <code>ps</code> runs.</p>
+<h3 id="ch02-2133-the-ram-axis-psi-instead-of-used-is-high">2.13.3. The RAM axis — PSI instead of "used is high"</h3>
+<p><strong>The biggest trap on the RAM axis: "used is high" is usually NOT a problem.</strong> Linux deliberately uses free RAM as page cache (re-reads of files skip the disk), and many apps (JVM, Elasticsearch, databases) allocate a large heap and simply keep it — that's designed behavior, not a leak. The number to watch in <code>free -h</code> is <strong><code>available</code></strong> (an estimate of RAM that can be handed to new processes immediately, reclaimable cache included), not <code>used</code>.</p>
+<p>So when is RAM <em>genuinely</em> short? The kernel answers directly via <strong>PSI — Pressure Stall Information</strong> (kernel ≥ 4.20): instead of measuring "how much is in use", PSI measures <strong>the total time processes are stalled waiting for the resource</strong> — i.e., it measures exactly what we care about: "is anyone actually suffering from lack of RAM?"</p>
+<pre><code class="language-bash">cat /proc/pressure/memory
+</code></pre>
+<pre><code>some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+</code></pre>
+<ul>
+<li><code>some</code> = % of time <strong>at least one</strong> task was stalled on memory; <code>full</code> = % of time <strong>all</strong> non-idle tasks were stalled (the whole machine freezes up).</li>
+<li><code>avg10/60/300</code> = rolling averages over 10 seconds / 1 minute / 5 minutes.</li>
+<li>Reading it: all zeros → RAM is fine no matter what <code>used</code> says. <code>some avg10</code> positive and sustained → shortage beginning; <code>full</code> positive → the machine is visibly stalling, typically just before an OOM kill. The same format exists for <code>/proc/pressure/cpu</code> and <code>/proc/pressure/io</code> — node_exporter collects all three, and they make far better alerting panels than % used.</li>
+</ul>
+<p>The full check sequence:</p>
+<pre><code class="language-bash">free -h                           # look at available; how much swap is in use
+cat /proc/pressure/memory         # PSI — the measure of &quot;genuinely short&quot;
+vmstat 1 5                        # si/so columns: swap-in/out (KB/s) happening right now
+ps aux --sort=-%mem | head -12    # top RAM consumers (RSS column)
+dmesg -T | grep -iE &quot;oom|killed process&quot;   # has the kernel already had to execute someone
+</code></pre>
+<ul>
+<li><code>si</code>/<code>so</code> persistently positive = the machine is swapping back and forth (thrashing) — performance falls off a cliff even though RAM "isn't full".</li>
+<li>An OOM kill in <code>dmesg</code> is evidence you're already too late: the kernel kills the process with the highest <code>oom_score</code>. If the victim is an important service, consider <code>MemoryMax=</code> (cgroups, section 2.5.7) on the other services rather than reflexively adding RAM.</li>
+</ul>
+<h3 id="ch02-2134-the-disk-space-axis-df-lies-in-two-places">2.13.4. The disk-space axis — df lies in two places</h3>
+<pre><code class="language-bash">df -h                             # which mount is full — but not enough, keep reading
+df -i                             # INODES: running out also reports &quot;No space left&quot; with tens of GB free
+sudo du -xh --max-depth=1 / 2&gt;/dev/null | sort -h | tail -15   # biggest directories (-x: don't wander onto other mounts)
+ncdu -x /                         # like du but interactive — very fast drill-down
+sudo lsof +L1 | grep -i deleted   # files DELETED but still held open by a process
+docker system df                  # how much Docker is using (images/containers/volumes/build cache)
+journalctl --disk-usage           # how much the journal is using
+</code></pre>
+<p>The two places <code>df -h</code> "lies":
+1. <strong>Out of inodes</strong>: a filesystem has a finite inode count; millions of small files (session files, caches, mail queues) exhaust the inodes while plenty of space remains — the error is still "No space left on device". <code>df -i</code> exposes it instantly (<code>IUse%</code> at 100%).
+2. <strong>Deleted files not yet released</strong>: deleting a file only removes its name from the directory; <strong>the inode and its data persist as long as any process holds an open file descriptor</strong> (the same mechanism we met with logrotate, section 2.7.5). The classic symptom: you <code>rm</code> a 20GB log file and <code>df</code> doesn't move. <code>lsof +L1</code> (lists files with link count 0) names the process; the correct fix is to reload/restart that process (or send a reopen-logs signal such as <code>USR1</code>), not to keep deleting things.</p>
+<p>On Docker machines the usual suspect is <code>/var/lib/docker</code>: old images stacking up with every deploy, build cache, container logs. <code>docker system df -v</code> gives the detailed listing. Clean deliberately (<code>docker image prune -a --filter "until=168h"</code> — images only, with a time cutoff) and <strong>never swing <code>docker system prune</code> around on a machine with data volumes</strong> — one mistaken <code>--volumes</code> flag and real data is gone.</p>
+<p><strong>The security angle:</strong> full disk = logging stops = investigative blindness; "disk almost full" therefore deserves to be treated as a security alert, not just an ops one. In the other direction, attackers know this too — one form of anti-forensics is deliberately filling the disk before acting.</p>
+<h3 id="ch02-2135-the-disk-io-axis-a-busy-disk-is-not-a-full-disk">2.13.5. The disk I/O axis — a "busy" disk is not a "full" disk</h3>
+<p>A disk with free space can still choke because its <strong>I/O bandwidth is saturated</strong> — the symptom surfaces as <code>%iowait</code> (2.13.2) and apps that are "slow for no reason".</p>
+<pre><code class="language-bash">iostat -xz 1 5                    # -x: extended stats; -z: hide silent devices
+</code></pre>
+<pre><code>Device   r/s   w/s   rkB/s   wkB/s  await  %util
+sda      1.2  310.5    48.0  42817.3  38.20  97.40
+</code></pre>
+<ul>
+<li><code>%util</code> = % of time the device had I/O in flight. Near 100% sustained = the disk's schedule is packed. (For SSDs/NVMe, which process in parallel, 100% <code>%util</code> isn't necessarily the true ceiling — read it together with <code>await</code>.)</li>
+<li><code>await</code> = average time for a request to complete, <strong>queueing time included</strong> (ms). This is the number the app actually "feels": high <code>%util</code> with low <code>await</code> means the disk is busy but keeping up; both high means genuine saturation.</li>
+<li><code>r/s</code>, <code>w/s</code>, <code>rkB/s</code>, <code>wkB/s</code>: the shape of the load — thousands of small requests or a few big ones, reads or writes.</li>
+</ul>
+<p>Finding the culprit:</p>
+<pre><code class="language-bash">sudo iotop -o                     # -o: only show processes CURRENTLY doing I/O
+pidstat -d 1 5                    # kB read/written per process over time
+cat /proc/pressure/io             # PSI for I/O — read exactly like memory PSI
+</code></pre>
+<p>Usual suspects on the systems I operate: backup/compression jobs running at peak hours, databases scanning whole tables for lack of an index, over-verbose logging, and swap thrashing (in which case the root disease is RAM — go back to 2.13.3).</p>
+<h3 id="ch02-2136-the-network-axis-look-at-dropserrors-not-bandwidth">2.13.6. The network axis — look at drops/errors, not % bandwidth</h3>
+<pre><code class="language-bash">ss -tulpn                         # LISTENING ports + processes — inspect the exposed surface
+ss -s                             # connection totals by state (estab, timewait...)
+ss -tan state established | wc -l # count open connections
+ip -s link                        # RX/TX counters: errors, dropped, overrun per interface
+sar -n DEV 1 5                    # per-interface throughput over time
+</code></pre>
+<p><code>ip -s link</code> prints RX/TX blocks; the columns worth watching are <code>errors</code>/<code>dropped</code>:</p>
+<pre><code>RX: bytes  packets errors dropped overrun mcast
+    9.1G   8123456      0   12043       0     0
+</code></pre>
+<ul>
+<li>Hitting the bandwidth ceiling is rarely the real problem on an ordinary server; <strong>steadily climbing drops/errors are the disease</strong> (buffer overruns, NIC/driver faults, the host not keeping up → dropped packets, retransmits, rising latency). Alerts belong on the <em>growth rate</em> of the drop counters, not on % bandwidth.</li>
+<li><code>ss -s</code> with <code>estab</code> spiking abnormally from scattered sources is the shape of a DoS/flood; a strange new listening port in <code>ss -tulpn</code> is a backdoor indicator (compare against a baseline).</li>
+</ul>
+<h3 id="ch02-2137-the-load-axis-high-load-does-not-mean-short-of-cpu">2.13.7. The load axis — high load does not mean short of CPU</h3>
+<p><strong>Load average on Linux counts both <code>R</code> processes (waiting for CPU) and <code>D</code> processes (uninterruptible — stuck in I/O, section 2.5.2).</strong> This is the most commonly misread point: a load of 20 on a 4-core box could be 20 processes fighting for CPU — or an idle CPU and 20 processes hanging on a dead NFS mount.</p>
+<pre><code class="language-bash">uptime &amp;&amp; nproc                   # load RELATIVE TO core count — load/core &gt; 1 sustained is what matters
+vmstat 1 5                        # r column = waiting for CPU; b = blocked; wa = %iowait
+ps -eo state,pid,comm | grep &quot;^D&quot; # roll call of D-state processes
+</code></pre>
+<p>Reading the verdict: high load + high <code>r</code> + high <code>%usr</code> → genuinely short of CPU. High load + high <code>b</code> + many <code>D</code> processes + high <code>wa</code> → stuck on I/O (failing disk, hung NFS, throttled cloud storage) — go back to the Disk I/O axis, and remember <code>D</code> processes cannot be killed with <code>kill -9</code> (2.5.2).</p>
+<h3 id="ch02-2138-quick-lookup-symptom-first-command">2.13.8. Quick lookup: symptom → first command</h3>
+<table>
+<thead>
+<tr>
+<th>Dashboard/panel alert</th>
+<th>Run first</th>
+<th>Question being answered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High CPU</td>
+<td><code>mpstat -P ALL 1</code>, <code>htop</code></td>
+<td>Which mode? Which process?</td>
+</tr>
+<tr>
+<td>High RAM / memory PSI</td>
+<td><code>cat /proc/pressure/memory</code>, <code>ps aux --sort=-%mem</code></td>
+<td>Genuine shortage or just high used? Who's eating it?</td>
+</tr>
+<tr>
+<td>Disk full</td>
+<td><code>df -h; df -i</code>, <code>du -xh --max-depth=1 /</code>, <code>lsof +L1</code></td>
+<td>Out of space, out of inodes, or ghost files?</td>
+</tr>
+<tr>
+<td>Disk I/O / io PSI</td>
+<td><code>iostat -xz 1</code>, <code>iotop -o</code></td>
+<td>Saturated yet? Which process is writing?</td>
+</tr>
+<tr>
+<td>Network</td>
+<td><code>ip -s link</code>, <code>ss -tulpn</code></td>
+<td>Drops/errors or just lots of traffic? Strange ports?</td>
+</tr>
+<tr>
+<td>High load / procs blocked</td>
+<td><code>vmstat 1</code>, <code>ps -eo state,pid,comm \| grep "^D"</code></td>
+<td>Short of CPU or stuck on I/O?</td>
+</tr>
+</tbody>
+</table>
+<p>My own experience: turn this table into an actual internal runbook (which panel is red → paste which block of commands) — at 2 a.m. during an incident nobody remembers <code>iostat</code>'s flags.</p>
+<hr />
+<h2 id="ch02-214-summary-of-the-defensive-mindset-on-linux">2.14. Summary of the defensive mindset on Linux</h2>
+<ul>
+<li><strong>Privilege boundaries</strong> are the root: user/kernel (syscall, seccomp), DAC (rwx/ACL/SUID), MAC (SELinux/AppArmor), capabilities, namespaces. Each layer narrows the damage when the layer above is breached.</li>
+<li><strong>Least privilege</strong>: services run as their own user, <code>NoNewPrivileges</code>, a deny-by-default firewall, narrow sudoers, <code>nosuid/noexec</code> mounts.</li>
+<li><strong>Observability</strong>: structured logs (journald + auditd), pushed centrally to a SIEM before an attacker deletes them, and fluent reading of <code>auth.log</code>/AVC with grep/awk.</li>
+<li><strong>Integrity</strong>: <code>dpkg -V</code>/<code>rpm -V</code>, FSS for the journal, baselines of SUID/cron to detect changes.</li>
+<li><strong>Availability is security too</strong>: resource exhaustion (CPU/RAM/disk/I-O) is both an incident and an attack symptom; the two-layer diagnosis "the dashboard says where it's high, the commands say which process" (2.13) is a skill shared by operations and investigation.</li>
+<li><strong>Every hardening configuration</strong> (sshd, fail2ban, nftables, systemd unit, SELinux) has a concrete file/syntax above — use them as verifiable templates on a real system.</li>
+</ul>
+<hr />
+<h2 id="ch02-my-notes">My notes</h2>
+<blockquote>
+<p><em>Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.</em></p>
+</blockquote>
+<ul>
+<li><strong>The runbook is the thing most worth writing that I put off the longest.</strong> When I first took on server duty, every time a Grafana panel turned red I would google <code>iostat</code>'s flags all over again. Eventually I sat down and wrote a proper runbook — "which panel is red → paste which block of commands" (essentially the skeleton of section 2.13) — and I use it almost daily now. The lesson: diagnostic knowledge is only worth anything when it exists as copy-pasteable commands at 2 a.m., not as "I remember there's a tool for that".</li>
+<li><strong>I used to misread "high RAM used = about to die".</strong> Once I saw a machine at ~90% RAM used, panicked, and was about to propose a RAM upgrade. Only later did I understand that apps (JVM/search-engine types) holding a big heap is designed behavior, and Linux puts idle RAM to work as cache. Since learning about PSI (<code>/proc/pressure/memory</code>) I barely look at % used anymore: PSI at zero → ignore used entirely; PSI positive and sustained → time to act. Changing one monitored number cut the false alarms dramatically.</li>
+<li><strong>The first time I saw <code>%steal</code> I thought the machine was broken.</strong> A cloud VM on a system I operate got inexplicably slow — <code>%usr</code> was low yet everything dragged. It turned out <code>%steal</code> was in the double digits: the hypervisor was sharing our CPU with a noisy neighbor. There was nothing to "fix" from inside the VM; the fixable thing was learning to read the right column so I'd stop wasting an afternoon blaming the app.</li>
+<li><strong>The recurring disk-full incident caused by Docker images.</strong> A dev machine I look after kept filling its disk every day or two; each time I would <code>df -h</code> and <code>du</code> around in circles before remembering <code>/var/lib/docker</code>. The cause: every deploy stacked on a new image, and nobody cleaned up the old ones. The fix: a 3 a.m. cron running <code>docker image prune</code> with a time filter — and absolutely no casual <code>docker system prune</code> on machines with data volumes; one mistaken <code>--volumes</code> flag and real data is gone. Bonus lesson from the same episode: <code>rm</code>-ing a huge log file without <code>df</code> budging — the file isn't dead while a process still holds its fd, and <code>lsof +L1</code> names the culprit.</li>
+<li><strong>On firewalls, the biggest trick played on me was iptables-nft.</strong> <code>iptables -L</code> on one machine and <code>nft list ruleset</code> on another gave me two different pictures and confused me for a good while, until I understood that <code>iptables</code> is now usually just a shim translating to nftables (<code>iptables -V</code> prints <code>(nf_tables)</code>). These days I default to <code>nft list ruleset</code> for a complete audit, including rules inserted by Docker or fail2ban.</li>
+<li><strong>Still exploring:</strong> wiring alerts from the SIEM to the firewall so IPs get added to an nftables set automatically past a threshold (fail2ban-style, but fed by centralized logs instead of local ones) — still experimental; I don't dare enable auto-blocking in production yet for fear of banning a NAT range full of real users.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch01.html"><span>← Previous</span><b>01 · Networking</b></a><a class="pg next" href="ch03.html"><span>Next →</span><b>03 · Windows &amp; Active Directory</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Written & shared by <span class="name">Fee</span> · free for learning purposes.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Educational content for defensive purposes. Practice legally, only on systems you are authorized to test.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

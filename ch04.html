@@ -1,0 +1,1344 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chương 4 — Mật mã học &amp;amp; Nền tảng bảo mật — Sổ tay An toàn thông tin</title>
+<meta name="description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:title" content="Chương 4 — Mật mã học &amp;amp; Nền tảng bảo mật — Sổ tay An toàn thông tin">
+<meta property="og:description" content="Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+<link rel="prev" href="ch03.html"><link rel="next" href="ch05.html">
+<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<style>:root{--wibu-bg:url("assets/wibu-bg.jpg")}</style>
+<style>
+:root{
+  --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
+  --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c; --code-bg:#241f18; --code-ink:#ece3d1;
+  --tbl-head:#e6dcc5; --tbl-zebra:#efe8d6; --kbd:#e6dcc5; --codeborder:#3a3228; --scroll:#cabda2;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
+  --line:#322d23; --accent:#46b3a3; --accent2:#e0824f; --code-bg:#0e0c08; --code-ink:#e9e2d2;
+  --tbl-head:#2a261d; --tbl-zebra:#1c1914; --kbd:#2c271e; --codeborder:#322d23; --scroll:#3a3328;
+}
+html[data-theme="wibu"]{
+  --bg:#241a38; --panel:rgba(38,28,55,.74); --panel2:rgba(60,44,86,.72); --ink:#f4ecff; --muted:#cbb9e6;
+  --line:rgba(255,255,255,.15); --accent:#ff79b0; --accent2:#a78bff; --code-bg:rgba(15,10,25,.85); --code-ink:#f0e8ff;
+  --tbl-head:rgba(60,44,86,.72); --tbl-zebra:rgba(48,35,70,.45); --kbd:rgba(70,52,98,.7); --codeborder:rgba(255,255,255,.13); --scroll:#7a5fae;
+}
+html[data-theme="wibu"] body{
+  background-color:#241a38;
+  background-image:var(--wibu-bg, none), linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
+  background-size:cover; background-position:center; background-attachment:fixed;
+}
+html[data-theme="wibu"] .sidebar,
+html[data-theme="wibu"] .brand,
+html[data-theme="wibu"] .search,
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="wibu"] .main{background:rgba(18,12,30,.55);border:1px solid var(--line);border-radius:16px;
+  margin-top:20px;margin-bottom:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:322px;flex:0 0 322px;background:var(--panel);border-right:1px solid var(--line);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:0}
+.brand{padding:20px 18px 13px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.brand h1{font-family:var(--serif);font-size:19px;margin:0 0 3px;letter-spacing:.2px;color:var(--ink)}
+.brand .tag{margin:3px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.brand .author{display:block;margin-top:7px;font-size:11.5px;color:var(--accent2);font-weight:600}
+.controls{display:flex;gap:7px;margin-top:11px}
+.ctrl-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:5px 10px;font-size:12px;
+  cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
+.ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
+.search{padding:10px 14px;position:sticky;top:118px;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.search input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+  border-radius:7px;padding:8px 10px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.nav{padding:8px 8px 40px}
+.nav-group{padding:16px 10px 5px;font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--accent2)}
+.nav-chapter{margin:1px 0}
+.nav-ch-title{display:flex;gap:9px;align-items:baseline;padding:7px 10px;border-radius:7px;color:var(--ink);font-size:13.5px}
+.nav-ch-title .num{font-family:var(--serif);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px}
+.nav-ch-title:hover{background:var(--panel2);text-decoration:none}
+.nav-chapter.active>.nav-ch-title{background:var(--bg);box-shadow:inset 3px 0 0 var(--accent);color:var(--ink);font-weight:700}
+.nav-chapter.active>.nav-ch-title .num{color:var(--accent)}
+.nav-subs{display:none;margin:2px 0 6px 27px;border-left:1px solid var(--line);padding-left:9px}
+.nav-chapter.open .nav-subs{display:block}
+.nav-sub{display:block;padding:4px 8px;font-size:12px;color:var(--muted);border-radius:6px;line-height:1.4}
+.nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
+
+.content{flex:1;min-width:0;padding:0 0 120px}
+.topbar{display:none}
+.main{max-width:820px;margin:0 auto;padding:40px 44px}
+.chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
+.chapter h1{font-family:var(--serif);font-size:31px;line-height:1.22;margin:40px 0 20px;padding-bottom:12px;
+  border-bottom:2px solid var(--accent);color:var(--ink);scroll-margin-top:16px}
+.chapter:first-child h1{margin-top:8px}
+h2{font-family:var(--serif);font-size:23px;margin:36px 0 12px;color:var(--ink);scroll-margin-top:16px}
+h3{font-family:var(--serif);font-size:18px;margin:24px 0 8px;color:var(--ink);scroll-margin-top:16px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent);font-weight:700}
+p{margin:11px 0}
+ul,ol{margin:11px 0;padding-left:24px}
+li{margin:5px 0}
+strong{color:var(--ink);font-weight:700}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
+  background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
+
+code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
+  overflow-x:auto;margin:15px 0;line-height:1.55}
+pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
+
+.tbl-scroll,table{width:100%}
+table{border-collapse:collapse;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--tbl-head);color:var(--ink);font-weight:700;white-space:nowrap}
+tbody tr:nth-child(even){background:var(--tbl-zebra)}
+
+.menu-btn{display:none}
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.show{transform:none;box-shadow:0 0 40px rgba(20,15,8,.45)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:40;
+    background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .menu-btn{display:inline-flex;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 12px;font-size:14px;cursor:pointer}
+  .topbar .ttl{font-family:var(--serif);font-size:15px;font-weight:700;flex:1}
+  .main{padding:24px 18px}
+  .chapter h1{font-size:25px}
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+
+.site-foot{max-width:820px;margin:54px auto 0;padding:24px 44px 0;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;line-height:1.7}
+.site-foot a{color:var(--accent)}
+.site-foot .name{color:var(--ink);font-weight:700}
+@media(max-width:980px){.site-foot{padding:24px 18px 0}}
+.brand h1 a{color:var(--ink);text-decoration:none}
+.brand h1 a:hover{color:var(--accent)}
+.nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
+.pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);color:var(--ink);text-decoration:none}
+a.pg:hover{border-color:var(--accent);text-decoration:none}
+a.pg:hover b{color:var(--accent)}
+.pg span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+.pg b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg.next{text-align:right}
+span.pg{border:0;background:none}
+@media(max-width:980px){.pager{padding:0 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><h1><a href="notes.html">Sổ tay An toàn thông tin</a></h1>
+      <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
+      <span class="author">✍️ Fee</span>
+      <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div></div>
+    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter open active" data-ch="04"><a class="nav-ch-title" href="#top"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"><a class="nav-sub" href="#ch04-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch04-41-khung-khai-niem-nen-tang-cia-aaa-non-repudiation">4.1. Khung khái niệm nền tảng: CIA, AAA, Non-repudiation</a><a class="nav-sub" href="#ch04-42-ba-khai-niem-hay-bi-lan-encoding-vs-hashing-vs-encryption">4.2. Ba khái niệm hay bị lẫn: Encoding vs Hashing vs Encryption</a><a class="nav-sub" href="#ch04-43-ma-hoa-đoi-xung-aes-advanced-encryption-standard">4.3. Mã hóa đối xứng: AES (Advanced Encryption Standard)</a><a class="nav-sub" href="#ch04-44-ma-hoa-bat-đoi-xung-rsa-ecc-dhecdhe">4.4. Mã hóa bất đối xứng: RSA, ECC, DH/ECDHE</a><a class="nav-sub" href="#ch04-45-ham-bam-mat-ma-cryptographic-hash">4.5. Hàm băm mật mã (Cryptographic Hash)</a><a class="nav-sub" href="#ch04-46-luu-tru-mat-khau-an-toan">4.6. Lưu trữ mật khẩu an toàn</a><a class="nav-sub" href="#ch04-47-hmac-hash-based-message-authentication-code">4.7. HMAC — Hash-based Message Authentication Code</a><a class="nav-sub" href="#ch04-48-chu-ky-so-tung-buoc">4.8. Chữ ký số — từng bước</a><a class="nav-sub" href="#ch04-49-pki-x509">4.9. PKI &amp;amp; X.509</a><a class="nav-sub" href="#ch04-410-mo-hinh-rui-ro-quan-ly-lo-hong">4.10. Mô hình rủi ro &amp;amp; quản lý lỗ hổng</a><a class="nav-sub" href="#ch04-411-nguyen-tac-thiet-ke-bao-mat-secure-design-principles">4.11. Nguyên tắc thiết kế bảo mật (Secure Design Principles)</a><a class="nav-sub" href="#ch04-412-mat-ma-hau-luong-tu-post-quantum-cryptography-crypto-agility">4.12. Mật mã hậu lượng tử (Post-Quantum Cryptography) &amp;amp; crypto-agility</a><a class="nav-sub" href="#ch04-413-tong-ket-ban-đo-quyet-đinh">4.13. Tổng kết bản đồ quyết định</a><a class="nav-sub" href="#ch04-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
+  </aside>
+  <div class="content">
+    <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Sổ tay An toàn thông tin</span>
+      <button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/notes.html">🌐 EN</a></div>
+    <main class="main" id="top">
+      <section class="chapter" id="sec-04" data-ch="04">
+<h1 id="ch04-chuong-4-mat-ma-hoc-nen-tang-bao-mat">Chương 4 — Mật mã học &amp; Nền tảng bảo mật</h1>
+<h2 id="ch04-tong-quan">Tổng quan</h2>
+<p>Mình học mật mã học không phải để tự code lại AES, mà để đọc hiểu vì sao một quyết định thiết kế là an toàn hay không — ký JWT bằng thuật toán nào, lưu mật khẩu bằng hash gì, chứng chỉ TLS hết hạn thì gãy ở đâu. Ba năng lực mà mật mã học giải quyết cũng là ba câu hỏi lặp lại trong mọi lần review: giữ bí mật, bảo đảm toàn vẹn, và chứng minh nguồn gốc. Thiếu một trong ba là hệ thống có lỗ hổng, dù phần mã hóa trông có vẻ ổn.</p>
+<p>Chương mở đầu bằng bộ khung khái niệm nền — <strong>CIA</strong> (confidentiality/integrity/availability), <strong>AAA</strong> (authentication/authorization/accounting) và <strong>non-repudiation</strong> — rồi tới chỗ người mới học hay lẫn nhất: <strong>encoding, hashing và encryption</strong> là ba việc hoàn toàn khác nhau, không dùng thay nhau được (Base64 mật khẩu là sai lầm kinh điển). Từ nền đó, chương đi vào hai trụ cột chính: <strong>mã hóa đối xứng</strong> (AES, AEAD) và <strong>mã hóa bất đối xứng</strong> (RSA, ECC, DH/ECDHE), cùng <strong>hàm băm mật mã</strong> và lý do MD5/SHA-1 bị coi là đã vỡ trong khi SHA-256/SHA-3 vẫn đứng vững.</p>
+<p>Phần còn lại gắn thẳng vào việc vận hành hệ thống thật: lưu mật khẩu đúng cách bằng <strong>Argon2/bcrypt/scrypt</strong> kèm salt và pepper, dùng <strong>HMAC</strong> và <strong>chữ ký số</strong> để xác thực toàn vẹn và nguồn gốc, rồi tới <strong>PKI/X.509</strong> — nền tảng của mọi kết nối HTTPS. Khép chương là mô hình rủi ro (vulnerability, threat, exploit, risk, cùng bộ định danh CVE/CWE/CVSS) và các nguyên tắc thiết kế nền tảng như least privilege, defense in depth, zero trust và nguyên lý Kerckhoffs — lý do AES hay RSA công khai toàn bộ thuật toán mà vẫn an toàn.</p>
+<blockquote>
+<p>Số liệu kỹ thuật trong chương bám theo NIST FIPS/RFC; chỗ nào mình chưa chắc chắn sẽ ghi rõ cần kiểm chứng thêm.</p>
+</blockquote>
+<hr />
+<h2 id="ch04-41-khung-khai-niem-nen-tang-cia-aaa-non-repudiation">4.1. Khung khái niệm nền tảng: CIA, AAA, Non-repudiation</h2>
+<h3 id="ch04-411-tam-giac-cia">4.1.1. Tam giác CIA</h3>
+<p>Mọi quyết định mật mã đều phục vụ một trong ba mục tiêu của bộ ba CIA. Hiểu rõ "thuộc tính nào đang được bảo vệ" giúp chọn đúng nguyên thủy mật mã (primitive).</p>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Câu hỏi bảo vệ</th>
+<th>Nguyên thủy mật mã điển hình</th>
+<th>Mất khi nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confidentiality (Bí mật)</td>
+<td>"Ai được đọc?"</td>
+<td>Mã hóa (AES-GCM, ChaCha20, RSA-OAEP)</td>
+<td>Eavesdropping, key leak, ECB pattern</td>
+</tr>
+<tr>
+<td>Integrity (Toàn vẹn)</td>
+<td>"Dữ liệu có bị sửa?"</td>
+<td>Hash, HMAC, AEAD tag, chữ ký số</td>
+<td>Bit-flip, MITM tampering</td>
+</tr>
+<tr>
+<td>Availability (Sẵn sàng)</td>
+<td>"Có truy cập được khi cần?"</td>
+<td>Không phải bài toán mật mã thuần (DoS, backup, ransomware)</td>
+<td>DDoS, ransomware mã hóa dữ liệu</td>
+</tr>
+</tbody>
+</table>
+<p>Điểm dễ nhầm: <strong>mã hóa KHÔNG đảm bảo toàn vẹn</strong>. AES-CBC giữ bí mật nhưng kẻ tấn công vẫn lật bit ciphertext để thao túng plaintext (bit-flipping). Vì vậy thực tế dùng <strong>AEAD</strong> (Authenticated Encryption with Associated Data) gộp cả C và I.</p>
+<h3 id="ch04-412-aaa-authentication-authorization-accounting">4.1.2. AAA — Authentication, Authorization, Accounting</h3>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>Định nghĩa</th>
+<th>"Là ai / được làm gì / đã làm gì"</th>
+<th>Ví dụ kỹ thuật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authentication</td>
+<td>Xác thực danh tính</td>
+<td>"Bạn là ai?"</td>
+<td>Password + bcrypt, MFA TOTP, client cert mTLS</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>Cấp quyền</td>
+<td>"Bạn được làm gì?"</td>
+<td>RBAC, ABAC, OAuth scopes, IAM policy</td>
+</tr>
+<tr>
+<td>Accounting (Auditing)</td>
+<td>Ghi nhận hành vi</td>
+<td>"Bạn đã làm gì?"</td>
+<td>Audit log, SIEM, CloudTrail</td>
+</tr>
+</tbody>
+</table>
+<p>Lưu ý phân biệt <strong>Authentication ≠ Authorization</strong>: một JWT hợp lệ chứng minh <em>bạn là ai</em> (authn), nhưng claim <code>scope</code>/<code>role</code> bên trong mới quyết định <em>bạn làm được gì</em> (authz). Lỗi phổ biến IDOR/BOLA là authn đúng nhưng authz thiếu.</p>
+<h3 id="ch04-413-non-repudiation-chong-choi-bo">4.1.3. Non-repudiation (Chống chối bỏ)</h3>
+<p>Non-repudiation = "không thể chối là tôi không làm". Chỉ đạt được bằng <strong>chữ ký số bằng khóa riêng (private key)</strong> mà chỉ chủ thể sở hữu.</p>
+<ul>
+<li>HMAC <strong>không</strong> cho non-repudiation: cả người gửi và người nhận đều biết khóa bí mật chung → người nhận có thể tự giả mạo message → không chứng minh được trước bên thứ ba.</li>
+<li>Chữ ký RSA/ECDSA <strong>có</strong> non-repudiation: chỉ chủ private key ký được, ai cũng verify bằng public key.</li>
+</ul>
+<hr />
+<h2 id="ch04-42-ba-khai-niem-hay-bi-lan-encoding-vs-hashing-vs-encryption">4.2. Ba khái niệm hay bị lẫn: Encoding vs Hashing vs Encryption</h2>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Encoding</th>
+<th>Hashing</th>
+<th>Encryption</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mục đích</td>
+<td>Biểu diễn dữ liệu cho truyền/lưu</td>
+<td>Toàn vẹn, fingerprint, lưu mật khẩu</td>
+<td>Bảo mật (confidentiality)</td>
+</tr>
+<tr>
+<td>Cần khóa?</td>
+<td>Không</td>
+<td>Không (HMAC thì có)</td>
+<td>Có</td>
+</tr>
+<tr>
+<td>Đảo ngược?</td>
+<td>Có, ai cũng đảo được</td>
+<td>KHÔNG (one-way)</td>
+<td>Có, nếu có khóa</td>
+</tr>
+<tr>
+<td>Đầu ra cố định độ dài?</td>
+<td>Không</td>
+<td>Có (SHA-256 luôn 256-bit)</td>
+<td>Không (xấp xỉ độ dài input)</td>
+</tr>
+<tr>
+<td>Ví dụ</td>
+<td>Base64, URL-encode, hex, ASCII</td>
+<td>SHA-256, SHA-3, bcrypt</td>
+<td>AES, RSA, ChaCha20</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sai lầm chết người:</strong> "tôi Base64 mật khẩu cho an toàn". Base64 KHÔNG phải mã hóa — không có khóa, giải ngược tức thì.</p>
+<pre><code class="language-bash"># Base64 KHÔNG bảo mật gì cả:
+$ echo -n 'P@ssw0rd' | base64
+UEBzc3cwcmQ=
+$ echo -n 'UEBzc3cwcmQ=' | base64 -d
+P@ssw0rd     # giải ra ngay, không cần khóa
+</code></pre>
+<p>Cơ chế Base64 (RFC 4648): gom <strong>3 byte (24 bit)</strong> input → chia thành <strong>4 nhóm 6 bit</strong> → mỗi nhóm 6 bit (0–63) tra bảng 64 ký tự <code>A-Za-z0-9+/</code>. Thiếu byte thì đệm <code>=</code>. Vì 6 bit không chia hết byte nên output dài hơn input ~33%.</p>
+<pre><code>Input :  P        @        s          (3 byte = 24 bit)
+ASCII : 0x50     0x40     0x73
+bits  : 01010000 01000000 01110011
+chia6 : 010100 000100 000001 110011
+value :   20      4       1     51
+base64:   U       E       B     z
+</code></pre>
+<hr />
+<h2 id="ch04-43-ma-hoa-đoi-xung-aes-advanced-encryption-standard">4.3. Mã hóa đối xứng: AES (Advanced Encryption Standard)</h2>
+<h3 id="ch04-431-tong-quan-va-ly-do-thiet-ke">4.3.1. Tổng quan và lý do thiết kế</h3>
+<p>AES là chuẩn FIPS 197, dựa trên thuật toán <strong>Rijndael</strong>. Là <strong>block cipher</strong>: xử lý theo khối cố định <strong>128 bit (16 byte)</strong>. Khóa hỗ trợ 3 độ dài → số vòng tương ứng:</p>
+<table>
+<thead>
+<tr>
+<th>Biến thể</th>
+<th>Key size</th>
+<th>Số vòng (Nr)</th>
+<th>Số word khóa (Nk)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AES-128</td>
+<td>128 bit (16 byte)</td>
+<td>10</td>
+<td>4</td>
+</tr>
+<tr>
+<td>AES-192</td>
+<td>192 bit (24 byte)</td>
+<td>12</td>
+<td>6</td>
+</tr>
+<tr>
+<td>AES-256</td>
+<td>256 bit (32 byte)</td>
+<td>14</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p>Block luôn 128 bit bất kể key size (Nb = 4 word = 128 bit). Khối được biểu diễn dạng <strong>state</strong> — ma trận 4×4 byte, đổ theo cột (column-major):</p>
+<pre><code>input bytes b0..b15  →  state:
+            col0 col1 col2 col3
+row0       b0   b4   b8   b12
+row1       b1   b5   b9   b13
+row2       b2   b6   b10  b14
+row3       b3   b7   b11  b15
+</code></pre>
+<h3 id="ch04-432-bon-phep-bien-đoi-trong-moi-vong">4.3.2. Bốn phép biến đổi trong mỗi vòng</h3>
+<p>Mỗi vòng (trừ vòng cuối bỏ MixColumns) gồm 4 bước trên state 4×4:</p>
+<p><strong>1. SubBytes</strong> — thay thế phi tuyến từng byte qua <strong>S-box</strong> (256 phần tử). S-box = nghịch đảo trong trường Galois GF(2⁸) (đa thức bất khả quy <code>0x11B</code>) rồi affine transform. Mục đích: tạo <strong>confusion</strong> (quan hệ key↔ciphertext phức tạp), chống tuyến tính/vi phân.</p>
+<p>Phần toán GF(2⁸) ở đây chỉ cần hiểu <strong>ý tưởng</strong>: mỗi byte được "trộn" qua một bảng tra cố định sao cho quan hệ vào–ra phi tuyến và khó phân tích. Trong thực tế S-box là bảng dựng sẵn nên không cần tự tính.</p>
+<pre><code>byte 0x53 → S-box[0x53] = 0xED
+(tra hàng 0x5, cột 0x3 trong bảng 16×16)
+</code></pre>
+<p><strong>2. ShiftRows</strong> — dịch vòng từng hàng sang trái: hàng 0 dịch 0, hàng 1 dịch 1, hàng 2 dịch 2, hàng 3 dịch 3 byte. Mục đích: <strong>diffusion</strong> theo cột.</p>
+<pre><code>trước:          sau ShiftRows:
+b0 b4 b8 b12    b0  b4  b8  b12   (dịch 0)
+b1 b5 b9 b13    b5  b9  b13 b1    (dịch 1)
+b2 b6 b10 b14   b10 b14 b2  b6    (dịch 2)
+b3 b7 b11 b15   b15 b3  b7  b11   (dịch 3)
+</code></pre>
+<p><strong>3. MixColumns</strong> — mỗi cột nhân với ma trận cố định trong GF(2⁸):</p>
+<pre><code>| 02 03 01 01 |   | s0 |
+| 01 02 03 01 | x | s1 |
+| 01 01 02 03 |   | s2 |
+| 03 01 01 02 |   | s3 |
+</code></pre>
+<p>Mục đích: <strong>diffusion</strong> — một byte input ảnh hưởng cả 4 byte output cột. (Vòng cuối bỏ bước này vì không thêm bảo mật, chỉ tốn chi phí và để decryption đối xứng.) Phép nhân ma trận trong GF(2⁸) nhìn nặng, nhưng nắm được <strong>ý tưởng</strong> "khuấy đều các byte trong cùng một cột" là đủ — chi tiết số học để dành cho người tự cài thuật toán.</p>
+<p><strong>4. AddRoundKey</strong> — XOR state với round key 128-bit của vòng. Đây là bước duy nhất đưa khóa vào. Round key sinh từ <strong>key schedule</strong> (Rijndael key expansion) dùng RotWord, SubWord, Rcon.</p>
+<p>Trình tự đầy đủ AES-128 (10 vòng):</p>
+<pre><code>AddRoundKey(K0)                      # whitening trước
+for r = 1..9:
+    SubBytes → ShiftRows → MixColumns → AddRoundKey(Kr)
+round 10:
+    SubBytes → ShiftRows → AddRoundKey(K10)   # KHÔNG MixColumns
+</code></pre>
+<p><strong>Vì sao 10/12/14 vòng?</strong> Khóa dài hơn cần nhiều vòng hơn để đạt đủ confusion/diffusion chống tấn công related-key và phân biệt thống kê.</p>
+<h3 id="ch04-433-che-đo-hoat-đong-modes-of-operation">4.3.3. Chế độ hoạt động (Modes of Operation)</h3>
+<p>Block cipher chỉ mã 1 khối 16 byte. Để mã dữ liệu dài cần <strong>mode</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Cần IV/Nonce</th>
+<th>Song song hóa</th>
+<th>Toàn vẹn?</th>
+<th>Vấn đề</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ECB</td>
+<td>Không</td>
+<td>Có</td>
+<td>Không</td>
+<td>Lộ pattern</td>
+</tr>
+<tr>
+<td>CBC</td>
+<td>IV 16 byte (random, unpredictable)</td>
+<td>Mã: không / Giải: có</td>
+<td>Không</td>
+<td>Padding oracle, bit-flip</td>
+</tr>
+<tr>
+<td>CTR</td>
+<td>Nonce + counter</td>
+<td>Có</td>
+<td>Không</td>
+<td>Tái dùng nonce = thảm họa</td>
+</tr>
+<tr>
+<td>GCM</td>
+<td>Nonce 96-bit khuyến nghị</td>
+<td>Có</td>
+<td>CÓ (tag 128-bit)</td>
+<td>Tái dùng nonce phá toàn bộ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ECB — vì sao lộ pattern?</strong> Mỗi khối plaintext giống nhau → ciphertext giống nhau (<code>Ci = E(K, Pi)</code>). Ảnh ECB lộ đường viền là vì các vùng màu đồng nhất thành các khối giống hệt.</p>
+<pre><code>ECB:  C1=E(P1)  C2=E(P2)  C3=E(P3)   # P giống → C giống
+</code></pre>
+<p><strong>CBC</strong> — XOR khối trước vào khối hiện tại để khuếch tán:</p>
+<pre><code>C0 = E(K, P0 XOR IV)
+Ci = E(K, Pi XOR C(i-1))
+</code></pre>
+<p>IV phải <strong>ngẫu nhiên và không đoán được</strong> (16 byte), nếu không bị tấn công chosen-plaintext (xem TLS 1.0 BEAST).</p>
+<p><strong>CTR</strong> — biến block cipher thành stream cipher: mã hóa bộ đếm rồi XOR plaintext:</p>
+<pre><code>Ci = Pi XOR E(K, nonce || counter_i)
+</code></pre>
+<p>Nếu tái dùng cặp (key, nonce): hai bản mã XOR triệt tiêu keystream → lộ <code>P1 XOR P2</code>.</p>
+<p><strong>GCM</strong> = CTR (bảo mật) + GHASH (toàn vẹn). Sinh <strong>authentication tag 128-bit</strong> trên ciphertext + AAD. Nonce khuyến nghị <strong>96 bit (12 byte)</strong>. AAD (Associated Data) được xác thực nhưng không mã hóa (ví dụ header gói tin). Tái dùng nonce trong GCM còn lộ cả khóa xác thực H → giả mạo được.</p>
+<h3 id="ch04-434-vi-du-thuc-te-voi-openssl">4.3.4. Ví dụ thực tế với OpenSSL</h3>
+<pre><code class="language-bash"># Tạo khóa 256-bit (32 byte) và IV 128-bit (16 byte) dạng hex
+$ KEY=$(openssl rand -hex 32)   # 64 ký tự hex = 32 byte
+$ IV=$(openssl rand -hex 16)    # 32 ký tự hex = 16 byte
+
+# Mã hóa AES-256-CBC
+$ echo -n &quot;Secret message&quot; &gt; pt.txt
+$ openssl enc -aes-256-cbc -K $KEY -iv $IV -in pt.txt -out ct.bin
+$ xxd ct.bin
+00000000: 8d2a 1f... (16 byte vì input &lt;16 → pad PKCS#7 lên 1 khối)
+
+# Giải mã
+$ openssl enc -d -aes-256-cbc -K $KEY -iv $IV -in ct.bin
+Secret message
+</code></pre>
+<p>Giải thích tham số: <code>enc</code> = symmetric encryption; <code>-aes-256-cbc</code> = thuật toán+keysize+mode; <code>-K</code> = khóa hex (chữ K hoa, dùng raw key — khác <code>-k</code> thường là passphrase qua KDF); <code>-iv</code> = IV hex; <code>-d</code> = decrypt.</p>
+<p>AEAD với GCM (Python, thư viện <code>cryptography</code>):</p>
+<pre><code class="language-python">from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+import os
+
+key   = AESGCM.generate_key(bit_length=256)   # 32 byte
+nonce = os.urandom(12)                          # 96-bit nonce
+aad   = b&quot;header-v1&quot;                            # xác thực, không mã hóa
+aesgcm = AESGCM(key)
+
+ct = aesgcm.encrypt(nonce, b&quot;top secret&quot;, aad)  # ct = ciphertext || tag(16B)
+print(len(ct))   # = 10 (plaintext) + 16 (tag) = 26
+
+pt = aesgcm.decrypt(nonce, ct, aad)  # raise InvalidTag nếu sửa ct/aad/nonce
+</code></pre>
+<p><strong>Lưu ý bảo mật AES:</strong>
+- Luôn ưu tiên <strong>AES-GCM</strong> hoặc <strong>ChaCha20-Poly1305</strong> (AEAD), không CBC trần.
+- <strong>Không bao giờ tái dùng nonce</strong> với cùng khóa trong GCM/CTR.
+- Không tự cài thuật toán; dùng thư viện đã kiểm chứng (libsodium, BoringSSL).
+- ECB chỉ dùng cho dữ liệu ngẫu nhiên đơn khối (gần như không bao giờ trong thực tế).</p>
+<hr />
+<h2 id="ch04-44-ma-hoa-bat-đoi-xung-rsa-ecc-dhecdhe">4.4. Mã hóa bất đối xứng: RSA, ECC, DH/ECDHE</h2>
+<h3 id="ch04-441-rsa-tung-buoc-toan-hoc">4.4.1. RSA — từng bước toán học</h3>
+<p>RSA dựa trên độ khó <strong>phân tích thừa số nguyên tố</strong> của số lớn.</p>
+<p><strong>Sinh khóa:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ minh họa (số nhỏ để hiểu)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>p, q</td>
+<td>Hai số nguyên tố lớn, bí mật</td>
+<td>p=61, q=53</td>
+</tr>
+<tr>
+<td>n = p·q</td>
+<td>Modulus (công khai), 2048/4096-bit</td>
+<td>n=3233</td>
+</tr>
+<tr>
+<td>φ(n)=(p-1)(q-1)</td>
+<td>Hàm Euler totient, bí mật</td>
+<td>60·52=3120</td>
+</tr>
+<tr>
+<td>e</td>
+<td>Public exponent, gcd(e,φ)=1, thường 65537</td>
+<td>e=17</td>
+</tr>
+<tr>
+<td>d ≡ e⁻¹ mod φ(n)</td>
+<td>Private exponent, bí mật</td>
+<td>d=2753</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Public key = (n, e); Private key = (n, d).</li>
+<li><strong>Mã hóa:</strong> <code>c = m^e mod n</code></li>
+<li><strong>Giải mã:</strong> <code>m = c^d mod n</code></li>
+</ul>
+<p>Với ví dụ: m=65 → c = 65¹⁷ mod 3233 = 2790 → m = 2790²⁷⁵³ mod 3233 = 65.</p>
+<p><strong>Vì sao 65537 (0x10001)?</strong> Là số Fermat F₄, dạng nhị phân <code>10000000000000001</code> chỉ có 2 bit 1 → lũy thừa nhanh (chỉ 17 phép bình phương + 1 nhân) nhưng đủ lớn để tránh tấn công với e nhỏ (e=3 dễ bị Coppersmith/broadcast attack).</p>
+<p><strong>Padding bắt buộc:</strong> RSA "textbook" (không padding) cực kỳ không an toàn (deterministic, malleable). Dùng:
+- <strong>OAEP</strong> cho mã hóa (RSAES-OAEP).
+- <strong>PSS</strong> cho chữ ký (RSASSA-PSS).</p>
+<p>Độ dài khóa: 2048-bit là tối thiểu hiện nay; 3072/4096-bit cho dài hạn. RSA-1024 đã bị coi là yếu.</p>
+<pre><code class="language-bash"># Sinh cặp khóa RSA 4096-bit
+$ openssl genrsa -out priv.pem 4096
+$ openssl rsa -in priv.pem -pubout -out pub.pem
+
+# Xem chi tiết khóa (modulus, exponent)
+$ openssl rsa -in priv.pem -text -noout | head
+Private-Key: (4096 bit, 2 primes)
+modulus: 00:c3:a1:...        # n
+publicExponent: 65537 (0x10001)
+privateExponent: ...          # d
+prime1: ... prime2: ...        # p, q
+
+# Mã hóa file nhỏ bằng OAEP (RSA chỉ mã được ≤ keysize - padding)
+$ echo -n &quot;session-key-material&quot; | \
+  openssl pkeyutl -encrypt -pubin -inkey pub.pem \
+  -pkeyopt rsa_padding_mode:oaep -out enc.bin
+$ openssl pkeyutl -decrypt -inkey priv.pem \
+  -pkeyopt rsa_padding_mode:oaep -in enc.bin
+session-key-material
+</code></pre>
+<p>RSA chỉ mã hóa được dữ liệu nhỏ hơn modulus → thực tế dùng <strong>hybrid encryption</strong>: RSA mã hóa một khóa AES ngẫu nhiên, AES mã hóa dữ liệu lớn.</p>
+<pre><code>Sơ đồ mã hóa lai (hybrid encryption):
+
+Bên gửi                                              Bên nhận
+────────                                             ────────
+data (lớn) ──┐
+             │
+   K_sym ────┼──► AES-GCM(K_sym, data) ─► ciphertext ─────────► AES-GCM giải ─► data
+ (ngẫu nhiên)│                                                       ▲
+             │                                                       │ K_sym
+             └──► RSA-OAEP(pub, K_sym) ─► enc_key ──────────► RSA giải (priv)
+                  (bất đối xứng trao khóa)            (đối xứng mã dữ liệu khối lớn)
+</code></pre>
+<p>Bất đối xứng (RSA/ECDH) chỉ làm nhiệm vụ <strong>trao khóa phiên</strong> an toàn; khóa đối xứng (AES) gánh phần mã hóa khối lượng dữ liệu lớn vì nhanh hơn nhiều. Đây chính là mô hình TLS dùng cho mọi phiên HTTPS.</p>
+<h3 id="ch04-442-ecc-elliptic-curve-cryptography">4.4.2. ECC — Elliptic Curve Cryptography</h3>
+<p>ECC dựa trên độ khó của <strong>bài toán logarit rời rạc trên đường cong elliptic (ECDLP)</strong>. Ưu điểm: khóa ngắn hơn nhiều mà cùng độ an toàn.</p>
+<table>
+<thead>
+<tr>
+<th>Độ an toàn tương đương</th>
+<th>RSA</th>
+<th>ECC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>~128-bit</td>
+<td>3072-bit</td>
+<td>256-bit (P-256, Curve25519)</td>
+</tr>
+<tr>
+<td>~192-bit</td>
+<td>7680-bit</td>
+<td>384-bit (P-384)</td>
+</tr>
+<tr>
+<td>~256-bit</td>
+<td>15360-bit</td>
+<td>521-bit (P-521)</td>
+</tr>
+</tbody>
+</table>
+<p>Đường cong dạng Weierstrass: <code>y² = x³ + ax + b mod p</code>. Phép toán cơ bản là <strong>point addition</strong> và <strong>scalar multiplication</strong> <code>Q = k·G</code> (G là điểm sinh, k là private key, Q là public key). An toàn vì từ Q và G khó tìm ngược k.</p>
+<p>Đường cong phổ biến: NIST P-256 (secp256r1), <strong>Curve25519</strong> (X25519 cho ECDH, Ed25519 cho chữ ký) — Curve25519 được ưa chuộng vì thiết kế chống lỗi cài đặt, không có tham số nghi ngờ backdoor.</p>
+<pre><code class="language-bash"># Sinh khóa Ed25519 (chữ ký) — ví dụ SSH key hiện đại
+$ ssh-keygen -t ed25519 -C &quot;ops@example.com&quot; -f id_ed25519
+# Khóa public chỉ ~68 ký tự, an toàn ~128-bit
+</code></pre>
+<h3 id="ch04-443-diffie-hellman-ecdhe-forward-secrecy">4.4.3. Diffie-Hellman &amp; ECDHE — Forward Secrecy</h3>
+<p><strong>DH</strong> cho phép hai bên thỏa thuận khóa chung qua kênh công khai mà không truyền khóa.</p>
+<pre><code>Công khai: số nguyên tố p, generator g
+Alice: chọn a bí mật → gửi A = g^a mod p
+Bob  : chọn b bí mật → gửi B = g^b mod p
+Khóa chung: Alice tính B^a = g^(ab); Bob tính A^b = g^(ab)  → BẰNG NHAU
+Kẻ nghe lén thấy g, p, A, B nhưng không tính được g^(ab) (bài toán DLP)
+</code></pre>
+<p><strong>ECDHE</strong> = DH trên đường cong elliptic, <strong>ephemeral</strong> (khóa tạm thời mỗi phiên). Chữ "E" cuối (ephemeral) là chìa khóa của <strong>Forward Secrecy (PFS)</strong>:</p>
+<blockquote>
+<p>Nếu khóa riêng dài hạn của server bị lộ trong tương lai, các phiên đã ghi lại trong quá khứ <strong>không</strong> giải mã được, vì khóa phiên dùng cặp ECDHE tạm thời đã bị hủy.</p>
+</blockquote>
+<p>Đây là lý do TLS 1.3 <strong>bắt buộc</strong> dùng (EC)DHE ephemeral, loại bỏ hoàn toàn RSA key exchange tĩnh (vốn không có forward secrecy — lộ private key server giải được mọi phiên cũ đã ghi).</p>
+<hr />
+<h2 id="ch04-45-ham-bam-mat-ma-cryptographic-hash">4.5. Hàm băm mật mã (Cryptographic Hash)</h2>
+<h3 id="ch04-451-tinh-chat-bat-buoc">4.5.1. Tính chất bắt buộc</h3>
+<table>
+<thead>
+<tr>
+<th>Tính chất</th>
+<th>Định nghĩa</th>
+<th>Hệ quả nếu vỡ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-image resistance</td>
+<td>Từ h khó tìm m sao cho H(m)=h</td>
+<td>Đảo ngược hash</td>
+</tr>
+<tr>
+<td>Second pre-image</td>
+<td>Cho m1, khó tìm m2≠m1 cùng hash</td>
+<td>Giả mạo có chủ đích</td>
+</tr>
+<tr>
+<td>Collision resistance</td>
+<td>Khó tìm bất kỳ m1≠m2 cùng hash</td>
+<td>Giả chứng chỉ (MD5/SHA-1 đã vỡ)</td>
+</tr>
+<tr>
+<td>Avalanche effect</td>
+<td>Đổi 1 bit input → ~50% bit output đổi</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch04-452-sha-256-cau-truc-merkledamgard">4.5.2. SHA-256 — cấu trúc Merkle–Damgård</h3>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kích thước output</td>
+<td>256 bit (32 byte)</td>
+</tr>
+<tr>
+<td>Kích thước block</td>
+<td>512 bit (64 byte)</td>
+</tr>
+<tr>
+<td>Word size</td>
+<td>32 bit</td>
+</tr>
+<tr>
+<td>Số vòng nén</td>
+<td>64</td>
+</tr>
+<tr>
+<td>Hằng số H ban đầu</td>
+<td>8 word (từ căn bậc 2 của 8 số nguyên tố đầu)</td>
+</tr>
+<tr>
+<td>Hằng số K</td>
+<td>64 word (từ căn bậc 3 của 64 số nguyên tố đầu)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quy trình (Merkle–Damgård):</strong>
+1. <strong>Padding:</strong> thêm 1 bit <code>1</code>, rồi các bit <code>0</code>, sao cho độ dài ≡ 448 mod 512, rồi 64 bit cuối ghi <strong>độ dài message gốc</strong> (big-endian). Tổng chia hết 512.
+2. Chia thành các block 512-bit.
+3. Mỗi block: mở rộng 16 word → 64 word (message schedule W), chạy 64 vòng nén cập nhật 8 biến a–h với các hàm Σ, σ, Ch, Maj.
+4. Cộng vào hash trung gian (chaining); block cuối ra digest.</p>
+<pre><code>[H0..H7 init] → compress(block1) → compress(block2) → ... → digest 256-bit
+                     ↑ chaining value đưa vào block sau
+</code></pre>
+<p>Không cần thuộc từng hàm Σ/σ/Ch/Maj — nắm <strong>ý tưởng</strong> là đủ: chia message thành các block, lần lượt "nén" từng block vào một giá trị trạng thái mang sang block kế, block cuối cho ra digest.</p>
+<pre><code class="language-bash">$ echo -n &quot;abc&quot; | sha256sum
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  -
+# luôn 64 ký tự hex = 256 bit, dù input dài ngắn thế nào
+$ echo -n &quot;abd&quot; | sha256sum   # đổi 1 ký tự → digest hoàn toàn khác (avalanche)
+a52d159f262b2c6ddb724a61840befc36eb30c88877a4030b65cbe86298449c9  -
+</code></pre>
+<p><strong>Lỗ hổng length-extension:</strong> vì Merkle–Damgård lộ trạng thái trung gian = digest, kẻ tấn công biết <code>H(secret||msg)</code> và độ dài secret có thể tính <code>H(secret||msg||padding||extra)</code> mà không biết secret. Đây là lý do <strong>không dùng <code>H(secret||message)</code> làm MAC</strong> — phải dùng HMAC. (SHA-3 không bị do cấu trúc sponge.)</p>
+<h3 id="ch04-453-sha-3-keccak-cau-truc-sponge">4.5.3. SHA-3 (Keccak) — cấu trúc Sponge</h3>
+<p>SHA-3 (FIPS 202) dùng cấu trúc <strong>sponge</strong> khác hẳn Merkle–Damgård:
+- State 1600 bit, chia <strong>rate (r)</strong> + <strong>capacity (c)</strong>.
+- Giai đoạn <strong>absorb</strong>: XOR block vào phần rate rồi áp hàm hoán vị Keccak-f.
+- Giai đoạn <strong>squeeze</strong>: lấy output từ phần rate.
+- Miễn nhiễm length-extension. Cũng có biến thể SHAKE128/256 (XOF — output độ dài tùy ý).</p>
+<p>SHA-3 là dự phòng kiến trúc cho SHA-2, <strong>không phải</strong> vì SHA-2 đã yếu — SHA-2 hiện vẫn an toàn. Việc có hai họ hàm với cấu trúc khác hẳn nhau giúp đa dạng hóa rủi ro: nếu một ngày Merkle–Damgård bị tấn công, ta vẫn còn sponge để chuyển sang.</p>
+<h3 id="ch04-454-vi-sao-loai-bo-md5-va-sha-1">4.5.4. Vì sao loại bỏ MD5 và SHA-1</h3>
+<table>
+<thead>
+<tr>
+<th>Hàm</th>
+<th>Output</th>
+<th>Trạng thái</th>
+<th>Bằng chứng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MD5</td>
+<td>128-bit</td>
+<td>VỠ HOÀN TOÀN</td>
+<td>Collision tạo được trong giây; chứng chỉ CA giả (Flame malware 2012)</td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td>160-bit</td>
+<td>VỠ</td>
+<td>SHAttered (2017, Google): 2 PDF khác nhau cùng SHA-1; Git đã chuyển dần SHA-256</td>
+</tr>
+<tr>
+<td>SHA-256/SHA-3</td>
+<td>256-bit</td>
+<td>An toàn</td>
+<td>Khuyến nghị hiện tại</td>
+</tr>
+</tbody>
+</table>
+<p>MD5/SHA-1 chỉ còn chấp nhận cho <strong>checksum không liên quan bảo mật</strong> (phát hiện lỗi truyền ngẫu nhiên), tuyệt đối không dùng cho chữ ký, chứng chỉ, lưu mật khẩu.</p>
+<hr />
+<h2 id="ch04-46-luu-tru-mat-khau-an-toan">4.6. Lưu trữ mật khẩu an toàn</h2>
+<h3 id="ch04-461-vi-sao-khong-hash-thuong">4.6.1. Vì sao không hash thường</h3>
+<p>Hash thường (SHA-256) <strong>quá nhanh</strong> → GPU thử hàng tỷ ứng viên/giây (brute-force, rainbow table). Cần hàm <strong>chậm có chủ đích</strong> và <strong>có salt</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Định nghĩa</th>
+<th>Chống được</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Salt</td>
+<td>Chuỗi ngẫu nhiên duy nhất mỗi user, lưu cùng hash</td>
+<td>Rainbow table, hash trùng nhau</td>
+</tr>
+<tr>
+<td>Pepper</td>
+<td>Bí mật chung (HSM/biến môi trường), KHÔNG lưu cùng DB</td>
+<td>Lộ toàn bộ DB vẫn an toàn nếu pepper không lộ</td>
+</tr>
+<tr>
+<td>Work factor / cost</td>
+<td>Tham số làm hàm chậm hơn (lặp, RAM)</td>
+<td>Brute-force GPU/ASIC</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ch04-462-bcrypt-đinh-dang-chi-tiet">4.6.2. bcrypt — định dạng chi tiết</h3>
+<p>bcrypt sinh chuỗi <strong>60 ký tự</strong> với cấu trúc:</p>
+<pre><code>$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW
+└┬┘└┬┘ └───────────────────┬──────────────────────────────┘
+ │  │                       │
+ │  │   salt(22 ký tự,128-bit) + hash(31 ký tự,184-bit) — base64 bcrypt
+ │  └─ cost = 12 → 2^12 = 4096 vòng key setup
+ └─ algo version: $2b$ (bản hiện đại)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Kích thước</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prefix</td>
+<td>4 ký tự</td>
+<td>Version</td>
+<td><code>$2b$</code></td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>2 ký tự</td>
+<td>log2(số vòng)</td>
+<td><code>12</code></td>
+</tr>
+<tr>
+<td>Salt</td>
+<td>22 ký tự (128-bit)</td>
+<td>Salt base64</td>
+<td><code>R9h/cIPz0gi.URNNX3kh2O</code></td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>31 ký tự (184-bit)</td>
+<td>Digest</td>
+<td><code>PST9/...MUW</code></td>
+</tr>
+</tbody>
+</table>
+<p>Giới hạn: bcrypt cắt input ở <strong>72 byte</strong>. Cost tăng 1 → gấp đôi thời gian.</p>
+<pre><code class="language-python">import bcrypt
+pw = b&quot;P@ssw0rd&quot;
+hashed = bcrypt.hashpw(pw, bcrypt.gensalt(rounds=12))
+# b'$2b$12$....'  — salt nằm trong chuỗi, không cần lưu riêng
+assert bcrypt.checkpw(pw, hashed)   # True
+</code></pre>
+<h3 id="ch04-463-scrypt-argon2">4.6.3. scrypt &amp; Argon2</h3>
+<ul>
+<li><strong>scrypt:</strong> thêm tham số <strong>memory-hard</strong> (N, r, p) → tốn RAM, chống ASIC/GPU vốn yếu về bộ nhớ.</li>
+<li><strong>Argon2</strong> (winner Password Hashing Competition 2015): chuẩn khuyến nghị hiện nay.</li>
+<li><strong>Argon2id</strong> (lai, khuyến nghị mặc định), Argon2i (chống side-channel), Argon2d (chống GPU).</li>
+<li>Tham số: <code>m</code> (memory KiB), <code>t</code> (iterations/time), <code>p</code> (parallelism).</li>
+</ul>
+<pre><code>$argon2id$v=19$m=65536,t=3,p=4$&lt;salt-b64&gt;$&lt;hash-b64&gt;
+         │     │     │    │  │
+         │     │     │    │  └ parallelism=4 luồng
+         │     │     │    └ iterations=3
+         │     │     └ memory=65536 KiB (64 MiB)
+         │     └ version 0x13 (19)
+         └ biến thể id
+</code></pre>
+<pre><code class="language-bash"># argon2 CLI
+$ echo -n &quot;P@ssw0rd&quot; | argon2 mysalt1234 -id -t 3 -m 16 -p 4
+Encoded: $argon2id$v=19$m=65536,t=3,p=4$bXlzYWx0MTIzNA$...
+</code></pre>
+<p><strong>Lưu ý:</strong> dùng Argon2id cho hệ mới; bcrypt vẫn chấp nhận được; PBKDF2 chỉ khi bắt buộc tuân thủ (FIPS). Pepper lưu tách biệt khỏi DB (KMS/HSM). Luôn so sánh hash bằng hàm <strong>constant-time</strong> để chống timing attack.</p>
+<hr />
+<h2 id="ch04-47-hmac-hash-based-message-authentication-code">4.7. HMAC — Hash-based Message Authentication Code</h2>
+<p>HMAC chứng minh <strong>toàn vẹn + xác thực nguồn gốc</strong> bằng khóa chia sẻ. Công thức (RFC 2104):</p>
+<pre><code>HMAC(K, m) = H( (K' XOR opad) || H( (K' XOR ipad) || m ) )
+
+K'   = khóa được pad/băm về đúng block size của H (SHA-256: 64 byte)
+ipad = byte 0x36 lặp lại (block size lần)
+opad = byte 0x5c lặp lại (block size lần)
+</code></pre>
+<p><strong>Vì sao hai lớp (inner+outer) và ipad/opad?</strong> Cấu trúc lồng hai lần chống chính length-extension attack đã nêu ở mục 4.5.2; nếu chỉ <code>H(K||m)</code> thì giả mạo được. ipad/opad là hai hằng số khác nhau để hai lần băm dùng khóa "khác nhau", tăng độ vững.</p>
+<pre><code class="language-bash">$ echo -n &quot;msg&quot; | openssl dgst -sha256 -hmac &quot;secretkey&quot;
+HMAC-SHA256(stdin)= 3f2a...   # đổi key hoặc msg → MAC đổi hoàn toàn
+</code></pre>
+<pre><code class="language-python">import hmac, hashlib
+mac = hmac.new(b&quot;secretkey&quot;, b&quot;msg&quot;, hashlib.sha256).hexdigest()
+# Verify PHẢI dùng compare_digest (constant-time) chống timing:
+hmac.compare_digest(mac, received_mac)
+</code></pre>
+<p>Ứng dụng: JWT (HS256), API request signing (AWS SigV4), webhook signature (GitHub <code>X-Hub-Signature-256</code>), TOTP/HOTP.</p>
+<hr />
+<h2 id="ch04-48-chu-ky-so-tung-buoc">4.8. Chữ ký số — từng bước</h2>
+<p>Chữ ký số đảm bảo <strong>Integrity + Authentication + Non-repudiation</strong>.</p>
+<p><strong>Ký (bên gửi, dùng PRIVATE key):</strong></p>
+<pre><code>1. digest = H(message)                 # băm trước, vì RSA/ECDSA chỉ ký số nhỏ
+2. signature = Sign(privKey, digest)   # RSA-PSS: dựa trên digest^d mod n
+3. Gửi: message || signature
+</code></pre>
+<p><strong>Verify (bên nhận, dùng PUBLIC key):</strong></p>
+<pre><code>1. digest'  = H(message)               # băm lại message nhận được
+2. valid    = Verify(pubKey, signature, digest')
+3. valid==true ↔ message không sửa VÀ do chủ private key ký
+</code></pre>
+<p>So sánh với mã hóa: mã hóa dùng public key để mã (ai cũng mã được, chỉ chủ giải) ; chữ ký dùng <strong>private key để ký</strong> (chỉ chủ ký được, ai cũng verify) — ngược chiều.</p>
+<pre><code class="language-bash"># Ký file
+$ openssl dgst -sha256 -sign priv.pem -out sig.bin document.pdf
+# Verify
+$ openssl dgst -sha256 -verify pub.pem -signature sig.bin document.pdf
+Verified OK
+</code></pre>
+<p>Thuật toán: <strong>RSA-PSS</strong> (RSA), <strong>ECDSA</strong> (P-256), <strong>Ed25519</strong> (nhanh, an toàn, deterministic — không phụ thuộc RNG khi ký nên tránh lỗi nonce như Sony PS3 ECDSA 2010 dùng nonce cố định làm lộ private key).</p>
+<hr />
+<h2 id="ch04-49-pki-x509">4.9. PKI &amp; X.509</h2>
+<h3 id="ch04-491-chuoi-tin-cay">4.9.1. Chuỗi tin cậy</h3>
+<pre><code>Root CA (self-signed, trong trust store OS/browser)
+   └── Intermediate CA (ký bởi Root)
+          └── Leaf/End-entity cert (ký bởi Intermediate) — server của bạn
+</code></pre>
+<p>Client tin Leaf vì verify được chuỗi chữ ký lên đến Root đã tin sẵn. Server phải gửi cả <strong>chain</strong> (leaf + intermediate), không cần gửi root.</p>
+<h3 id="ch04-492-cac-truong-chung-chi-x509-v3">4.9.2. Các trường chứng chỉ X.509 v3</h3>
+<table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>Phiên bản (v3 = 2)</td>
+<td>v3</td>
+</tr>
+<tr>
+<td>Serial Number</td>
+<td>Số seri duy nhất do CA cấp</td>
+<td><code>04:A2:...</code></td>
+</tr>
+<tr>
+<td>Signature Algorithm</td>
+<td>Thuật toán CA ký</td>
+<td><code>sha256WithRSAEncryption</code> / <code>ecdsa-with-SHA256</code></td>
+</tr>
+<tr>
+<td>Issuer</td>
+<td>DN của CA cấp</td>
+<td><code>CN=R11, O=Let's Encrypt</code></td>
+</tr>
+<tr>
+<td>Validity (Not Before / Not After)</td>
+<td>Khoảng hiệu lực</td>
+<td>2026-01-01 → 2026-04-01</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>DN chủ thể</td>
+<td><code>CN=example.com</code></td>
+</tr>
+<tr>
+<td>Subject Public Key Info</td>
+<td>Public key + thuật toán</td>
+<td>RSA 2048 / EC P-256</td>
+</tr>
+<tr>
+<td><strong>SAN</strong> (Subject Alternative Name)</td>
+<td>Danh sách host hợp lệ (BẮT BUỘC, CN bị deprecate)</td>
+<td><code>DNS:example.com, DNS:www.example.com</code></td>
+</tr>
+<tr>
+<td>Key Usage</td>
+<td>Mục đích khóa</td>
+<td><code>Digital Signature, Key Encipherment</code></td>
+</tr>
+<tr>
+<td>Extended Key Usage</td>
+<td>EKU</td>
+<td><code>TLS Web Server Authentication</code></td>
+</tr>
+<tr>
+<td>Basic Constraints</td>
+<td>CA hay không</td>
+<td><code>CA:FALSE</code></td>
+</tr>
+<tr>
+<td>Signature</td>
+<td>Chữ ký CA trên toàn bộ TBSCertificate</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quan trọng:</strong> trình duyệt hiện đại <strong>bỏ qua CN</strong>, chỉ kiểm tra <strong>SAN</strong>. Cert thiếu SAN → lỗi <code>ERR_CERT_COMMON_NAME_INVALID</code>.</p>
+<pre><code class="language-bash"># Xem chi tiết cert của một server
+$ openssl s_client -connect example.com:443 -servername example.com &lt;/dev/null \
+  | openssl x509 -noout -text
+
+# Hoặc kiểm tra nhanh các trường chính
+$ echo | openssl s_client -connect example.com:443 2&gt;/dev/null \
+  | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
+subject=CN=example.com
+issuer=C=US, O=DigiCert Inc, CN=...
+notBefore=...  notAfter=...
+X509v3 Subject Alternative Name:
+    DNS:example.com, DNS:www.example.com
+</code></pre>
+<pre><code class="language-bash"># Tạo CSR (Certificate Signing Request) với SAN
+$ openssl req -new -newkey rsa:2048 -nodes -keyout key.pem -out req.csr \
+  -subj &quot;/CN=example.com&quot; \
+  -addext &quot;subjectAltName=DNS:example.com,DNS:www.example.com&quot;
+</code></pre>
+<h3 id="ch04-493-thu-hoi-crl-vs-ocsp">4.9.3. Thu hồi: CRL vs OCSP</h3>
+<table>
+<thead>
+<tr>
+<th>Cơ chế</th>
+<th>Mô tả</th>
+<th>Nhược điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CRL (Certificate Revocation List)</td>
+<td>CA công bố danh sách serial bị thu hồi, client tải về</td>
+<td>File lớn, cập nhật chậm</td>
+</tr>
+<tr>
+<td>OCSP</td>
+<td>Client hỏi CA realtime về 1 cert cụ thể</td>
+<td>Lộ duyệt web của user cho CA; latency</td>
+</tr>
+<tr>
+<td><strong>OCSP Stapling</strong></td>
+<td>Server tự lấy OCSP response (đã CA ký, có timestamp) và "đính" vào TLS handshake</td>
+<td>Khắc phục privacy + latency của OCSP</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash"># Kiểm tra OCSP stapling
+$ openssl s_client -connect example.com:443 -status &lt;/dev/null 2&gt;/dev/null \
+  | grep -A2 &quot;OCSP Response Status&quot;
+OCSP Response Status: successful (0x0)
+    Cert Status: good
+</code></pre>
+<hr />
+<h2 id="ch04-410-mo-hinh-rui-ro-quan-ly-lo-hong">4.10. Mô hình rủi ro &amp; quản lý lỗ hổng</h2>
+<h3 id="ch04-4101-bon-khai-niem-cot-loi">4.10.1. Bốn khái niệm cốt lõi</h3>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Định nghĩa</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vulnerability</td>
+<td>Điểm yếu trong hệ thống</td>
+<td>SQLi, thư viện chưa vá</td>
+</tr>
+<tr>
+<td>Threat</td>
+<td>Tác nhân/sự kiện có thể khai thác điểm yếu</td>
+<td>Attacker, ransomware group</td>
+</tr>
+<tr>
+<td>Exploit</td>
+<td>Công cụ/kỹ thuật cụ thể tận dụng vuln</td>
+<td>PoC RCE, Metasploit module</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Khả năng tổn hại = <strong>Likelihood × Impact</strong></td>
+<td>Vuln có exploit công khai trên server public = risk cao</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Risk = Likelihood × Impact.</strong> Một vuln nghiêm trọng (high impact) nhưng chỉ khai thác được từ mạng nội bộ đã cách ly (low likelihood) → risk thấp hơn vuln trung bình trên endpoint public Internet.</p>
+</blockquote>
+<h3 id="ch04-4102-cve-va-cwe">4.10.2. CVE và CWE</h3>
+<ul>
+<li><strong>CVE</strong> (Common Vulnerabilities and Exposures): định danh <strong>một lỗ hổng cụ thể trong một sản phẩm cụ thể</strong>. Định dạng <code>CVE-YYYY-NNNNN</code> (ví dụ <code>CVE-2021-44228</code> = Log4Shell).</li>
+<li><strong>CWE</strong> (Common Weakness Enumeration): phân loại <strong>loại điểm yếu</strong> chung (ví dụ <code>CWE-79</code> = XSS, <code>CWE-89</code> = SQLi, <code>CWE-787</code> = Out-of-bounds Write). Một CVE thường ánh xạ tới một hoặc nhiều CWE.</li>
+</ul>
+<p>Quan hệ: CWE là "loại bệnh", CVE là "ca bệnh cụ thể".</p>
+<h3 id="ch04-4103-cvss-v31-tung-metric-cua-base-score">4.10.3. CVSS v3.1 — từng metric của Base Score</h3>
+<p>Điểm CVSS Base (0.0–10.0) tính từ 8 metric chia 2 nhóm:</p>
+<p><strong>Exploitability metrics:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Giá trị</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AV</strong> Attack Vector</td>
+<td>Network(N) / Adjacent(A) / Local(L) / Physical(P)</td>
+<td>Khai thác từ đâu — N (qua Internet) nguy hiểm nhất</td>
+</tr>
+<tr>
+<td><strong>AC</strong> Attack Complexity</td>
+<td>Low(L) / High(H)</td>
+<td>Điều kiện đặc biệt cần có không</td>
+</tr>
+<tr>
+<td><strong>PR</strong> Privileges Required</td>
+<td>None(N) / Low(L) / High(H)</td>
+<td>Cần quyền gì trước khi khai thác</td>
+</tr>
+<tr>
+<td><strong>UI</strong> User Interaction</td>
+<td>None(N) / Required(R)</td>
+<td>Có cần nạn nhân click/thao tác không</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scope + Impact metrics:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Giá trị</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S</strong> Scope</td>
+<td>Unchanged(U) / Changed(C)</td>
+<td>Khai thác có vượt ra ngoài component bị ảnh hưởng (ví dụ thoát sandbox/VM)</td>
+</tr>
+<tr>
+<td><strong>C</strong> Confidentiality</td>
+<td>None/Low/High</td>
+<td>Mức lộ dữ liệu</td>
+</tr>
+<tr>
+<td><strong>I</strong> Integrity</td>
+<td>None/Low/High</td>
+<td>Mức sửa đổi dữ liệu</td>
+</tr>
+<tr>
+<td><strong>A</strong> Availability</td>
+<td>None/Low/High</td>
+<td>Mức gián đoạn dịch vụ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vector string ví dụ</strong> (Log4Shell, điểm 10.0 Critical):</p>
+<pre><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+        │    │    │    │    │   │   │   │
+        │    │    │    │    │   └───┴───┴── tác động Cao toàn diện
+        │    │    │    │    └ Scope Changed (vượt component)
+        │    │    │    └ không cần tương tác người dùng
+        │    │    └ không cần quyền trước
+        │    └ độ phức tạp thấp
+        └ khai thác qua mạng
+</code></pre>
+<p>Phân ngưỡng định tính: 0.0 None · 0.1–3.9 Low · 4.0–6.9 Medium · 7.0–8.9 High · 9.0–10.0 Critical.</p>
+<blockquote>
+<p><strong>Scope là metric bản lề.</strong> Khác bảy metric còn lại vốn chỉ đóng góp vào một phía, Scope tác động đồng thời tới <strong>cả Exploitability lẫn Impact</strong>: khi <code>S:Changed</code>, công thức tính điểm thay đổi và trần điểm Impact được nâng lên, nên một thay đổi Scope đơn lẻ có thể đẩy điểm số lên đáng kể. Vì vậy đánh giá chính xác Scope (khai thác có vượt ra ngoài security authority của component bị ảnh hưởng hay không) là quyết định trọng yếu khi chấm CVSS.</p>
+</blockquote>
+<p>Ngoài Base còn có nhóm <strong>Temporal</strong> (mức trưởng thành exploit, có bản vá chưa) và <strong>Environmental</strong> (tùy chỉnh theo môi trường tổ chức). Lưu ý: CVSS v4.0 đã ra (2023) thay đổi cấu trúc metric — khi triển khai cần kiểm chứng phiên bản đang dùng.</p>
+<pre><code class="language-bash"># Quét vuln và ánh xạ CVE/CVSS trong CI (ví dụ container)
+$ trivy image --severity HIGH,CRITICAL myapp:latest
+myapp:latest (alpine 3.18)
+Total: 2 (HIGH: 1, CRITICAL: 1)
+┌──────────┬───────────────┬──────────┬───────────────┐
+│ Library  │ Vulnerability │ Severity │ Fixed Version │
+├──────────┼───────────────┼──────────┼───────────────┤
+│ openssl  │ CVE-2023-xxxx │ CRITICAL │ 3.1.4-r0      │
+└──────────┴───────────────┴──────────┴───────────────┘
+</code></pre>
+<hr />
+<h2 id="ch04-411-nguyen-tac-thiet-ke-bao-mat-secure-design-principles">4.11. Nguyên tắc thiết kế bảo mật (Secure Design Principles)</h2>
+<table>
+<thead>
+<tr>
+<th>Nguyên tắc</th>
+<th>Nội dung</th>
+<th>Áp dụng thực tế</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Least Privilege</td>
+<td>Cấp quyền tối thiểu đủ dùng</td>
+<td>IAM scope hẹp, container non-root</td>
+</tr>
+<tr>
+<td>Defense in Depth</td>
+<td>Nhiều lớp phòng thủ độc lập</td>
+<td>WAF + input validation + parameterized query</td>
+</tr>
+<tr>
+<td>Fail Securely</td>
+<td>Lỗi thì mặc định từ chối</td>
+<td><code>deny by default</code>, exception không lộ stack trace</td>
+</tr>
+<tr>
+<td>Complete Mediation</td>
+<td>Kiểm tra quyền mọi lần truy cập</td>
+<td>Không cache quyết định authz cũ</td>
+</tr>
+<tr>
+<td>Open Design (Kerckhoffs)</td>
+<td>An toàn dựa vào KHÓA, không dựa vào giấu thuật toán</td>
+<td>Dùng AES công khai, không "secret algo"</td>
+</tr>
+<tr>
+<td>Economy of Mechanism</td>
+<td>Đơn giản nhất có thể</td>
+<td>Ít code = ít bug</td>
+</tr>
+<tr>
+<td>Separation of Duties</td>
+<td>Tách vai trò</td>
+<td>Người deploy ≠ người duyệt</td>
+</tr>
+<tr>
+<td>Psychological Acceptability</td>
+<td>Bảo mật không cản trở quá mức</td>
+<td>SSO thay vì 20 mật khẩu</td>
+</tr>
+<tr>
+<td>Zero Trust</td>
+<td>"Never trust, always verify"</td>
+<td>Xác thực mọi request, mTLS nội bộ</td>
+</tr>
+<tr>
+<td>Secure Defaults</td>
+<td>Mặc định an toàn</td>
+<td>TLS bật sẵn, port đóng sẵn</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Kerckhoffs's Principle</strong> là nền tảng triết lý của cả chương: một hệ mật phải an toàn ngay cả khi mọi thứ về nó (trừ khóa) đều công khai. Đây là lý do AES/RSA/SHA-256 đều là chuẩn mở, được công khai mổ xẻ — "security through obscurity" (giấu thuật toán) không phải bảo mật.</p>
+<hr />
+<h2 id="ch04-412-mat-ma-hau-luong-tu-post-quantum-cryptography-crypto-agility">4.12. Mật mã hậu lượng tử (Post-Quantum Cryptography) &amp; crypto-agility</h2>
+<h3 id="ch04-4121-vi-sao-may-tinh-luong-tu-la-moi-đe-doa">4.12.1. Vì sao máy tính lượng tử là mối đe dọa</h3>
+<p>Toàn bộ mật mã bất đối xứng đang dùng (xem <a href="ch04.html">Chương 4</a> ở trên, và PKI/TLS ở <a href="ch01.html">Chương 1</a>) đặt nền trên hai bài toán: phân tích thừa số (RSA) và logarit rời rạc (ECC, DH/ECDHE). <strong>Thuật toán Shor</strong> chạy trên một máy tính lượng tử đủ lớn giải được cả hai trong thời gian đa thức, phá vỡ RSA và ECC một cách căn bản — không phải bằng cách tăng độ dài khóa mà bằng cách triệt tiêu chính độ khó toán học mà chúng dựa vào.</p>
+<p>Mật mã đối xứng và hàm băm chịu ảnh hưởng nhẹ hơn: <strong>thuật toán Grover</strong> chỉ rút ngắn độ an toàn còn căn bậc hai, nên AES-256 vẫn giữ mức an toàn ~128-bit và SHA-256/SHA-384 vẫn dùng được. Biện pháp ứng phó cho khối đối xứng đơn giản là tăng độ dài khóa/digest; gánh nặng thực sự nằm ở khối bất đối xứng.</p>
+<h3 id="ch04-4122-harvest-now-decrypt-later">4.12.2. Harvest-now, decrypt-later</h3>
+<p>Mối đe dọa không nằm ở tương lai xa: kẻ tấn công có thể <strong>thu thập lưu lượng mã hóa ngay hôm nay và giải mã về sau</strong> khi máy tính lượng tử khả dụng (mô hình "harvest-now, decrypt-later"). Forward secrecy của ECDHE (xem 4.4.3) <strong>không</strong> cứu được trường hợp này, vì chính phép trao khóa ECDHE cũng bị Shor phá.</p>
+<p>Rủi ro tỷ lệ thuận với <strong>thời gian bí mật cần được bảo vệ</strong>. Với dữ liệu tài chính lưu lâu — hồ sơ KYC, lịch sử giao dịch, khóa ký, hợp đồng — dữ liệu chặn được hôm nay vẫn còn nhạy cảm khi bị giải mã sau nhiều năm. Đây là lý do ngành tài chính cần lên kế hoạch chuyển đổi PQC sớm hơn là chờ máy tính lượng tử xuất hiện.</p>
+<h3 id="ch04-4123-chuan-nist-pqc-2024">4.12.3. Chuẩn NIST PQC 2024</h3>
+<p>Tháng 8/2024 NIST công bố bộ chuẩn PQC đầu tiên, dựa trên bài toán lattice (vốn không bị Shor phá):</p>
+<table>
+<thead>
+<tr>
+<th>Chuẩn</th>
+<th>Thuật toán</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FIPS 203</strong></td>
+<td><strong>ML-KEM</strong> (gốc CRYSTALS-Kyber)</td>
+<td>Key encapsulation — trao khóa, thay ECDHE/RSA key exchange</td>
+</tr>
+<tr>
+<td><strong>FIPS 204</strong></td>
+<td><strong>ML-DSA</strong> (gốc CRYSTALS-Dilithium)</td>
+<td>Chữ ký số — thay RSA-PSS/ECDSA</td>
+</tr>
+<tr>
+<td><strong>FIPS 205</strong></td>
+<td><strong>SLH-DSA</strong> (gốc SPHINCS+)</td>
+<td>Chữ ký số dựa trên hash, làm phương án dự phòng đa dạng hóa rủi ro</td>
+</tr>
+</tbody>
+</table>
+<p>ML-KEM là một <strong>KEM</strong> (Key Encapsulation Mechanism) chứ không phải sơ đồ mã hóa trực tiếp: nó sinh ra một khóa phiên đối xứng chung, sau đó dữ liệu vẫn được mã hóa bằng AEAD (xem <a href="ch11.html">Chương 11</a>) — mô hình lai giống hệt cách RSA/ECDH trao khóa cho AES ở 4.4.1.</p>
+<h3 id="ch04-4124-hybrid-key-exchange">4.12.4. Hybrid key exchange</h3>
+<p>Vì các thuật toán PQC còn tương đối mới, thực tiễn triển khai hiện nay là <strong>hybrid</strong> (lai cổ điển + hậu lượng tử): kết hợp một thuật toán đã được kiểm chứng kỹ với một thuật toán PQC, sao cho khóa phiên chỉ bị lộ khi <strong>cả hai</strong> cùng bị phá.</p>
+<p>Ví dụ trong TLS 1.3, nhóm khóa <strong>X25519MLKEM768</strong> ghép X25519 (cổ điển) với ML-KEM-768 (hậu lượng tử): client và server suy ra secret chung từ cả hai phép trao khóa rồi nối lại làm đầu vào cho key schedule. Nếu ML-KEM về sau bị phát hiện điểm yếu cài đặt, X25519 vẫn giữ an toàn ở mức cổ điển; ngược lại nếu máy tính lượng tử phá X25519, ML-KEM vẫn đứng vững. Trình duyệt và một số CDN lớn đã bật cấu hình này theo mặc định.</p>
+<h3 id="ch04-4125-crypto-agility">4.12.5. Crypto-agility</h3>
+<p><strong>Crypto-agility</strong> là năng lực thiết kế hệ thống sao cho <strong>thay thuật toán mật mã mà không phải viết lại kiến trúc</strong>. Việc chuyển đổi PQC sẽ kéo dài nhiều năm và có thể lặp lại (nếu một chuẩn PQC lộ điểm yếu), nên agility là yêu cầu vận hành, không chỉ là chi tiết kỹ thuật:</p>
+<ul>
+<li><strong>Không hard-code thuật toán/độ dài khóa</strong> rải rác trong code; tập trung vào một lớp trừu tượng hoặc cấu hình.</li>
+<li><strong>Khai báo thuật toán tường minh</strong> trong định dạng dữ liệu (algorithm identifier đi kèm ciphertext/chữ ký) để bên giải mã biết cách xử lý và để xoay vòng dễ dàng.</li>
+<li><strong>Kiểm kê (inventory) toàn bộ nơi dùng mật mã</strong> — thư viện, chứng chỉ, giao thức, phần cứng — để biết phạm vi cần thay khi tiêu chuẩn đổi.</li>
+<li>Ưu tiên <strong>hybrid</strong> trong giai đoạn chuyển tiếp để giảm rủi ro đặt cược vào một thuật toán PQC đơn lẻ.</li>
+</ul>
+<p>Nguyên tắc bao trùm vẫn là Kerckhoffs (xem 4.11): an toàn dựa vào khóa và vào khả năng xoay vòng nhanh, không dựa vào việc một thuật toán cụ thể bất biến mãi mãi.</p>
+<hr />
+<h2 id="ch04-413-tong-ket-ban-đo-quyet-đinh">4.13. Tổng kết bản đồ quyết định</h2>
+<table>
+<thead>
+<tr>
+<th>Cần gì</th>
+<th>Dùng gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bí mật dữ liệu khối lượng lớn</td>
+<td>AES-256-GCM / ChaCha20-Poly1305 (AEAD)</td>
+</tr>
+<tr>
+<td>Trao đổi khóa qua kênh hở</td>
+<td>ECDHE (forward secrecy)</td>
+</tr>
+<tr>
+<td>Mã hóa khóa / dữ liệu nhỏ bất đối xứng</td>
+<td>RSA-OAEP 3072+ hoặc ECIES</td>
+</tr>
+<tr>
+<td>Toàn vẹn + xác thực có khóa chung</td>
+<td>HMAC-SHA256</td>
+</tr>
+<tr>
+<td>Toàn vẹn + xác thực + chống chối bỏ</td>
+<td>Chữ ký số Ed25519 / ECDSA / RSA-PSS</td>
+</tr>
+<tr>
+<td>Fingerprint / checksum bảo mật</td>
+<td>SHA-256 / SHA-3</td>
+</tr>
+<tr>
+<td>Lưu mật khẩu</td>
+<td>Argon2id (hoặc bcrypt) + salt + pepper</td>
+</tr>
+<tr>
+<td>Danh tính máy chủ trên Internet</td>
+<td>X.509 + TLS 1.3 + OCSP stapling</td>
+</tr>
+</tbody>
+</table>
+<p>Quy tắc bao trùm: <strong>không tự cài nguyên thủy mật mã</strong>, dùng thư viện đã kiểm chứng (libsodium, BoringSSL, Go crypto, Python <code>cryptography</code>), tuân Kerckhoffs, ưu tiên AEAD và forward secrecy, và luôn đặt câu hỏi "thuộc tính CIA nào đang được bảo vệ?" trước khi chọn công cụ.</p>
+<hr />
+<h2 id="ch04-ghi-chu-cua-minh">Ghi chú của mình</h2>
+<blockquote>
+<p><em>Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.</em></p>
+</blockquote>
+</section>
+      <nav class="pager"><a class="pg prev" href="ch03.html"><span>← Chương trước</span><b>03 · Windows &amp; Active Directory</b></a><a class="pg next" href="ch05.html"><span>Chương sau →</span><b>05 · An ninh ứng dụng Web (OWASP)</b></a></nav>
+    </main>
+    <footer class="site-foot">
+      <p>Ghi chép & chia sẻ bởi <span class="name">Fee</span> · tự do cho mục đích học tập.
+      &nbsp;·&nbsp; <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; <a href="https://linkedin.com/in/leduongphi191" target="_blank" rel="noopener">LinkedIn</a></p>
+      <p>Nội dung mang tính giáo dục, nhằm mục đích phòng thủ. Hãy thực hành hợp pháp, chỉ trên hệ thống bạn được phép.</p>
+    </footer>
+  </div>
+</div>
+<script>
+const root=document.documentElement;
+const THEMES=['light','dark','wibu'];
+const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
+function curTheme(){return root.getAttribute('data-theme')||'light';}
+function syncTheme(){const c=curTheme();document.querySelectorAll('.themeBtn').forEach(b=>b.textContent=ICON[c]||'☀️');}
+function setTheme(t){if(t==='light')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);localStorage.setItem('kb-theme',t);syncTheme();}
+syncTheme();
+document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
+  const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
+}));
+const navChapters=[...document.querySelectorAll('.nav-chapter')];
+document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
+// Đánh dấu mục con đang đọc trong chương hiện tại
+const cur=document.querySelector('.nav-chapter.active');
+if(cur){
+  const heads=[...document.querySelectorAll('.chapter h2[id]')];
+  const links=new Map([...cur.querySelectorAll('.nav-sub')].map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    links.forEach(a=>a.classList.remove('here'));
+    const a=links.get(e.target.id); if(a){a.classList.add('here');a.scrollIntoView({block:'nearest'});}
+  }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  heads.forEach(h=>obs.observe(h));
+}
+const box=document.getElementById('q');
+if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
+  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
+    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
+    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
+    c.style.display=(!q||any)?'block':'none';});
+});
+const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
+// ←/→ chuyển chương
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
+  const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
+  if(e.key==='ArrowLeft'&&p)location.href=p.href;
+  if(e.key==='ArrowRight'&&n)location.href=n.href;
+});
+</script>
+</body>
+</html>

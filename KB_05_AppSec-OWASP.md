@@ -864,6 +864,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ.dBjf
 Base64URL khác Base64 chuẩn: `+`→`-`, `/`→`_`, bỏ padding `=` (RFC 4648 §5).
 
 **Header** (JSON decode từ phần 1):
+
 | Trường | Ý nghĩa | Ví dụ |
 |--------|---------|-------|
 | `alg` | Thuật toán ký | `HS256`, `RS256`, `none` |
@@ -871,6 +872,7 @@ Base64URL khác Base64 chuẩn: `+`→`-`, `/`→`_`, bỏ padding `=` (RFC 4648
 | `kid` | Key ID (chọn khóa) | `key-2024` |
 
 **Payload** — các claim chuẩn (registered claims):
+
 | Claim | Kiểu | Ý nghĩa |
 |-------|------|---------|
 | `iss` | string | Bên phát hành |

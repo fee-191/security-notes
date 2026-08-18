@@ -78,6 +78,8 @@ a:hover{text-decoration:underline}
 .nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
 
 .content{flex:1;min-width:0;padding:0 0 120px}
+body{overflow-x:hidden}
+p,li,td,th,h1,h2,h3,h4{overflow-wrap:break-word}
 .topbar{display:none}
 .main{max-width:820px;margin:0 auto;padding:40px 44px}
 .chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
@@ -96,7 +98,7 @@ blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
   background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
 
 code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
-:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px;overflow-wrap:anywhere}
 pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
   overflow-x:auto;margin:15px 0;line-height:1.55}
 pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
@@ -151,7 +153,7 @@ span.pg{border:0;background:none}
       <span class="author">✍️ Fee</span>
       <div class="controls"><a class="ctrl-btn" href="../">🏠 Home</a><button class="ctrl-btn themeBtn" title="Light / Dark / Wibu">🌙</button><a class="ctrl-btn themeLink" href="../notes.html">🌐 VI</a></div></div>
     <div class="search"><input id="q" type="search" placeholder="Filter contents…" autocomplete="off"></div>
-    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter open active" data-ch="05"><a class="nav-ch-title" href="#top"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch05-overview">Overview</a><a class="nav-sub" href="#ch05-51-the-web-security-model">5.1. The Web Security Model</a><a class="nav-sub" href="#ch05-52-owasp-top-10-2025-overview">5.2. OWASP Top 10 (2025) — Overview</a><a class="nav-sub" href="#ch05-53-a05-injection-sql-injection-sqli">5.3. A05 — Injection: SQL Injection (SQLi)</a><a class="nav-sub" href="#ch05-54-a05-cross-site-scripting-xss">5.4. A05 — Cross-Site Scripting (XSS)</a><a class="nav-sub" href="#ch05-55-csrf-cross-site-request-forgery-related-to-a01">5.5. CSRF — Cross-Site Request Forgery (related to A01)</a><a class="nav-sub" href="#ch05-56-ssrf-server-side-request-forgery-2021-a10-2025-folded-into-a01a10">5.6. SSRF — Server-Side Request Forgery (2021: A10; 2025: folded into A01/A10)</a><a class="nav-sub" href="#ch05-57-a01-broken-access-control-idor">5.7. A01 — Broken Access Control &amp;amp; IDOR</a><a class="nav-sub" href="#ch05-58-a05-command-injection">5.8. A05 — Command Injection</a><a class="nav-sub" href="#ch05-59-a05-server-side-template-injection-ssti">5.9. A05 — Server-Side Template Injection (SSTI)</a><a class="nav-sub" href="#ch05-510-a08-insecure-deserialization">5.10. A08 — Insecure Deserialization</a><a class="nav-sub" href="#ch05-511-a02-xml-external-entity-xxe">5.11. A02 — XML External Entity (XXE)</a><a class="nav-sub" href="#ch05-512-secure-file-upload">5.12. Secure file upload</a><a class="nav-sub" href="#ch05-513-input-validation-vs-output-encoding">5.13. Input Validation vs Output Encoding</a><a class="nav-sub" href="#ch05-514-a07-authentication">5.14. A07 — Authentication</a><a class="nav-sub" href="#ch05-515-authorization-rbac-vs-abac">5.15. Authorization — RBAC vs ABAC</a><a class="nav-sub" href="#ch05-516-a02-security-headers">5.16. A02 — Security Headers</a><a class="nav-sub" href="#ch05-517-a06-insecure-design-threat-modeling-stride-dfd-trust-boundary">5.17. A06 — Insecure Design &amp;amp; Threat Modeling: STRIDE + DFD + Trust Boundary</a><a class="nav-sub" href="#ch05-518-zero-trust-nist-sp-800-207">5.18. Zero Trust — NIST SP 800-207</a><a class="nav-sub" href="#ch05-519-a09-logging-alerting-failures-operational-notes">5.19. A09 — Logging &amp;amp; Alerting Failures (operational notes)</a><a class="nav-sub" href="#ch05-520-a05-prompt-injection-llm-applications">5.20. A05 — Prompt Injection (LLM applications)</a><a class="nav-sub" href="#ch05-521-a03-software-supply-chain-failures">5.21. A03 — Software Supply Chain Failures</a><a class="nav-sub" href="#ch05-522-a06-insecure-design-race-conditions-business-logic-flaws">5.22. A06 — Insecure Design: race conditions &amp;amp; business-logic flaws</a><a class="nav-sub" href="#ch05-523-a10-mishandling-of-exceptional-conditions-new-in-2025">5.23. A10 — Mishandling of Exceptional Conditions (NEW in 2025)</a><a class="nav-sub" href="#ch05-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
+    <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Intro &amp; Contents</span></a><div class="nav-subs"></div></div><div class="nav-group">Part A · Fundamentals</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Networking</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Cryptography &amp; Foundations</span></a><div class="nav-subs"></div></div><div class="nav-group">Part B · Application Security &amp; DevSecOps</div><div class="nav-chapter open active" data-ch="05"><a class="nav-ch-title" href="#top"><span class="num">05</span><span class="t">Web App Security (OWASP)</span></a><div class="nav-subs"><a class="nav-sub" href="#ch05-overview">Overview</a><a class="nav-sub" href="#ch05-51-the-web-security-model">5.1. The Web Security Model</a><a class="nav-sub" href="#ch05-52-owasp-top-10-2025-overview">5.2. OWASP Top 10 (2025) — Overview</a><a class="nav-sub" href="#ch05-53-a05-injection-sql-injection-sqli">5.3. A05 — Injection: SQL Injection (SQLi)</a><a class="nav-sub" href="#ch05-54-a05-cross-site-scripting-xss">5.4. A05 — Cross-Site Scripting (XSS)</a><a class="nav-sub" href="#ch05-55-csrf-cross-site-request-forgery-related-to-a01">5.5. CSRF — Cross-Site Request Forgery (related to A01)</a><a class="nav-sub" href="#ch05-56-ssrf-server-side-request-forgery-2021-a10-2025-folded-into-a01a10">5.6. SSRF — Server-Side Request Forgery (2021: A10; 2025: folded into A01/A10)</a><a class="nav-sub" href="#ch05-57-a01-broken-access-control-idor">5.7. A01 — Broken Access Control &amp; IDOR</a><a class="nav-sub" href="#ch05-58-a05-command-injection">5.8. A05 — Command Injection</a><a class="nav-sub" href="#ch05-59-a05-server-side-template-injection-ssti">5.9. A05 — Server-Side Template Injection (SSTI)</a><a class="nav-sub" href="#ch05-510-a08-insecure-deserialization">5.10. A08 — Insecure Deserialization</a><a class="nav-sub" href="#ch05-511-a02-xml-external-entity-xxe">5.11. A02 — XML External Entity (XXE)</a><a class="nav-sub" href="#ch05-512-secure-file-upload">5.12. Secure file upload</a><a class="nav-sub" href="#ch05-513-input-validation-vs-output-encoding">5.13. Input Validation vs Output Encoding</a><a class="nav-sub" href="#ch05-514-a07-authentication">5.14. A07 — Authentication</a><a class="nav-sub" href="#ch05-515-authorization-rbac-vs-abac">5.15. Authorization — RBAC vs ABAC</a><a class="nav-sub" href="#ch05-516-a02-security-headers">5.16. A02 — Security Headers</a><a class="nav-sub" href="#ch05-517-a06-insecure-design-threat-modeling-stride-dfd-trust-boundary">5.17. A06 — Insecure Design &amp; Threat Modeling: STRIDE + DFD + Trust Boundary</a><a class="nav-sub" href="#ch05-518-zero-trust-nist-sp-800-207">5.18. Zero Trust — NIST SP 800-207</a><a class="nav-sub" href="#ch05-519-a09-logging-alerting-failures-operational-notes">5.19. A09 — Logging &amp; Alerting Failures (operational notes)</a><a class="nav-sub" href="#ch05-520-a05-prompt-injection-llm-applications">5.20. A05 — Prompt Injection (LLM applications)</a><a class="nav-sub" href="#ch05-521-a03-software-supply-chain-failures">5.21. A03 — Software Supply Chain Failures</a><a class="nav-sub" href="#ch05-522-a06-insecure-design-race-conditions-business-logic-flaws">5.22. A06 — Insecure Design: race conditions &amp; business-logic flaws</a><a class="nav-sub" href="#ch05-523-a10-mishandling-of-exceptional-conditions-new-in-2025">5.23. A10 — Mishandling of Exceptional Conditions (NEW in 2025)</a><a class="nav-sub" href="#ch05-my-notes">My notes</a></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Code Scanning</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Part C · Monitoring, Detection &amp; Response</div><div class="nav-chapter" data-ch="08"><a class="nav-ch-title" href="ch08.html"><span class="num">08</span><span class="t">SIEM &amp; Log Management</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Monitoring</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">SOC &amp; Incident Response</span></a><div class="nav-subs"></div></div><div class="nav-group">Part D · Network Defense &amp; Testing</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Network Defense (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Pentest &amp; Vuln Assessment</span></a><div class="nav-subs"></div></div><div class="nav-group">Part E · Infrastructure, Virtualization &amp; Cloud</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Cloud Security</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Virtualization &amp; Containers</span></a><div class="nav-subs"></div></div><div class="nav-group">Part F · Offense, Compliance &amp; Automation</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Frameworks</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Compliance &amp; Governance (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Programming &amp; Automation</span></a><div class="nav-subs"></div></div><div class="nav-group">Appendix</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Glossary &amp; Abbreviations</span></a><div class="nav-subs"></div></div></nav>
   </aside>
   <div class="content">
     <div class="topbar"><button class="menu-btn" id="menu">☰</button><span class="ttl">Security Handbook</span>
@@ -1240,22 +1242,80 @@ def check(buf):
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ.dBjftJ...
 </code></pre>
 <p>Base64URL differs from standard Base64: <code>+</code>→<code>-</code>, <code>/</code>→<code>_</code>, padding <code>=</code> dropped (RFC 4648 §5).</p>
-<p><strong>Header</strong> (JSON-decoded from part 1):
-| Field | Meaning | Example |
-|--------|---------|-------|
-| <code>alg</code> | Signing algorithm | <code>HS256</code>, <code>RS256</code>, <code>none</code> |
-| <code>typ</code> | Token type | <code>JWT</code> |
-| <code>kid</code> | Key ID (selects the key) | <code>key-2024</code> |</p>
-<p><strong>Payload</strong> — the standard claims (registered claims):
-| Claim | Type | Meaning |
-|-------|------|---------|
-| <code>iss</code> | string | Issuer |
-| <code>sub</code> | string | Subject (user id) |
-| <code>aud</code> | string/array | Audience |
-| <code>exp</code> | NumericDate (Unix seconds) | Expiration |
-| <code>nbf</code> | NumericDate | Not valid before this time |
-| <code>iat</code> | NumericDate | Issued-at time |
-| <code>jti</code> | string | Token ID (anti-replay) |</p>
+<p><strong>Header</strong> (JSON-decoded from part 1):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>alg</code></td>
+<td>Signing algorithm</td>
+<td><code>HS256</code>, <code>RS256</code>, <code>none</code></td>
+</tr>
+<tr>
+<td><code>typ</code></td>
+<td>Token type</td>
+<td><code>JWT</code></td>
+</tr>
+<tr>
+<td><code>kid</code></td>
+<td>Key ID (selects the key)</td>
+<td><code>key-2024</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Payload</strong> — the standard claims (registered claims):</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>iss</code></td>
+<td>string</td>
+<td>Issuer</td>
+</tr>
+<tr>
+<td><code>sub</code></td>
+<td>string</td>
+<td>Subject (user id)</td>
+</tr>
+<tr>
+<td><code>aud</code></td>
+<td>string/array</td>
+<td>Audience</td>
+</tr>
+<tr>
+<td><code>exp</code></td>
+<td>NumericDate (Unix seconds)</td>
+<td>Expiration</td>
+</tr>
+<tr>
+<td><code>nbf</code></td>
+<td>NumericDate</td>
+<td>Not valid before this time</td>
+</tr>
+<tr>
+<td><code>iat</code></td>
+<td>NumericDate</td>
+<td>Issued-at time</td>
+</tr>
+<tr>
+<td><code>jti</code></td>
+<td>string</td>
+<td>Token ID (anti-replay)</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Signature.</strong>
 - HS256: <code>HMAC-SHA256(base64url(header) + "." + base64url(payload), secret)</code> — symmetric, the same secret signs and verifies.
 - RS256: <code>RSASSA-PKCS1-v1_5 + SHA-256</code>, the private key signs and the public key verifies — asymmetric.</p>

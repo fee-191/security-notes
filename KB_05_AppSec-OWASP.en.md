@@ -865,6 +865,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMiLCJyb2xlIjoiYWRtaW4ifQ.dBjf
 Base64URL differs from standard Base64: `+`→`-`, `/`→`_`, padding `=` dropped (RFC 4648 §5).
 
 **Header** (JSON-decoded from part 1):
+
 | Field | Meaning | Example |
 |--------|---------|-------|
 | `alg` | Signing algorithm | `HS256`, `RS256`, `none` |
@@ -872,6 +873,7 @@ Base64URL differs from standard Base64: `+`→`-`, `/`→`_`, padding `=` droppe
 | `kid` | Key ID (selects the key) | `key-2024` |
 
 **Payload** — the standard claims (registered claims):
+
 | Claim | Type | Meaning |
 |-------|------|---------|
 | `iss` | string | Issuer |

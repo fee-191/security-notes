@@ -133,7 +133,7 @@ def nav_block(cfg, r, current):
     short = cfg["intro"] if n == "00" else cfg["short"][n]
     is_cur = (n == current)
     subs = "".join(
-        f'<a class="nav-sub" href="#{s["id"]}">{_html.escape(s["name"])}</a>' for s in r["subs"]
+        f'<a class="nav-sub" href="#{s["id"]}">{s["name"]}</a>' for s in r["subs"]
     ) if is_cur else ""
     cls = "nav-chapter open active" if is_cur else "nav-chapter"
     href = "#top" if is_cur else page_name(n)
@@ -209,6 +209,8 @@ a:hover{text-decoration:underline}
 .nav-sub:hover{color:var(--accent);background:var(--panel2);text-decoration:none}
 
 .content{flex:1;min-width:0;padding:0 0 120px}
+body{overflow-x:hidden}
+p,li,td,th,h1,h2,h3,h4{overflow-wrap:break-word}
 .topbar{display:none}
 .main{max-width:820px;margin:0 auto;padding:40px 44px}
 .chapter{border-bottom:1px solid var(--line);padding-bottom:44px;margin-bottom:14px}
@@ -227,7 +229,7 @@ blockquote{margin:15px 0;padding:9px 16px;border-left:3px solid var(--accent2);
   background:var(--panel);border-radius:0 7px 7px 0;color:var(--muted)}
 
 code{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-size:13px}
-:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px}
+:not(pre)>code{background:var(--kbd);color:var(--accent2);padding:1.5px 6px;border-radius:5px;font-size:12.5px;overflow-wrap:anywhere}
 pre{background:var(--code-bg);border:1px solid var(--codeborder);border-radius:9px;padding:14px 16px;
   overflow-x:auto;margin:15px 0;line-height:1.55}
 pre code{color:var(--code-ink);background:none;padding:0;font-size:12.7px;white-space:pre}
@@ -360,7 +362,7 @@ def build(lang, other_exists):
                   f'<b>{_html.escape(label(next_n))}</b></a>') if next_n else '<span class="pg"></span>'
         pager += '</nav>'
 
-        ch_title = r["title"] if n != "00" else cfg["title"]
+        ch_title = _html.unescape(r["title"]) if n != "00" else cfg["title"]
         page_title = f"{ch_title} — {cfg['title']}" if n != "00" else f"{cfg['title']} — Fee"
         page = f"""<!doctype html>
 <html lang="{cfg['htmllang']}">

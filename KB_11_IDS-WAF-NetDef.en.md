@@ -973,9 +973,9 @@ If you need coarse country-level filtering (a service serving a single market), 
 
 ### 11.6.8. Lessons from a real scanning campaign
 
-The chain of measures in 11.6.2–11.6.7 is not theory — it came out of a real investigation, retold here with the system details stripped out.
+The chain of measures in 11.6.2–11.6.7 is not theory — it is what I took away from sitting with the logs of a real scanning campaign. To be clear about what this is: a **set of recommendations drawn from observation**, not a write-up of a system already hardened end to end.
 
-On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `45.148.10.80` (a VPS in Amsterdam) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. A typical raw access-log line:
+On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `45.148.10.80` (a VPS in Amsterdam) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. That 536 is a snapshot at query time, not a final tally: this kind of scanning runs continuously, so the number looks different every day you check. A typical raw access-log line:
 
 ```
 45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
@@ -1069,8 +1069,8 @@ The core operational principles:
 > *Personal notes: points I previously misunderstood, areas I'm still exploring, or lessons from hands-on practice — updated over time.*
 
 - I rewrote section 11.6 after reviewing nginx configs across a number of web machines. A quick audit trick I found valuable: run `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` on each machine — a single number tells you how many defensive config lines that machine has. A `0` coming back says more than any presentation about defense-in-depth, and it also tells you which machine to start with.
-- The one machine that already had a partial good config became my **standardization template** for the rest — no writing from scratch, and "machine X has been running stably with this config" is an argument DevOps accepts far more readily than a brand-new config I invented myself.
+- Any machine that already has a partial good config is worth using as the **standardization template** for the rest — no writing from scratch, and "this machine has been running stably with that config" is an argument DevOps accepts far more readily than a brand-new config I invented myself.
 - Something I used to get wrong: seeing the scanner eat nothing but 301/400/404, I felt reassured that "the app is blocking it." Wrong on two counts — returning an error still costs the full TLS + parse + a portion touching the app; and more importantly, it means the whole system is leaning on exactly one layer, the app protecting itself, with nothing in front.
 - I also used to believe a `../` regex block in nginx would stop traversal — wrong again, because nginx normalizes the URI before matching locations (11.6.4). Fortunately I figured that out before declaring "traversal is blocked" anywhere.
-- Deployment experience: propose measures in priority order (root-cause allow/deny for dev first, then rate limiting, filename blocking, default_server, body size), and **trial on ONE dev machine first** — watch for a few days whether `limit_req` false-positives on legitimate clients (count 429/503 in the logs) before rolling out to the fleet.
-- Still exploring: auto-blocking IPs by threshold via fail2ban or the SIEM's active response, and putting a WAF (ModSecurity/CRS or Coraza) on the reverse proxy — my machines currently stop at the cheap plain-nginx blocking layer.
+- On rolling this out, I think the right order is the priority order above (root-cause allow/deny for dev environments first, then rate limiting, filename blocking, `default_server`, body size), and to **try it on exactly one machine first** — watch for a few days whether `limit_req` is rejecting legitimate clients (count 429/503 in the logs) before even thinking about wider rollout. Until you have been through all of that, do not treat it as defended.
+- Still exploring: auto-blocking IPs by threshold via fail2ban or the SIEM's active response, and putting a WAF (ModSecurity/CRS or Coraza) in front at the reverse proxy. Honestly, most of what section 11.6 describes is at the level of understanding and recommending — carrying it through properly is still ahead of me.

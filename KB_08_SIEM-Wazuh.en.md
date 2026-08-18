@@ -1336,7 +1336,7 @@ GET wazuh-alerts-*/_search
 
 ### 8.16.5. Step 5 — Concluding from the rules that did and did not appear
 
-My conclusion of "**not breached**" stood on two legs of evidence:
+The conclusion of "**not breached**" stood on two legs of evidence — and it is worth being precise about *why* nothing broke: those requests were rejected by the application behind the proxy, not stopped by any defensive layer in front of it. The two legs:
 
 1. Every rule that fired belonged to the "probed and refused" family (suspicious URL, 400/404); the "**web attack returning 200**" rule group — the signature of a *successful* attack — was entirely absent for this IP.
 2. The status codes in the sampled `full_log` lines were all 301/400/404, consistent with (1).

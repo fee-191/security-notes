@@ -1978,7 +1978,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </tbody>
 </table>
 <h3 id="ch08-8165-buoc-5-ket-luan-dua-tren-rule-co-khong-xuat-hien">8.16.5. Bước 5 — Kết luận dựa trên rule có / không xuất hiện</h3>
-<p>Kết luận "<strong>chưa thủng</strong>" của mình đứng trên hai chân bằng chứng:</p>
+<p>Kết luận "<strong>chưa thủng</strong>" đứng trên hai chân bằng chứng — và cần nói rõ <em>vì sao</em> chưa thủng: các request đó bị chính ứng dụng phía sau từ chối, chứ không phải bị một lớp phòng vệ nào chặn lại từ trước. Hai chân bằng chứng:</p>
 <ol>
 <li>Toàn bộ rule đã nổ đều thuộc nhóm "dò và bị từ chối" (URL đáng ngờ, 400/404); nhóm rule "<strong>web attack trả về 200</strong>" — dấu hiệu tấn công <em>thành công</em> — hoàn toàn vắng mặt với IP này.</li>
 <li>Status code trong các <code>full_log</code> mẫu đều là 301/400/404, khớp với (1).</li>

@@ -1328,7 +1328,7 @@ GET wazuh-alerts-*/_search
 
 ### 8.16.5. Bước 5 — Kết luận dựa trên rule có / không xuất hiện
 
-Kết luận "**chưa thủng**" của mình đứng trên hai chân bằng chứng:
+Kết luận "**chưa thủng**" đứng trên hai chân bằng chứng — và cần nói rõ *vì sao* chưa thủng: các request đó bị chính ứng dụng phía sau từ chối, chứ không phải bị một lớp phòng vệ nào chặn lại từ trước. Hai chân bằng chứng:
 
 1. Toàn bộ rule đã nổ đều thuộc nhóm "dò và bị từ chối" (URL đáng ngờ, 400/404); nhóm rule "**web attack trả về 200**" — dấu hiệu tấn công *thành công* — hoàn toàn vắng mặt với IP này.
 2. Status code trong các `full_log` mẫu đều là 301/400/404, khớp với (1).

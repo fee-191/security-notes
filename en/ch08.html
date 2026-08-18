@@ -1982,7 +1982,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </tbody>
 </table>
 <h3 id="ch08-8165-step-5-concluding-from-the-rules-that-did-and-did-not-appear">8.16.5. Step 5 — Concluding from the rules that did and did not appear</h3>
-<p>My conclusion of "<strong>not breached</strong>" stood on two legs of evidence:</p>
+<p>The conclusion of "<strong>not breached</strong>" stood on two legs of evidence — and it is worth being precise about <em>why</em> nothing broke: those requests were rejected by the application behind the proxy, not stopped by any defensive layer in front of it. The two legs:</p>
 <ol>
 <li>Every rule that fired belonged to the "probed and refused" family (suspicious URL, 400/404); the "<strong>web attack returning 200</strong>" rule group — the signature of a <em>successful</em> attack — was entirely absent for this IP.</li>
 <li>The status codes in the sampled <code>full_log</code> lines were all 301/400/404, consistent with (1).</li>

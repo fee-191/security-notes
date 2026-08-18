@@ -973,9 +973,9 @@ Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trư
 
 ### 11.6.8. Bài học từ một chiến dịch scan thực tế
 
-Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả rút ra từ một cuộc điều tra thật, kể lại đã ẩn danh hoá.
+Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là những gì mình rút ra sau khi ngồi đọc log một đợt quét thật. Nói rõ để khỏi hiểu nhầm: đây là **đề xuất rút ra từ quan sát**, không phải bản tổng kết một hệ thống đã triển khai xong.
 
-Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `45.148.10.80` (VPS ở Amsterdam) — **536 request trong ~2 giờ 15 phút** nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Một dòng access log gốc điển hình:
+Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `45.148.10.80` (VPS ở Amsterdam) — **536 request trong ~2 giờ 15 phút** nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Con số 536 là ảnh chụp tại thời điểm truy vấn, không phải tổng kết: quét kiểu này diễn ra liên tục nên mỗi ngày nhìn lại số lại khác. Một dòng access log gốc điển hình:
 
 ```
 45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
@@ -1069,8 +1069,8 @@ Nguyên tắc vận hành cốt lõi:
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
 
 - Phần 11.6 mình viết lại sau một đợt rà cấu hình nginx trên nhiều máy web. Mẹo rà nhanh mà mình thấy đáng giá: chạy trên từng máy `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` — một con số duy nhất cho biết máy đó có bao nhiêu dòng cấu hình phòng vệ. Một số `0` trả về nói được nhiều hơn mọi bài thuyết trình về defense-in-depth, và nó cũng cho biết nên bắt đầu từ máy nào.
-- Máy duy nhất có sẵn một phần cấu hình tốt được mình lấy làm **mẫu chuẩn hoá** cho các máy còn lại — đỡ viết từ đầu, và "máy X đang chạy ổn định với config này" là lập luận dễ được DevOps chấp nhận hơn một config mới tinh mình tự nghĩ ra.
+- Máy nào đã có sẵn một phần cấu hình tốt thì nên lấy luôn làm **mẫu chuẩn hoá** cho các máy còn lại — đỡ viết từ đầu, và "máy này đang chạy ổn định với config đó" là lập luận dễ được phía vận hành chấp nhận hơn một config mới tinh do mình tự nghĩ ra.
 - Từng hiểu sai: thấy scanner ăn toàn 301/400/404 thì yên tâm "app chặn được rồi". Sai ở hai chỗ — trả lỗi vẫn tốn đủ TLS + parse + một phần chạm app; và quan trọng hơn, nó nghĩa là cả hệ thống đang dựa vào đúng một lớp là app tự bảo vệ, không có gì phía trước.
 - Cũng từng tin chặn regex `../` ở nginx là chống được traversal — sai nốt, vì nginx chuẩn hoá URI trước khi match location (11.6.4). May mà hiểu ra trước khi kịp tuyên bố "đã chặn traversal" ở đâu đó.
-- Kinh nghiệm triển khai: đề xuất theo thứ tự ưu tiên (diệt gốc bằng allow/deny cho dev trước, rồi rate-limit, chặn tên tệp, default_server, body size), và **thử trên MỘT máy dev trước** — theo dõi vài ngày xem `limit_req` có chặn nhầm client hợp lệ không (đếm 429/503 trong log) rồi mới nhân bản ra cả fleet.
-- Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng qua fail2ban hoặc active response của SIEM, và đưa WAF (ModSecurity/CRS hoặc Coraza) lên reverse proxy — hiện các máy của mình mới dừng ở lớp chặn rẻ tiền bằng nginx thuần.
+- Về cách triển khai, mình nghĩ nên đi theo thứ tự ưu tiên (diệt gốc bằng allow/deny cho môi trường dev trước, rồi rate-limit, chặn tên tệp, `default_server`, body size), và **thử trên đúng một máy trước** — theo dõi vài ngày xem `limit_req` có chặn nhầm client hợp lệ không (đếm 429/503 trong log) rồi mới tính chuyện nhân rộng. Chưa làm hết các bước này thì đừng vội coi là đã phòng thủ xong.
+- Đang tìm hiểu tiếp: tự chặn IP theo ngưỡng qua fail2ban hoặc active response của SIEM, và đưa WAF (ModSecurity/CRS hoặc Coraza) lên reverse proxy. Nói thật thì phần lớn những gì viết ở 11.6 mới ở mức hiểu và đề xuất được — làm cho tới nơi thì còn phải đi tiếp.

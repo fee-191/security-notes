@@ -14,12 +14,13 @@
 <link rel="alternate" hreflang="en" href="https://feeiuna.io.vn/en/">
 <link rel="alternate" hreflang="x-default" href="https://feeiuna.io.vn/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
-<script>(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
+<script>document.documentElement.className+=' js';(function(){var t=localStorage.getItem('kb-theme');if(t&&t!=='light')document.documentElement.setAttribute('data-theme',t);})();</script>
 <style>
 :root{
   --bg:#f4efe3; --panel:#ebe3d1; --panel2:#e1d7c0; --ink:#2b2620; --muted:#79705e;
   --line:#d6cbb3; --accent:#0f6e60; --accent2:#b1502c;
   --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --grid:rgba(43,38,32,.055); --glow1:rgba(15,110,96,.13); --glow2:rgba(177,80,44,.10);
 }
 html[data-theme="dark"]{
   --bg:#16140f; --panel:#1e1b15; --panel2:#2a261d; --ink:#e9e2d2; --muted:#9c917c;
@@ -87,6 +88,48 @@ h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 20px;color:var(--ink)}
 .links a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 46px;color:var(--muted);font-size:13px}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(circle at 50% 0,#000 0,transparent 78%);
+  -webkit-mask-image:radial-gradient(circle at 50% 0,#000 0,transparent 78%)}
+body::after{content:"";position:fixed;inset:-30%;z-index:-1;pointer-events:none;opacity:.5;
+  background:radial-gradient(38% 32% at 22% 18%,var(--glow1),transparent 70%),
+             radial-gradient(34% 30% at 78% 42%,var(--glow2),transparent 70%);
+  animation:drift 34s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(3%,2%,0) scale(1.08)}}
+
+.cursor{display:inline-block;width:.5em;height:1em;margin-left:.3em;background:var(--accent);
+  vertical-align:-.12em;animation:blink 1.15s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+html.js .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+html.js .reveal.on{opacity:1;transform:none}
+
+.chip{transition:border-color .18s,color .18s,transform .18s}
+.chip:hover{border-color:var(--accent);color:var(--ink);transform:translateY(-2px)}
+.facts li{transition:border-color .18s,transform .18s}
+.facts li:hover{border-color:var(--accent);transform:translateY(-2px)}
+.book{transition:border-color .25s,transform .25s}
+.book:hover{border-color:var(--accent)}
+.links a{transition:border-color .18s,color .18s,transform .18s}
+.links a:hover{transform:translateY(-2px)}
+.btn{transition:transform .18s,border-color .18s,color .18s,filter .18s}
+.btn:hover{transform:translateY(-2px)}
+
+.scope dt{display:flex;align-items:center;gap:9px}
+.scope dt svg{flex:0 0 17px;width:17px;height:17px;stroke:var(--accent);fill:none;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.scope dd{padding-left:26px}
+.scope>div{padding:10px 0;border-bottom:1px dashed var(--line)}
+.scope>div:last-child{border-bottom:0}
+.scope>div:hover dt svg{stroke:var(--accent2)}
+
+@media(prefers-reduced-motion:reduce){
+  body::after{animation:none}.cursor{animation:none}
+  html.js .reveal{opacity:1;transform:none;transition:none}
+  .chip:hover,.facts li:hover,.links a:hover,.btn:hover{transform:none}
+}
 </style>
 </head>
 <body>
@@ -118,12 +161,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
     <ul class="facts">
       <li><b>DevSecOps Engineer</b> · Just Engineer Software Development</li>
-      <li>Blue Team · AppSec/DevSecOps · SOC · Cloud</li>
+      <li>Blue Team · SOC · AppSec/DevSecOps · Cloud/Infrastructure Security</li>
       <li>Hanoi, Vietnam</li>
     </ul>
   </section>
 
-  <section id="contact">
+  <section class="reveal" id="contact">
     <h2 class="sec">Contact</h2>
     <div class="links">
       <a href="https://github.com/fee-191" target="_blank" rel="noopener">GitHub</a>
@@ -133,9 +176,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section id="handbook">
+  <section class="reveal" id="handbook">
     <h2 class="sec">The Security Handbook</h2>
-    <div class="book">
+    <div class="book reveal">
       <div class="top">
         <h3>From fundamentals to real operations</h3>
         <p>Every topic answers <i>“what is this, and what problem was it built to solve”</i> first, then goes into the mechanics, with commands and configs you can actually run. Each chapter ends with field notes: what was misunderstood at first, and what the work itself taught.</p>
@@ -148,10 +191,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
         <span class="chip"><b>05</b> AppSec (OWASP)</span>
         <span class="chip"><b>06</b> DevSecOps</span>
         <span class="chip"><b>07</b> CI/CD &amp; GitOps</span>
-        <span class="chip"><b>08</b> SIEM &amp; logs</span>
+        <span class="chip"><b>08</b> SIEM &amp; Logs</span>
         <span class="chip"><b>09</b> Observability</span>
         <span class="chip"><b>10</b> SOC &amp; IR</span>
-        <span class="chip"><b>11</b> Network defense</span>
+        <span class="chip"><b>11</b> Network Defense</span>
         <span class="chip"><b>12</b> Pentest</span>
         <span class="chip"><b>13</b> Cloud</span>
         <span class="chip"><b>14</b> Containers</span>
@@ -167,19 +210,29 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section id="scope">
+  <section class="reveal" id="scope">
     <h2 class="sec">Scope of work</h2>
     <dl class="scope">
-      <dt>DevSecOps &amp; secure SDLC</dt>
-      <dd>SAST · SCA · secret scanning · IaC scan in CI/CD · security gates · secure coding standards</dd>
-      <dt>Monitoring &amp; detection</dt>
-      <dd>SIEM · infrastructure metrics · detection engineering · alert noise reduction</dd>
-      <dt>Response &amp; automation</dt>
-      <dd>SOAR · threat intel enrichment · runbooks · incident handling process</dd>
-      <dt>Infrastructure &amp; cloud</dt>
-      <dd>Hardening internet-facing services · IAM least privilege · secrets management · environment separation</dd>
-      <dt>Training &amp; documentation</dt>
-      <dd>Secure coding · threat modeling (STRIDE) · abuse cases · internal standards</dd>
+      <div>
+        <dt><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>DevSecOps &amp; secure SDLC</dt>
+        <dd>SAST · SCA · secret scanning · IaC scan in CI/CD · security gates · secure coding standards</dd>
+      </div>
+      <div>
+        <dt><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12L18.4 5.6"/></svg>Monitoring &amp; detection</dt>
+        <dd>SIEM · infrastructure metrics · detection engineering · alert noise reduction</dd>
+      </div>
+      <div>
+        <dt><svg viewBox="0 0 24 24"><path d="M13 2L5 13h6l-1 9 8-11h-6z"/></svg>Response &amp; automation</dt>
+        <dd>SOAR · threat intel enrichment · runbooks · incident handling process</dd>
+      </div>
+      <div>
+        <dt><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>Infrastructure &amp; cloud</dt>
+        <dd>Hardening internet-facing services · IAM least privilege · secrets management · environment separation</dd>
+      </div>
+      <div>
+        <dt><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5z"/><path d="M4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z"/></svg>Training &amp; documentation</dt>
+        <dd>Secure coding · threat modeling (STRIDE) · abuse cases · internal standards</dd>
+      </div>
     </dl>
     <p class="tools"><span>Tooling</span> Wazuh · Prometheus · Grafana · ELK · Acunetix · pfSense · Docker · Kubernetes · AWS · OCI · GCP · Python · Bash</p>
   </section>
@@ -202,6 +255,26 @@ syncTheme();
 document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=>{
   const i=THEMES.indexOf(curTheme());setTheme(THEMES[(i+1)%THEMES.length]);
 }));
+</script>
+<script>
+
+(function(){
+  var q=document.querySelector('.hero blockquote p');
+  if(!q) return;
+  var full=q.textContent, cite=document.querySelector('.hero blockquote cite');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){q.innerHTML=full+'<span class="cursor"></span>';return;}
+  q.textContent=''; if(cite) cite.style.opacity='0';
+  var cur=document.createElement('span'); cur.className='cursor'; q.appendChild(cur);
+  var i=0;
+  (function step(){
+    if(i<full.length){ cur.insertAdjacentText('beforebegin', full.charAt(i)); i++; setTimeout(step, 22); }
+    else if(cite){ cite.style.transition='opacity .4s'; cite.style.opacity=''; }
+  })();
+})();
+(function(){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(e){io.observe(e);});
+})();
 </script>
 </body>
 </html>

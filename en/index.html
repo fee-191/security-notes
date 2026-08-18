@@ -130,6 +130,22 @@ html.js .reveal.on{opacity:1;transform:none}
   html.js .reveal{opacity:1;transform:none;transition:none}
   .chip:hover,.facts li:hover,.links a:hover,.btn:hover{transform:none}
 }
+
+.hero{position:relative}
+.logfeed{position:absolute;top:-10px;right:-24px;width:46%;height:420px;overflow:hidden;z-index:-1;
+  pointer-events:none;user-select:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 60%,transparent 96%),
+                     linear-gradient(90deg,transparent,#000 38%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(180deg,transparent,#000 22%,#000 60%,transparent 96%),
+             linear-gradient(90deg,transparent,#000 38%);
+  mask-composite:intersect}
+.logfeed div{display:flex;flex-direction:column;gap:6px;animation:logroll 52s linear infinite;
+  font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;font-size:10.5px;line-height:1.5;
+  color:var(--accent);opacity:.11;white-space:nowrap}
+@keyframes logroll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@media(prefers-reduced-motion:reduce){.logfeed div{animation:none}}
+@media(max-width:720px){.logfeed{display:none}}
 </style>
 </head>
 <body>
@@ -148,6 +164,7 @@ html.js .reveal.on{opacity:1;transform:none}
 <div class="wrap">
 
   <section class="hero">
+    <div class="logfeed" aria-hidden="true"><div><span>198.51.100.77 - - [12/Mar/2025:16:50:31 +0000] "GET /....//....//etc/passwd HTTP/1.1" 403 162</span><span>wazuh: rule 31151 level 6 · Multiple web server 400 error codes from same source ip</span><span>203.0.113.24 - - [12/Mar/2025:16:50:33 +0000] "GET /.env HTTP/1.1" 403 162</span><span>limit_req[perip] limiting requests, excess: 20.480 by zone "perip", client: 198.51.100.77</span><span>node_cpu_seconds_total{mode="steal"}  rate 5m -> 0.18</span><span>wazuh: rule 5710 level 5 · Attempt to login using a non-existent user</span><span>192.0.2.51 - - [12/Mar/2025:16:50:36 +0000] "GET /.git/config HTTP/1.1" 403 162</span><span>soar: enrich 198.51.100.77 -> abuse_confidence=100 engines_flagged=12 · notify #ops</span><span>predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[6h], 86400) < 0</span><span>wazuh: rule 31516 level 6 · Suspicious URL access</span><span>semgrep: 0 blocking findings · gitleaks: no secrets · trivy: 0 critical</span><span>198.51.100.77 - - [12/Mar/2025:16:50:41 +0000] "GET /.ssh/id_rsa HTTP/1.1" 403 162</span><span>198.51.100.77 - - [12/Mar/2025:16:50:31 +0000] "GET /....//....//etc/passwd HTTP/1.1" 403 162</span><span>wazuh: rule 31151 level 6 · Multiple web server 400 error codes from same source ip</span><span>203.0.113.24 - - [12/Mar/2025:16:50:33 +0000] "GET /.env HTTP/1.1" 403 162</span><span>limit_req[perip] limiting requests, excess: 20.480 by zone "perip", client: 198.51.100.77</span><span>node_cpu_seconds_total{mode="steal"}  rate 5m -> 0.18</span><span>wazuh: rule 5710 level 5 · Attempt to login using a non-existent user</span><span>192.0.2.51 - - [12/Mar/2025:16:50:36 +0000] "GET /.git/config HTTP/1.1" 403 162</span><span>soar: enrich 198.51.100.77 -> abuse_confidence=100 engines_flagged=12 · notify #ops</span><span>predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[6h], 86400) < 0</span><span>wazuh: rule 31516 level 6 · Suspicious URL access</span><span>semgrep: 0 blocking findings · gitleaks: no secrets · trivy: 0 critical</span><span>198.51.100.77 - - [12/Mar/2025:16:50:41 +0000] "GET /.ssh/id_rsa HTTP/1.1" 403 162</span></div></div>
     <h1>Le Duong Phi</h1>
     <div class="eyebrow">Cyber Security Engineer</div>
     <blockquote>

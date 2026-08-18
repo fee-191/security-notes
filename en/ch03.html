@@ -1955,7 +1955,6 @@ document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=
 }));
 const navChapters=[...document.querySelectorAll('.nav-chapter')];
 document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
-// Đánh dấu mục con đang đọc trong chương hiện tại
 const cur=document.querySelector('.nav-chapter.active');
 if(cur){
   const heads=[...document.querySelectorAll('.chapter h2[id]')];
@@ -1974,7 +1973,6 @@ if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
     c.style.display=(!q||any)?'block':'none';});
 });
 const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
-// ←/→ chuyển chương
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
   const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');

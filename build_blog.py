@@ -96,7 +96,6 @@ def make_slugify(prefix):
 
 
 def page_name(n):
-    """Tên file HTML của một chương. Chương 00 (mục lục) là trang gốc của sổ tay."""
     return "notes.html" if n == "00" else f"ch{n}.html"
 
 
@@ -112,7 +111,6 @@ def render(cfg, n):
         TocExtension(slugify=make_slugify(f"ch{n}"), toc_depth="1-3"),
     ])
     body = md.convert(text)
-    # Cross-reference giữa các chương: #sec-NN giờ là một trang riêng.
     body = re.sub(r'href="#sec-(\d{2})"', lambda m: f'href="{page_name(m.group(1))}"', body)
     toks = md.toc_tokens
     subs = []
@@ -131,7 +129,6 @@ def render(cfg, n):
 
 
 def nav_block(cfg, r, current):
-    """Một mục chương trong sidebar. Chương đang mở mới hiện danh sách mục con."""
     n = r["n"]
     short = cfg["intro"] if n == "00" else cfg["short"][n]
     is_cur = (n == current)
@@ -290,7 +287,6 @@ document.querySelectorAll('.themeBtn').forEach(b=>b.addEventListener('click',()=
 }));
 const navChapters=[...document.querySelectorAll('.nav-chapter')];
 document.querySelectorAll('.nav-sub, .nav-ch-title').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)document.querySelector('.sidebar').classList.remove('show');}));
-// Đánh dấu mục con đang đọc trong chương hiện tại
 const cur=document.querySelector('.nav-chapter.active');
 if(cur){
   const heads=[...document.querySelectorAll('.chapter h2[id]')];
@@ -309,7 +305,6 @@ if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
     c.style.display=(!q||any)?'block':'none';});
 });
 const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
-// ←/→ chuyển chương
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
   const p=document.querySelector('link[rel=prev]'),n=document.querySelector('link[rel=next]');
@@ -342,7 +337,6 @@ def build(lang, other_exists):
 
     for idx, n in enumerate(present):
         r = rendered[n]
-        # Sidebar: mọi chương, nhưng chỉ chương hiện tại mở danh sách mục con
         nav = [nav_block(cfg, rendered["00"], n)]
         for g, ns in GROUPS_BASE:
             items = [x for x in ns if rendered[x]]

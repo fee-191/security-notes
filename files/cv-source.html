@@ -15,12 +15,10 @@
     color:var(--ink); font-size:9pt; line-height:1.45;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
-  /* Trang cố định A4; cột trái tô nền ở .cols nên dải xám bắt đầu ĐÚNG dưới header */
   .page{ width:210mm; height:297mm; overflow:hidden; display:flex; flex-direction:column;
     page-break-after:always; }
   .page:last-child{ page-break-after:auto; }
 
-  /* ---------- header ---------- */
   .head{ padding:16mm 14mm 6mm; }
   .head h1{ font-size:25pt; font-weight:400; letter-spacing:.4px; line-height:1.05; }
   .head .role{ color:var(--teal); font-size:8pt; letter-spacing:2.4px; margin-top:3mm; font-weight:700; }
@@ -30,7 +28,6 @@
   .contact .v{ color:#3d5560; }
   .rule{ height:1px; background:var(--rule); margin:0 14mm; }
 
-  /* ---------- body grid ---------- */
   .cols{ display:flex; align-items:flex-start; flex:1;
     background:linear-gradient(to right,var(--side-bg) 0,var(--side-bg) 52mm,#fff 52mm); }
   .side{ width:52mm; flex:0 0 52mm; padding:8mm 6mm 10mm 14mm; }
@@ -38,7 +35,6 @@
   .page2 .side{ padding-top:16mm; }
   .page2 .main{ padding-top:16mm; }
 
-  /* ---------- sidebar ---------- */
   .sec-label{ color:var(--label); font-size:6.8pt; font-weight:700; letter-spacing:1.4px;
     font-family:"DejaVu Sans Mono",monospace; padding-bottom:1.4mm; border-bottom:1px solid #c9d5d8; margin-bottom:2.6mm; }
   .side .grp{ margin-bottom:5mm; }
@@ -52,7 +48,6 @@
   .side li{ font-size:8.3pt; margin-bottom:1.6mm; padding-left:3.2mm; position:relative; }
   .side li::before{ content:"•"; position:absolute; left:0; color:var(--teal); }
 
-  /* ---------- main ---------- */
   .block{ margin-bottom:4.5mm; }
   .job{ margin-bottom:4mm; }
   .job .top{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; }
@@ -73,7 +68,6 @@
 </head>
 <body>
 
-<!-- ============ PAGE 1 ============ -->
 <div class="page">
   <div class="head">
     <h1>Le Duong Phi</h1>
@@ -195,7 +189,6 @@
   </div>
 </div>
 
-<!-- ============ PAGE 2 ============ -->
 <div class="page page2">
   <div class="cols">
     <aside class="side">

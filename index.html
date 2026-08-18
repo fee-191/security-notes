@@ -30,7 +30,7 @@ html[data-theme="wibu"] body{
   background-image:var(--wibu-bg,none),linear-gradient(135deg,#2a1e44 0%,#46315f 55%,#5a3f74 100%);
   background-size:cover;background-position:center;background-attachment:fixed;
 }
-html[data-theme="wibu"] .card,html[data-theme="wibu"] .topbar{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+html[data-theme="wibu"] .topbar{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);
@@ -39,7 +39,6 @@ a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 .wrap{max-width:860px;margin:0 auto;padding:0 24px}
 
-/* topbar */
 .topbar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line)}
 .topbar .inner{max-width:860px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px}
 .topbar .me{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--ink)}
@@ -48,7 +47,6 @@ a:hover{text-decoration:underline}
   color:var(--ink);border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;font-family:inherit;line-height:1;text-decoration:none}
 .ctrl-btn:hover{border-color:var(--accent);text-decoration:none}
 
-/* hero */
 .hero{padding:70px 0 10px}
 .hero .eyebrow{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-top:6px}
 .hero h1{font-family:var(--serif);font-size:clamp(30px,5.2vw,46px);line-height:1.2;margin:14px 0 6px;color:var(--ink)}
@@ -65,12 +63,10 @@ a:hover{text-decoration:underline}
 .btn.ghost{color:var(--ink);background:var(--panel)}
 .btn.ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 
-/* section */
 section{padding:56px 0 6px}
 h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 6px;color:var(--ink)}
 .sec-note{color:var(--muted);font-size:14px;margin:0 0 22px}
 
-/* handbook feature */
 .book{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .book .top{padding:26px 28px 20px}
 .book h3{font-family:var(--serif);font-size:21px;margin:0 0 6px;color:var(--ink)}
@@ -88,20 +84,7 @@ h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 6px;color:var(--ink)}
 .scope dd{margin:2px 0 0;font-size:14px;color:var(--muted)}
 .tools{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);line-height:1.8}
 .tools span{color:var(--accent2);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-right:8px}
-/* cards */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:720px){.grid{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
-.card h4{font-family:var(--serif);font-size:17px;margin:0 0 4px;color:var(--ink)}
-.card .meta{font-size:12.5px;color:var(--accent2);margin:0 0 9px;font-weight:600}
-.card p{margin:0;font-size:14.5px;color:var(--ink)}
-.card .res{margin-top:10px;font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:9px}
 
-/* about */
-.about p{margin:12px 0}
-.about .quote{border-left:3px solid var(--accent2);padding:6px 16px;margin:18px 0;color:var(--muted);font-style:italic}
-
-/* contact */
 .links{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
 .links a{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 18px;color:var(--ink);font-size:14.5px}
 .links a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}

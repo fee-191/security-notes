@@ -1142,7 +1142,7 @@ Phân tích rule SSH:
 ```bash
 # Chặn một IP / một dải IP (chèn lên ĐẦU chain bằng -I để khớp trước mọi ACCEPT)
 iptables -I INPUT -s 198.51.100.9 -j DROP
-iptables -I INPUT -s 185.177.72.0/24 -j DROP
+iptables -I INPUT -s 203.0.113.0/24 -j DROP
 
 # Giới hạn SSH kiểu "cửa sổ trượt" bằng module recent:
 # quá 4 kết nối NEW tới port 22 trong 60s từ cùng nguồn -> drop
@@ -1168,7 +1168,7 @@ table inet filter {
     set blocklist {
         type ipv4_addr
         flags interval
-        elements = { 198.51.100.9, 185.177.72.0/24 }
+        elements = { 198.51.100.9, 203.0.113.0/24 }
     }
     chain input {
         type filter hook input priority 0; policy drop;
@@ -1268,8 +1268,8 @@ journalctl | grep apparmor      # xem denial (ALLOWED/DENIED)
 
 Vì sao mục này nằm trong sổ tay bảo mật? Thứ nhất, **availability** là một trụ của tam giác CIA — máy sập vì cạn tài nguyên cũng là sự cố an toàn thông tin. Thứ hai, rất nhiều dấu hiệu xâm nhập biểu hiện đầu tiên dưới dạng bất thường tài nguyên: cryptominer = CPU cao bất thường, DoS = load/network vọt, còn **đĩa đầy thì log ngừng ghi** — attacker được tặng không gian mù. Kỹ năng "nhìn con số bất thường → tìm ra process gây ra" dùng chung cho cả vận hành lẫn điều tra.
 
-Phương pháp luận mình dùng: **hai tầng, mỗi tầng trả lời một câu hỏi khác nhau.**
-- Tầng metric/dashboard (Prometheus + node_exporter, vẽ bằng Grafana — hoặc bất kỳ stack nào tương đương): trả lời "**cao ở đâu, từ lúc nào, xu hướng ra sao**". Metric là số liệu tổng hợp — nó không biết process nào gây ra.
+Cách tổ chức của mục này bám theo **phương pháp USE** (Utilization – Saturation – Errors) mà Brendan Gregg đề xuất: soi lần lượt từng tài nguyên (CPU, RAM, đĩa, I/O, mạng), mỗi tài nguyên hỏi ba câu — dùng bao nhiêu, có bị nghẽn không, có lỗi không. Trên nền đó là **hai tầng công cụ, mỗi tầng trả lời một câu hỏi khác nhau.**
+- Tầng metric/dashboard (Prometheus + node_exporter vẽ bằng Grafana, Zabbix, hay bất kỳ stack nào tương đương): trả lời "**cao ở đâu, từ lúc nào, xu hướng ra sao**". Metric là số liệu tổng hợp — nó không biết process nào gây ra.
 - Tầng lệnh trên máy (SSH vào): trả lời "**process nào, file nào, kết nối nào gây ra**". Lệnh nhìn được từng process nhưng không có lịch sử.
 
 Hai tầng bù nhau: chỉ có dashboard thì biết bệnh mà không biết thủ phạm; chỉ có lệnh thì bắt được hiện trạng mà không biết "cao từ bao giờ, có chu kỳ không". Quy trình khi có cảnh báo: dashboard khoanh vùng trục nào (CPU/RAM/disk/I-O/network/load) → SSH vào → chạy đúng nhóm lệnh của trục đó.

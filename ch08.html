@@ -1893,27 +1893,27 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </code></pre>
 <hr />
 <h2 id="ch08-816-đieu-tra-mot-canh-bao-thuc-te-bang-wazuh-quy-trinh-tai-dung-đuoc">8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được</h2>
-<p>Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: <strong>từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận</strong>. Đây là quy trình có thể dùng lại để điều tra một đợt quét thật (giữa 2026); chi tiết hệ thống đã được lược bỏ, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: <em>bị cái gì, thủng chưa, làm gì tiếp</em> — kèm bằng chứng, không phải cảm giác.</p>
+<p>Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: <strong>từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận</strong>. Kịch bản dưới đây là <strong>case dựng lại để minh hoạ</strong> — mọi IP, mốc thời gian và dòng log đều là dữ liệu mẫu (dùng dải tài liệu RFC 5737), nhưng hình dạng của nó đúng với một đợt quét path traversal điển hình mà bất kỳ máy web nào phơi Internet cũng gặp. Mục tiêu cuối là trả lời được ba câu: <em>bị cái gì, thủng chưa, làm gì tiếp</em> — kèm bằng chứng, không phải cảm giác.</p>
 <h3 id="ch08-8161-buoc-1-phat-hien-tu-dashboard-mot-nguon-chiem-ap-đao">8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo</h3>
-<p>Điểm khởi đầu là panel <strong>Top source IPs</strong> (mình tự dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — <code>45.148.10.80</code> — chiếm <strong>536</strong> cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: <code>web</code>, <code>attack</code>. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.</p>
+<p>Điểm khởi đầu là panel <strong>Top source IPs</strong> (dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — <code>198.51.100.77</code> — chiếm <strong>536</strong> cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: <code>web</code>, <code>attack</code>. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.</p>
 <p>Bài học ngay ở bước này: dashboard không trả lời câu hỏi — nó chỉ <strong>chỉ chỗ đáng để hỏi</strong>. Toàn bộ kết luận phía sau đến từ query.</p>
 <h3 id="ch08-8162-buoc-2-khoanh-vung-bang-dev-tools-ba-query-tong-hop">8.16.2. Bước 2 — Khoanh vùng bằng Dev Tools: ba query tổng hợp</h3>
 <p>Wazuh dashboard có <strong>Dev Tools</strong> (console gửi query thẳng vào indexer — cú pháp OpenSearch/Elasticsearch DSL) trên index <code>wazuh-alerts-*</code>. Ba aggregation trả lời ba câu hỏi khoanh vùng.</p>
 <p><strong>(a) Nó đập máy nào?</strong> — <code>terms</code> theo <code>agent.name</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;by_agent&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;agent.name&quot;,&quot;size&quot;:10}}}}
 </code></pre>
 <p>Kết quả: toàn bộ 536 alert nằm trên <strong>một máy dev chạy web API</strong> (nginx làm reverse proxy, phơi Internet). Phạm vi gọn lại còn đúng một host.</p>
 <p><strong>(b) Nó sinh ra rule gì?</strong> — <code>terms</code> theo <code>rule.id</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;rules&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;rule.id&quot;,&quot;size&quot;:15}}}}
 </code></pre>
 <p>Kết quả: <code>31516</code> (URL đáng ngờ — 230), <code>31104</code> (pattern web attack — 218), <code>31151</code>/<code>31153</code> (nhiều lỗi 400/404) — toàn bộ thuộc nhóm "dò và bị từ chối". Quan trọng không kém là rule <strong>không</strong> xuất hiện: không có <code>31106</code> — rule "web attack <strong>trả về 200</strong>" (tức tấn công mà server đáp thành công). Chi tiết vắng mặt này là mấu chốt của bước kết luận (8.16.5). Các ID trên thuộc ruleset web access-log mặc định của Wazuh — đối chiếu lại với phiên bản ruleset đang chạy (cần kiểm chứng).</p>
 <p><strong>(c) Nhịp độ ra sao?</strong> — <code>date_histogram</code> theo <code>timestamp</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;timeline&quot;:{&quot;date_histogram&quot;:{&quot;field&quot;:&quot;timestamp&quot;,&quot;fixed_interval&quot;:&quot;5m&quot;}}}}
 </code></pre>
 <p>Kết quả: mở màn bằng 1 request lẻ (thăm dò), ~35 phút sau leo đỉnh <strong>58 request/5 phút</strong> (xấp xỉ 1 request mỗi 5 giây), giữ đều ~2 giờ rồi tắt hẳn. Nhịp đều tăm tắp như vậy không phải người bấm trình duyệt — là scanner tự động. Nhận định này về sau trở thành cơ sở kỹ thuật để đề xuất rate-limit ở reverse proxy.</p>
@@ -1921,18 +1921,18 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 <p>Aggregation cho <em>hình dạng</em> của sự việc; muốn <em>bằng chứng</em> phải đọc document đầy đủ:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
 {&quot;size&quot;:1,&quot;query&quot;:{&quot;bool&quot;:{&quot;filter&quot;:[
-   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
+   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
  &quot;_source&quot;:[&quot;timestamp&quot;,&quot;rule.description&quot;,&quot;full_log&quot;,&quot;data.url&quot;,&quot;GeoLocation&quot;],
  &quot;sort&quot;:[{&quot;timestamp&quot;:&quot;desc&quot;}]}
 </code></pre>
 <p>Trường <code>full_log</code> giữ nguyên vẹn dòng access log mà agent đã đọc:</p>
-<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&amp;v=zte2h HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
+<pre><code>198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3&amp;v=x9y8 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=ab12cd&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
 </code></pre>
-<p>Một chi tiết đáng kể: khi mình SSH vào máy để <code>grep</code> IP này trong <code>/var/log/nginx/access.log</code> thì <strong>không còn dòng nào</strong> — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ <code>full_log</code> trong index. Đây là lần mình thấy giá trị của log tập trung bằng mắt thường: <strong>bằng chứng không phụ thuộc log thô trên máy còn hay mất</strong> — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: <code>sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*</code> trên các file đã nén.)</p>
+<p>Một chi tiết đáng lưu ý trong kịch bản này: SSH vào máy <code>grep</code> IP đó trong <code>/var/log/nginx/access.log</code> thì <strong>không còn dòng nào</strong> — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ <code>full_log</code> trong index. Đây chính là chỗ log tập trung chứng minh giá trị: <strong>bằng chứng không phụ thuộc log thô trên máy còn hay mất</strong> — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: <code>sudo zgrep 198.51.100.77 /var/log/nginx/access.log.*</code> trên các file đã nén.)</p>
 <h3 id="ch08-8164-buoc-4-dien-giai-dong-log-no-đang-lam-gi-nham-cai-gi">8.16.4. Bước 4 — Diễn giải dòng log: nó đang làm gì, nhắm cái gì</h3>
 <p>Đọc từng phần của dòng log (kết hợp thêm <code>terms</code> theo <code>data.url</code> để xem toàn bộ danh sách path bị dò):</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;urls&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.url&quot;,&quot;size&quot;:25}}}}
 </code></pre>
 <table>
@@ -1994,7 +1994,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 {&quot;size&quot;:0,&quot;query&quot;:{&quot;terms&quot;:{&quot;rule.groups&quot;:[&quot;attack&quot;]}},
  &quot;aggs&quot;:{&quot;ips&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.srcip&quot;,&quot;size&quot;:20}}}}
 </code></pre>
-<p>Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng <strong>thứ ba</strong> về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo <strong>cụm subnet</strong> (<code>185.177.72.x</code> với năm địa chỉ khác nhau, <code>45.148.10.x</code>, <code>195.178.110.x</code>...). Tương tự, <code>terms</code> theo <code>agent.name</code> (lọc <code>rule.groups: ["attack","web"]</code>) cho thấy <strong>mọi máy web-facing đều bị quét</strong>, không riêng máy ban đầu; và <code>terms</code> theo <code>rule.description</code> lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.</p>
+<p>Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng <strong>thứ ba</strong> về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo <strong>cụm subnet</strong> (<code>203.0.113.x</code> với năm địa chỉ khác nhau, <code>198.51.100.x</code>, <code>192.0.2.x</code>...). Tương tự, <code>terms</code> theo <code>agent.name</code> (lọc <code>rule.groups: ["attack","web"]</code>) cho thấy <strong>mọi máy web-facing đều bị quét</strong>, không riêng máy ban đầu; và <code>terms</code> theo <code>rule.description</code> lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.</p>
 <p>Hệ quả cho phản ứng: <strong>chặn từng IP là "đập chuột chũi"</strong> — scanner đổi địa chỉ liên tục theo cả dải. Biện pháp đúng tầng là kiểm soát <em>hành vi</em> tại reverse proxy (rate-limit, chặn tên tệp nhạy cảm, <code>default_server</code> ngắt Host lạ) và thu hẹp bề mặt (môi trường dev không phơi công khai); phòng thủ tầng mạng/WAF xem <a href="ch11.html">Chương 11</a>.</p>
 <h3 id="ch08-8167-tom-tat-phuong-phap-checklist-tai-dung">8.16.7. Tóm tắt phương pháp — checklist tái dùng</h3>
 <table>

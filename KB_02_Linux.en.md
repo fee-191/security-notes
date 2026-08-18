@@ -1142,7 +1142,7 @@ Breaking down the SSH rule:
 ```bash
 # Block one IP / one IP range (insert at the TOP of the chain with -I so it matches before any ACCEPT)
 iptables -I INPUT -s 198.51.100.9 -j DROP
-iptables -I INPUT -s 185.177.72.0/24 -j DROP
+iptables -I INPUT -s 203.0.113.0/24 -j DROP
 
 # Sliding-window SSH rate limit using the recent module:
 # more than 4 NEW connections to port 22 within 60s from the same source -> drop
@@ -1168,7 +1168,7 @@ table inet filter {
     set blocklist {
         type ipv4_addr
         flags interval
-        elements = { 198.51.100.9, 185.177.72.0/24 }
+        elements = { 198.51.100.9, 203.0.113.0/24 }
     }
     chain input {
         type filter hook input priority 0; policy drop;
@@ -1268,7 +1268,7 @@ journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
 
 Why is this section in a security notebook? First, **availability** is one pillar of the CIA triad — a machine that dies from resource exhaustion is an information-security incident too. Second, a lot of intrusion indicators first show up as resource anomalies: a cryptominer = abnormally high CPU, a DoS = load/network spiking, and **a full disk means logging stops** — the attacker gets a free blind spot. The skill of "spot the abnormal number → find the process behind it" serves operations and investigation alike.
 
-The methodology I use: **two layers, each answering a different question.**
+The way this section is organized follows the **USE method** (Utilization – Saturation – Errors) proposed by Brendan Gregg: walk each resource in turn (CPU, memory, disk, I/O, network) and ask three questions of it — how much is in use, is it saturated, are there errors. On top of that sit **two tiers of tooling, each answering a different question.**
 - The metric/dashboard layer (Prometheus + node_exporter, graphed in Grafana — or any equivalent stack): answers "**where is it high, since when, and what's the trend**". Metrics are aggregates — they don't know which process is responsible.
 - The on-box command layer (SSH in): answers "**which process, which file, which connection is causing it**". Commands see individual processes but have no history.
 

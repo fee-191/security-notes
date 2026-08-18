@@ -1251,11 +1251,11 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ## 8.16. Investigating a real alert with Wazuh — a reusable process
 
-The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: **from one anomalous number on a dashboard back to the original evidence and a conclusion**. This is the process I used to investigate a real scanning campaign (mid-2026); system details have been stripped out, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — *what hit us, did it get through, what next* — with evidence, not gut feeling.
+The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: **from one anomalous number on a dashboard back to the original evidence and a conclusion**. This is the process I used as an **illustrative reconstruction** — every IP, timestamp and log line below is sample data (RFC 5737 documentation ranges), but the shape is exactly that of a typical path-traversal sweep against any internet-facing web host. The end goal is to answer three questions — *what hit us, did it get through, what next* — with evidence, not gut feeling.
 
 ### 8.16.1. Step 1 — Detection from the dashboard: one source dominating
 
-The starting point was a **Top source IPs** panel (mine is self-built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — `45.148.10.80` — accounted for **536** alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: `web`, `attack`. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.
+The starting point is a **Top source IPs** panel (built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — `198.51.100.77` — accounted for **536** alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: `web`, `attack`. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.
 
 The lesson right at this step: the dashboard does not answer questions — it only **points at where to ask**. Every conclusion that follows comes from queries.
 
@@ -1267,7 +1267,7 @@ The Wazuh dashboard has **Dev Tools** (a console that sends queries straight to 
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"by_agent":{"terms":{"field":"agent.name","size":10}}}}
 ```
 
@@ -1277,7 +1277,7 @@ Result: all 536 alerts sat on **a single dev machine running a web API** (nginx 
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"rules":{"terms":{"field":"rule.id","size":15}}}}
 ```
 
@@ -1287,7 +1287,7 @@ Result: `31516` (suspicious URL — 230), `31104` (web attack pattern — 218), 
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"timeline":{"date_histogram":{"field":"timestamp","fixed_interval":"5m"}}}}
 ```
 
@@ -1300,7 +1300,7 @@ Aggregations give you the *shape* of the incident; for *evidence* you must read 
 ```json
 GET wazuh-alerts-*/_search
 {"size":1,"query":{"bool":{"filter":[
-   {"term":{"data.srcip":"45.148.10.80"}},{"term":{"rule.id":"31516"}}]}},
+   {"term":{"data.srcip":"198.51.100.77"}},{"term":{"rule.id":"31516"}}]}},
  "_source":["timestamp","rule.description","full_log","data.url","GeoLocation"],
  "sort":[{"timestamp":"desc"}]}
 ```
@@ -1308,10 +1308,10 @@ GET wazuh-alerts-*/_search
 The `full_log` field preserves the access-log line exactly as the agent read it:
 
 ```
-45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&v=zte2h HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
+198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3&v=x9y8 HTTP/1.1" 301 178 "https://www.bing.com/search?q=ab12cd" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
 ```
 
-One detail worth dwelling on: when I SSHed into the machine to `grep` this IP in `/var/log/nginx/access.log`, there was **not a single line left** — the events had happened the previous day and the log had rotated (logrotate). But the centralized SIEM still held `full_log` in the index. This was the moment I saw the value of centralized logging with my own eyes: **the evidence does not depend on whether the raw log on the host still exists** — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: `sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*` against the compressed files.)
+One detail worth dwelling on in this scenario: SSH into the machine to `grep` that IP in `/var/log/nginx/access.log` and there is **not a single line left** — the events happened the previous day and the log has rotated (logrotate). But the centralized SIEM still held `full_log` in the index. This is precisely where centralized logging proves its worth: **the evidence does not depend on whether the raw log on the host still exists** — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: `sudo zgrep 198.51.100.77 /var/log/nginx/access.log.*` against the compressed files.)
 
 ### 8.16.4. Step 4 — Interpreting the log line: what it is doing, what it is after
 
@@ -1319,7 +1319,7 @@ Read the log line part by part (combined with a `terms` on `data.url` to see the
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"urls":{"terms":{"field":"data.url","size":25}}}}
 ```
 
@@ -1356,7 +1356,7 @@ GET wazuh-alerts-*/_search
  "aggs":{"ips":{"terms":{"field":"data.srcip","size":20}}}}
 ```
 
-The result completely changed the picture: the IP under investigation ranked only **third** by alert count; above it were sources with thousands of alerts, and many IPs came in **subnet clusters** (`185.177.72.x` with five distinct addresses, `45.148.10.x`, `195.178.110.x`...). Likewise, a `terms` on `agent.name` (filtered on `rule.groups: ["attack","web"]`) showed that **every web-facing machine was being scanned**, not just the initial one; and a `terms` on `rule.description` revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.
+The result completely changed the picture: the IP under investigation ranked only **third** by alert count; above it were sources with thousands of alerts, and many IPs came in **subnet clusters** (`203.0.113.x` with five distinct addresses, `198.51.100.x`, `192.0.2.x`...). Likewise, a `terms` on `agent.name` (filtered on `rule.groups: ["attack","web"]`) showed that **every web-facing machine was being scanned**, not just the initial one; and a `terms` on `rule.description` revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.
 
 The consequence for response: **blocking IPs one by one is "whack-a-mole"** — scanners rotate addresses across whole ranges. The right-layer measures are controlling *behavior* at the reverse proxy (rate limiting, blocking sensitive file names, a `default_server` that cuts off unknown Hosts) and shrinking the attack surface (dev environments should not be publicly exposed); for network-layer defense and WAFs see [Chapter 11](#sec-11).
 

@@ -1243,11 +1243,11 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ## 8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được
 
-Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: **từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận**. Đây là quy trình có thể dùng lại để điều tra một đợt quét thật (giữa 2026); chi tiết hệ thống đã được lược bỏ, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: *bị cái gì, thủng chưa, làm gì tiếp* — kèm bằng chứng, không phải cảm giác.
+Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: **từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận**. Kịch bản dưới đây là **case dựng lại để minh hoạ** — mọi IP, mốc thời gian và dòng log đều là dữ liệu mẫu (dùng dải tài liệu RFC 5737), nhưng hình dạng của nó đúng với một đợt quét path traversal điển hình mà bất kỳ máy web nào phơi Internet cũng gặp. Mục tiêu cuối là trả lời được ba câu: *bị cái gì, thủng chưa, làm gì tiếp* — kèm bằng chứng, không phải cảm giác.
 
 ### 8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo
 
-Điểm khởi đầu là panel **Top source IPs** (mình tự dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — `45.148.10.80` — chiếm **536** cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: `web`, `attack`. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.
+Điểm khởi đầu là panel **Top source IPs** (dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — `198.51.100.77` — chiếm **536** cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: `web`, `attack`. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.
 
 Bài học ngay ở bước này: dashboard không trả lời câu hỏi — nó chỉ **chỉ chỗ đáng để hỏi**. Toàn bộ kết luận phía sau đến từ query.
 
@@ -1259,7 +1259,7 @@ Wazuh dashboard có **Dev Tools** (console gửi query thẳng vào indexer — 
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"by_agent":{"terms":{"field":"agent.name","size":10}}}}
 ```
 
@@ -1269,7 +1269,7 @@ Kết quả: toàn bộ 536 alert nằm trên **một máy dev chạy web API** 
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"rules":{"terms":{"field":"rule.id","size":15}}}}
 ```
 
@@ -1279,7 +1279,7 @@ Kết quả: `31516` (URL đáng ngờ — 230), `31104` (pattern web attack —
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"timeline":{"date_histogram":{"field":"timestamp","fixed_interval":"5m"}}}}
 ```
 
@@ -1292,7 +1292,7 @@ Aggregation cho *hình dạng* của sự việc; muốn *bằng chứng* phải
 ```json
 GET wazuh-alerts-*/_search
 {"size":1,"query":{"bool":{"filter":[
-   {"term":{"data.srcip":"45.148.10.80"}},{"term":{"rule.id":"31516"}}]}},
+   {"term":{"data.srcip":"198.51.100.77"}},{"term":{"rule.id":"31516"}}]}},
  "_source":["timestamp","rule.description","full_log","data.url","GeoLocation"],
  "sort":[{"timestamp":"desc"}]}
 ```
@@ -1300,10 +1300,10 @@ GET wazuh-alerts-*/_search
 Trường `full_log` giữ nguyên vẹn dòng access log mà agent đã đọc:
 
 ```
-45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&v=zte2h HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
+198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] "GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3&v=x9y8 HTTP/1.1" 301 178 "https://www.bing.com/search?q=ab12cd" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15"
 ```
 
-Một chi tiết đáng kể: khi mình SSH vào máy để `grep` IP này trong `/var/log/nginx/access.log` thì **không còn dòng nào** — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ `full_log` trong index. Đây là lần mình thấy giá trị của log tập trung bằng mắt thường: **bằng chứng không phụ thuộc log thô trên máy còn hay mất** — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: `sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*` trên các file đã nén.)
+Một chi tiết đáng lưu ý trong kịch bản này: SSH vào máy `grep` IP đó trong `/var/log/nginx/access.log` thì **không còn dòng nào** — sự kiện xảy ra hôm trước, log đã xoay (logrotate). Nhưng SIEM tập trung vẫn giữ `full_log` trong index. Đây chính là chỗ log tập trung chứng minh giá trị: **bằng chứng không phụ thuộc log thô trên máy còn hay mất** — và attacker có xóa được log trên host cũng không xóa được bản đã nằm trong index. (Muốn đối chiếu bản gốc trên máy vẫn được: `sudo zgrep 198.51.100.77 /var/log/nginx/access.log.*` trên các file đã nén.)
 
 ### 8.16.4. Bước 4 — Diễn giải dòng log: nó đang làm gì, nhắm cái gì
 
@@ -1311,7 +1311,7 @@ Một chi tiết đáng kể: khi mình SSH vào máy để `grep` IP này trong
 
 ```json
 GET wazuh-alerts-*/_search
-{"size":0,"query":{"term":{"data.srcip":"45.148.10.80"}},
+{"size":0,"query":{"term":{"data.srcip":"198.51.100.77"}},
  "aggs":{"urls":{"terms":{"field":"data.url","size":25}}}}
 ```
 
@@ -1348,7 +1348,7 @@ GET wazuh-alerts-*/_search
  "aggs":{"ips":{"terms":{"field":"data.srcip","size":20}}}}
 ```
 
-Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng **thứ ba** về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo **cụm subnet** (`185.177.72.x` với năm địa chỉ khác nhau, `45.148.10.x`, `195.178.110.x`...). Tương tự, `terms` theo `agent.name` (lọc `rule.groups: ["attack","web"]`) cho thấy **mọi máy web-facing đều bị quét**, không riêng máy ban đầu; và `terms` theo `rule.description` lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.
+Kết quả làm thay đổi hẳn cách nhìn: IP đang điều tra chỉ đứng **thứ ba** về số alert; phía trên còn nguồn hàng nghìn alert, và nhiều IP đi theo **cụm subnet** (`203.0.113.x` với năm địa chỉ khác nhau, `198.51.100.x`, `192.0.2.x`...). Tương tự, `terms` theo `agent.name` (lọc `rule.groups: ["attack","web"]`) cho thấy **mọi máy web-facing đều bị quét**, không riêng máy ban đầu; và `terms` theo `rule.description` lộ thêm các kiểu tấn công khác (dò PHP CGI-bin, POST-flood, UA nằm blacklist) cùng một lượng lớn lỗi 500 — scan làm app phát sinh lỗi nội bộ, tức đã ảnh hưởng độ ổn định dù chưa thủng.
 
 Hệ quả cho phản ứng: **chặn từng IP là "đập chuột chũi"** — scanner đổi địa chỉ liên tục theo cả dải. Biện pháp đúng tầng là kiểm soát *hành vi* tại reverse proxy (rate-limit, chặn tên tệp nhạy cảm, `default_server` ngắt Host lạ) và thu hẹp bề mặt (môi trường dev không phơi công khai); phòng thủ tầng mạng/WAF xem [Chương 11](#sec-11).
 

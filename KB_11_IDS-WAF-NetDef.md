@@ -973,17 +973,17 @@ Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trư
 
 ### 11.6.8. Bài học từ một chiến dịch scan thực tế
 
-Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là những gì mình rút ra sau khi ngồi đọc log một đợt quét thật. Nói rõ để khỏi hiểu nhầm: đây là **đề xuất rút ra từ quan sát**, không phải bản tổng kết một hệ thống đã triển khai xong.
+Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết suông — nó là những gì rút ra được khi ngồi đọc log một đợt quét. Kịch bản dưới đây dùng **dữ liệu mẫu** (IP thuộc dải tài liệu RFC 5737), nhưng hình dạng đúng với thứ mọi máy web phơi Internet đều gặp. Và nói rõ để khỏi hiểu nhầm: đây là **đề xuất rút ra từ quan sát**, không phải bản tổng kết một hệ thống đã triển khai xong.
 
-Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `45.148.10.80` (VPS ở Amsterdam) — **536 request trong ~2 giờ 15 phút** nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Con số 536 là ảnh chụp tại thời điểm truy vấn, không phải tổng kết: quét kiểu này diễn ra liên tục nên mỗi ngày nhìn lại số lại khác. Một dòng access log gốc điển hình:
+Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `198.51.100.77` (một VPS thuê ở nước ngoài) — **536 request trong ~2 giờ 15 phút** nhắm một máy chạy web API, toàn path traversal dò tệp bí mật. Con số 536 là ảnh chụp tại thời điểm truy vấn, không phải tổng kết: quét kiểu này diễn ra liên tục nên mỗi ngày nhìn lại số lại khác. Một dòng access log gốc điển hình:
 
 ```
-45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
+198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3 HTTP/1.1" 301 178 "https://www.bing.com/search?q=ab12cd" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
 ```
 
 Đặc điểm đọc ra từ log: biến thể `....//` và double-encoding `%252e%252e` để né bộ lọc `../` thông thường (đúng cái bẫy ở 11.6.4); nhắm `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` lần lượt cho mọi user phổ biến (root/admin/ubuntu/deploy/www-data...); referer giả Bing + user-agent xoay liên tục để né phát hiện; nhịp đều ~1 request/5 giây suốt 2 giờ — chắc chắn là máy, không phải người. Kết quả: toàn 301/400/404, không request nào trả 200 — **chưa thủng**. Nhưng nếu server ở cấu hình mặc định như anti-pattern 11.6.2 thì toàn bộ 536 request vẫn được nhận và một phần chạm tới app — đó mới là điều đáng sửa, không phải chuyện chặn riêng IP này.
 
-Mở rộng truy vấn ra cả fleet thì bức tranh đổi hẳn: **hàng chục IP thuộc nhiều subnet** (`185.177.72.x`, `45.148.10.x`, `195.178.110.x`...) quét tất cả các máy web-facing, IP xoay liên tục. Bài học rút ra:
+Mở rộng truy vấn ra cả fleet thì bức tranh đổi hẳn: **hàng chục IP thuộc nhiều subnet** (`203.0.113.x`, `198.51.100.x`, `192.0.2.x`...) quét tất cả các máy web-facing, IP xoay liên tục. Bài học rút ra:
 
 1. **Chặn IP đơn lẻ là "đập chuột chũi"**: chặn xong `.80` thì `.62`, `.42` và subnet khác tới ngay. Chặn IP/subnet chỉ là biện pháp tình thế khi đang bị dồn dập.
 2. **Ưu tiên biện pháp theo hành vi, áp cho cả fleet**: rate-limit (11.6.3), chặn tên tệp (11.6.4), `default_server` 444 (11.6.5), siết body size (11.6.6) — không phụ thuộc IP nguồn nên không phải chạy theo scanner. Với dev/staging, allow/deny theo IP (11.6.7) diệt gốc luôn.

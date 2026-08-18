@@ -2043,7 +2043,7 @@ iptables -A INPUT -j LOG --log-prefix &quot;DROP_IN: &quot; --log-level 4
 <p><strong>A few practical rules you end up needing:</strong></p>
 <pre><code class="language-bash"># Block one IP / one IP range (insert at the TOP of the chain with -I so it matches before any ACCEPT)
 iptables -I INPUT -s 198.51.100.9 -j DROP
-iptables -I INPUT -s 185.177.72.0/24 -j DROP
+iptables -I INPUT -s 203.0.113.0/24 -j DROP
 
 # Sliding-window SSH rate limit using the recent module:
 # more than 4 NEW connections to port 22 within 60s from the same source -&gt; drop
@@ -2066,7 +2066,7 @@ table inet filter {
     set blocklist {
         type ipv4_addr
         flags interval
-        elements = { 198.51.100.9, 185.177.72.0/24 }
+        elements = { 198.51.100.9, 203.0.113.0/24 }
     }
     chain input {
         type filter hook input priority 0; policy drop;
@@ -2147,7 +2147,7 @@ journalctl | grep apparmor      # view denials (ALLOWED/DENIED)
 <hr />
 <h2 id="ch02-213-performance-resource-diagnostics-the-dashboard-says-where-its-high-the-commands-say-which-process-is-causing-it">2.13. Performance &amp; resource diagnostics — the dashboard says "where it's high", the commands say "which process is causing it"</h2>
 <p>Why is this section in a security notebook? First, <strong>availability</strong> is one pillar of the CIA triad — a machine that dies from resource exhaustion is an information-security incident too. Second, a lot of intrusion indicators first show up as resource anomalies: a cryptominer = abnormally high CPU, a DoS = load/network spiking, and <strong>a full disk means logging stops</strong> — the attacker gets a free blind spot. The skill of "spot the abnormal number → find the process behind it" serves operations and investigation alike.</p>
-<p>The methodology I use: <strong>two layers, each answering a different question.</strong>
+<p>The way this section is organized follows the <strong>USE method</strong> (Utilization – Saturation – Errors) proposed by Brendan Gregg: walk each resource in turn (CPU, memory, disk, I/O, network) and ask three questions of it — how much is in use, is it saturated, are there errors. On top of that sit <strong>two tiers of tooling, each answering a different question.</strong>
 - The metric/dashboard layer (Prometheus + node_exporter, graphed in Grafana — or any equivalent stack): answers "<strong>where is it high, since when, and what's the trend</strong>". Metrics are aggregates — they don't know which process is responsible.
 - The on-box command layer (SSH in): answers "<strong>which process, which file, which connection is causing it</strong>". Commands see individual processes but have no history.</p>
 <p>The two layers complement each other: a dashboard alone knows the disease but not the culprit; commands alone capture the current state but not "high since when, is it periodic". The workflow on an alert: the dashboard narrows it to an axis (CPU/RAM/disk/I-O/network/load) → SSH in → run exactly that axis's command group.</p>

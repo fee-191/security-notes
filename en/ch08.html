@@ -1897,27 +1897,27 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </code></pre>
 <hr />
 <h2 id="ch08-816-investigating-a-real-alert-with-wazuh-a-reusable-process">8.16. Investigating a real alert with Wazuh — a reusable process</h2>
-<p>The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: <strong>from one anomalous number on a dashboard back to the original evidence and a conclusion</strong>. This is the process I used to investigate a real scanning campaign (mid-2026); system details have been stripped out, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — <em>what hit us, did it get through, what next</em> — with evidence, not gut feeling.</p>
+<p>The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: <strong>from one anomalous number on a dashboard back to the original evidence and a conclusion</strong>. This is the process I used as an <strong>illustrative reconstruction</strong> — every IP, timestamp and log line below is sample data (RFC 5737 documentation ranges), but the shape is exactly that of a typical path-traversal sweep against any internet-facing web host. The end goal is to answer three questions — <em>what hit us, did it get through, what next</em> — with evidence, not gut feeling.</p>
 <h3 id="ch08-8161-step-1-detection-from-the-dashboard-one-source-dominating">8.16.1. Step 1 — Detection from the dashboard: one source dominating</h3>
-<p>The starting point was a <strong>Top source IPs</strong> panel (mine is self-built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — <code>45.148.10.80</code> — accounted for <strong>536</strong> alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: <code>web</code>, <code>attack</code>. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.</p>
+<p>The starting point is a <strong>Top source IPs</strong> panel (built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — <code>198.51.100.77</code> — accounted for <strong>536</strong> alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: <code>web</code>, <code>attack</code>. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.</p>
 <p>The lesson right at this step: the dashboard does not answer questions — it only <strong>points at where to ask</strong>. Every conclusion that follows comes from queries.</p>
 <h3 id="ch08-8162-step-2-scoping-with-dev-tools-three-aggregation-queries">8.16.2. Step 2 — Scoping with Dev Tools: three aggregation queries</h3>
 <p>The Wazuh dashboard has <strong>Dev Tools</strong> (a console that sends queries straight to the indexer — OpenSearch/Elasticsearch DSL syntax) against the <code>wazuh-alerts-*</code> index. Three aggregations answer three scoping questions.</p>
 <p><strong>(a) Which hosts is it hitting?</strong> — <code>terms</code> on <code>agent.name</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;by_agent&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;agent.name&quot;,&quot;size&quot;:10}}}}
 </code></pre>
 <p>Result: all 536 alerts sat on <strong>a single dev machine running a web API</strong> (nginx as the reverse proxy, exposed to the Internet). The scope collapsed to exactly one host.</p>
 <p><strong>(b) Which rules is it triggering?</strong> — <code>terms</code> on <code>rule.id</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;rules&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;rule.id&quot;,&quot;size&quot;:15}}}}
 </code></pre>
 <p>Result: <code>31516</code> (suspicious URL — 230), <code>31104</code> (web attack pattern — 218), <code>31151</code>/<code>31153</code> (many 400/404 errors) — all in the "probed and refused" family. Just as important is the rule that did <strong>not</strong> appear: no <code>31106</code> — the rule for a "web attack <strong>returning 200</strong>" (i.e., an attack the server answered successfully). This absent detail is the crux of the conclusion step (8.16.5). These IDs belong to Wazuh's default web access-log ruleset — cross-check against the ruleset version you actually run (needs verification).</p>
 <p><strong>(c) What is the tempo?</strong> — <code>date_histogram</code> on <code>timestamp</code>:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;timeline&quot;:{&quot;date_histogram&quot;:{&quot;field&quot;:&quot;timestamp&quot;,&quot;fixed_interval&quot;:&quot;5m&quot;}}}}
 </code></pre>
 <p>Result: it opened with a single stray request (a probe), climbed ~35 minutes later to a peak of <strong>58 requests per 5 minutes</strong> (roughly one request every 5 seconds), held that steady rhythm for ~2 hours, then went silent. A rhythm that steady is not a human clicking through a browser — it is an automated scanner. This observation later became the technical basis for proposing rate-limiting at the reverse proxy.</p>
@@ -1925,18 +1925,18 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 <p>Aggregations give you the <em>shape</em> of the incident; for <em>evidence</em> you must read a full document:</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
 {&quot;size&quot;:1,&quot;query&quot;:{&quot;bool&quot;:{&quot;filter&quot;:[
-   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
+   {&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},{&quot;term&quot;:{&quot;rule.id&quot;:&quot;31516&quot;}}]}},
  &quot;_source&quot;:[&quot;timestamp&quot;,&quot;rule.description&quot;,&quot;full_log&quot;,&quot;data.url&quot;,&quot;GeoLocation&quot;],
  &quot;sort&quot;:[{&quot;timestamp&quot;:&quot;desc&quot;}]}
 </code></pre>
 <p>The <code>full_log</code> field preserves the access-log line exactly as the agent read it:</p>
-<pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2&amp;v=zte2h HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
+<pre><code>198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] &quot;GET /....//....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3&amp;v=x9y8 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=ab12cd&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15&quot;
 </code></pre>
-<p>One detail worth dwelling on: when I SSHed into the machine to <code>grep</code> this IP in <code>/var/log/nginx/access.log</code>, there was <strong>not a single line left</strong> — the events had happened the previous day and the log had rotated (logrotate). But the centralized SIEM still held <code>full_log</code> in the index. This was the moment I saw the value of centralized logging with my own eyes: <strong>the evidence does not depend on whether the raw log on the host still exists</strong> — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: <code>sudo zgrep 45.148.10.80 /var/log/nginx/access.log.*</code> against the compressed files.)</p>
+<p>One detail worth dwelling on in this scenario: SSH into the machine to <code>grep</code> that IP in <code>/var/log/nginx/access.log</code> and there is <strong>not a single line left</strong> — the events happened the previous day and the log has rotated (logrotate). But the centralized SIEM still held <code>full_log</code> in the index. This is precisely where centralized logging proves its worth: <strong>the evidence does not depend on whether the raw log on the host still exists</strong> — and even if an attacker wipes the logs on the host, they cannot wipe the copy already in the index. (You can still cross-check the original on the machine: <code>sudo zgrep 198.51.100.77 /var/log/nginx/access.log.*</code> against the compressed files.)</p>
 <h3 id="ch08-8164-step-4-interpreting-the-log-line-what-it-is-doing-what-it-is-after">8.16.4. Step 4 — Interpreting the log line: what it is doing, what it is after</h3>
 <p>Read the log line part by part (combined with a <code>terms</code> on <code>data.url</code> to see the full list of probed paths):</p>
 <pre><code class="language-json">GET wazuh-alerts-*/_search
-{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;45.148.10.80&quot;}},
+{&quot;size&quot;:0,&quot;query&quot;:{&quot;term&quot;:{&quot;data.srcip&quot;:&quot;198.51.100.77&quot;}},
  &quot;aggs&quot;:{&quot;urls&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.url&quot;,&quot;size&quot;:25}}}}
 </code></pre>
 <table>
@@ -1998,7 +1998,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 {&quot;size&quot;:0,&quot;query&quot;:{&quot;terms&quot;:{&quot;rule.groups&quot;:[&quot;attack&quot;]}},
  &quot;aggs&quot;:{&quot;ips&quot;:{&quot;terms&quot;:{&quot;field&quot;:&quot;data.srcip&quot;,&quot;size&quot;:20}}}}
 </code></pre>
-<p>The result completely changed the picture: the IP under investigation ranked only <strong>third</strong> by alert count; above it were sources with thousands of alerts, and many IPs came in <strong>subnet clusters</strong> (<code>185.177.72.x</code> with five distinct addresses, <code>45.148.10.x</code>, <code>195.178.110.x</code>...). Likewise, a <code>terms</code> on <code>agent.name</code> (filtered on <code>rule.groups: ["attack","web"]</code>) showed that <strong>every web-facing machine was being scanned</strong>, not just the initial one; and a <code>terms</code> on <code>rule.description</code> revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.</p>
+<p>The result completely changed the picture: the IP under investigation ranked only <strong>third</strong> by alert count; above it were sources with thousands of alerts, and many IPs came in <strong>subnet clusters</strong> (<code>203.0.113.x</code> with five distinct addresses, <code>198.51.100.x</code>, <code>192.0.2.x</code>...). Likewise, a <code>terms</code> on <code>agent.name</code> (filtered on <code>rule.groups: ["attack","web"]</code>) showed that <strong>every web-facing machine was being scanned</strong>, not just the initial one; and a <code>terms</code> on <code>rule.description</code> revealed further attack types (PHP CGI-bin probes, POST floods, blacklisted UAs) along with a large volume of 500 errors — the scanning was making the app throw internal errors, i.e., it was already affecting stability even without a breach.</p>
 <p>The consequence for response: <strong>blocking IPs one by one is "whack-a-mole"</strong> — scanners rotate addresses across whole ranges. The right-layer measures are controlling <em>behavior</em> at the reverse proxy (rate limiting, blocking sensitive file names, a <code>default_server</code> that cuts off unknown Hosts) and shrinking the attack surface (dev environments should not be publicly exposed); for network-layer defense and WAFs see <a href="ch11.html">Chapter 11</a>.</p>
 <h3 id="ch08-8167-method-summary-a-reusable-checklist">8.16.7. Method summary — a reusable checklist</h3>
 <table>

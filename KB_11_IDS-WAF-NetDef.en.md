@@ -973,17 +973,17 @@ If you need coarse country-level filtering (a service serving a single market), 
 
 ### 11.6.8. Lessons from a real scanning campaign
 
-The chain of measures in 11.6.2–11.6.7 is not theory — it is what I took away from sitting with the logs of a real scanning campaign. To be clear about what this is: a **set of recommendations drawn from observation**, not a write-up of a system already hardened end to end.
+The chain of measures in 11.6.2–11.6.7 is not armchair theory — it is what falls out of sitting with the logs of a scanning campaign. The walkthrough below uses **sample data** (addresses from the RFC 5737 documentation ranges), but its shape matches what every internet-facing web host sees. And to be clear about what this is: a **set of recommendations drawn from observation**, not a write-up of a system already hardened end to end.
 
-On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `45.148.10.80` (a VPS in Amsterdam) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. That 536 is a snapshot at query time, not a final tally: this kind of scanning runs continuously, so the number looks different every day you check. A typical raw access-log line:
+On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `198.51.100.77` (a rented VPS abroad) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. That 536 is a snapshot at query time, not a final tally: this kind of scanning runs continuously, so the number looks different every day you check. A typical raw access-log line:
 
 ```
-45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
+198.51.100.77 - - [12/Mar/2025:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=a1b2c3 HTTP/1.1" 301 178 "https://www.bing.com/search?q=ab12cd" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
 ```
 
 What the logs revealed: the `....//` variant and double-encoded `%252e%252e` to evade ordinary `../` filters (exactly the trap from 11.6.4); targeting `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` in turn for every common user (root/admin/ubuntu/deploy/www-data...); a fake Bing referer plus a constantly rotating user-agent to evade detection; a steady cadence of ~1 request every 5 seconds for two hours — unmistakably a machine, not a person. The outcome: all 301/400/404, not a single request returning 200 — **not breached**. But on a server left at the default configuration described in 11.6.2, all 536 requests would still be accepted and a portion would reach the app — that is the part worth fixing, not blocking this one IP.
 
-Widening the query to the whole fleet changed the picture entirely: **dozens of IPs across multiple subnets** (`185.177.72.x`, `45.148.10.x`, `195.178.110.x`...) scanning every web-facing machine, with IPs rotating constantly. The lessons:
+Widening the query to the whole fleet changed the picture entirely: **dozens of IPs across multiple subnets** (`203.0.113.x`, `198.51.100.x`, `192.0.2.x`...) scanning every web-facing machine, with IPs rotating constantly. The lessons:
 
 1. **Blocking individual IPs is whack-a-mole**: block `.80` and `.62`, `.42`, and other subnets arrive right behind it. Blocking IPs/subnets is only a stopgap while under sustained pressure.
 2. **Prioritize behavioral measures, applied fleet-wide**: rate limiting (11.6.3), filename blocking (11.6.4), the 444 `default_server` (11.6.5), tightened body size (11.6.6) — none depend on the source IP, so you stop chasing the scanner. For dev/staging, allow/deny by IP (11.6.7) kills the root cause outright.

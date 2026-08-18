@@ -34,7 +34,7 @@ LANGS = {
         "metadesc": "Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.",
         "tag": "Chia sẻ kiến thức · ghi chép khi học &amp; làm",
         "search": "Lọc mục lục…", "intro": "Giới thiệu & Mục lục",
-        "other": "EN", "other_href": "en/notes.html",
+        "other": "EN", "other_dir": "en/", "self_url": "https://feeiuna.io.vn/",
         "prev": "Chương trước", "next": "Chương sau", "theme_title": "Sáng / Tối / Wibu",
         "groups": {
             "A": "Phần A · Nền tảng", "B": "Phần B · An ninh ứng dụng & DevSecOps",
@@ -62,7 +62,7 @@ LANGS = {
         "metadesc": "A security knowledge handbook — notes collected while learning and working in security.",
         "tag": "Notes from learning &amp; working in security",
         "search": "Filter contents…", "intro": "Intro & Contents",
-        "other": "VI", "other_href": "../notes.html",
+        "other": "VI", "other_dir": "../", "self_url": "https://feeiuna.io.vn/en/",
         "prev": "Previous", "next": "Next", "theme_title": "Light / Dark / Wibu",
         "groups": {
             "A": "Part A · Fundamentals", "B": "Part B · Application Security & DevSecOps",
@@ -326,10 +326,7 @@ def build(lang, other_exists):
         return False
     present = [n for n in order if rendered[n]]
 
-    lang_btn = (f'<a class="ctrl-btn themeLink" href="{cfg["other_href"]}">🌐 {cfg["other"]}</a>'
-                if other_exists else "")
     home_btn = f'<a class="ctrl-btn" href="{cfg["home_href"]}">🏠 {cfg["home"]}</a>'
-    controls = f'{home_btn}<button class="ctrl-btn themeBtn" title="{cfg["theme_title"]}">🌙</button>{lang_btn}'
     prefix = "../" if lang == "en" else ""
     # Nền Wibu trỏ cố định tới assets/wibu-bg.jpg — thay file đó + push là đổi nền, không cần rebuild.
     wibu_style = f'<style>:root{{--wibu-bg:url("{prefix}assets/wibu-bg.jpg")}}</style>'
@@ -339,6 +336,15 @@ def build(lang, other_exists):
 
     for idx, n in enumerate(present):
         r = rendered[n]
+        lang_btn = (f'<a class="ctrl-btn themeLink" href="{cfg["other_dir"]}{page_name(n)}">🌐 {cfg["other"]}</a>'
+                    if other_exists else "")
+        controls = f'{home_btn}<button class="ctrl-btn themeBtn" title="{cfg["theme_title"]}">🌙</button>{lang_btn}'
+        vi_url = f'https://feeiuna.io.vn/{page_name(n)}'
+        en_url = f'https://feeiuna.io.vn/en/{page_name(n)}'
+        alts = (f'<link rel="canonical" href="{cfg["self_url"]}{page_name(n)}">'
+                f'<link rel="alternate" hreflang="vi" href="{vi_url}">'
+                f'<link rel="alternate" hreflang="en" href="{en_url}">'
+                f'<link rel="alternate" hreflang="x-default" href="{vi_url}">')
         nav = [nav_block(cfg, rendered["00"], n)]
         for g, ns in GROUPS_BASE:
             items = [x for x in ns if rendered[x]]
@@ -375,6 +381,7 @@ def build(lang, other_exists):
 <meta property="og:description" content="{cfg['metadesc']}">
 <meta property="og:type" content="article">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
+{alts}
 {rel}
 {HEAD_THEME}
 {wibu_style}

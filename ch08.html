@@ -134,6 +134,18 @@ tbody tr:nth-child(even){background:var(--tbl-zebra)}
 .brand h1 a{color:var(--ink);text-decoration:none}
 .brand h1 a:hover{color:var(--accent)}
 .nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.results{display:none;padding:6px 8px 40px}
+.results.on{display:block}
+.nav.hidden{display:none}
+.res-meta{padding:6px 10px 10px;font-size:11.5px;color:var(--muted);font-family:var(--serif)}
+.res{display:block;padding:9px 10px;border-radius:8px;color:var(--ink);border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res:hover{background:var(--panel2);text-decoration:none}
+.res .rc{display:block;font-size:10.5px;color:var(--accent2);font-weight:700;letter-spacing:.3px}
+.res .rt{display:block;font-size:13px;font-weight:700;margin:2px 0 3px}
+.res .rx{display:block;font-size:11.5px;color:var(--muted);line-height:1.5}
+.res mark{background:transparent;color:var(--accent);font-weight:700}
+
 .pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
 .pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
   background:var(--panel);color:var(--ink);text-decoration:none}
@@ -153,7 +165,8 @@ span.pg{border:0;background:none}
       <p class="tag">Chia sẻ kiến thức · ghi chép khi học &amp; làm</p>
       <span class="author">✍️ Fee</span>
       <div class="controls"><a class="ctrl-btn" href="./">🏠 Trang chủ</a><button class="ctrl-btn themeBtn" title="Sáng / Tối / Wibu">🌙</button><a class="ctrl-btn themeLink" href="en/ch08.html">🌐 EN</a></div></div>
-    <div class="search"><input id="q" type="search" placeholder="Lọc mục lục…" autocomplete="off"></div>
+    <div class="search"><input id="q" type="search" placeholder="Tìm trong sổ tay…" autocomplete="off"></div>
+    <div class="results" id="results"></div>
     <nav class="nav"><div class="nav-chapter" data-ch="00"><a class="nav-ch-title" href="notes.html"><span class="num">00</span><span class="t">Giới thiệu &amp; Mục lục</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần A · Nền tảng</div><div class="nav-chapter" data-ch="01"><a class="nav-ch-title" href="ch01.html"><span class="num">01</span><span class="t">Mạng máy tính</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="02"><a class="nav-ch-title" href="ch02.html"><span class="num">02</span><span class="t">Hệ điều hành Linux</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="03"><a class="nav-ch-title" href="ch03.html"><span class="num">03</span><span class="t">Windows &amp; Active Directory</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="04"><a class="nav-ch-title" href="ch04.html"><span class="num">04</span><span class="t">Mật mã &amp; Nền tảng bảo mật</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần B · An ninh ứng dụng &amp; DevSecOps</div><div class="nav-chapter" data-ch="05"><a class="nav-ch-title" href="ch05.html"><span class="num">05</span><span class="t">An ninh ứng dụng Web (OWASP)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="06"><a class="nav-ch-title" href="ch06.html"><span class="num">06</span><span class="t">DevSecOps &amp; Quét mã nguồn</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="07"><a class="nav-ch-title" href="ch07.html"><span class="num">07</span><span class="t">CI/CD &amp; GitOps</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần C · Giám sát, Phát hiện &amp; Ứng phó</div><div class="nav-chapter open active" data-ch="08"><a class="nav-ch-title" href="#top"><span class="num">08</span><span class="t">SIEM &amp; Quản lý log</span></a><div class="nav-subs"><a class="nav-sub" href="#ch08-tong-quan">Tổng quan</a><a class="nav-sub" href="#ch08-81-siem-la-gi-va-vi-sao-ton-tai">8.1. SIEM là gì và vì sao tồn tại</a><a class="nav-sub" href="#ch08-82-kien-truc-siem-data-pipeline">8.2. Kiến trúc SIEM &amp; data pipeline</a><a class="nav-sub" href="#ch08-83-phan-loai-cong-cu-phong-thu-av-edr-siem-soar-xdr-ndr">8.3. Phân loại công cụ phòng thủ: AV / EDR / SIEM / SOAR / XDR / NDR</a><a class="nav-sub" href="#ch08-84-wazuh-tong-quan-va-kien-truc">8.4. WAZUH — Tổng quan và kiến trúc</a><a class="nav-sub" href="#ch08-85-luong-agent-manager-enrollment-va-truyen-du-lieu-byteport-level">8.5. Luồng agent → manager: enrollment và truyền dữ liệu (byte/port-level)</a><a class="nav-sub" href="#ch08-86-file-cau-hinh-ossecconf-mo-xe-tung-khoi">8.6. File cấu hình ossec.conf — mổ xẻ từng khối</a><a class="nav-sub" href="#ch08-87-decoder-boc-tach-field-tu-log-that">8.7. DECODER — bóc tách field từ log thật</a><a class="nav-sub" href="#ch08-88-rule-phat-hien-va-phan-loai">8.8. RULE — phát hiện và phân loại</a><a class="nav-sub" href="#ch08-89-fim-syscheck-giam-sat-toan-ven-tep">8.9. FIM / Syscheck — giám sát toàn vẹn tệp</a><a class="nav-sub" href="#ch08-810-active-response-phan-ung-tu-đong">8.10. Active Response — phản ứng tự động</a><a class="nav-sub" href="#ch08-811-vulnerability-detection">8.11. Vulnerability Detection</a><a class="nav-sub" href="#ch08-812-sca-security-configuration-assessment">8.12. SCA — Security Configuration Assessment</a><a class="nav-sub" href="#ch08-813-tich-hop-mitre-attck">8.13. Tích hợp MITRE ATT&amp;CK</a><a class="nav-sub" href="#ch08-814-detection-engineering-viet-tinh-chinh-rule-fp-vs-fn">8.14. Detection Engineering — viết, tinh chỉnh rule, FP vs FN</a><a class="nav-sub" href="#ch08-815-vi-du-end-to-end-ssh-brute-force-tu-log-tho-toi-alert-dashboard">8.15. Ví dụ end-to-end: SSH brute-force từ log thô tới alert dashboard</a><a class="nav-sub" href="#ch08-816-đieu-tra-mot-canh-bao-thuc-te-bang-wazuh-quy-trinh-tai-dung-đuoc">8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được</a><a class="nav-sub" href="#ch08-817-soar-tu-đong-hoa-phia-tren-siem">8.17. SOAR — tự động hóa phía trên SIEM</a><a class="nav-sub" href="#ch08-818-tong-ket-van-hanh-checklist-bao-mat-wazuh">8.18. Tổng kết vận hành &amp; checklist bảo mật Wazuh</a><a class="nav-sub" href="#ch08-ghi-chu-cua-minh">Ghi chú của mình</a></div></div><div class="nav-chapter" data-ch="09"><a class="nav-ch-title" href="ch09.html"><span class="num">09</span><span class="t">Observability &amp; Giám sát hạ tầng</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="10"><a class="nav-ch-title" href="ch10.html"><span class="num">10</span><span class="t">Vận hành SOC &amp; Ứng phó sự cố</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần D · Phòng thủ mạng &amp; Kiểm thử</div><div class="nav-chapter" data-ch="11"><a class="nav-ch-title" href="ch11.html"><span class="num">11</span><span class="t">Phòng thủ mạng (IDS/WAF/VPN)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="12"><a class="nav-ch-title" href="ch12.html"><span class="num">12</span><span class="t">Kiểm thử &amp; Đánh giá lỗ hổng</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần E · Hạ tầng, Ảo hóa &amp; Đám mây</div><div class="nav-chapter" data-ch="13"><a class="nav-ch-title" href="ch13.html"><span class="num">13</span><span class="t">Bảo mật Đám mây</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="14"><a class="nav-ch-title" href="ch14.html"><span class="num">14</span><span class="t">Ảo hóa &amp; Container</span></a><div class="nav-subs"></div></div><div class="nav-group">Phần F · Tấn công, Tuân thủ &amp; Tự động hóa</div><div class="nav-chapter" data-ch="15"><a class="nav-ch-title" href="ch15.html"><span class="num">15</span><span class="t">Threat Intel &amp; Khung tấn công</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="16"><a class="nav-ch-title" href="ch16.html"><span class="num">16</span><span class="t">Tuân thủ &amp; Quản trị (GRC)</span></a><div class="nav-subs"></div></div><div class="nav-chapter" data-ch="17"><a class="nav-ch-title" href="ch17.html"><span class="num">17</span><span class="t">Lập trình &amp; Tự động hóa</span></a><div class="nav-subs"></div></div><div class="nav-group">Phụ lục</div><div class="nav-chapter" data-ch="99"><a class="nav-ch-title" href="ch99.html"><span class="num">99</span><span class="t">Thuật ngữ &amp; viết tắt</span></a><div class="nav-subs"></div></div></nav>
   </aside>
   <div class="content">
@@ -2196,7 +2209,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
     </footer>
   </div>
 </div>
-<script>
+<script>const RESWORD='kết quả cho';const NORES='Không tìm thấy mục nào.';
 const root=document.documentElement;
 const THEMES=['light','dark','wibu'];
 const ICON={light:'☀️',dark:'🌙',wibu:'🌸'};
@@ -2219,13 +2232,50 @@ if(cur){
   }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
   heads.forEach(h=>obs.observe(h));
 }
+
+var IDX=null,IDXP=null,resBox=null,navBox=null;
+function fold(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function snippet(txt,q){
+  var f=fold(txt),i=f.indexOf(q);
+  if(i<0) return esc(txt.slice(0,120))+(txt.length>120?'…':'');
+  var a=Math.max(0,i-45),b=Math.min(txt.length,i+q.length+90);
+  return (a>0?'…':'')+esc(txt.slice(a,i))+'<mark>'+esc(txt.slice(i,i+q.length))+'</mark>'+esc(txt.slice(i+q.length,b))+(b<txt.length?'…':'');
+}
+function runSearch(raw){
+  var q=fold(raw.trim());
+  if(q.length<2||!IDX){ resBox.classList.remove('on'); navBox.classList.remove('hidden'); return; }
+  var exact=[],loose=[];
+  for(var i=0;i<IDX.length;i++){
+    var e=IDX[i],ft=IDXP[i];
+    if(ft.t.indexOf(q)>=0) exact.push(e); else if(ft.x.indexOf(q)>=0) loose.push(e);
+  }
+  var hits=exact.concat(loose).slice(0,60);
+  var html=hits.length? '<div class="res-meta">'+hits.length+(hits.length>=60?'+':'')+' '+RESWORD+' “'+esc(raw.trim())+'”</div>' : '<div class="res-meta">'+NORES+'</div>';
+  hits.forEach(function(e){
+    html+='<a class="res" href="'+e.p+'#'+e.a+'"><span class="rc">'+esc(e.c)+'</span>'+
+          '<span class="rt">'+esc(e.t)+'</span><span class="rx">'+snippet(e.x,q)+'</span></a>';
+  });
+  resBox.innerHTML=html; resBox.classList.add('on'); navBox.classList.add('hidden');
+}
+
 const box=document.getElementById('q');
-if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
-  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
-    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
-    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
-    c.style.display=(!q||any)?'block':'none';});
-});
+resBox=document.getElementById('results'); navBox=document.querySelector('.nav');
+if(box){
+  var t=null;
+  box.addEventListener('input',function(){
+    var v=box.value;
+    clearTimeout(t);
+    t=setTimeout(function(){
+      if(v.trim().length<2){ runSearch(v); return; }
+      if(IDX){ runSearch(v); return; }
+      fetch('search.json').then(function(r){return r.json();}).then(function(d){
+        IDX=d; IDXP=d.map(function(e){return {t:fold(e.t),x:fold(e.x)};}); runSearch(box.value);
+      }).catch(function(){ resBox.innerHTML='<div class="res-meta">'+NORES+'</div>'; resBox.classList.add('on'); navBox.classList.add('hidden'); });
+    },140);
+  });
+  box.addEventListener('keydown',function(e){ if(e.key==='Escape'){ box.value=''; runSearch(''); box.blur(); } });
+}
 const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Sinh blog tĩnh (VI + EN nếu có bản dịch) từ các file KB_*.md / KB_*.en.md.
 Có dark mode (nhớ qua localStorage) và nút chuyển ngữ."""
-import re, os, unicodedata, html as _html
+import re, os, json, unicodedata, html as _html
 import markdown
 from markdown.extensions.toc import TocExtension
 
@@ -33,9 +33,10 @@ LANGS = {
         "title": "Sổ tay An toàn thông tin",
         "metadesc": "Blog chia sẻ kiến thức an toàn thông tin — ghi chép trong quá trình học và làm việc.",
         "tag": "Chia sẻ kiến thức · ghi chép khi học &amp; làm",
-        "search": "Lọc mục lục…", "intro": "Giới thiệu & Mục lục",
+        "search": "Tìm trong sổ tay…", "intro": "Giới thiệu & Mục lục",
         "other": "EN", "other_dir": "en/", "self_url": "https://feeiuna.io.vn/",
         "prev": "Chương trước", "next": "Chương sau", "theme_title": "Sáng / Tối / Wibu",
+        "resword": "kết quả cho", "nores": "Không tìm thấy mục nào.",
         "groups": {
             "A": "Phần A · Nền tảng", "B": "Phần B · An ninh ứng dụng & DevSecOps",
             "C": "Phần C · Giám sát, Phát hiện & Ứng phó", "D": "Phần D · Phòng thủ mạng & Kiểm thử",
@@ -61,9 +62,10 @@ LANGS = {
         "title": "Security Handbook",
         "metadesc": "A security knowledge handbook — notes collected while learning and working in security.",
         "tag": "Notes from learning &amp; working in security",
-        "search": "Filter contents…", "intro": "Intro & Contents",
+        "search": "Search the handbook…", "intro": "Intro & Contents",
         "other": "VI", "other_dir": "../", "self_url": "https://feeiuna.io.vn/en/",
         "prev": "Previous", "next": "Next", "theme_title": "Light / Dark / Wibu",
+        "resword": "results for", "nores": "No sections found.",
         "groups": {
             "A": "Part A · Fundamentals", "B": "Part B · Application Security & DevSecOps",
             "C": "Part C · Monitoring, Detection & Response", "D": "Part D · Network Defense & Testing",
@@ -124,8 +126,36 @@ def render(cfg, n):
     for t in toks:
         if t.get("level") == 1:
             title = t["name"]; break
+    heads = []
+    def walk_all(nodes):
+        for t in nodes:
+            if t.get("level") in (2, 3):
+                heads.append((t["id"], t["name"]))
+            walk_all(t.get("children", []))
+    walk_all(toks)
+
+    blocks, cur = [], None
+    fence = False
+    for line in text.split("\n"):
+        if line.startswith("```"):
+            fence = not fence
+            continue
+        if fence:
+            continue
+        if re.match(r"^#{2,3}\s+\S", line):
+            cur = []
+            blocks.append(cur)
+        elif cur is not None:
+            cur.append(line)
+    entries = []
+    for (hid, hname), body_lines in zip(heads, blocks):
+        raw = " ".join(body_lines)
+        raw = re.sub(r"[*_`|>\[\]()#-]+", " ", raw)
+        raw = re.sub(r"\s+", " ", raw).strip()
+        entries.append({"a": hid, "t": _html.unescape(hname), "x": raw[:4000]})
+
     section = f'<section class="chapter" id="sec-{n}" data-ch="{n}">\n{body}\n</section>'
-    return {"n": n, "section": section, "subs": subs, "title": title}
+    return {"n": n, "section": section, "subs": subs, "title": title, "entries": entries}
 
 
 def nav_block(cfg, r, current):
@@ -264,6 +294,18 @@ tbody tr:nth-child(even){background:var(--tbl-zebra)}
 .brand h1 a{color:var(--ink);text-decoration:none}
 .brand h1 a:hover{color:var(--accent)}
 .nav-sub.here{color:var(--accent);background:var(--panel2);font-weight:600}
+.results{display:none;padding:6px 8px 40px}
+.results.on{display:block}
+.nav.hidden{display:none}
+.res-meta{padding:6px 10px 10px;font-size:11.5px;color:var(--muted);font-family:var(--serif)}
+.res{display:block;padding:9px 10px;border-radius:8px;color:var(--ink);border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res:hover{background:var(--panel2);text-decoration:none}
+.res .rc{display:block;font-size:10.5px;color:var(--accent2);font-weight:700;letter-spacing:.3px}
+.res .rt{display:block;font-size:13px;font-weight:700;margin:2px 0 3px}
+.res .rx{display:block;font-size:11.5px;color:var(--muted);line-height:1.5}
+.res mark{background:transparent;color:var(--accent);font-weight:700}
+
 .pager{max-width:820px;margin:34px auto 0;display:flex;gap:14px;justify-content:space-between}
 .pg{flex:1 1 0;min-width:0;display:block;padding:13px 16px;border:1px solid var(--line);border-radius:10px;
   background:var(--panel);color:var(--ink);text-decoration:none}
@@ -299,13 +341,50 @@ if(cur){
   }});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
   heads.forEach(h=>obs.observe(h));
 }
+
+var IDX=null,IDXP=null,resBox=null,navBox=null;
+function fold(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function snippet(txt,q){
+  var f=fold(txt),i=f.indexOf(q);
+  if(i<0) return esc(txt.slice(0,120))+(txt.length>120?'…':'');
+  var a=Math.max(0,i-45),b=Math.min(txt.length,i+q.length+90);
+  return (a>0?'…':'')+esc(txt.slice(a,i))+'<mark>'+esc(txt.slice(i,i+q.length))+'</mark>'+esc(txt.slice(i+q.length,b))+(b<txt.length?'…':'');
+}
+function runSearch(raw){
+  var q=fold(raw.trim());
+  if(q.length<2||!IDX){ resBox.classList.remove('on'); navBox.classList.remove('hidden'); return; }
+  var exact=[],loose=[];
+  for(var i=0;i<IDX.length;i++){
+    var e=IDX[i],ft=IDXP[i];
+    if(ft.t.indexOf(q)>=0) exact.push(e); else if(ft.x.indexOf(q)>=0) loose.push(e);
+  }
+  var hits=exact.concat(loose).slice(0,60);
+  var html=hits.length? '<div class="res-meta">'+hits.length+(hits.length>=60?'+':'')+' '+RESWORD+' “'+esc(raw.trim())+'”</div>' : '<div class="res-meta">'+NORES+'</div>';
+  hits.forEach(function(e){
+    html+='<a class="res" href="'+e.p+'#'+e.a+'"><span class="rc">'+esc(e.c)+'</span>'+
+          '<span class="rt">'+esc(e.t)+'</span><span class="rx">'+snippet(e.x,q)+'</span></a>';
+  });
+  resBox.innerHTML=html; resBox.classList.add('on'); navBox.classList.add('hidden');
+}
+
 const box=document.getElementById('q');
-if(box)box.addEventListener('input',()=>{const q=box.value.trim().toLowerCase();
-  navChapters.forEach(c=>{const title=c.querySelector('.nav-ch-title').innerText.toLowerCase();
-    const subs=[...c.querySelectorAll('.nav-sub')];let any=title.includes(q);
-    subs.forEach(s=>{const m=s.innerText.toLowerCase().includes(q);s.style.display=(!q||m)?'block':'none';if(m)any=true;});
-    c.style.display=(!q||any)?'block':'none';});
-});
+resBox=document.getElementById('results'); navBox=document.querySelector('.nav');
+if(box){
+  var t=null;
+  box.addEventListener('input',function(){
+    var v=box.value;
+    clearTimeout(t);
+    t=setTimeout(function(){
+      if(v.trim().length<2){ runSearch(v); return; }
+      if(IDX){ runSearch(v); return; }
+      fetch('search.json').then(function(r){return r.json();}).then(function(d){
+        IDX=d; IDXP=d.map(function(e){return {t:fold(e.t),x:fold(e.x)};}); runSearch(box.value);
+      }).catch(function(){ resBox.innerHTML='<div class="res-meta">'+NORES+'</div>'; resBox.classList.add('on'); navBox.classList.add('hidden'); });
+    },140);
+  });
+  box.addEventListener('keydown',function(e){ if(e.key==='Escape'){ box.value=''; runSearch(''); box.blur(); } });
+}
 const mb=document.getElementById('menu');if(mb)mb.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT'||e.metaKey||e.ctrlKey||e.altKey)return;
@@ -395,6 +474,7 @@ def build(lang, other_exists):
       <span class="author">✍️ Fee</span>
       <div class="controls">{controls}</div></div>
     <div class="search"><input id="q" type="search" placeholder="{cfg['search']}" autocomplete="off"></div>
+    <div class="results" id="results"></div>
     <nav class="nav">{''.join(nav)}</nav>
   </aside>
   <div class="content">
@@ -412,13 +492,23 @@ def build(lang, other_exists):
     </footer>
   </div>
 </div>
-<script>{JS}</script>
+<script>const RESWORD={cfg["resword"]!r};const NORES={cfg["nores"]!r};{JS}</script>
 </body>
 </html>
 """
         out = os.path.join(outdir or DIR, page_name(n))
         with open(out, "w", encoding="utf-8") as f:
             f.write(page)
+
+    index = []
+    for n in present:
+        short = cfg["intro"] if n == "00" else cfg["short"][n]
+        pg = page_name(n)
+        for e in rendered[n]["entries"]:
+            index.append({"p": pg, "c": f"{n} · {short}" if n != "00" else short,
+                          "a": e["a"], "t": e["t"], "x": e["x"]})
+    with open(os.path.join(outdir or DIR, "search.json"), "w", encoding="utf-8") as f:
+        json.dump(index, f, ensure_ascii=False, separators=(",", ":"))
     return True
 
 

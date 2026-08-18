@@ -1251,7 +1251,7 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ## 8.16. Investigating a real alert with Wazuh — a reusable process
 
-The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: **from one anomalous number on a dashboard back to the original evidence and a conclusion**. This is the process I used to investigate a real scanning campaign on a system I operate (mid-2026); internal details are anonymized, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — *what hit us, did it get through, what next* — with evidence, not gut feeling.
+The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: **from one anomalous number on a dashboard back to the original evidence and a conclusion**. This is the process I used to investigate a real scanning campaign (mid-2026); system details have been stripped out, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — *what hit us, did it get through, what next* — with evidence, not gut feeling.
 
 ### 8.16.1. Step 1 — Detection from the dashboard: one source dominating
 
@@ -1389,7 +1389,7 @@ The root problem: even a well-tuned SIEM produces alerts **faster than humans ca
 | **TheHive (+ Cortex)** | A **case-management** platform + an observable-analysis engine (Cortex analyzers) | Case lifecycle management, assignment, evidence storage — a SOC process in the true sense | Heavy for a first-stage "just enrich + notify" need |
 | **n8n** | General-purpose automation (not security-specific) | A huge number of connectors; any developer can use it | No native alert/case/observable concepts — you build the security part yourself |
 
-On the system I operate, I chose **Shuffle** for the first stage: the immediate problem is *enrich + notify* (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.
+For a first stage, **Shuffle** is the sensible pick: the immediate problem is *enrich + notify* (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.
 
 ### 8.17.3. Wazuh → SOAR architecture: filter before you push
 

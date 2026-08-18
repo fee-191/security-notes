@@ -52,7 +52,7 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 
 ### 6.1.3. The full tiered shift-left pipeline (applied in practice)
 
-When the theory above is applied to the system I operate, it becomes a concrete chain of tiers, built entirely with open-source tools. **Each tier catches its own class of defects, and no tier can replace another** — dropping a tier opens exactly that tier's blind spot.
+Applied to a real project, the theory above becomes a concrete chain of tiers that can be built entirely with open-source tools. **Each tier catches its own class of defects, and no tier can replace another** — dropping a tier opens exactly that tier's blind spot.
 
 ```
 IDE ────► pre-commit ────► CI (on PR) ─────────► staging ────► runtime

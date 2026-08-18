@@ -1893,7 +1893,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </code></pre>
 <hr />
 <h2 id="ch08-816-đieu-tra-mot-canh-bao-thuc-te-bang-wazuh-quy-trinh-tai-dung-đuoc">8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được</h2>
-<p>Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: <strong>từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận</strong>. Đây là quy trình mình đã dùng để điều tra một đợt quét thật trên hệ thống mình vận hành (giữa 2026); chi tiết nội bộ đã được ẩn danh, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: <em>bị cái gì, thủng chưa, làm gì tiếp</em> — kèm bằng chứng, không phải cảm giác.</p>
+<p>Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: <strong>từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận</strong>. Đây là quy trình có thể dùng lại để điều tra một đợt quét thật (giữa 2026); chi tiết hệ thống đã được lược bỏ, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: <em>bị cái gì, thủng chưa, làm gì tiếp</em> — kèm bằng chứng, không phải cảm giác.</p>
 <h3 id="ch08-8161-buoc-1-phat-hien-tu-dashboard-mot-nguon-chiem-ap-đao">8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo</h3>
 <p>Điểm khởi đầu là panel <strong>Top source IPs</strong> (mình tự dựng trên Grafana đọc index alert của Wazuh; module Security Events của Wazuh dashboard cũng có view tương đương). Một IP — <code>45.148.10.80</code> — chiếm <strong>536</strong> cảnh báo trong khung nhìn, trong khi các nguồn kế tiếp chỉ 54, 51... Nhóm rule đi kèm: <code>web</code>, <code>attack</code>. Một nguồn lạ (không phải dải văn phòng/đối tác) tạo ~90% alert nhóm tấn công → điều tra ngay.</p>
 <p>Bài học ngay ở bước này: dashboard không trả lời câu hỏi — nó chỉ <strong>chỉ chỗ đáng để hỏi</strong>. Toàn bộ kết luận phía sau đến từ query.</p>
@@ -2074,7 +2074,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </tr>
 </tbody>
 </table>
-<p>Ở hệ thống mình vận hành, mình chọn <strong>Shuffle</strong> cho giai đoạn đầu: bài toán trước mắt là <em>enrich + notify</em> (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.</p>
+<p>Với giai đoạn đầu, <strong>Shuffle</strong> là lựa chọn hợp lý: bài toán trước mắt là <em>enrich + notify</em> (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.</p>
 <h3 id="ch08-8173-kien-truc-wazuh-soar-loc-truoc-khi-đay">8.17.3. Kiến trúc Wazuh → SOAR: lọc trước khi đẩy</h3>
 <pre><code>Wazuh manager ──(integration/webhook, CHỈ alert level ≥ N)──▶ SOAR (Shuffle)
                                                                  │

@@ -1213,7 +1213,7 @@ Ngoài route, Alertmanager có **silence** (tắt tiếng theo matcher trong th�
 | Lưu dài hạn | History/Trends trong DB, giữ nhiều năm | TSDB cục bộ ~tuần; dài hạn cần Thanos/Mimir/remote write |
 | Alert | Trigger + action + escalation trong một hệ | Rule (server) + Alertmanager (route) tách đôi |
 
-Kinh nghiệm chọn: hạ tầng **tĩnh, nhiều thiết bị mạng, cần SNMP và escalation trực ca bài bản** → Zabbix vẫn rất tốt. Hạ tầng **cloud/container, target sinh diệt liên tục, đội đã quen IaC** → Prometheus + Grafana là mặc định của hệ sinh thái (Kubernetes phơi metric sẵn theo định dạng Prometheus). Ở hệ thống mình vận hành, mình dùng Prometheus + node_exporter + Grafana cho toàn bộ metric máy chủ; Zabbix mình học để hiểu mô hình monitoring truyền thống và vì nhiều doanh nghiệp Việt Nam vẫn chạy nó.
+Kinh nghiệm chọn: hạ tầng **tĩnh, nhiều thiết bị mạng, cần SNMP và escalation trực ca bài bản** → Zabbix vẫn rất tốt. Hạ tầng **cloud/container, target sinh diệt liên tục, đội đã quen IaC** → Prometheus + Grafana là mặc định của hệ sinh thái (Kubernetes phơi metric sẵn theo định dạng Prometheus). Bản thân mình dùng Prometheus + node_exporter + Grafana cho metric máy chủ; Zabbix thì học để hiểu mô hình monitoring truyền thống, và vì nhiều doanh nghiệp Việt Nam vẫn chạy nó.
 
 ---
 
@@ -1324,7 +1324,7 @@ Mối quan hệ kỹ thuật cần nắm:
 - **Zabbix và Prometheus** cùng đứng ở miền monitoring; không cạnh tranh với ELK/Wazuh mà chạy song song. Giữa hai công cụ này, chọn theo bài toán (xem 9.6.7) — hiếm khi cần cả hai.
 - **Grafana đọc được cả hai miền**: trỏ datasource vào Prometheus là có dashboard hiệu năng, trỏ vào Wazuh indexer (OpenSearch) là có dashboard an ninh — cùng một chỗ. Kibana/Wazuh dashboard vẫn mạnh hơn cho *điều tra tương tác* (Discover, Dev Tools); Grafana thắng ở *màn hình theo dõi hằng ngày*.
 
-Kiến trúc tham chiếu trong một tổ chức (stack mình vận hành):
+Kiến trúc tham chiếu trong một tổ chức:
 ```
    Hạ tầng/hiệu năng ──▶ node_exporter ──▶ Prometheus ──▶ Alertmanager (alert ops)
                                               │
@@ -1366,9 +1366,9 @@ Kiến trúc tham chiếu trong một tổ chức (stack mình vận hành):
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
 
-- **Học Zabbix, vận hành Prometheus** — mình học Zabbix khá kỹ (trigger, template, protocol) nhưng hệ thống mình vận hành thật lại chạy Prometheus + Grafana, và cảm nhận hai bên khác hẳn. Zabbix cho mình cảm giác "phần mềm quản trị": mọi thứ qua GUI, cấu hình sống trong DB, làm xong không nhớ mình đã bấm gì. Prometheus thì mọi thứ là file — sửa một alert rule là một commit, đọc lại diff là hiểu ai đổi gì vì sao. Học Zabbix không phí: nhờ nó mình hiểu trigger/hysteresis/escalation là gì trước khi gặp `for`/route/inhibition, và nhiều công ty ở đây vẫn chạy Zabbix thật.
+- **Học Zabbix, vận hành Prometheus** — mình học Zabbix khá kỹ (trigger, template, protocol) nhưng khi vận hành thật thì lại là Prometheus + Grafana, và cảm nhận hai bên khác hẳn. Zabbix cho mình cảm giác "phần mềm quản trị": mọi thứ qua GUI, cấu hình sống trong DB, làm xong không nhớ mình đã bấm gì. Prometheus thì mọi thứ là file — sửa một alert rule là một commit, đọc lại diff là hiểu ai đổi gì vì sao. Học Zabbix không phí: nhờ nó mình hiểu trigger/hysteresis/escalation là gì trước khi gặp `for`/route/inhibition, và nhiều công ty ở đây vẫn chạy Zabbix thật.
 - **PSI đáng tin hơn %RAM used** — bài học mình phải trả bằng vài lần hết hồn. Panel memory used đỏ rực, SSH vào thì máy chạy êm ru: RAM "used" cao vì Linux tận dụng page cache và app (nhất là mấy con chạy JVM/heap lớn) giữ chỗ sẵn. Từ ngày thêm panel PSI (`rate(node_pressure_memory_waiting_seconds_total[5m])`), mình gần như không nhìn % used nữa: PSI bằng 0 thì kệ used bao nhiêu; PSI dương kéo dài mới là thiếu RAM thật — và lúc đó `vmstat` sẽ thấy si/so, `dmesg` lảng vảng OOM.
-- **%steal — chỉ số mình từng không biết tồn tại.** Một máy ở hệ thống mình vận hành có lúc CPU panel cao mà `htop` không thấy process nào ăn. Hóa ra là `steal`: VM cloud bị hypervisor bóp (noisy neighbor). Từ đó panel CPU của mình luôn tách theo mode chứ không vẽ một đường "CPU %" duy nhất — cùng là "CPU cao" nhưng `user`/`iowait`/`steal` là ba bệnh khác nhau, ba cách xử khác nhau (và riêng steal thì... không phải lỗi máy mình).
+- **%steal — chỉ số mình từng không biết tồn tại.** Có lúc panel CPU của một máy lên cao mà `htop` không thấy process nào ăn. Hóa ra là `steal`: VM cloud bị hypervisor bóp (noisy neighbor). Từ đó panel CPU của mình luôn tách theo mode chứ không vẽ một đường "CPU %" duy nhất — cùng là "CPU cao" nhưng `user`/`iowait`/`steal` là ba bệnh khác nhau, ba cách xử khác nhau (và riêng steal thì... không phải lỗi máy mình).
 - **Panel Top source IPs là panel rẻ nhất mà được việc nhất.** Chỉ là một terms aggregation theo IP nguồn trên index alert của Wazuh, nhưng chính nó giúp mình phát hiện sớm một chiến dịch quét path traversal: một IP lạ đứng đầu bảng với hàng trăm alert dồn trong vài giờ. Từng alert lẻ mức trung bình sẽ chìm trong nhiễu; gom theo IP thì hành vi *có chủ đích* nổi lên ngay. Bài học lớn hơn: dashboard an ninh không cần hoành tráng, cần đúng vài câu hỏi mình thật sự muốn hỏi mỗi sáng.
 - **Dashboard cho biết cao ở đâu, lệnh cho biết con nào gây ra.** Hồi đầu mình cứ ngồi nhìn Grafana đợi nó "nói" thủ phạm — nó không nói được, vì node_exporter không phơi metric theo process. Sau mình viết hẳn một runbook: panel nào đỏ thì SSH vào chạy bộ lệnh nào trước (để ở chương 2). Từ lúc có cặp dashboard + runbook, thời gian từ "thấy đỏ" đến "biết tại sao" ngắn hơn hẳn.
 - **Đang tìm hiểu tiếp**: recording rules (tính sẵn truy vấn nặng), lưu metric dài hạn (Thanos/Mimir — mới đọc, chưa dựng), và Loki để log nhẹ đi cạnh Prometheus xem có thay được một phần use case ELK cho hệ nhỏ không.

@@ -82,6 +82,12 @@ h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 6px;color:var(--ink)}
 .book .foot{border-top:1px solid var(--line);background:var(--panel2);padding:16px 28px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 .book .foot .go{font-weight:600}
 
+.scope{margin:0}
+.scope dt{font-weight:700;font-size:14.5px;color:var(--ink);margin-top:14px}
+.scope dt:first-child{margin-top:0}
+.scope dd{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.tools{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);line-height:1.8}
+.tools span{color:var(--accent2);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-right:8px}
 /* cards */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
@@ -173,41 +179,21 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section id="thucchien">
+  <section id="scope">
     <h2 class="sec">Phạm vi công việc</h2>
-    <p class="sec-note">Bảo mật toàn trình, trọng tâm DevSecOps.</p>
-    <div class="grid">
-      <div class="card">
-        <h4>DevSecOps &amp; Secure SDLC</h4>
-        <p class="meta">shift-left · security gate · secure coding</p>
-        <p>Đưa kiểm soát bảo mật vào vòng đời phát triển: SAST, quét dependency, secret scanning và kiểm tra cấu hình hạ tầng chạy tự động trong CI/CD, gate phân tầng theo mức độ nghiêm trọng.</p>
-      </div>
-      <div class="card">
-        <h4>Giám sát &amp; phát hiện</h4>
-        <p class="meta">SIEM · metric hạ tầng · detection engineering</p>
-        <p>Vận hành hệ giám sát hợp nhất cảnh báo an ninh và hiệu năng, xây dựng luật phát hiện, giảm cảnh báo nhiễu và chuẩn hóa quy trình điều tra.</p>
-      </div>
-      <div class="card">
-        <h4>Phản ứng &amp; tự động hóa</h4>
-        <p class="meta">SOAR · threat intel · runbook</p>
-        <p>Tự động hóa khâu phân loại và làm giàu cảnh báo để rút ngắn thời gian phản ứng; viết runbook vận hành và quy trình xử lý sự cố.</p>
-      </div>
-      <div class="card">
-        <h4>Hardening hạ tầng &amp; cloud</h4>
-        <p class="meta">web-facing · IAM · secrets</p>
-        <p>Siết cấu hình hệ thống và dịch vụ phơi ra Internet; rà soát quyền trên cloud theo least privilege, quản lý secrets tập trung, tách bạch môi trường.</p>
-      </div>
-      <div class="card">
-        <h4>Đào tạo &amp; tài liệu</h4>
-        <p class="meta">secure coding · threat modeling</p>
-        <p>Xây giáo trình và đứng lớp cho đội phát triển: OWASP Top 10, threat modeling (STRIDE), tư duy abuse case. Viết tài liệu và chuẩn nội bộ.</p>
-      </div>
-      <div class="card">
-        <h4>Nền tảng kỹ thuật</h4>
-        <p class="meta">công cụ dùng thường xuyên</p>
-        <p>Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker/K8s · AWS · OCI · GCP · Python/Bash.</p>
-      </div>
-    </div>
+    <dl class="scope">
+      <dt>DevSecOps &amp; Secure SDLC</dt>
+      <dd>SAST · SCA · secret scanning · IaC scan trong CI/CD · security gate · chuẩn secure coding</dd>
+      <dt>Giám sát &amp; phát hiện</dt>
+      <dd>SIEM · metric hạ tầng · detection engineering · giảm cảnh báo nhiễu</dd>
+      <dt>Phản ứng &amp; tự động hoá</dt>
+      <dd>SOAR · threat intel enrichment · runbook · quy trình xử lý sự cố</dd>
+      <dt>Hạ tầng &amp; cloud</dt>
+      <dd>Hardening dịch vụ web-facing · IAM least privilege · quản lý secrets · tách môi trường</dd>
+      <dt>Đào tạo &amp; tài liệu</dt>
+      <dd>Secure coding · threat modeling (STRIDE) · abuse case · chuẩn nội bộ</dd>
+    </dl>
+    <p class="tools"><span>Công cụ</span> Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker · Kubernetes · AWS · OCI · GCP · Python · Bash</p>
   </section>
 
   <section id="lienhe">

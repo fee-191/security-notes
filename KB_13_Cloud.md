@@ -2,7 +2,7 @@
 
 ## Tổng quan
 
-Mình học mảng cloud security này không phải vì tò mò lý thuyết, mà vì công việc thật: hạ tầng nơi mình vận hành nằm cả trên AWS lẫn OCI, và sớm muộn cũng đụng tới GCP khi làm việc với đối tác dùng nền tảng đó. Đọc vài báo cáo lộ dữ liệu thực tế mới thấy một điểm chung đáng sợ: phần lớn không phải do nhà cung cấp bị hack, mà do chính khách hàng cấu hình sai — một bucket để public, một security group mở nhầm cổng quản trị, một IMDSv1 quên tắt. Nên câu hỏi mình cần trả lời trước tiên không phải "cloud có an toàn không", mà là "trong cả chồng hạ tầng này, đâu mới là phần việc của mình".
+Mình học mảng cloud security này không phải vì tò mò lý thuyết, mà vì công việc thật: hạ tầng ngày nay hiếm khi nằm gọn trên một nhà cung cấp — AWS chỗ này, OCI chỗ kia, rồi sớm muộn cũng đụng GCP khi làm việc với đối tác. Đọc vài báo cáo lộ dữ liệu thực tế mới thấy một điểm chung đáng sợ: phần lớn không phải do nhà cung cấp bị hack, mà do chính khách hàng cấu hình sai — một bucket để public, một security group mở nhầm cổng quản trị, một IMDSv1 quên tắt. Nên câu hỏi mình cần trả lời trước tiên không phải "cloud có an toàn không", mà là "trong cả chồng hạ tầng này, đâu mới là phần việc của mình".
 
 Chương bắt đầu từ đúng ranh giới đó: mô hình IaaS/PaaS/SaaS và Shared Responsibility Model, hai thứ chỉ ra ai vá lỗi tầng nào và dập tắt luôn ngộ nhận "lên cloud là nhà cung cấp lo hết". Từ đó chương đi vào các khối mình phải tự quản — IAM và least privilege, VPC cùng Security Group/Network ACL, những dịch vụ dễ gây sự cố nhất trong thực tế như S3 và KMS, lớp giám sát CloudTrail/CloudWatch/GuardDuty, và IMDS, thứ hay bị khai thác qua SSRF nếu còn chạy bản v1. Organizations và SCP khép lại phần này bằng vai trò chốt guardrail ở cấp tổ chức, không phụ thuộc từng tài khoản con có cẩn thận hay không.
 
@@ -1144,7 +1144,7 @@ Cloud Guard là dịch vụ quản lý tư thế bảo mật (CSPM) của OCI, t
 - **Responder** cho phép xử lý tự động hoặc bán tự động (ví dụ tự đóng bucket public).
 - Đối chiếu benchmark (CIS OCI Foundations).
 
-Ở hệ thống mình vận hành, Cloud Guard đóng vai trò cho môi trường OCI đúng như AWS Config + GuardDuty cho môi trường AWS: phát hiện drift cấu hình, bucket public, rule mạng nới rộng, hành vi bất thường — và đẩy cảnh báo về kênh vận hành thay vì để một người rà tay hàng tháng.
+Cloud Guard đóng vai trò cho môi trường OCI đúng như AWS Config + GuardDuty cho môi trường AWS: phát hiện drift cấu hình, bucket public, rule mạng nới rộng, hành vi bất thường — và đẩy cảnh báo về kênh vận hành thay vì để một người rà tay hàng tháng.
 
 ### 13.14.9. Metadata endpoint OCI — IMDS v2 yêu cầu header `Authorization: Bearer Oracle`
 

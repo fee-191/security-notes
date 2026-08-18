@@ -52,7 +52,7 @@ model   pre-commit   secret      IAST        SBOM       controller   detection
 
 ### 6.1.3. Bức tranh pipeline shift-left theo tầng (áp dụng thực tế)
 
-Lý thuyết ở trên khi áp vào hệ thống mình vận hành trở thành một chuỗi tầng cụ thể, toàn bộ bằng công cụ mã nguồn mở. **Mỗi tầng bắt một lớp lỗi riêng, không tầng nào thay được tầng nào** — bỏ một tầng là mở đúng vùng mù của tầng đó.
+Lý thuyết ở trên khi áp vào một dự án thật trở thành một chuỗi tầng cụ thể, dựng được hoàn toàn bằng công cụ mã nguồn mở. **Mỗi tầng bắt một lớp lỗi riêng, không tầng nào thay được tầng nào** — bỏ một tầng là mở đúng vùng mù của tầng đó.
 
 ```
 IDE ────► pre-commit ────► CI (trên PR) ─────────► staging ────► runtime

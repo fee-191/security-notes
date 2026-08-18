@@ -1144,7 +1144,7 @@ Cloud Guard is OCI's cloud security posture management (CSPM) service, equivalen
 - **Responders** allow automated or semi-automated remediation (e.g. automatically closing a public bucket).
 - Benchmarked against CIS OCI Foundations.
 
-In the systems I operate, Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.
+Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.
 
 ### 13.14.9. OCI metadata endpoint — IMDS v2 requires the `Authorization: Bearer Oracle` header
 

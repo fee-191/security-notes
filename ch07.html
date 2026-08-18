@@ -1449,7 +1449,7 @@ git commit -m &quot;Bump ci-templates&quot;
 <li><strong>Khóa quyền pipeline.</strong> Ai sửa được file pipeline là thực thi được mã với đặc quyền của pipeline (7.1.3) — nên repo chứa pipeline-as-code cần branch protection + required review; token của job theo least privilege (7.7.3); quyền chỉnh sửa cấu hình CI/CD (variables, runner) giới hạn cho số ít người và có audit log.</li>
 </ul>
 <h3 id="ch07-782-pr-security-checklist-definition-of-done-bao-mat">7.8.2. PR security checklist &amp; Definition of Done bảo mật</h3>
-<p>Gate tự động (SAST/SCA/secret scan — <a href="ch06.html">Chương 6</a>) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là <strong>PR security checklist</strong> — danh sách reviewer đối chiếu trước khi approve. Bản mình dùng ở hệ thống mình vận hành (một backend Node/TypeScript có xử lý thanh toán và dữ liệu cá nhân):</p>
+<p>Gate tự động (SAST/SCA/secret scan — <a href="ch06.html">Chương 6</a>) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là <strong>PR security checklist</strong> — danh sách reviewer đối chiếu trước khi approve. Một bản áp dụng được cho backend có xử lý thanh toán và dữ liệu cá nhân:</p>
 <ul>
 <li>[ ] Mọi truy vấn tài nguyên ràng buộc chủ sở hữu lấy từ token — không tin id client gửi lên (chống IDOR).</li>
 <li>[ ] Không nối chuỗi SQL; dùng parameterized query / ORM.</li>

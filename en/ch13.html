@@ -1725,7 +1725,7 @@ oci os preauth-request create --namespace &lt;ns&gt; --bucket-name reports \
 <li><strong>Responders</strong> allow automated or semi-automated remediation (e.g. automatically closing a public bucket).</li>
 <li>Benchmarked against CIS OCI Foundations.</li>
 </ul>
-<p>In the systems I operate, Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.</p>
+<p>Cloud Guard plays the role for the OCI environment that AWS Config + GuardDuty play for the AWS environment: detecting configuration drift, public buckets, widened network rules, anomalous behavior — and pushing alerts to the ops channel instead of leaving one person to hand-audit monthly.</p>
 <h3 id="ch13-13149-oci-metadata-endpoint-imds-v2-requires-the-authorization-bearer-oracle-header">13.14.9. OCI metadata endpoint — IMDS v2 requires the <code>Authorization: Bearer Oracle</code> header</h3>
 <p>OCI also has a metadata service at the exact same link-local address <strong><code>169.254.169.254</code></strong> as AWS/GCP, and Instance Principals fetch their temporary certificates through it — so it presents <strong>the same SSRF attack surface</strong> as AWS IMDS (SSRF mechanism: <a href="ch05.html">Chapter 5</a>).</p>
 <p>The notable defensive difference — how each side blocks SSRF:</p>

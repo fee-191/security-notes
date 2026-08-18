@@ -1551,7 +1551,7 @@ server {
     }
 }
 </code></pre>
-<p>This is almost verbatim a server block I found while auditing a dev machine running a web API on a system I operate (anonymized). It serves normal users just fine, but faced with an automated scan:</p>
+<p>This is almost verbatim the kind of server block you find on a machine running a web API behind a reverse proxy. It serves normal users just fine, but faced with an automated scan:</p>
 <table>
 <thead>
 <tr>
@@ -1643,7 +1643,7 @@ deny  all;              # everyone else: 403
 </code></pre>
 <p>If you need coarse country-level filtering (a service serving a single market), the <code>geoip2</code> module maps IP → country code as a conditional variable. <strong>Trade-off:</strong> you have to maintain the list of valid IPs; remote dev/QA must go through the VPN — but that is the right price for an environment not meant for the public.</p>
 <h3 id="ch11-1168-lessons-from-a-real-scanning-campaign">11.6.8. Lessons from a real scanning campaign</h3>
-<p>The chain of measures in 11.6.2–11.6.7 is not theory — it came out of an investigation on a system I operate (July 2026), retold here anonymized.</p>
+<p>The chain of measures in 11.6.2–11.6.7 is not theory — it came out of a real investigation, retold here with the system details stripped out.</p>
 <p>On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: <code>45.148.10.80</code> (a VPS in Amsterdam) — <strong>536 requests in ~2 hours 15 minutes</strong> aimed at a dev machine running a web API, all path traversal probing for secret files. A typical raw access-log line:</p>
 <pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15&quot;
 </code></pre>

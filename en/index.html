@@ -73,6 +73,12 @@ h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 6px;color:var(--ink)}
 .chip b{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
 .book .foot{border-top:1px solid var(--line);background:var(--panel2);padding:16px 28px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 .book .foot .go{font-weight:600}
+.scope{margin:0}
+.scope dt{font-weight:700;font-size:14.5px;color:var(--ink);margin-top:14px}
+.scope dt:first-child{margin-top:0}
+.scope dd{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.tools{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);line-height:1.8}
+.tools span{color:var(--accent2);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-right:8px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
@@ -158,41 +164,21 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section id="work">
+  <section id="scope">
     <h2 class="sec">Scope of work</h2>
-    <p class="sec-note">Full-stack security, weighted toward DevSecOps.</p>
-    <div class="grid">
-      <div class="card">
-        <h4>DevSecOps &amp; secure SDLC</h4>
-        <p class="meta">shift-left · security gates · secure coding</p>
-        <p>Embedding security controls into the development lifecycle: SAST, dependency scanning, secret scanning and infrastructure config checks running automatically in CI/CD, with gates tiered by severity.</p>
-      </div>
-      <div class="card">
-        <h4>Monitoring &amp; detection</h4>
-        <p class="meta">SIEM · infrastructure metrics · detection engineering</p>
-        <p>Operating a unified view of security alerts and performance metrics, writing detection rules, cutting alert noise and standardising the investigation workflow.</p>
-      </div>
-      <div class="card">
-        <h4>Response &amp; automation</h4>
-        <p class="meta">SOAR · threat intel · runbooks</p>
-        <p>Automating alert triage and enrichment to shorten response time; writing operational runbooks and incident handling procedures.</p>
-      </div>
-      <div class="card">
-        <h4>Infrastructure &amp; cloud hardening</h4>
-        <p class="meta">web-facing services · IAM · secrets</p>
-        <p>Tightening configuration of internet-facing systems; reviewing cloud permissions against least privilege, centralising secrets management, separating environments.</p>
-      </div>
-      <div class="card">
-        <h4>Training &amp; documentation</h4>
-        <p class="meta">secure coding · threat modeling</p>
-        <p>Building curricula and teaching development teams: OWASP Top 10, threat modeling (STRIDE), thinking in abuse cases. Writing internal standards and documentation.</p>
-      </div>
-      <div class="card">
-        <h4>Technical toolkit</h4>
-        <p class="meta">what I work with regularly</p>
-        <p>Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker/K8s · AWS · OCI · GCP · Python/Bash.</p>
-      </div>
-    </div>
+    <dl class="scope">
+      <dt>DevSecOps &amp; secure SDLC</dt>
+      <dd>SAST · SCA · secret scanning · IaC scan in CI/CD · security gates · secure coding standards</dd>
+      <dt>Monitoring &amp; detection</dt>
+      <dd>SIEM · infrastructure metrics · detection engineering · alert noise reduction</dd>
+      <dt>Response &amp; automation</dt>
+      <dd>SOAR · threat intel enrichment · runbooks · incident handling process</dd>
+      <dt>Infrastructure &amp; cloud</dt>
+      <dd>Hardening internet-facing services · IAM least privilege · secrets management · environment separation</dd>
+      <dt>Training &amp; documentation</dt>
+      <dd>Secure coding · threat modeling (STRIDE) · abuse cases · internal standards</dd>
+    </dl>
+    <p class="tools"><span>Tooling</span> Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker · Kubernetes · AWS · OCI · GCP · Python · Bash</p>
   </section>
 
   <section id="contact">

@@ -1243,7 +1243,7 @@ auth.log line ──▶ logcollector(agent) ──1514──▶ remoted ──�
 
 ## 8.16. Điều tra một cảnh báo thực tế bằng Wazuh — quy trình tái dùng được
 
-Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: **từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận**. Đây là quy trình mình đã dùng để điều tra một đợt quét thật trên hệ thống mình vận hành (giữa 2026); chi tiết nội bộ đã được ẩn danh, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: *bị cái gì, thủng chưa, làm gì tiếp* — kèm bằng chứng, không phải cảm giác.
+Các mục trên mô tả pipeline theo chiều xuôi (log đi vào thành alert). Mục này đi chiều ngược lại: **từ một con số bất thường trên dashboard truy về bằng chứng gốc và ra kết luận**. Đây là quy trình có thể dùng lại để điều tra một đợt quét thật (giữa 2026); chi tiết hệ thống đã được lược bỏ, riêng IP của scanner là nguồn quét công cộng nên giữ nguyên. Mục tiêu cuối là trả lời được ba câu: *bị cái gì, thủng chưa, làm gì tiếp* — kèm bằng chứng, không phải cảm giác.
 
 ### 8.16.1. Bước 1 — Phát hiện từ dashboard: một nguồn chiếm áp đảo
 
@@ -1381,7 +1381,7 @@ Bài toán gốc: một SIEM được tuning tốt vẫn sinh alert **nhiều h�
 | **TheHive (+ Cortex)** | Nền tảng **case management** + engine phân tích observable (Cortex analyzer) | Quản lý vòng đời case, phân công, lưu evidence — đúng nghĩa quy trình SOC | Nặng so với nhu cầu "chỉ cần enrich + notify" ở giai đoạn đầu |
 | **n8n** | Automation tổng quát (không riêng security) | Connector rất nhiều, dev nào cũng dùng được | Không có khái niệm alert/case/observable sẵn — phần security phải tự chế |
 
-Ở hệ thống mình vận hành, mình chọn **Shuffle** cho giai đoạn đầu: bài toán trước mắt là *enrich + notify* (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.
+Với giai đoạn đầu, **Shuffle** là lựa chọn hợp lý: bài toán trước mắt là *enrich + notify* (đúng sở trường của nó), còn case management kiểu TheHive để dành cho giai đoạn quy trình đã ổn định. n8n hợp khi đội đã dùng sẵn nó cho automation chung và chỉ cần thêm vài luồng security đơn giản.
 
 ### 8.17.3. Kiến trúc Wazuh → SOAR: lọc trước khi đẩy
 

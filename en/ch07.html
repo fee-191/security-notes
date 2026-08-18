@@ -1449,7 +1449,7 @@ git commit -m &quot;Bump ci-templates&quot;
 <li><strong>Lock down pipeline permissions.</strong> Whoever can edit the pipeline file can execute code with the pipeline's privileges (7.1.3) — so repos holding pipeline-as-code need branch protection + required review; job tokens follow least privilege (7.7.3); the right to change CI/CD configuration (variables, runners) is restricted to a handful of people with an audit log.</li>
 </ul>
 <h3 id="ch07-782-pr-security-checklist-a-security-inclusive-definition-of-done">7.8.2. PR security checklist &amp; a security-inclusive Definition of Done</h3>
-<p>Automated gates (SAST/SCA/secret scan — <a href="ch06.html">Chapter 6</a>) catch generic defects, but business-logic flaws (missing authorization checks, non-idempotent money flows) can only be caught by humans. The tool here is the <strong>PR security checklist</strong> — the list a reviewer walks through before approving. The version I use on the system I operate (a Node/TypeScript backend handling payments and personal data):</p>
+<p>Automated gates (SAST/SCA/secret scan — <a href="ch06.html">Chapter 6</a>) catch generic defects, but business-logic flaws (missing authorization checks, non-idempotent money flows) can only be caught by humans. The tool here is the <strong>PR security checklist</strong> — the list a reviewer walks through before approving. A version that works for a backend handling payments and personal data:</p>
 <ul>
 <li>[ ] Every resource query is bound to the owner taken from the token — never trust an id sent by the client (anti-IDOR).</li>
 <li>[ ] No string-concatenated SQL; parameterized queries / ORM.</li>

@@ -868,7 +868,7 @@ server {
 }
 ```
 
-This is almost verbatim a server block I found while auditing a dev machine running a web API on a system I operate (anonymized). It serves normal users just fine, but faced with an automated scan:
+This is almost verbatim the kind of server block you find on a machine running a web API behind a reverse proxy. It serves normal users just fine, but faced with an automated scan:
 
 | Missing | Consequence |
 |---|---|
@@ -973,7 +973,7 @@ If you need coarse country-level filtering (a service serving a single market), 
 
 ### 11.6.8. Lessons from a real scanning campaign
 
-The chain of measures in 11.6.2–11.6.7 is not theory — it came out of an investigation on a system I operate (July 2026), retold here anonymized.
+The chain of measures in 11.6.2–11.6.7 is not theory — it came out of a real investigation, retold here with the system details stripped out.
 
 On the monitoring dashboard, one IP dominated the top-source-of-alerts panel: `45.148.10.80` (a VPS in Amsterdam) — **536 requests in ~2 hours 15 minutes** aimed at a dev machine running a web API, all path traversal probing for secret files. A typical raw access-log line:
 

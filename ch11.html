@@ -1551,7 +1551,7 @@ server {
     }
 }
 </code></pre>
-<p>Đây gần như nguyên văn một server block mình gặp khi audit một máy dev chạy web API ở hệ thống mình vận hành (đã ẩn danh hoá). Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:</p>
+<p>Đây gần như nguyên văn một server block hay gặp trên máy chạy web API sau reverse proxy. Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:</p>
 <table>
 <thead>
 <tr>
@@ -1643,7 +1643,7 @@ deny  all;              # còn lại: 403
 </code></pre>
 <p>Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trường) thì có module <code>geoip2</code> ánh xạ IP → mã quốc gia làm biến điều kiện. <strong>Đánh đổi:</strong> phải duy trì danh sách IP hợp lệ; dev/QA làm việc từ xa buộc phải qua VPN — nhưng đó là cái giá đúng cho môi trường không dành cho công chúng.</p>
 <h3 id="ch11-1168-bai-hoc-tu-mot-chien-dich-scan-thuc-te">11.6.8. Bài học từ một chiến dịch scan thực tế</h3>
-<p>Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả một cuộc điều tra ở hệ thống mình vận hành (7/2026), kể lại đã ẩn danh hoá.</p>
+<p>Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả rút ra từ một cuộc điều tra thật, kể lại đã ẩn danh hoá.</p>
 <p>Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: <code>45.148.10.80</code> (VPS ở Amsterdam) — <strong>536 request trong ~2 giờ 15 phút</strong> nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Một dòng access log gốc điển hình:</p>
 <pre><code>45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] &quot;GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1&quot; 301 178 &quot;https://www.bing.com/search?q=3x4et6&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15&quot;
 </code></pre>

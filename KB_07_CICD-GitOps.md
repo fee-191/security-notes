@@ -894,7 +894,7 @@ OWASP Top 10 2025 xếp "pipeline CI/CD bị chèn mã" vào nhóm **A08 — Sof
 
 ### 7.8.2. PR security checklist & Definition of Done bảo mật
 
-Gate tự động (SAST/SCA/secret scan — [Chương 6](#sec-06)) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là **PR security checklist** — danh sách reviewer đối chiếu trước khi approve. Bản mình dùng ở hệ thống mình vận hành (một backend Node/TypeScript có xử lý thanh toán và dữ liệu cá nhân):
+Gate tự động (SAST/SCA/secret scan — [Chương 6](#sec-06)) bắt lỗi generic, nhưng lỗi logic nghiệp vụ (thiếu check quyền, luồng tiền không idempotent) chỉ con người bắt được. Công cụ ở đây là **PR security checklist** — danh sách reviewer đối chiếu trước khi approve. Một bản áp dụng được cho backend có xử lý thanh toán và dữ liệu cá nhân:
 
 - [ ] Mọi truy vấn tài nguyên ràng buộc chủ sở hữu lấy từ token — không tin id client gửi lên (chống IDOR).
 - [ ] Không nối chuỗi SQL; dùng parameterized query / ORM.

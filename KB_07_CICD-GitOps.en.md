@@ -894,7 +894,7 @@ The OWASP Top 10 2025 places "CI/CD pipeline code injection" under **A08 — Sof
 
 ### 7.8.2. PR security checklist & a security-inclusive Definition of Done
 
-Automated gates (SAST/SCA/secret scan — [Chapter 6](#sec-06)) catch generic defects, but business-logic flaws (missing authorization checks, non-idempotent money flows) can only be caught by humans. The tool here is the **PR security checklist** — the list a reviewer walks through before approving. The version I use on the system I operate (a Node/TypeScript backend handling payments and personal data):
+Automated gates (SAST/SCA/secret scan — [Chapter 6](#sec-06)) catch generic defects, but business-logic flaws (missing authorization checks, non-idempotent money flows) can only be caught by humans. The tool here is the **PR security checklist** — the list a reviewer walks through before approving. A version that works for a backend handling payments and personal data:
 
 - [ ] Every resource query is bound to the owner taken from the token — never trust an id sent by the client (anti-IDOR).
 - [ ] No string-concatenated SQL; parameterized queries / ORM.

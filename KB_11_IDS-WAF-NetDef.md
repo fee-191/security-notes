@@ -868,7 +868,7 @@ server {
 }
 ```
 
-Đây gần như nguyên văn một server block mình gặp khi audit một máy dev chạy web API ở hệ thống mình vận hành (đã ẩn danh hoá). Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:
+Đây gần như nguyên văn một server block hay gặp trên máy chạy web API sau reverse proxy. Nó phục vụ người dùng bình thường tốt, nhưng đứng trước một đợt quét tự động thì:
 
 | Thiếu | Hệ quả |
 |---|---|
@@ -973,7 +973,7 @@ Cần lọc thô theo quốc gia (dịch vụ chỉ phục vụ một thị trư
 
 ### 11.6.8. Bài học từ một chiến dịch scan thực tế
 
-Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả một cuộc điều tra ở hệ thống mình vận hành (7/2026), kể lại đã ẩn danh hoá.
+Chuỗi biện pháp 11.6.2–11.6.7 không phải lý thuyết — nó là kết quả rút ra từ một cuộc điều tra thật, kể lại đã ẩn danh hoá.
 
 Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn cảnh báo: `45.148.10.80` (VPS ở Amsterdam) — **536 request trong ~2 giờ 15 phút** nhắm một máy dev chạy web API, toàn path traversal dò tệp bí mật. Một dòng access log gốc điển hình:
 

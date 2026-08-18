@@ -1897,7 +1897,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </code></pre>
 <hr />
 <h2 id="ch08-816-investigating-a-real-alert-with-wazuh-a-reusable-process">8.16. Investigating a real alert with Wazuh — a reusable process</h2>
-<p>The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: <strong>from one anomalous number on a dashboard back to the original evidence and a conclusion</strong>. This is the process I used to investigate a real scanning campaign on a system I operate (mid-2026); internal details are anonymized, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — <em>what hit us, did it get through, what next</em> — with evidence, not gut feeling.</p>
+<p>The sections above describe the pipeline in the forward direction (logs flowing in and becoming alerts). This section goes the other way: <strong>from one anomalous number on a dashboard back to the original evidence and a conclusion</strong>. This is the process I used to investigate a real scanning campaign (mid-2026); system details have been stripped out, but the scanner's IP is a public scanning source, so I keep it as is. The end goal is to answer three questions — <em>what hit us, did it get through, what next</em> — with evidence, not gut feeling.</p>
 <h3 id="ch08-8161-step-1-detection-from-the-dashboard-one-source-dominating">8.16.1. Step 1 — Detection from the dashboard: one source dominating</h3>
 <p>The starting point was a <strong>Top source IPs</strong> panel (mine is self-built in Grafana reading Wazuh's alert index; the Security Events module of the Wazuh dashboard offers an equivalent view). One IP — <code>45.148.10.80</code> — accounted for <strong>536</strong> alerts in the window, while the next sources trailed at 54, 51... The accompanying rule groups: <code>web</code>, <code>attack</code>. An unfamiliar source (not an office/partner range) producing ~90% of the attack-group alerts → investigate immediately.</p>
 <p>The lesson right at this step: the dashboard does not answer questions — it only <strong>points at where to ask</strong>. Every conclusion that follows comes from queries.</p>
@@ -2078,7 +2078,7 @@ Jun 19 10:22:41 web01 sshd[2931]: Failed password for invalid user admin from 20
 </tr>
 </tbody>
 </table>
-<p>On the system I operate, I chose <strong>Shuffle</strong> for the first stage: the immediate problem is <em>enrich + notify</em> (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.</p>
+<p>For a first stage, <strong>Shuffle</strong> is the sensible pick: the immediate problem is <em>enrich + notify</em> (exactly its home turf), while TheHive-style case management is reserved for the stage when the process has stabilized. n8n fits when the team already uses it for general automation and only needs a few simple security flows.</p>
 <h3 id="ch08-8173-wazuh-soar-architecture-filter-before-you-push">8.17.3. Wazuh → SOAR architecture: filter before you push</h3>
 <pre><code>Wazuh manager ──(integration/webhook, ONLY alerts level ≥ N)──▶ SOAR (Shuffle)
                                                                   │

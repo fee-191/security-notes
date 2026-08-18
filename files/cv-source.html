@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>CV — Lê Dương Phi</title>
+<title>CV — Le Duong Phi</title>
 <style>
   @page { size: A4; margin: 0; }
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -15,8 +15,9 @@
     color:var(--ink); font-size:9pt; line-height:1.45;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
-  .page{ width:210mm; height:297mm; overflow:hidden; position:relative; page-break-after:always;
-    background:linear-gradient(to right,var(--side-bg) 0,var(--side-bg) 52mm,#fff 52mm); }
+  /* Trang cố định A4; cột trái tô nền ở .cols nên dải xám bắt đầu ĐÚNG dưới header */
+  .page{ width:210mm; height:297mm; overflow:hidden; display:flex; flex-direction:column;
+    page-break-after:always; }
   .page:last-child{ page-break-after:auto; }
 
   /* ---------- header ---------- */
@@ -30,7 +31,8 @@
   .rule{ height:1px; background:var(--rule); margin:0 14mm; }
 
   /* ---------- body grid ---------- */
-  .cols{ display:flex; align-items:flex-start; }
+  .cols{ display:flex; align-items:flex-start; flex:1;
+    background:linear-gradient(to right,var(--side-bg) 0,var(--side-bg) 52mm,#fff 52mm); }
   .side{ width:52mm; flex:0 0 52mm; padding:8mm 6mm 10mm 14mm; }
   .main{ flex:1; min-width:0; padding:8mm 14mm 10mm 8mm; }
   .page2 .side{ padding-top:16mm; }
@@ -67,8 +69,6 @@
   .proj{ margin-bottom:2.6mm; }
   .proj .t{ font-size:9.4pt; font-weight:700; }
   .proj .m{ font-size:7.8pt; color:var(--muted); }
-  .edu .t{ font-size:10pt; font-weight:700; }
-  .edu .m{ font-size:8.3pt; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -76,13 +76,15 @@
 <!-- ============ PAGE 1 ============ -->
 <div class="page">
   <div class="head">
-    <h1>Lê Dương Phi</h1>
-    <div class="role">SECURITY ENGINEER</div>
+    <h1>Le Duong Phi</h1>
+    <div class="role">CYBER SECURITY ENGINEER</div>
     <div class="contact">
       <span class="item"><span class="k">GITHUB</span><span class="v">github.com/fee-191</span></span>
       <span class="item"><span class="k">LINKEDIN</span><span class="v">linkedin.com/in/leduongphi191</span></span>
       <span class="item"><span class="k">EMAIL</span><span class="v">phildhe160155@gmail.com</span></span>
-      <span class="item"><span class="k">LOCATION</span><span class="v">Hà Nội</span></span>
+      <span class="item"><span class="k">SITE</span><span class="v">feeiuna.io.vn</span></span>
+      <span class="item"><span class="k">BORN</span><span class="v">19 Jan 2002</span></span>
+      <span class="item"><span class="k">LOCATION</span><span class="v">Hanoi, Vietnam</span></span>
     </div>
   </div>
   <div class="rule"></div>
@@ -90,7 +92,7 @@
   <div class="cols">
     <aside class="side">
       <div class="grp">
-        <div class="sec-label">KỸ NĂNG</div>
+        <div class="sec-label">SKILLS</div>
         <div class="sub">OPERATING SYSTEMS</div>
         <div class="txt">Linux · Windows · macOS</div>
         <div class="sub">NETWORKING</div>
@@ -106,61 +108,88 @@
         <div class="sub">DEVSECOPS &amp; CI/CD</div>
         <div class="txt">Semgrep · Trivy · gitleaks · GitLab CI · GitHub Actions · Jenkins · Argo CD</div>
         <div class="sub">FRAMEWORKS &amp; COMPLIANCE</div>
-        <div class="txt">MITRE ATT&amp;CK · OWASP Top 10 · NIST · ISO 27001 · Luật BVDLCN 91/2025 · ATTT Cấp độ 4</div>
+        <div class="txt">MITRE ATT&amp;CK · OWASP Top 10 · NIST · ISO 27001 · Vietnam PDP Law 91/2025</div>
       </div>
 
       <div class="grp">
-        <div class="sec-label">CHỨNG CHỈ</div>
-        <div class="item"><div class="t">CCNAv7 — Introduction to Networks</div><div class="s">Cisco NetAcad</div></div>
+        <div class="sec-label">CERTIFICATIONS</div>
+        <div class="item"><div class="t">CCNAv7 — Introduction to Networks</div><div class="s">Cisco Networking Academy</div></div>
         <div class="item"><div class="t">Security Operations &amp; Application Security</div><div class="s">Coursera · (ISC)² curriculum</div></div>
       </div>
 
       <div class="grp">
-        <div class="sec-label">NGOẠI NGỮ</div>
-        <div class="txt">Tiếng Anh — đọc hiểu tài liệu kỹ thuật &amp; tài liệu hãng</div>
+        <div class="sec-label">LANGUAGES</div>
+        <div class="txt">Vietnamese — native<br>English — technical reading (documentation &amp; vendor material)</div>
       </div>
 
       <div class="grp">
-        <div class="sec-label">DANH HIỆU</div>
+        <div class="sec-label">HONOURS</div>
         <ul>
-          <li>Sinh viên Giỏi học kỳ Fall 2024</li>
-          <li>Đồ án tốt nghiệp được hội đồng vinh danh trên trang chính thức của trường</li>
+          <li>Distinction student, Fall 2024</li>
+          <li>Capstone project featured on the university's official site</li>
         </ul>
       </div>
     </aside>
 
     <main class="main">
       <div class="block">
-        <div class="sec-label">HỒ SƠ</div>
-        <p class="profile">Security Engineer, tốt nghiệp ngành ATTT (ĐH FPT Hà Nội), hơn 1 năm kinh nghiệm ở cả hai hướng: xây dựng bảo mật cho sản phẩm tài chính từ giai đoạn đầu, và vận hành phòng thủ cho hạ tầng đa đám mây. Kinh nghiệm trải từ Application Security / DevSecOps, giám sát &amp; điều tra sự cố (SOC), tới hạ tầng và cloud, cũng như đưa AI vào pipeline DevSecOps và tự động hóa điều tra sự cố. Định hướng phát triển thành Security Engineer chuyên sâu về bảo mật hệ thống và ứng dụng, ứng dụng tự động hóa và AI để nâng cao năng lực phòng thủ.</p>
+        <div class="sec-label">PROFILE</div>
+        <p class="profile">Cyber Security Engineer with a degree in Information Security (FPT University Hanoi) and over a year of experience across two directions: building security into a financial product from its early stages, and running defensive operations for multi-cloud infrastructure. Work spans Application Security / DevSecOps, monitoring and incident investigation (SOC), infrastructure and cloud, as well as bringing AI into the DevSecOps pipeline and automating incident investigation. Aiming to grow into a Security Engineer specialising in systems and application security, applying automation and AI to strengthen defensive capability.</p>
       </div>
 
       <div class="block">
-        <div class="sec-label">KINH NGHIỆM</div>
+        <div class="sec-label">EXPERIENCE</div>
 
         <div class="job">
           <div class="top">
             <span class="title">DevSecOps Engineer</span>
-            <span class="date">07/2026 – nay</span>
+            <span class="date">07/2026 – present</span>
           </div>
           <div class="org">Just Engineer</div>
-          <div class="team">Bảo mật toàn trình cho sản phẩm và hạ tầng · trọng tâm DevSecOps</div>
+          <div class="team">Full-stack security across product and infrastructure · DevSecOps focus</div>
 
           <div class="cat">DEVSECOPS &amp; SECURE SDLC</div>
           <ul class="pts">
-            <li>Đưa kiểm soát bảo mật vào vòng đời phát triển theo hướng shift-left: SAST, quét dependency, secret scanning và kiểm tra cấu hình hạ tầng chạy tự động trong CI/CD, với security gate phân tầng theo mức độ nghiêm trọng</li>
-            <li>Xây dựng chuẩn secure coding và checklist review cho các luồng nhạy cảm (xác thực, phân quyền, giao dịch, dữ liệu cá nhân), kèm quy trình xử lý ngoại lệ có kiểm soát</li>
-            <li>Thiết kế và trực tiếp đứng lớp đào tạo secure coding nội bộ cho đội phát triển — OWASP Top 10, threat modeling (STRIDE), tư duy abuse case</li>
+            <li>Embedding security controls into the development lifecycle, shift-left: SAST, dependency scanning, secret scanning and infrastructure configuration checks running automatically in CI/CD, with gates tiered by severity</li>
+            <li>Building secure coding standards and review checklists for sensitive flows (authentication, authorisation, transactions, personal data), together with a controlled exception process</li>
+            <li>Designing and delivering internal secure coding training for the development team — OWASP Top 10, threat modeling (STRIDE), thinking in abuse cases</li>
           </ul>
 
-          <div class="cat">HẠ TẦNG, CLOUD &amp; VẬN HÀNH AN NINH</div>
+          <div class="cat">INFRASTRUCTURE, CLOUD &amp; SECURITY OPERATIONS</div>
           <ul class="pts">
-            <li>Hardening hệ thống và dịch vụ web-facing; rà soát cấu hình cloud theo nguyên tắc least privilege, quản lý secrets tập trung, tách bạch môi trường</li>
-            <li>Vận hành hệ giám sát an ninh và hiệu năng (SIEM kết hợp metric hạ tầng); xây dựng luật phát hiện, giảm cảnh báo nhiễu, chuẩn hóa quy trình điều tra</li>
-            <li>Tự động hóa phân loại và làm giàu cảnh báo (SOAR) để rút ngắn thời gian phản ứng; viết runbook vận hành và báo cáo an ninh định kỳ cho các bên liên quan</li>
+            <li>Hardening systems and internet-facing services; reviewing cloud permissions against least privilege, centralising secrets management, separating environments</li>
+            <li>Operating security and performance monitoring (SIEM combined with infrastructure metrics); writing detection rules, reducing alert noise, standardising the investigation workflow</li>
+            <li>Automating alert triage and enrichment (SOAR) to shorten response time; writing operational runbooks and periodic security reports for stakeholders</li>
           </ul>
         </div>
 
+        <div class="job">
+          <div class="top">
+            <span class="title">Security Engineer (Blue Team)</span>
+            <span class="date">09/2025 – 06/2026</span>
+          </div>
+          <div class="org">Digital asset exchange project (for a bank)</div>
+          <div class="team">Internal Security Team</div>
+
+          <div class="cat">APPLICATION SECURITY &amp; DEVSECOPS</div>
+          <ul class="pts">
+            <li>Integrated AI into the DevSecOps flow: built the security pipeline (pre-commit → CI/CD → AI review) and a secure coding template (as a submodule) for the team's projects</li>
+            <li>Two-tier CI pipeline — blocking CRITICAL at merge request, warning on HIGH (Semgrep, secret &amp; dependency scanning); an AI bot reviewing each MR diff and surfacing findings for the reviewer</li>
+            <li>Designed and presented an internal Secure Coding workshop (~10 people including the CTO); authored Secure Coding, Trust Boundary (Zero Trust, NIST SP 800-207) and IAM guidance, mapped to ISO 27001</li>
+          </ul>
+
+          <div class="cat">MONITORING &amp; INCIDENT INVESTIGATION (SOC)</div>
+          <ul class="pts">
+            <li>Built an on-premise SOC lab (network configuration, Wazuh installation and tuning, centralised log collection); contributed to research on the production SOC design on AWS</li>
+            <li>Researched and built an Incident Response AI Agent (POC) — takes an alert, queries the SIEM, enriches IOCs, opens a ticket and chat alert with a summary; every containment step requires human approval (validated across 3 scenarios: brute-force, cloud anomaly, data exfiltration)</li>
+          </ul>
+
+          <div class="cat">RESEARCH &amp; THREAT INTELLIGENCE</div>
+          <ul class="pts">
+            <li>Analysed real exchange breaches (attack patterns, kill chain, MITRE ATT&amp;CK), feeding input into the team's threat model and detection rules</li>
+            <li>Contributed to the research and design of a Blue Team AI Defense architecture (multi-agent)</li>
+          </ul>
+        </div>
       </div>
     </main>
   </div>
@@ -171,107 +200,78 @@
   <div class="cols">
     <aside class="side">
       <div class="grp">
-        <div class="sec-label">HỌC VẤN</div>
+        <div class="sec-label">EDUCATION</div>
         <div class="item">
-          <div class="t" style="font-weight:700">Chuyên ngành An toàn thông tin</div>
-          <div class="s">Đại học FPT Hà Nội · 2021 – 2025</div>
+          <div class="t" style="font-weight:700">BSc Information Security</div>
+          <div class="s">FPT University Hanoi · 2021 – 2025</div>
           <div class="s">GPA 3.0 / 4.0</div>
         </div>
       </div>
 
       <div class="grp">
-        <div class="sec-label">NGƯỜI THAM CHIẾU</div>
-        <div class="txt">Sẵn sàng cung cấp khi được yêu cầu.</div>
+        <div class="sec-label">REFERENCES</div>
+        <div class="txt">Available on request.</div>
       </div>
     </aside>
 
     <main class="main">
       <div class="job">
-          <div class="top">
-            <span class="title">Security Engineer (Blue Team)</span>
-            <span class="date">09/2025 – 06/2026</span>
-          </div>
-          <div class="org">Dự án Sàn giao dịch tài sản số (thuộc một ngân hàng)</div>
-          <div class="team">Internal Security Team</div>
-
-          <div class="cat">APPLICATION SECURITY &amp; DEVSECOPS</div>
-          <ul class="pts">
-            <li>Tích hợp AI vào luồng DevSecOps: xây dựng pipeline bảo mật (pre-commit → CI/CD → AI review) và secure coding template (dạng submodule) cho các project của team</li>
-            <li>Pipeline CI hai tầng — chặn CRITICAL tại MR, cảnh báo HIGH (Semgrep, secret &amp; dependency scan); AI bot review diff mỗi MR, gợi ý findings cho người duyệt</li>
-            <li>Thiết kế &amp; thuyết trình Secure Coding workshop nội bộ (~10 người, gồm CTO); viết tài liệu Secure Coding, Trust Boundary theo Zero Trust (NIST SP 800-207), IAM guide — tích hợp ISO 27001 &amp; ATTT Cấp độ 4</li>
-          </ul>
-
-          <div class="cat">GIÁM SÁT &amp; ĐIỀU TRA SỰ CỐ (SOC)</div>
-          <ul class="pts">
-            <li>Dựng hạ tầng lab SOC on-premise (cấu hình mạng, cài &amp; cấu hình Wazuh, thu thập log tập trung); tham gia nghiên cứu xây dựng SOC production của sàn trên AWS</li>
-            <li>Nghiên cứu &amp; xây dựng Incident Response AI Agent (POC) — nhận một cảnh báo rồi tự truy vấn SIEM, enrich IOC, tạo Jira ticket &amp; Slack alert kèm tóm tắt; mọi bước containment do người duyệt (validate 3 kịch bản: brute-force, AWS anomaly, data exfil)</li>
-          </ul>
-
-          <div class="cat">NGHIÊN CỨU &amp; THREAT INTELLIGENCE</div>
-          <ul class="pts">
-            <li>Nghiên cứu &amp; phân tích các sự cố hack sàn giao dịch thực tế (attack pattern, kill chain, MITRE ATT&amp;CK), cung cấp input cho team xây dựng threat model &amp; rule phát hiện</li>
-            <li>Tham gia nghiên cứu &amp; thiết kế kiến trúc Blue Team AI Defense (multi-agent)</li>
-          </ul>
-        </div>
-
-      <div class="job">
         <div class="top">
-          <span class="title">Thực tập sinh — SOC Tier 1</span>
+          <span class="title">SOC Tier 1 Intern</span>
           <span class="date">06/2025 – 07/2025</span>
         </div>
         <div class="org">NetNam</div>
         <ul class="pts" style="margin-top:2mm">
-          <li>Nghiên cứu &amp; thực hành kỹ năng SOC Tier 1 qua lab TryHackMe — phân tích log, triage, quy trình điều tra</li>
+          <li>Studied and practised SOC Tier 1 skills through TryHackMe labs — log analysis, triage, investigation workflow</li>
         </ul>
       </div>
 
       <div class="job">
         <div class="top">
-          <span class="title">Thực tập sinh — IT Operations &amp; System Admin</span>
+          <span class="title">IT Operations &amp; System Admin Intern</span>
           <span class="date">08/2023 – 12/2023</span>
         </div>
-        <div class="org">Công ty CP Đầu tư TM &amp; Phát triển Công nghệ FSI</div>
+        <div class="org">FSI Technology Development &amp; Trade Investment JSC</div>
         <ul class="pts" style="margin-top:2mm">
-          <li>Hỗ trợ vận hành server/VPS (Ubuntu), Docker &amp; Kubernetes; xử lý sự cố hạ tầng cơ bản, hỗ trợ DevOps pipeline</li>
+          <li>Supported server/VPS operations (Ubuntu), Docker &amp; Kubernetes; handled basic infrastructure incidents and supported the DevOps pipeline</li>
         </ul>
       </div>
 
       <div class="block" style="margin-top:8mm">
-        <div class="sec-label">DỰ ÁN TIÊU BIỂU</div>
+        <div class="sec-label">SELECTED PROJECTS</div>
 
         <div class="proj">
-          <div class="t">Sổ tay An toàn thông tin — tài liệu kỹ thuật song ngữ</div>
-          <div class="m">Cá nhân · 2025 – nay · 17 chương, Việt–Anh · feeiuna.io.vn · github.com/fee-191/security-notes</div>
+          <div class="t">Security Handbook — bilingual technical documentation</div>
+          <div class="m">Personal · 2025 – present · 17 chapters, Vietnamese &amp; English · feeiuna.io.vn · github.com/fee-191/security-notes</div>
           <ul class="pts" style="margin-top:1mm">
-            <li>Hệ thống hóa kiến thức từ nền tảng (mạng, Linux, mật mã) tới vận hành thật (SIEM, SOC/IR, cloud, DevSecOps, GRC) — mỗi chủ đề kèm cơ chế bên trong, lệnh và cấu hình chạy được</li>
+            <li>Systematises security knowledge from fundamentals (networking, Linux, cryptography) through to real operations (SIEM, SOC/IR, cloud, DevSecOps, GRC) — each topic covering the internal mechanics with runnable commands and configuration</li>
           </ul>
         </div>
 
         <div class="proj">
-          <div class="t">LynxGuard — Mini-SOC cho ứng dụng web (SIEM · IDS · WAF)</div>
-          <div class="m">Đồ án tốt nghiệp · ĐH FPT · 2024 · nhóm 4 người · vai trò: infrastructure &amp; deployment · github.com/fee-191/lynxguard</div>
+          <div class="t">LynxGuard — Mini-SOC for web applications (SIEM · IDS · WAF)</div>
+          <div class="m">Capstone project · FPT University · 2024 · team of 4 · role: infrastructure &amp; deployment · github.com/fee-191/lynxguard</div>
           <ul class="pts" style="margin-top:1mm">
-            <li>Xây dựng và triển khai platform SOC cho web app trên VMware + mạng ảo, pfSense — tích hợp Wazuh, Snort, ModSecurity, Zabbix; phát hiện &amp; ngăn chặn xâm nhập real-time, cảnh báo qua Telegram bot (Python); kiểm thử với Acunetix + Burp Suite</li>
+            <li>Built and deployed a SOC platform for a web application on VMware with a virtual network and pfSense — integrating Wazuh, Snort, ModSecurity and Zabbix; real-time intrusion detection and blocking with Telegram bot alerting (Python); security testing with Acunetix and Burp Suite</li>
           </ul>
         </div>
 
         <div class="proj">
-          <div class="t">SecureBase — Tích hợp Tools &amp; AI vào luồng DevSecOps</div>
-          <div class="m">Cá nhân · 2025 – 2026 · github.com/fee-191/security-template</div>
+          <div class="t">SecureBase — tooling &amp; AI in the DevSecOps flow</div>
+          <div class="m">Personal · 2025 – 2026 · github.com/fee-191/security-template</div>
           <ul class="pts" style="margin-top:1mm">
-            <li>Framework DevSecOps tổng quát — tích hợp công cụ bảo mật và AI PR/MR review vào pipeline CI</li>
+            <li>A general-purpose DevSecOps framework — integrating security tooling and AI-assisted PR/MR review into the CI pipeline</li>
           </ul>
         </div>
 
         <div class="proj">
-          <div class="t">CEX Incident Research — Phân tích sự cố bảo mật</div>
-          <div class="m">Cá nhân · 2025 – 2026 · github.com/fee-191/cex-incident-research</div>
+          <div class="t">CEX Incident Research — security incident analysis</div>
+          <div class="m">Personal · 2025 – 2026 · github.com/fee-191/cex-incident-research</div>
           <ul class="pts" style="margin-top:1mm">
-            <li>Phân tích 31 vụ hack CEX (2014–2025, ~$6.8B) — attack pattern, kill chain, MITRE ATT&amp;CK (Upbit, Bybit, Mixin)</li>
+            <li>Analysis of 31 exchange breaches (2014–2025, ~$6.8B) — attack patterns, kill chain, MITRE ATT&amp;CK mapping (Upbit, Bybit, Mixin)</li>
           </ul>
         </div>
       </div>
-
     </main>
   </div>
 </div>

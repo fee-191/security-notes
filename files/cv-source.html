@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>CV — Lê Dương Phi</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --ink:#1c2b33; --muted:#5b6f7a; --teal:#0f6e60; --rule:#d9e0e3;
+    --side-bg:#f2f5f6; --label:#0f6e60;
+  }
+  body{
+    font-family:"DejaVu Sans","Helvetica Neue",Arial,sans-serif;
+    color:var(--ink); font-size:9pt; line-height:1.45;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .page{ width:210mm; height:297mm; overflow:hidden; position:relative; page-break-after:always;
+    background:linear-gradient(to right,var(--side-bg) 0,var(--side-bg) 52mm,#fff 52mm); }
+  .page:last-child{ page-break-after:auto; }
+
+  /* ---------- header ---------- */
+  .head{ padding:16mm 14mm 6mm; }
+  .head h1{ font-size:25pt; font-weight:400; letter-spacing:.4px; line-height:1.05; }
+  .head .role{ color:var(--teal); font-size:8pt; letter-spacing:2.4px; margin-top:3mm; font-weight:700; }
+  .contact{ margin-top:6mm; display:flex; flex-wrap:wrap; gap:2.5mm 7mm; font-size:8.4pt; }
+  .contact .item{ display:flex; align-items:baseline; gap:2mm; }
+  .contact .k{ color:var(--label); font-size:6.6pt; font-weight:700; letter-spacing:.8px; font-family:"DejaVu Sans Mono",monospace; }
+  .contact .v{ color:#3d5560; }
+  .rule{ height:1px; background:var(--rule); margin:0 14mm; }
+
+  /* ---------- body grid ---------- */
+  .cols{ display:flex; align-items:flex-start; }
+  .side{ width:52mm; flex:0 0 52mm; padding:8mm 6mm 10mm 14mm; }
+  .main{ flex:1; min-width:0; padding:8mm 14mm 10mm 8mm; }
+  .page2 .side{ padding-top:16mm; }
+  .page2 .main{ padding-top:16mm; }
+
+  /* ---------- sidebar ---------- */
+  .sec-label{ color:var(--label); font-size:6.8pt; font-weight:700; letter-spacing:1.4px;
+    font-family:"DejaVu Sans Mono",monospace; padding-bottom:1.4mm; border-bottom:1px solid #c9d5d8; margin-bottom:2.6mm; }
+  .side .grp{ margin-bottom:5mm; }
+  .side .sub{ color:var(--label); font-size:6.2pt; font-weight:700; letter-spacing:.7px;
+    font-family:"DejaVu Sans Mono",monospace; margin-top:2.6mm; }
+  .side .txt{ font-size:8.3pt; line-height:1.5; color:#2c3f48; }
+  .side .item{ margin-bottom:2.6mm; }
+  .side .item .t{ font-size:8.4pt; }
+  .side .item .s{ font-size:7.2pt; color:var(--muted); }
+  .side ul{ list-style:none; }
+  .side li{ font-size:8.3pt; margin-bottom:1.6mm; padding-left:3.2mm; position:relative; }
+  .side li::before{ content:"•"; position:absolute; left:0; color:var(--teal); }
+
+  /* ---------- main ---------- */
+  .block{ margin-bottom:4.5mm; }
+  .job{ margin-bottom:4mm; }
+  .job .top{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; }
+  .job .title{ font-size:11pt; font-weight:700; }
+  .job .date{ font-size:8pt; color:var(--muted); white-space:nowrap; font-family:"DejaVu Sans Mono",monospace; }
+  .job .org{ color:var(--teal); font-size:9pt; font-weight:700; margin-top:.6mm; }
+  .job .team{ font-size:8.2pt; color:var(--muted); font-style:italic; }
+  .cat{ color:var(--label); font-size:6.6pt; font-weight:700; letter-spacing:1.1px;
+    font-family:"DejaVu Sans Mono",monospace; margin:2.6mm 0 1.4mm; }
+  ul.pts{ list-style:none; }
+  ul.pts li{ font-size:8.6pt; line-height:1.42; margin-bottom:1.2mm; padding-left:3.6mm; position:relative; }
+  ul.pts li::before{ content:"–"; position:absolute; left:0; color:var(--teal); font-weight:700; }
+  .profile{ font-size:8.8pt; line-height:1.55; text-align:justify; }
+  .proj{ margin-bottom:2.6mm; }
+  .proj .t{ font-size:9.4pt; font-weight:700; }
+  .proj .m{ font-size:7.8pt; color:var(--muted); }
+  .edu .t{ font-size:10pt; font-weight:700; }
+  .edu .m{ font-size:8.3pt; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="page">
+  <div class="head">
+    <h1>Lê Dương Phi</h1>
+    <div class="role">SECURITY ENGINEER</div>
+    <div class="contact">
+      <span class="item"><span class="k">GITHUB</span><span class="v">github.com/fee-191</span></span>
+      <span class="item"><span class="k">LINKEDIN</span><span class="v">linkedin.com/in/leduongphi191</span></span>
+      <span class="item"><span class="k">EMAIL</span><span class="v">phildhe160155@gmail.com</span></span>
+      <span class="item"><span class="k">LOCATION</span><span class="v">Hà Nội</span></span>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <aside class="side">
+      <div class="grp">
+        <div class="sec-label">KỸ NĂNG</div>
+        <div class="sub">OPERATING SYSTEMS</div>
+        <div class="txt">Linux · Windows · macOS</div>
+        <div class="sub">NETWORKING</div>
+        <div class="txt">TCP/IP · OSI model</div>
+        <div class="sub">SIEM &amp; OBSERVABILITY</div>
+        <div class="txt">Wazuh · ELK · Prometheus · Grafana · Zabbix</div>
+        <div class="sub">SECURITY TOOLS</div>
+        <div class="txt">Snort · ModSecurity · pfSense · Burp Suite · Acunetix</div>
+        <div class="sub">INFRASTRUCTURE &amp; CLOUD</div>
+        <div class="txt">Proxmox · VMware · Docker · Kubernetes · AWS · OCI · GCP</div>
+        <div class="sub">SCRIPTING</div>
+        <div class="txt">Bash · Python</div>
+        <div class="sub">DEVSECOPS &amp; CI/CD</div>
+        <div class="txt">Semgrep · Trivy · gitleaks · GitLab CI · GitHub Actions · Jenkins · Argo CD</div>
+        <div class="sub">FRAMEWORKS &amp; COMPLIANCE</div>
+        <div class="txt">MITRE ATT&amp;CK · OWASP Top 10 · NIST · ISO 27001 · Luật BVDLCN 91/2025 · ATTT Cấp độ 4</div>
+      </div>
+
+      <div class="grp">
+        <div class="sec-label">CHỨNG CHỈ</div>
+        <div class="item"><div class="t">CCNAv7 — Introduction to Networks</div><div class="s">Cisco NetAcad</div></div>
+        <div class="item"><div class="t">Security Operations &amp; Application Security</div><div class="s">Coursera · (ISC)² curriculum</div></div>
+      </div>
+
+      <div class="grp">
+        <div class="sec-label">NGOẠI NGỮ</div>
+        <div class="txt">Tiếng Anh — đọc hiểu tài liệu kỹ thuật &amp; tài liệu hãng</div>
+      </div>
+
+      <div class="grp">
+        <div class="sec-label">DANH HIỆU</div>
+        <ul>
+          <li>Sinh viên Giỏi học kỳ Fall 2024</li>
+          <li>Đồ án tốt nghiệp được hội đồng vinh danh trên trang chính thức của trường</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="block">
+        <div class="sec-label">HỒ SƠ</div>
+        <p class="profile">Security Engineer, tốt nghiệp ngành ATTT (ĐH FPT Hà Nội), hơn 1 năm kinh nghiệm ở cả hai hướng: xây dựng bảo mật cho sản phẩm tài chính từ giai đoạn đầu, và vận hành phòng thủ cho hạ tầng đa đám mây. Kinh nghiệm trải từ Application Security / DevSecOps, giám sát &amp; điều tra sự cố (SOC), tới hạ tầng và cloud, cũng như đưa AI vào pipeline DevSecOps và tự động hóa điều tra sự cố. Định hướng phát triển thành Security Engineer chuyên sâu về bảo mật hệ thống và ứng dụng, ứng dụng tự động hóa và AI để nâng cao năng lực phòng thủ.</p>
+      </div>
+
+      <div class="block">
+        <div class="sec-label">KINH NGHIỆM</div>
+
+        <div class="job">
+          <div class="top">
+            <span class="title">DevSecOps Engineer</span>
+            <span class="date">07/2026 – nay</span>
+          </div>
+          <div class="org">Just Engineer</div>
+          <div class="team">Phụ trách bảo mật · hạ tầng AWS (prod) + OCI (dev &amp; một phần prod)</div>
+
+          <div class="cat">GIÁM SÁT, PHÁT HIỆN &amp; PHẢN ỨNG</div>
+          <ul class="pts">
+            <li>Triển khai và vận hành hệ giám sát hợp nhất cho toàn bộ fleet máy chủ: Wazuh (SIEM) + Prometheus/node_exporter + Grafana — cảnh báo an ninh và metric hiệu năng trên cùng một dashboard, gồm dashboard SOC tự thiết kế</li>
+            <li>Xây dựng luồng phản ứng tự động trên Shuffle (SOAR): lọc cảnh báo theo mức độ, làm giàu IP nguồn qua hai nguồn threat intelligence rồi thông báo kèm ngữ cảnh — giảm rõ rệt cảnh báo nhiễu</li>
+            <li>Điều tra chiến dịch quét tự động nhắm vào dịch vụ web (path traversal, double-encoding, dò SSH key và tệp cấu hình) bằng truy vấn OpenSearch trên dữ liệu SIEM; kết luận có bằng chứng và chỉ ra khoảng trống phòng thủ ở tầng proxy</li>
+            <li>Tinh chỉnh luật phát hiện và whitelist để giảm nhiễu; bổ sung cảnh báo theo triệu chứng tài nguyên (CPU cao bất thường — dấu hiệu sớm của cryptominer)</li>
+          </ul>
+
+          <div class="cat">HARDENING HẠ TẦNG · SECURE CODING · VẬN HÀNH</div>
+          <ul class="pts">
+            <li>Chuẩn hóa cấu hình phòng vệ nginx cho các máy web-facing (rate limiting, chặn truy cập tệp nhạy cảm, ngắt request Host lạ, siết giới hạn body); viết runbook chẩn đoán máy chủ và tự động hóa các sự cố vận hành lặp lại</li>
+            <li>Xây dựng giáo trình và đứng lớp khóa Secure Coding nội bộ (8 buổi) cho đội phát triển — OWASP Web Top 10 (2025) &amp; Mobile Top 10, threat modeling (STRIDE), abuse case trên chính codebase đang chạy</li>
+            <li>Bao phủ các chủ đề sát sản phẩm: IDOR/BOLA, injection (gồm prompt injection cho tính năng LLM), race condition trong giao dịch ví, quản lý secrets và IAM least privilege trên đa đám mây</li>
+            <li>Báo cáo an ninh định kỳ song ngữ cho các bên liên quan: tình hình phát hiện, công việc đã xử lý, rủi ro tồn đọng và kế hoạch tiếp theo</li>
+          </ul>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="page page2">
+  <div class="cols">
+    <aside class="side">
+      <div class="grp">
+        <div class="sec-label">HỌC VẤN</div>
+        <div class="item">
+          <div class="t" style="font-weight:700">Chuyên ngành An toàn thông tin</div>
+          <div class="s">Đại học FPT Hà Nội · 2021 – 2025</div>
+          <div class="s">GPA 3.0 / 4.0</div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="sec-label">NGƯỜI THAM CHIẾU</div>
+        <div class="txt">Sẵn sàng cung cấp khi được yêu cầu.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="job">
+          <div class="top">
+            <span class="title">Security Engineer (Blue Team)</span>
+            <span class="date">09/2025 – 06/2026</span>
+          </div>
+          <div class="org">Dự án Sàn giao dịch tài sản số (thuộc một ngân hàng)</div>
+          <div class="team">Internal Security Team</div>
+
+          <div class="cat">APPLICATION SECURITY &amp; DEVSECOPS</div>
+          <ul class="pts">
+            <li>Tích hợp AI vào luồng DevSecOps: xây dựng pipeline bảo mật (pre-commit → CI/CD → AI review) và secure coding template (dạng submodule) cho các project của team</li>
+            <li>Pipeline CI hai tầng — chặn CRITICAL tại MR, cảnh báo HIGH (Semgrep, secret &amp; dependency scan); AI bot review diff mỗi MR, gợi ý findings cho người duyệt</li>
+            <li>Thiết kế &amp; thuyết trình Secure Coding workshop nội bộ (~10 người, gồm CTO); viết tài liệu Secure Coding, Trust Boundary theo Zero Trust (NIST SP 800-207), IAM guide — tích hợp ISO 27001 &amp; ATTT Cấp độ 4</li>
+          </ul>
+
+          <div class="cat">GIÁM SÁT &amp; ĐIỀU TRA SỰ CỐ (SOC)</div>
+          <ul class="pts">
+            <li>Dựng hạ tầng lab SOC on-premise (cấu hình mạng, cài &amp; cấu hình Wazuh, thu thập log tập trung); tham gia nghiên cứu xây dựng SOC production của sàn trên AWS</li>
+            <li>Nghiên cứu &amp; xây dựng Incident Response AI Agent (POC) — nhận một cảnh báo rồi tự truy vấn SIEM, enrich IOC, tạo Jira ticket &amp; Slack alert kèm tóm tắt; mọi bước containment do người duyệt (validate 3 kịch bản: brute-force, AWS anomaly, data exfil)</li>
+          </ul>
+
+          <div class="cat">NGHIÊN CỨU &amp; THREAT INTELLIGENCE</div>
+          <ul class="pts">
+            <li>Nghiên cứu &amp; phân tích các sự cố hack sàn giao dịch thực tế (attack pattern, kill chain, MITRE ATT&amp;CK), cung cấp input cho team xây dựng threat model &amp; rule phát hiện</li>
+            <li>Tham gia nghiên cứu &amp; thiết kế kiến trúc Blue Team AI Defense (multi-agent)</li>
+          </ul>
+        </div>
+
+      <div class="job">
+        <div class="top">
+          <span class="title">Thực tập sinh — SOC Tier 1</span>
+          <span class="date">06/2025 – 07/2025</span>
+        </div>
+        <div class="org">NetNam</div>
+        <ul class="pts" style="margin-top:2mm">
+          <li>Nghiên cứu &amp; thực hành kỹ năng SOC Tier 1 qua lab TryHackMe — phân tích log, triage, quy trình điều tra</li>
+        </ul>
+      </div>
+
+      <div class="job">
+        <div class="top">
+          <span class="title">Thực tập sinh — IT Operations &amp; System Admin</span>
+          <span class="date">08/2023 – 12/2023</span>
+        </div>
+        <div class="org">Công ty CP Đầu tư TM &amp; Phát triển Công nghệ FSI</div>
+        <ul class="pts" style="margin-top:2mm">
+          <li>Hỗ trợ vận hành server/VPS (Ubuntu), Docker &amp; Kubernetes; xử lý sự cố hạ tầng cơ bản, hỗ trợ DevOps pipeline</li>
+        </ul>
+      </div>
+
+      <div class="block" style="margin-top:8mm">
+        <div class="sec-label">DỰ ÁN TIÊU BIỂU</div>
+
+        <div class="proj">
+          <div class="t">Sổ tay An toàn thông tin — tài liệu kỹ thuật song ngữ</div>
+          <div class="m">Cá nhân · 2025 – nay · 17 chương, Việt–Anh · feeiuna.io.vn · github.com/fee-191/security-notes</div>
+          <ul class="pts" style="margin-top:1mm">
+            <li>Hệ thống hóa kiến thức từ nền tảng (mạng, Linux, mật mã) tới vận hành thật (SIEM, SOC/IR, cloud, DevSecOps, GRC) — mỗi chủ đề kèm cơ chế bên trong, lệnh và cấu hình chạy được</li>
+          </ul>
+        </div>
+
+        <div class="proj">
+          <div class="t">LynxGuard — Mini-SOC cho ứng dụng web (SIEM · IDS · WAF)</div>
+          <div class="m">Đồ án tốt nghiệp · ĐH FPT · 2024 · nhóm 4 người · vai trò: infrastructure &amp; deployment · github.com/fee-191/lynxguard</div>
+          <ul class="pts" style="margin-top:1mm">
+            <li>Xây dựng và triển khai platform SOC cho web app trên VMware + mạng ảo, pfSense — tích hợp Wazuh, Snort, ModSecurity, Zabbix; phát hiện &amp; ngăn chặn xâm nhập real-time, cảnh báo qua Telegram bot (Python); kiểm thử với Acunetix + Burp Suite</li>
+          </ul>
+        </div>
+
+        <div class="proj">
+          <div class="t">SecureBase — Tích hợp Tools &amp; AI vào luồng DevSecOps</div>
+          <div class="m">Cá nhân · 2025 – 2026 · github.com/fee-191/security-template</div>
+          <ul class="pts" style="margin-top:1mm">
+            <li>Framework DevSecOps tổng quát — tích hợp công cụ bảo mật và AI PR/MR review vào pipeline CI</li>
+          </ul>
+        </div>
+
+        <div class="proj">
+          <div class="t">CEX Incident Research — Phân tích sự cố bảo mật</div>
+          <div class="m">Cá nhân · 2025 – 2026 · github.com/fee-191/cex-incident-research</div>
+          <ul class="pts" style="margin-top:1mm">
+            <li>Phân tích 31 vụ hack CEX (2014–2025, ~$6.8B) — attack pattern, kill chain, MITRE ATT&amp;CK (Upbit, Bybit, Mixin)</li>
+          </ul>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

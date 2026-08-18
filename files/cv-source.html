@@ -144,22 +144,20 @@
             <span class="date">07/2026 – nay</span>
           </div>
           <div class="org">Just Engineer</div>
-          <div class="team">Phụ trách bảo mật · hạ tầng AWS (prod) + OCI (dev &amp; một phần prod)</div>
+          <div class="team">Bảo mật toàn trình cho sản phẩm và hạ tầng · trọng tâm DevSecOps</div>
 
-          <div class="cat">GIÁM SÁT, PHÁT HIỆN &amp; PHẢN ỨNG</div>
+          <div class="cat">DEVSECOPS &amp; SECURE SDLC</div>
           <ul class="pts">
-            <li>Triển khai và vận hành hệ giám sát hợp nhất cho toàn bộ fleet máy chủ: Wazuh (SIEM) + Prometheus/node_exporter + Grafana — cảnh báo an ninh và metric hiệu năng trên cùng một dashboard, gồm dashboard SOC tự thiết kế</li>
-            <li>Xây dựng luồng phản ứng tự động trên Shuffle (SOAR): lọc cảnh báo theo mức độ, làm giàu IP nguồn qua hai nguồn threat intelligence rồi thông báo kèm ngữ cảnh — giảm rõ rệt cảnh báo nhiễu</li>
-            <li>Điều tra chiến dịch quét tự động nhắm vào dịch vụ web (path traversal, double-encoding, dò SSH key và tệp cấu hình) bằng truy vấn OpenSearch trên dữ liệu SIEM; kết luận có bằng chứng và chỉ ra khoảng trống phòng thủ ở tầng proxy</li>
-            <li>Tinh chỉnh luật phát hiện và whitelist để giảm nhiễu; bổ sung cảnh báo theo triệu chứng tài nguyên (CPU cao bất thường — dấu hiệu sớm của cryptominer)</li>
+            <li>Đưa kiểm soát bảo mật vào vòng đời phát triển theo hướng shift-left: SAST, quét dependency, secret scanning và kiểm tra cấu hình hạ tầng chạy tự động trong CI/CD, với security gate phân tầng theo mức độ nghiêm trọng</li>
+            <li>Xây dựng chuẩn secure coding và checklist review cho các luồng nhạy cảm (xác thực, phân quyền, giao dịch, dữ liệu cá nhân), kèm quy trình xử lý ngoại lệ có kiểm soát</li>
+            <li>Thiết kế và trực tiếp đứng lớp đào tạo secure coding nội bộ cho đội phát triển — OWASP Top 10, threat modeling (STRIDE), tư duy abuse case</li>
           </ul>
 
-          <div class="cat">HARDENING HẠ TẦNG · SECURE CODING · VẬN HÀNH</div>
+          <div class="cat">HẠ TẦNG, CLOUD &amp; VẬN HÀNH AN NINH</div>
           <ul class="pts">
-            <li>Chuẩn hóa cấu hình phòng vệ nginx cho các máy web-facing (rate limiting, chặn truy cập tệp nhạy cảm, ngắt request Host lạ, siết giới hạn body); viết runbook chẩn đoán máy chủ và tự động hóa các sự cố vận hành lặp lại</li>
-            <li>Xây dựng giáo trình và đứng lớp khóa Secure Coding nội bộ (8 buổi) cho đội phát triển — OWASP Web Top 10 (2025) &amp; Mobile Top 10, threat modeling (STRIDE), abuse case trên chính codebase đang chạy</li>
-            <li>Bao phủ các chủ đề sát sản phẩm: IDOR/BOLA, injection (gồm prompt injection cho tính năng LLM), race condition trong giao dịch ví, quản lý secrets và IAM least privilege trên đa đám mây</li>
-            <li>Báo cáo an ninh định kỳ song ngữ cho các bên liên quan: tình hình phát hiện, công việc đã xử lý, rủi ro tồn đọng và kế hoạch tiếp theo</li>
+            <li>Hardening hệ thống và dịch vụ web-facing; rà soát cấu hình cloud theo nguyên tắc least privilege, quản lý secrets tập trung, tách bạch môi trường</li>
+            <li>Vận hành hệ giám sát an ninh và hiệu năng (SIEM kết hợp metric hạ tầng); xây dựng luật phát hiện, giảm cảnh báo nhiễu, chuẩn hóa quy trình điều tra</li>
+            <li>Tự động hóa phân loại và làm giàu cảnh báo (SOAR) để rút ngắn thời gian phản ứng; viết runbook vận hành và báo cáo an ninh định kỳ cho các bên liên quan</li>
           </ul>
         </div>
 

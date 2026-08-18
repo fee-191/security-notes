@@ -981,7 +981,7 @@ Từ dashboard giám sát, một IP nổi bật áp đảo bảng top nguồn c�
 45.148.10.80 - - [20/Jul/2026:16:50:30 +0000] "GET /....//....//....//....//home/admin/.ssh/id_rsa?_=mknzjth2 HTTP/1.1" 301 178 "https://www.bing.com/search?q=3x4et6" "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) ... Safari/605.1.15"
 ```
 
-Đặc điểm đọc ra từ log: biến thể `....//` và double-encoding `%252e%252e` để né bộ lọc `../` thông thường (đúng cái bẫy ở 11.6.4); nhắm `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` lần lượt cho mọi user phổ biến (root/admin/ubuntu/deploy/www-data...); referer giả Bing + user-agent xoay liên tục để né phát hiện; nhịp đều ~1 request/5 giây suốt 2 giờ — chắc chắn là máy, không phải người. Kết quả: toàn 301/400/404, không request nào trả 200 — **chưa thủng**, nhưng toàn bộ 536 request đều được nhận và một phần chạm app (cấu hình đúng như anti-pattern 11.6.2).
+Đặc điểm đọc ra từ log: biến thể `....//` và double-encoding `%252e%252e` để né bộ lọc `../` thông thường (đúng cái bẫy ở 11.6.4); nhắm `.ssh/id_rsa`, `.ssh/id_ed25519`, `.env`, `.mysql_history` lần lượt cho mọi user phổ biến (root/admin/ubuntu/deploy/www-data...); referer giả Bing + user-agent xoay liên tục để né phát hiện; nhịp đều ~1 request/5 giây suốt 2 giờ — chắc chắn là máy, không phải người. Kết quả: toàn 301/400/404, không request nào trả 200 — **chưa thủng**. Nhưng nếu server ở cấu hình mặc định như anti-pattern 11.6.2 thì toàn bộ 536 request vẫn được nhận và một phần chạm tới app — đó mới là điều đáng sửa, không phải chuyện chặn riêng IP này.
 
 Mở rộng truy vấn ra cả fleet thì bức tranh đổi hẳn: **hàng chục IP thuộc nhiều subnet** (`185.177.72.x`, `45.148.10.x`, `195.178.110.x`...) quét tất cả các máy web-facing, IP xoay liên tục. Bài học rút ra:
 
@@ -1068,7 +1068,7 @@ Nguyên tắc vận hành cốt lõi:
 
 > *Khu vực ghi chú cá nhân: những điểm từng hiểu sai, phần còn đang tìm hiểu, hoặc kinh nghiệm rút ra khi thực hành — cập nhật dần.*
 
-- Phần 11.6 mình viết lại sau một đợt audit cấu hình nginx trên cả fleet máy web ở hệ thống mình vận hành. Mẹo audit nhanh mà mình thấy đáng giá: chạy trên từng máy `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` — một con số duy nhất cho biết máy đó có bao nhiêu dòng cấu hình phòng vệ. Kết quả của mình: 5/6 máy trả về **0**. Con số 0 đó thuyết phục hơn mọi bài thuyết trình về defense-in-depth.
+- Phần 11.6 mình viết lại sau một đợt rà cấu hình nginx trên nhiều máy web. Mẹo rà nhanh mà mình thấy đáng giá: chạy trên từng máy `sudo nginx -T 2>/dev/null | grep -cE "limit_req|limit_conn|default_server"` — một con số duy nhất cho biết máy đó có bao nhiêu dòng cấu hình phòng vệ. Một số `0` trả về nói được nhiều hơn mọi bài thuyết trình về defense-in-depth, và nó cũng cho biết nên bắt đầu từ máy nào.
 - Máy duy nhất có sẵn một phần cấu hình tốt được mình lấy làm **mẫu chuẩn hoá** cho các máy còn lại — đỡ viết từ đầu, và "máy X đang chạy ổn định với config này" là lập luận dễ được DevOps chấp nhận hơn một config mới tinh mình tự nghĩ ra.
 - Từng hiểu sai: thấy scanner ăn toàn 301/400/404 thì yên tâm "app chặn được rồi". Sai ở hai chỗ — trả lỗi vẫn tốn đủ TLS + parse + một phần chạm app; và quan trọng hơn, nó nghĩa là cả hệ thống đang dựa vào đúng một lớp là app tự bảo vệ, không có gì phía trước.
 - Cũng từng tin chặn regex `../` ở nginx là chống được traversal — sai nốt, vì nginx chuẩn hoá URI trước khi match location (11.6.4). May mà hiểu ra trước khi kịp tuyên bố "đã chặn traversal" ở đâu đó.

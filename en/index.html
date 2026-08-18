@@ -159,40 +159,38 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   </section>
 
   <section id="work">
-    <h2 class="sec">Work</h2>
-    <p class="sec-note">Internal details removed.</p>
+    <h2 class="sec">Scope of work</h2>
+    <p class="sec-note">Full-stack security, weighted toward DevSecOps.</p>
     <div class="grid">
       <div class="card">
-        <h4>Fleet-wide monitoring</h4>
-        <p class="meta">Wazuh · Prometheus · Grafana</p>
-        <p>Security alerts and performance metrics unified into one dashboard. The Top source IPs panel surfaced an automated scanning campaign.</p>
+        <h4>DevSecOps &amp; secure SDLC</h4>
+        <p class="meta">shift-left · security gates · secure coding</p>
+        <p>Embedding security controls into the development lifecycle: SAST, dependency scanning, secret scanning and infrastructure config checks running automatically in CI/CD, with gates tiered by severity.</p>
       </div>
       <div class="card">
-        <h4>Scanning campaign investigation</h4>
-        <p class="meta">OpenSearch DSL · access logs</p>
-        <p>One IP, 536 requests in two hours, probing for SSH keys and <code>.env</code> files via double-encoded paths. Local logs had rotated; evidence recovered from the SIEM.</p>
-        <p class="res">No successful exploitation. Exposed that 5 of 6 hosts had no defenses at the proxy layer.</p>
+        <h4>Monitoring &amp; detection</h4>
+        <p class="meta">SIEM · infrastructure metrics · detection engineering</p>
+        <p>Operating a unified view of security alerts and performance metrics, writing detection rules, cutting alert noise and standardising the investigation workflow.</p>
       </div>
       <div class="card">
-        <h4>nginx hardening</h4>
-        <p class="meta">rate limiting · default_server · sensitive path blocking</p>
-        <p>Standardised configuration for web-facing hosts, validated on one machine before rollout. Blocking traversal properly still requires a WAF, since nginx normalizes the URI before location matching.</p>
+        <h4>Response &amp; automation</h4>
+        <p class="meta">SOAR · threat intel · runbooks</p>
+        <p>Automating alert triage and enrichment to shorten response time; writing operational runbooks and incident handling procedures.</p>
       </div>
       <div class="card">
-        <h4>Alert response automation</h4>
-        <p class="meta">Shuffle SOAR · threat intel</p>
-        <p>Alerts are enriched before reaching an operator: filter public IPs, check two intel sources, attach the result to the notification.</p>
-        <p class="res">Separates scanners with a track record from legitimate traffic logged in error.</p>
+        <h4>Infrastructure &amp; cloud hardening</h4>
+        <p class="meta">web-facing services · IAM · secrets</p>
+        <p>Tightening configuration of internet-facing systems; reviewing cloud permissions against least privilege, centralising secrets management, separating environments.</p>
       </div>
       <div class="card">
-        <h4>Secure coding training</h4>
-        <p class="meta">8 sessions · OWASP Web + Mobile</p>
-        <p>Built the curriculum and taught it to the development team, working from abuse cases in the real codebase: IDOR, injection, prompt injection, transaction race conditions.</p>
+        <h4>Training &amp; documentation</h4>
+        <p class="meta">secure coding · threat modeling</p>
+        <p>Building curricula and teaching development teams: OWASP Top 10, threat modeling (STRIDE), thinking in abuse cases. Writing internal standards and documentation.</p>
       </div>
       <div class="card">
-        <h4>Operational runbooks</h4>
-        <p class="meta">host diagnostics · periodic reporting</p>
-        <p>A diagnostic path from dashboard down to the specific process on the host. Later folded into the Linux chapter of the handbook.</p>
+        <h4>Technical toolkit</h4>
+        <p class="meta">what I work with regularly</p>
+        <p>Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker/K8s · AWS · OCI · GCP · Python/Bash.</p>
       </div>
     </div>
   </section>

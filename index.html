@@ -174,40 +174,38 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   </section>
 
   <section id="thucchien">
-    <h2 class="sec">Công việc</h2>
-    <p class="sec-note">Đã lược chi tiết nội bộ.</p>
+    <h2 class="sec">Phạm vi công việc</h2>
+    <p class="sec-note">Bảo mật toàn trình, trọng tâm DevSecOps.</p>
     <div class="grid">
       <div class="card">
-        <h4>Giám sát fleet máy chủ</h4>
-        <p class="meta">Wazuh · Prometheus · Grafana</p>
-        <p>Hợp nhất cảnh báo an ninh và metric hiệu năng trên một dashboard. Panel Top source IPs phát hiện chiến dịch quét tự động.</p>
+        <h4>DevSecOps &amp; Secure SDLC</h4>
+        <p class="meta">shift-left · security gate · secure coding</p>
+        <p>Đưa kiểm soát bảo mật vào vòng đời phát triển: SAST, quét dependency, secret scanning và kiểm tra cấu hình hạ tầng chạy tự động trong CI/CD, gate phân tầng theo mức độ nghiêm trọng.</p>
       </div>
       <div class="card">
-        <h4>Điều tra chiến dịch quét</h4>
-        <p class="meta">OpenSearch DSL · access log</p>
-        <p>Một IP, 536 request trong hai giờ, dò SSH key và <code>.env</code> bằng double-encoding. Log trên máy đã xoay; bằng chứng truy hồi từ SIEM.</p>
-        <p class="res">Không có dấu hiệu khai thác thành công. Phát hiện 5/6 máy thiếu lớp phòng vệ tại proxy.</p>
+        <h4>Giám sát &amp; phát hiện</h4>
+        <p class="meta">SIEM · metric hạ tầng · detection engineering</p>
+        <p>Vận hành hệ giám sát hợp nhất cảnh báo an ninh và hiệu năng, xây dựng luật phát hiện, giảm cảnh báo nhiễu và chuẩn hóa quy trình điều tra.</p>
       </div>
       <div class="card">
-        <h4>Hardening nginx</h4>
-        <p class="meta">rate limit · default_server · chặn path nhạy cảm</p>
-        <p>Chuẩn hoá cấu hình cho các máy web-facing, kiểm chứng trên một máy trước khi nhân rộng. Chặn traversal triệt để vẫn cần WAF do nginx chuẩn hoá URI trước khi match location.</p>
+        <h4>Phản ứng &amp; tự động hóa</h4>
+        <p class="meta">SOAR · threat intel · runbook</p>
+        <p>Tự động hóa khâu phân loại và làm giàu cảnh báo để rút ngắn thời gian phản ứng; viết runbook vận hành và quy trình xử lý sự cố.</p>
       </div>
       <div class="card">
-        <h4>Tự động hoá xử lý cảnh báo</h4>
-        <p class="meta">Shuffle SOAR · threat intel</p>
-        <p>Cảnh báo được làm giàu trước khi tới người trực: lọc IP public, đối chiếu hai nguồn tình báo, gắn kết quả vào thông báo.</p>
-        <p class="res">Phân biệt nguồn quét có tiền sử với truy cập hợp lệ bị ghi nhận nhầm.</p>
+        <h4>Hardening hạ tầng &amp; cloud</h4>
+        <p class="meta">web-facing · IAM · secrets</p>
+        <p>Siết cấu hình hệ thống và dịch vụ phơi ra Internet; rà soát quyền trên cloud theo least privilege, quản lý secrets tập trung, tách bạch môi trường.</p>
       </div>
       <div class="card">
-        <h4>Đào tạo secure coding</h4>
-        <p class="meta">8 buổi · OWASP Web + Mobile</p>
-        <p>Xây giáo trình và đứng lớp cho đội phát triển, dựa trên abuse case từ codebase thật: IDOR, injection, prompt injection, race condition giao dịch.</p>
+        <h4>Đào tạo &amp; tài liệu</h4>
+        <p class="meta">secure coding · threat modeling</p>
+        <p>Xây giáo trình và đứng lớp cho đội phát triển: OWASP Top 10, threat modeling (STRIDE), tư duy abuse case. Viết tài liệu và chuẩn nội bộ.</p>
       </div>
       <div class="card">
-        <h4>Runbook vận hành</h4>
-        <p class="meta">chẩn đoán máy chủ · báo cáo định kỳ</p>
-        <p>Quy trình chẩn đoán từ dashboard xuống tiến trình cụ thể trên máy. Về sau được đưa vào chương Linux của sổ tay.</p>
+        <h4>Nền tảng kỹ thuật</h4>
+        <p class="meta">công cụ dùng thường xuyên</p>
+        <p>Wazuh · Prometheus · Grafana · ELK · Semgrep · Trivy · gitleaks · OWASP ZAP · nginx · iptables/nftables · pfSense · Docker/K8s · AWS · OCI · GCP · Python/Bash.</p>
       </div>
     </div>
   </section>

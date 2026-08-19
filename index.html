@@ -90,6 +90,17 @@ h2.sec{font-family:var(--serif);font-size:22px;margin:0 0 20px;color:var(--ink)}
 .scope dd{margin:2px 0 0;font-size:14px;color:var(--muted)}
 .tools{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);line-height:1.8}
 .tools span{color:var(--accent2);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-right:8px}
+.projects{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.projects{grid-template-columns:1fr}}
+.proj{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;color:var(--ink);text-decoration:none;
+  transition:border-color .2s,transform .2s}
+.proj:hover{border-color:var(--accent);transform:translateY(-3px);text-decoration:none}
+.proj .pt{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15.5px}
+.proj .pt .arrow{margin-left:auto;color:var(--muted);font-size:14px}
+.proj:hover .pt .arrow{color:var(--accent)}
+.proj .pd{font-size:13.5px;color:var(--muted);margin:7px 0 10px;line-height:1.5}
+.proj .pmeta{font-family:var(--mono,"SF Mono",monospace);font-size:11px;color:var(--accent2);letter-spacing:.02em}
 
 .links{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
 .links a{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 18px;color:var(--ink);font-size:14.5px}
@@ -261,6 +272,32 @@ html.js .reveal.on{opacity:1;transform:none}
       </div>
     </dl>
     <p class="tools"><span>Công cụ</span> Wazuh · Shuffle · Prometheus · Grafana · Zabbix · ELK · Acunetix · pfSense · Docker · Kubernetes · AWS · OCI · GCP · Python · Bash</p>
+  </section>
+
+  <section class="reveal" id="duan">
+    <h2 class="sec">Dự án</h2>
+    <div class="projects">
+      <a class="proj" href="https://github.com/fee-191/security-notes" target="_blank" rel="noopener">
+        <span class="pt">Sổ tay An toàn thông tin<span class="arrow">↗</span></span>
+        <span class="pd">17 chương song ngữ, từ nền tảng tới vận hành thật — chính là trang này.</span>
+        <span class="pmeta">github.com/fee-191/security-notes</span>
+      </a>
+      <a class="proj" href="https://github.com/fee-191/lynxguard" target="_blank" rel="noopener">
+        <span class="pt">LynxGuard<span class="arrow">↗</span></span>
+        <span class="pd">Mini-SOC cho ứng dụng web: Wazuh + Snort + ModSecurity trên pfSense, phát hiện &amp; chặn xâm nhập real-time.</span>
+        <span class="pmeta">SIEM · IDS · WAF · đồ án tốt nghiệp</span>
+      </a>
+      <a class="proj" href="https://github.com/fee-191/security-template" target="_blank" rel="noopener">
+        <span class="pt">SecureBase<span class="arrow">↗</span></span>
+        <span class="pd">Template DevSecOps: tích hợp SAST, secret scan, dependency scan và AI review vào pipeline CI.</span>
+        <span class="pmeta">DevSecOps · CI/CD template</span>
+      </a>
+      <a class="proj" href="https://github.com/fee-191/cex-incident-research" target="_blank" rel="noopener">
+        <span class="pt">CEX Incident Research<span class="arrow">↗</span></span>
+        <span class="pd">Phân tích 31 vụ hack sàn giao dịch (2014–2025) — attack pattern, kill chain, ánh xạ MITRE ATT&amp;CK.</span>
+        <span class="pmeta">threat intel · phân tích sự cố</span>
+      </a>
+    </div>
   </section>
 
 </div>
